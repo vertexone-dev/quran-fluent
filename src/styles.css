@@ -1,0 +1,250 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * QuranRoots design system.
+ * Brand palette (official):
+ *   Deep Olive Green  #4B6339  nature, tradition, depth
+ *   Warm Parchment    #F2E9D4  primary surface
+ *   Burnished Gold    #B98D32  accent
+ *   Sky Blue Support  #70A0B1  support
+ *   Charcoal          #333333  text / detail
+ * All colors are oklch tokens. Never hardcode colors in components.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-support: var(--support);
+  --color-support-foreground: var(--support-foreground);
+  --color-parchment: var(--parchment);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cairo", "Open Sans", ui-sans-serif, sans-serif;
+  --font-quran: "Amiri Quran", "Scheherazade New", serif;
+  --font-arabic: "Amiri", "Scheherazade New", serif;
+}
+
+:root {
+  --radius: 0.75rem;
+
+  --background: oklch(0.974 0.014 88.7);
+  --foreground: oklch(0.321 0 89.9);
+  --card: oklch(1 0 89.9);
+  --card-foreground: oklch(0.321 0 89.9);
+  --popover: oklch(1 0 89.9);
+  --popover-foreground: oklch(0.321 0 89.9);
+  --primary: oklch(0.469 0.07 132.8);
+  --primary-foreground: oklch(0.974 0.014 88.7);
+  --secondary: oklch(0.936 0.029 87.5);
+  --secondary-foreground: oklch(0.34 0.05 132.8);
+  --muted: oklch(0.936 0.029 87.5);
+  --muted-foreground: oklch(0.48 0.026 118);
+  --accent: oklch(0.896 0.037 87.8);
+  --accent-foreground: oklch(0.34 0.05 132.8);
+  --gold: oklch(0.669 0.118 82);
+  --gold-foreground: oklch(0.239 0.018 131.4);
+  --support: oklch(0.678 0.057 222);
+  --support-foreground: oklch(0.239 0.018 131.4);
+  --parchment: oklch(0.936 0.029 87.5);
+  --destructive: oklch(0.505 0.19 27.3);
+  --destructive-foreground: oklch(0.98 0.01 88);
+  --border: oklch(0.886 0.026 87.8);
+  --input: oklch(0.886 0.026 87.8);
+  --ring: oklch(0.469 0.07 132.8);
+  --chart-1: oklch(0.469 0.07 132.8);
+  --chart-2: oklch(0.669 0.118 82);
+  --chart-3: oklch(0.678 0.057 222);
+  --chart-4: oklch(0.719 0.084 133.7);
+  --chart-5: oklch(0.563 0.039 129.3);
+  --sidebar: oklch(0.936 0.029 87.5);
+  --sidebar-foreground: oklch(0.321 0 89.9);
+  --sidebar-primary: oklch(0.469 0.07 132.8);
+  --sidebar-primary-foreground: oklch(0.974 0.014 88.7);
+  --sidebar-accent: oklch(0.896 0.037 87.8);
+  --sidebar-accent-foreground: oklch(0.34 0.05 132.8);
+  --sidebar-border: oklch(0.886 0.026 87.8);
+  --sidebar-ring: oklch(0.469 0.07 132.8);
+
+  --gradient-hero: radial-gradient(
+      120% 90% at 15% 0%,
+      color-mix(in oklab, var(--gold) 16%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(160deg, var(--background), color-mix(in oklab, var(--parchment) 85%, transparent));
+  --gradient-emerald: linear-gradient(
+    145deg,
+    var(--primary),
+    color-mix(in oklab, var(--primary) 72%, var(--gold))
+  );
+  --shadow-soft: 0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent),
+    0 12px 32px -18px color-mix(in oklab, var(--primary) 45%, transparent);
+  --shadow-elevated: 0 24px 60px -30px color-mix(in oklab, var(--primary) 55%, transparent);
+}
+
+.dark {
+  --background: oklch(0.239 0.018 131.4);
+  --foreground: oklch(0.949 0.02 88);
+  --card: oklch(0.283 0.024 132);
+  --card-foreground: oklch(0.949 0.02 88);
+  --popover: oklch(0.283 0.024 132);
+  --popover-foreground: oklch(0.949 0.02 88);
+  --primary: oklch(0.719 0.084 133.7);
+  --primary-foreground: oklch(0.213 0.02 131.4);
+  --secondary: oklch(0.325 0.026 132);
+  --secondary-foreground: oklch(0.949 0.02 88);
+  --muted: oklch(0.325 0.026 132);
+  --muted-foreground: oklch(0.76 0.024 100);
+  --accent: oklch(0.355 0.03 132);
+  --accent-foreground: oklch(0.949 0.02 88);
+  --gold: oklch(0.785 0.116 87);
+  --gold-foreground: oklch(0.213 0.02 131.4);
+  --support: oklch(0.73 0.06 222);
+  --support-foreground: oklch(0.213 0.02 131.4);
+  --parchment: oklch(0.325 0.026 132);
+  --destructive: oklch(0.65 0.19 25);
+  --destructive-foreground: oklch(0.98 0.01 88);
+  --border: oklch(0.949 0.02 88 / 14%);
+  --input: oklch(0.949 0.02 88 / 18%);
+  --ring: oklch(0.719 0.084 133.7);
+  --chart-1: oklch(0.719 0.084 133.7);
+  --chart-2: oklch(0.785 0.116 87);
+  --chart-3: oklch(0.73 0.06 222);
+  --chart-4: oklch(0.63 0.07 133);
+  --chart-5: oklch(0.86 0.03 88);
+  --sidebar: oklch(0.283 0.024 132);
+  --sidebar-foreground: oklch(0.949 0.02 88);
+  --sidebar-primary: oklch(0.719 0.084 133.7);
+  --sidebar-primary-foreground: oklch(0.213 0.02 131.4);
+  --sidebar-accent: oklch(0.355 0.03 132);
+  --sidebar-accent-foreground: oklch(0.949 0.02 88);
+  --sidebar-border: oklch(0.949 0.02 88 / 14%);
+  --sidebar-ring: oklch(0.719 0.084 133.7);
+
+  --gradient-hero: radial-gradient(
+      120% 90% at 15% 0%,
+      color-mix(in oklab, var(--gold) 12%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(160deg, var(--background), color-mix(in oklab, var(--card) 80%, transparent));
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+  }
+}
+
+@utility surface-hero {
+  background-image: var(--gradient-hero);
+}
+
+@utility surface-emerald {
+  background-image: var(--gradient-emerald);
+}
+
+@utility shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+@utility shadow-elevated {
+  box-shadow: var(--shadow-elevated);
+}
+
+/* Subtle Islamic-inspired geometric texture */
+@utility pattern-geometric {
+  background-image:
+    radial-gradient(
+      circle at 50% 50%,
+      color-mix(in oklab, var(--primary) 12%, transparent) 1px,
+      transparent 1.5px
+    ),
+    radial-gradient(
+      circle at 0 0,
+      color-mix(in oklab, var(--gold) 12%, transparent) 1px,
+      transparent 1.5px
+    );
+  background-size: 28px 28px;
+  background-position:
+    0 0,
+    14px 14px;
+}
+
+@utility text-quran {
+  font-family: var(--font-quran);
+  line-height: 2.2;
+  font-size: 1.75rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

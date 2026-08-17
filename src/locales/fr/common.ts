@@ -1,0 +1,93 @@
+import type { common as EnCommon } from "../en/common";
+
+export const common: typeof EnCommon = {
+  brand: {
+    name: "QuranRoots",
+    tagline: "Remontez à la langue. Découvrez le sens.",
+    logoAlt: "Logo QuranRoots : un arbre qui pousse d'un livre ouvert",
+    homeAria: "Accueil QuranRoots",
+  },
+  nav: {
+    main: "Navigation principale",
+    home: "Accueil",
+    learn: "Apprendre",
+    quran: "Coran",
+    features: "Fonctionnalités",
+    about: "À propos",
+    dashboard: "Tableau de bord",
+    daily: "Apprentissage du jour",
+    memorize: "Mémoriser",
+    practice: "S'entraîner",
+    progress: "Progression",
+    learningPlan: "Mon parcours d'apprentissage",
+    bookmarks: "Favoris",
+    notes: "Notes",
+    settings: "Paramètres",
+    openMenu: "Ouvrir le menu",
+    navigation: "Navigation",
+    accountMenu: "Menu du compte",
+  },
+
+  actions: {
+    login: "Se connecter",
+    signup: "Créer un compte",
+    logout: "Se déconnecter",
+    startLearning: "Commencer à apprendre",
+    exploreQuran: "Explorer le Coran",
+    continue: "Continuer",
+    back: "Retour",
+    open: "Ouvrir",
+    save: "Enregistrer les modifications",
+    saving: "Enregistrement…",
+    pleaseWait: "Veuillez patienter…",
+    listen: "Écouter",
+    addToVocabulary: "Ajouter au vocabulaire",
+    seeInQuran: "Voir dans le Coran",
+    seeOccurrences: "Voir les occurrences",
+    practice: "S'entraîner",
+    easy: "Facile",
+    hard: "Difficile",
+  },
+
+  theme: {
+    change: "Changer de thème",
+    light: "Clair",
+    dark: "Sombre",
+    system: "Système",
+    label: "Thème",
+  },
+  language: {
+    label: "Langue",
+    change: "Changer de langue",
+    en: "English",
+    fr: "Français",
+    enShort: "EN",
+    frShort: "FR",
+  },
+  footer: {
+    intro:
+      "Un pont linguistique moderne entre les lecteurs d'aujourd'hui et les racines arabes qui portent le sens du Coran.",
+    platform: "Plateforme",
+    learnArabic: "Apprendre l'arabe",
+    quranStudy: "Étude du Coran",
+    integrityTitle: "Intégrité du contenu",
+    integrityBody:
+      "Le texte coranique, les traductions et les données linguistiques proviennent uniquement de sources vérifiées et citées. Aucun contenu religieux n'est généré automatiquement.",
+    rights: "QuranRoots. Remontez à la langue. Découvrez le sens.",
+  },
+  roadmap: {
+    included: "Ce que cette section contiendra",
+  },
+  errors: {
+    notFoundTitle: "Page introuvable",
+    notFoundBody: "La page que vous cherchez n'existe pas ou a été déplacée.",
+    goHome: "Retour à l'accueil",
+    crashTitle: "Cette page n'a pas pu se charger",
+    crashBody:
+      "Une erreur est survenue de notre côté. Vous pouvez actualiser la page ou revenir à l'accueil.",
+    tryAgain: "Réessayer",
+    generic: "Une erreur est survenue",
+    loadFailed:
+      "Nous n'avons pas pu charger ce contenu. Vérifiez votre connexion, puis réessayez.",
+  },
+};

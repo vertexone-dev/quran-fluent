@@ -1,0 +1,235 @@
+import { supabase } from "@/integrations/supabase/client";
+
+/**
+ * Placement test + personalized learning path.
+ * Questions are static, hand-written and verified. Qur'anic Arabic used here is
+ * copied from Al-Fatiha / common Qur'anic vocabulary and is never generated.
+ */
+
+export type PlacementSection =
+  | "letters"
+  | "forms"
+  | "harakat"
+  | "reading"
+  | "vocabulary"
+  | "comprehension"
+  | "grammar";
+
+export type PlacementLevel =
+  | "complete_beginner"
+  | "foundation"
+  | "beginner_reader"
+  | "developing_reader"
+  | "intermediate_quranic";
+
+export type PlacementQuestion = {
+  id: string;
+  section: PlacementSection;
+  /** Arabic prompt shown large and RTL, when the question is about a script item. */
+  arabic?: string;
+  /** Language-neutral options (Arabic script or transliteration). */
+  literalOptions?: string[];
+  correct: number;
+};
+
+export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
+  { id: "q1", section: "letters", arabic: "ب", literalOptions: ["Bā'", "Tā'", "Thā'", "Nūn"], correct: 0 },
+  { id: "q2", section: "letters", literalOptions: ["م", "ن", "ح", "ع"], correct: 0 },
+  { id: "q3", section: "forms", arabic: "ك", literalOptions: ["كـ", "ـك", "ـكـ", "ك"], correct: 0 },
+  { id: "q4", section: "forms", literalOptions: ["الْحَمْدُ", "أُمّ", "هُوَ", "دَعَا"], correct: 0 },
+  { id: "q5", section: "harakat", literalOptions: ["فَ", "فِ", "فُ", "فْ"], correct: 2 },
+  { id: "q6", section: "harakat", arabic: "رَبِّ", correct: 1 },
+  { id: "q7", section: "reading", arabic: "كِتَاب", literalOptions: ["kitāb", "katab", "kutub", "kataba"], correct: 0 },
+  { id: "q8", section: "vocabulary", arabic: "رَحْمَة", correct: 0 },
+  { id: "q9", section: "vocabulary", arabic: "رَبّ", correct: 0 },
+  { id: "q10", section: "comprehension", arabic: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", correct: 0 },
+  { id: "q11", section: "grammar", arabic: "بِسْمِ اللَّهِ", correct: 0 },
+  { id: "q12", section: "grammar", arabic: "الْمُسْلِمُونَ", correct: 1 },
+];
+
+export const PLACEMENT_LEVELS: PlacementLevel[] = [
+  "complete_beginner",
+  "foundation",
+  "beginner_reader",
+  "developing_reader",
+  "intermediate_quranic",
+];
+
+/** Ordered stages of the learning path. */
+export const PATH_STEPS = [
+  "alphabet",
+  "harakat",
+  "connected_letters",
+  "reading",
+  "vocabulary",
+  "roots",
+  "grammar",
+  "ayah_comprehension",
+  "surah_mastery",
+] as const;
+
+export type PathStepKey = (typeof PATH_STEPS)[number];
+
+/** Where each placement level starts on the path. */
+export const LEVEL_START_STEP: Record<PlacementLevel, PathStepKey> = {
+  complete_beginner: "alphabet",
+  foundation: "harakat",
+  beginner_reader: "connected_letters",
+  developing_reader: "vocabulary",
+  intermediate_quranic: "grammar",
+};
+
+export type PlacementResult = {
+  score: number;
+  total: number;
+  sectionScores: Record<string, { correct: number; total: number }>;
+  level: PlacementLevel;
+  /** Sections the learner missed at least one question in — drives the "reason" text. */
+  weakSections: PlacementSection[];
+};
+
+export function scorePlacement(answers: Record<string, number | undefined>): PlacementResult {
+  const sectionScores: Record<string, { correct: number; total: number }> = {};
+  let score = 0;
+
+  for (const question of PLACEMENT_QUESTIONS) {
+    const bucket = (sectionScores[question.section] ??= { correct: 0, total: 0 });
+    bucket.total += 1;
+    if (answers[question.id] === question.correct) {
+      bucket.correct += 1;
+      score += 1;
+    }
+  }
+
+  const total = PLACEMENT_QUESTIONS.length;
+  const ratio = total === 0 ? 0 : score / total;
+  const level: PlacementLevel =
+    ratio < 0.25
+      ? "complete_beginner"
+      : ratio < 0.45
+        ? "foundation"
+        : ratio < 0.65
+          ? "beginner_reader"
+          : ratio < 0.85
+            ? "developing_reader"
+            : "intermediate_quranic";
+
+  const weakSections = (Object.keys(sectionScores) as PlacementSection[]).filter(
+    (section) => sectionScores[section]!.correct < sectionScores[section]!.total,
+  );
+
+  return { score, total, sectionScores, level, weakSections };
+}
+
+/** Steps before the starting step count as already covered. */
+export function buildPathSteps(level: PlacementLevel) {
+  const startIndex = PATH_STEPS.indexOf(LEVEL_START_STEP[level]);
+  return PATH_STEPS.map((step, index) => ({
+    step_key: step,
+    order_index: index,
+    status:
+      index < startIndex
+        ? ("completed" as const)
+        : index === startIndex
+          ? ("in_progress" as const)
+          : index === startIndex + 1
+            ? ("available" as const)
+            : ("locked" as const),
+    progress: index < startIndex ? 100 : 0,
+  }));
+}
+
+export type LearningPathStep = {
+  id: string;
+  step_key: string;
+  order_index: number;
+  status: "locked" | "available" | "in_progress" | "completed";
+  progress: number;
+};
+
+export type LearningPath = {
+  id: string;
+  level: PlacementLevel;
+  source: string;
+  steps: LearningPathStep[];
+};
+
+export async function fetchLearningPath(userId: string): Promise<LearningPath | null> {
+  const { data: path } = await supabase
+    .from("learning_paths")
+    .select("id, level, source")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!path) return null;
+
+  const { data: steps } = await supabase
+    .from("learning_path_steps")
+    .select("id, step_key, order_index, status, progress")
+    .eq("path_id", path.id)
+    .order("order_index", { ascending: true });
+
+  return {
+    id: path.id,
+    level: path.level as PlacementLevel,
+    source: path.source,
+    steps: (steps ?? []) as LearningPathStep[],
+  };
+}
+
+/** Creates or replaces the learner's path for the chosen level. */
+export async function saveLearningPath(
+  userId: string,
+  level: PlacementLevel,
+  source: "placement" | "manual",
+) {
+  const { data: path, error } = await supabase
+    .from("learning_paths")
+    .upsert({ user_id: userId, level, source }, { onConflict: "user_id" })
+    .select("id")
+    .single();
+  if (error || !path) throw error ?? new Error("Could not save learning path");
+
+  await supabase.from("learning_path_steps").delete().eq("path_id", path.id);
+  const rows = buildPathSteps(level).map((step) => ({ ...step, path_id: path.id, user_id: userId }));
+  const { error: stepsError } = await supabase.from("learning_path_steps").insert(rows);
+  if (stepsError) throw stepsError;
+  return path.id;
+}
+
+export async function savePlacementAttempt(
+  userId: string,
+  answers: Record<string, number | undefined>,
+  result: PlacementResult,
+) {
+  const { error } = await supabase.from("placement_attempts").insert({
+    user_id: userId,
+    answers,
+    score: result.score,
+    total: result.total,
+    section_scores: result.sectionScores,
+    recommended_level: result.level,
+  });
+  if (error) throw error;
+}
+
+export async function fetchLatestPlacement(userId: string) {
+  const { data } = await supabase
+    .from("placement_attempts")
+    .select("score, total, recommended_level, completed_at")
+    .eq("user_id", userId)
+    .order("completed_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return data ?? null;
+}
+
+/** The single "what should I study next" answer for the dashboard. */
+export function nextStep(path: LearningPath | null): LearningPathStep | null {
+  if (!path) return null;
+  return (
+    path.steps.find((step) => step.status === "in_progress") ??
+    path.steps.find((step) => step.status === "available") ??
+    path.steps.find((step) => step.status !== "completed") ??
+    null
+  );
+}
