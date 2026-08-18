@@ -23,6 +23,13 @@ dist-ssr
 # Environment variables
 .env
 .env.local
+.env.test
+
+# Playwright
+/test-results/
+/playwright-report/
+/playwright/.auth/
+/blob-report/
 
 # Editor directories and files
 .vscode/*
