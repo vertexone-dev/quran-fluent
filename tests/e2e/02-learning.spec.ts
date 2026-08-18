@@ -6,6 +6,17 @@ test.describe("learning plan", () => {
   test("with no placement taken yet, the plan shows unset fields and a CTA to test", async ({
     page,
   }) => {
+    // Self-contained rather than relying on running before 01-onboarding.spec.ts
+    // and 03-placement.spec.ts: clear the fields those specs set so this test
+    // sees the same "nothing chosen yet" state as a freshly reset account.
+    const { client, userId } = await createTestUserClient();
+    await client.from("placement_attempts").delete().eq("user_id", userId);
+    await client.from("learning_paths").delete().eq("user_id", userId);
+    await client
+      .from("learning_preferences")
+      .update({ arabic_level: null, primary_goal: null })
+      .eq("user_id", userId);
+
     await page.goto("/learning-plan");
     await expect(page.getByRole("heading", { name: "My learning plan" })).toBeVisible();
     await expect(page.getByText("Not set").first()).toBeVisible();
@@ -50,7 +61,10 @@ test.describe("learning plan", () => {
     ]);
 
     await page.goto("/learning-plan");
-    await expect(page.getByText("Starting level: Foundation")).toBeVisible();
+    // Several sequential queries (profile, preferences, path, steps) back
+    // this page; the default 5s assertion timeout was occasionally tighter
+    // than that load, seen still on its loading skeleton at 5s.
+    await expect(page.getByText("Starting level: Foundation")).toBeVisible({ timeout: 10_000 });
     await expect(page.getByRole("link", { name: "Retake the placement test" })).toBeVisible();
   });
 });

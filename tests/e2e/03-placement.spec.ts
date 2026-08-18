@@ -16,10 +16,27 @@ async function answerAll(
   pickIndex: (correct: number, questionIndex: number) => number,
 ) {
   for (let i = 0; i < QUESTION_COUNT; i++) {
-    const options = page.locator("button[aria-pressed]");
-    await options.nth(pickIndex(CORRECT_INDEXES[i]!, i)).click();
+    // Scoped to <main>: the header's own EN/FR language toggle buttons also
+    // carry aria-pressed, and an unscoped locator counted them first —
+    // options.nth(0..3) was clicking "EN"/"FR", never an actual answer.
+    const options = page.locator("main button[aria-pressed]");
     const isLast = i === QUESTION_COUNT - 1;
-    await page.getByRole("button", { name: isLast ? RESULT_STEP_LABEL : "Continue" }).click();
+    const nextButton = page.getByRole("button", { name: isLast ? RESULT_STEP_LABEL : "Continue" });
+
+    // The option click enables `nextButton`; on a freshly-mounted question
+    // (most visibly question 1) the click can land before the option's
+    // onClick is wired up, leaving `nextButton` disabled indefinitely.
+    // Retry the click rather than hang on it.
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      await options.nth(pickIndex(CORRECT_INDEXES[i]!, i)).click();
+      try {
+        await expect(nextButton).toBeEnabled({ timeout: 2_000 });
+        break;
+      } catch (error) {
+        if (attempt === 3) throw error;
+      }
+    }
+    await nextButton.click();
   }
 }
 
@@ -87,17 +104,29 @@ test.describe("placement", () => {
     await expect(page.getByText("0 of 12 correct")).toBeVisible();
 
     const { client, userId } = await createTestUserClient();
-    const { count: weakCount } = await client
-      .from("weak_areas")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("source", "placement");
-    expect(weakCount).toBeGreaterThan(0);
+    // finish() fires its save off with `void` and doesn't block the result
+    // screen on it, so the write can still be in flight here. Unlike the
+    // perfect-score test above, nothing here clicks a follow-up button that
+    // would incidentally give it time to land — poll instead.
+    await expect
+      .poll(async () => {
+        const { count } = await client
+          .from("weak_areas")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId)
+          .eq("source", "placement");
+        return count ?? 0;
+      })
+      .toBeGreaterThan(0);
 
-    const { count: reviewCount } = await client
-      .from("review_items")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId);
-    expect(reviewCount).toBeGreaterThan(0);
+    await expect
+      .poll(async () => {
+        const { count } = await client
+          .from("review_items")
+          .select("*", { count: "exact", head: true })
+          .eq("user_id", userId);
+        return count ?? 0;
+      })
+      .toBeGreaterThan(0);
   });
 });

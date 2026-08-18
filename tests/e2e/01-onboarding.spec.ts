@@ -21,8 +21,9 @@ test.describe("onboarding", () => {
     await page.getByRole("button", { name: "15 minutes a day" }).click();
     await page.getByRole("button", { name: "Continue" }).click();
 
-    // Step 4: interface language.
-    await page.getByRole("button", { name: "English" }).click();
+    // Step 4: interface language. Exact match: the header's own language
+    // switcher also has "English" as a substring of its accessible name.
+    await page.getByRole("button", { name: "English", exact: true }).click();
 
     await page.getByRole("button", { name: "Finish setup" }).click();
     await expect(page).toHaveURL(/\/placement/, { timeout: 10_000 });

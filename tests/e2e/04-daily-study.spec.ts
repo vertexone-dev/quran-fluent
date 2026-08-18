@@ -2,13 +2,27 @@ import { test, expect } from "@playwright/test";
 
 import { createTestUserClient, countRows } from "./utils/db";
 
+/**
+ * Mirrors localDate() in src/lib/study.ts (not imported — that module also
+ * imports the browser Supabase client, see the placement.spec.ts comment on
+ * the same constraint). The app deliberately queries due items by the
+ * learner's *local* calendar day, not UTC, so a row seeded with the UTC date
+ * can land a day off and silently fall outside the "due today" query.
+ */
+function localDate(date = new Date()): string {
+  const y = date.getFullYear();
+  const m = `${date.getMonth() + 1}`.padStart(2, "0");
+  const d = `${date.getDate()}`.padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 test.describe("daily study", () => {
   test.beforeAll(async () => {
     const { client, userId } = await createTestUserClient();
     // Seed review items directly so the queue is non-empty regardless of
     // whether a learning path exists yet — this spec owns its own state
     // instead of depending on placement.spec.ts having run first.
-    const today = new Date().toISOString().slice(0, 10);
+    const today = localDate();
     await client.from("review_items").insert([
       {
         user_id: userId,
@@ -72,7 +86,12 @@ test.describe("daily study", () => {
           await continueBtn.click();
           continue;
         }
-        break;
+        // isVisible() checks the DOM right now rather than waiting; the
+        // previous click's answer write is awaited before the next card
+        // renders, so an iteration can land in the gap between them with
+        // nothing yet visible. Give it a moment before concluding the queue
+        // is genuinely exhausted.
+        await page.waitForTimeout(300);
       }
 
       await expect(page.getByText("Session complete")).toBeVisible({ timeout: 15_000 });

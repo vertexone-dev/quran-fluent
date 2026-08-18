@@ -8,6 +8,13 @@ test.describe("progress", () => {
   }) => {
     const { client, userId } = await createTestUserClient();
 
+    // Self-contained: 04-daily-study.spec.ts logs its own study_sessions row
+    // and 03-placement.spec.ts's zero-score test seeds its own "Letter
+    // recognition" weak area earlier in the run — both would otherwise
+    // collide with the exact values this test seeds and asserts on.
+    await client.from("study_sessions").delete().eq("user_id", userId);
+    await client.from("weak_areas").delete().eq("user_id", userId);
+
     await client.from("study_sessions").insert({
       user_id: userId,
       activity_type: "e2e-seed",

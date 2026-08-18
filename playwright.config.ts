@@ -1,6 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 import dotenv from "dotenv";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ path: path.resolve(__dirname, ".env.test") });
 
@@ -14,6 +17,11 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
  */
 export default defineConfig({
   testDir: "./tests/e2e",
+  // Resets the shared account's data (including interface_language) once,
+  // before any project — including "public", which now runs before the
+  // "setup" project below and needs a clean English baseline regardless of
+  // what a prior (possibly interrupted) run left behind.
+  globalSetup: "./tests/e2e/global-setup.ts",
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
@@ -26,24 +34,34 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   projects: [
-    { name: "setup", testMatch: /auth\.setup\.ts/ },
+    // "public" must run before "setup": auth.spec.ts does real UI
+    // logins/logout against the shared test account, and Supabase Auth
+    // revokes a user's other sessions once a new one signs in. Running
+    // those first means setup's own login — the one every authenticated
+    // spec's storageState depends on — is the last, uncontested sign-in.
     {
       name: "public",
       testMatch: ["auth.spec.ts", "security.spec.ts"],
       use: { ...devices["Desktop Chrome"] },
     },
+    { name: "setup", testMatch: /auth\.setup\.ts/, dependencies: ["public"] },
     {
       name: "authenticated",
+      // Numbered filenames, not this array, control run order: Playwright
+      // always runs spec files in sorted-path order regardless of how
+      // they're listed here. The learner-journey order matters — e.g.
+      // 02-learning.spec.ts asserts a "no placement taken yet" empty state
+      // that 03-placement.spec.ts would otherwise have already spoiled.
       testMatch: [
-        "onboarding.spec.ts",
-        "placement.spec.ts",
-        "daily-study.spec.ts",
-        "learning.spec.ts",
-        "vocabulary.spec.ts",
-        "quran-reader.spec.ts",
-        "memorization.spec.ts",
-        "progress.spec.ts",
-        "localization.spec.ts",
+        "01-onboarding.spec.ts",
+        "02-learning.spec.ts",
+        "03-placement.spec.ts",
+        "04-daily-study.spec.ts",
+        "05-vocabulary.spec.ts",
+        "06-quran-reader.spec.ts",
+        "07-memorization.spec.ts",
+        "08-progress.spec.ts",
+        "09-localization.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],

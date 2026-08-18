@@ -1,4 +1,10 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const authFile = path.join(__dirname, "../../../playwright/.auth/user.json");
 
 function env(name: string): string {
   const value = process.env[name];
@@ -10,17 +16,37 @@ function env(name: string): string {
   return value;
 }
 
+type TestUserClient = { client: SupabaseClient; userId: string; email: string; password: string };
+
+let cached: Promise<TestUserClient> | null = null;
+
 /**
- * Signs the shared E2E test account in with its own publishable-key client
- * (never a service-role key) so every DB assertion below runs through the
- * same RLS policies real learners are subject to.
+ * Returns a publishable-key client (never a service-role key) authenticated
+ * as the shared E2E test account, so every DB assertion below runs through
+ * the same RLS policies real learners are subject to.
+ *
+ * This restores the *browser's own* session (from the storageState file
+ * auth.setup.ts writes) via setSession, rather than doing its own
+ * signInWithPassword. Every spec file used to sign in fresh, and Supabase
+ * Auth was observed to revoke the browser's session once enough concurrent
+ * sign-ins piled up for the same account (getUser() started failing with
+ * "session_not_found") — spec files would then get redirected to /auth
+ * outright. Sharing one session for the whole run avoids creating that
+ * concurrency in the first place. Cached per worker process since the
+ * session doesn't change during a run.
  */
-export async function createTestUserClient(): Promise<{
-  client: SupabaseClient;
-  userId: string;
-  email: string;
-  password: string;
-}> {
+export async function createTestUserClient(): Promise<TestUserClient> {
+  if (!cached) cached = restoreBrowserSession();
+  return cached;
+}
+
+/**
+ * Fresh password sign-in for auth.setup.ts only: it runs before any browser
+ * session exists yet, and immediately signs this session back out again as
+ * part of resetting the account — it must never be shared via the cache
+ * above.
+ */
+export async function createFreshTestUserClient(): Promise<TestUserClient> {
   const email = env("E2E_TEST_EMAIL");
   const password = env("E2E_TEST_PASSWORD");
   const client = createClient(env("VITE_SUPABASE_URL"), env("VITE_SUPABASE_PUBLISHABLE_KEY"), {
@@ -33,6 +59,40 @@ export async function createTestUserClient(): Promise<{
       `E2E test user could not sign in (${email}): ${error?.message ?? "no user returned"}. ` +
         `Confirm the account exists, its email is confirmed, and credentials match .env.test.`,
     );
+  }
+  return { client, userId: data.user.id, email, password };
+}
+
+async function restoreBrowserSession(): Promise<TestUserClient> {
+  const email = env("E2E_TEST_EMAIL");
+  const password = env("E2E_TEST_PASSWORD");
+  const client = createClient(env("VITE_SUPABASE_URL"), env("VITE_SUPABASE_PUBLISHABLE_KEY"), {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+
+  let state: { origins?: { localStorage?: { name: string; value: string }[] }[] };
+  try {
+    state = JSON.parse(readFileSync(authFile, "utf8"));
+  } catch {
+    throw new Error(
+      `Could not read the browser's session from ${authFile}. auth.setup.ts must run before any ` +
+        `spec that calls createTestUserClient().`,
+    );
+  }
+  const item = state.origins
+    ?.flatMap((o) => o.localStorage ?? [])
+    .find((i) => /^sb-.*-auth-token$/.test(i.name));
+  if (!item) {
+    throw new Error(`No Supabase session found in ${authFile}. Has auth.setup.ts run yet?`);
+  }
+  const stored = JSON.parse(item.value) as { access_token: string; refresh_token: string };
+
+  const { data, error } = await client.auth.setSession({
+    access_token: stored.access_token,
+    refresh_token: stored.refresh_token,
+  });
+  if (error || !data.user) {
+    throw new Error(`Failed to restore the browser's session: ${error?.message ?? "no user returned"}`);
   }
   return { client, userId: data.user.id, email, password };
 }

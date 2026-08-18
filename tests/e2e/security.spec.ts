@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { createTestUserClient } from "./utils/db";
+import { createFreshTestUserClient } from "./utils/db";
 
 const PROTECTED_ROUTES = [
   "/dashboard",
@@ -43,7 +43,9 @@ test.describe("security", () => {
   test("an authenticated user cannot read another user's rows by forging a filter", async ({
     request,
   }) => {
-    const { client, userId } = await createTestUserClient();
+    // Fresh sign-in, not the shared session: this runs in the "public"
+    // project, before "setup" has captured a browser session to restore.
+    const { client, userId } = await createFreshTestUserClient();
     const {
       data: { session },
     } = await client.auth.getSession();
@@ -87,9 +89,12 @@ test.describe("security", () => {
 
     const html = await page.content();
     const haystacks = [html, ...seenScripts];
+    // Match an actual key *value* (prefix plus its opaque body), not the bare
+    // "sb_secret_" prefix string the client's own key-type check legitimately
+    // ships (see isNewSupabaseApiKey in src/integrations/supabase/client.ts).
     for (const text of haystacks) {
-      expect(text).not.toMatch(/sb_secret_/);
-      expect(text).not.toMatch(/service_role/);
+      expect(text).not.toMatch(/sb_secret_[A-Za-z0-9_-]{10,}/);
+      expect(text).not.toMatch(/"service_role"/);
     }
   });
 });

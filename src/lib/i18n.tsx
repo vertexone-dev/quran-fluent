@@ -124,7 +124,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       setLocaleState(next);
       window.localStorage.setItem(STORAGE_KEY, next);
       if (user?.id) {
-        void supabase.from("profiles").update({ interface_language: next }).eq("id", user.id);
+        // supabase-js query builders are lazy thenables: the request is only
+        // sent once something calls .then()/awaits them. `void` alone
+        // discards a value without doing that, so it silently never fired.
+        void supabase
+          .from("profiles")
+          .update({ interface_language: next })
+          .eq("id", user.id)
+          .then(({ error }) => {
+            if (error) console.error("Failed to persist interface_language", error);
+          });
       }
     },
     [user?.id],

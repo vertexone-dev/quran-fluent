@@ -51,7 +51,7 @@ function QuranPage() {
 
   const { data: words } = useQuery({
     queryKey: ["word-frequency", category, search],
-    queryFn: () => fetchWordFrequency({ limit: 50, category, search }),
+    queryFn: ({ signal }) => fetchWordFrequency({ limit: 50, category, search, signal }),
   });
 
   const { data: userVocab } = useQuery({

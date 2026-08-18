@@ -25,9 +25,9 @@ export type UserVocabulary = {
 };
 
 export async function fetchWordFrequency(
-  options: { limit?: number; category?: string | null; search?: string } = {},
+  options: { limit?: number; category?: string | null; search?: string; signal?: AbortSignal } = {},
 ): Promise<WordFrequency[]> {
-  const { limit = 50, category, search } = options;
+  const { limit = 50, category, search, signal } = options;
   let query = supabase
     .from("word_frequency")
     .select("*")
@@ -43,6 +43,11 @@ export async function fetchWordFrequency(
       `word.ilike.%${search}%,transliteration.ilike.%${search}%,meaning.ilike.%${search}%,meaning_fr.ilike.%${search}%`,
     );
   }
+
+  // Without forwarding React Query's abort signal, an in-flight unfiltered
+  // fetch that resolves after a newer filtered one silently overwrites it,
+  // making the search box appear to not filter (race, not caching).
+  if (signal) query = query.abortSignal(signal);
 
   const { data, error } = await query;
   if (error) throw error;
