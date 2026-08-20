@@ -21,7 +21,11 @@ export const dashboard: typeof EnDashboard = {
   goalProgress: "{minutes}/{target} minutes",
   today: {
     review: { title: "File de révision", cta: "Réviser maintenant" },
-    weak: { title: "Point faible", cta: "Se concentrer", none: "Aucun point faible pour l'instant" },
+    weak: {
+      title: "Point faible",
+      cta: "Se concentrer",
+      none: "Aucun point faible pour l'instant",
+    },
     path: { title: "Prochaine étape", cta: "Continuer", none: "Passer le test de niveau" },
     goal: { title: "Objectif du jour", cta: "Continuer" },
   },
@@ -38,10 +42,19 @@ export const dashboard: typeof EnDashboard = {
     tajweed: "Tajwid",
     memorization: "Mémorisation",
   },
-  savedLabel: "Contenu enregistré",
-  saved: [
-    { title: "Sourates récentes", body: "Votre historique de lecture apparaîtra ici." },
-    { title: "Favoris", body: "Versets, leçons et mots que vous enregistrez." },
-    { title: "Notes", body: "Vos notes d'étude privées." },
-  ],
+  activityLabel: "Votre activité",
+  memorizationCard: {
+    title: "Mémorisation",
+    memorizedCount: "{count} versets mémorisés",
+    dueCount: "{count} à réviser",
+    empty: "Commencez à mémoriser votre premier verset.",
+  },
+  bookmarksCard: {
+    title: "Favoris",
+    empty: "Aucun favori pour le moment.",
+  },
+  notesCard: {
+    title: "Notes",
+    empty: "Aucune note pour le moment.",
+  },
 };

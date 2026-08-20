@@ -4,14 +4,19 @@ export const quran = {
     intro:
       "Browse by Surah, Ayah or Juz, with translation, transliteration, audio and a word study panel for every word.",
     typographyBadge: "Typography preview",
-    typographyNote:
-      "Al-Fatiha 1:1 — displayed to preview Arabic typography and spacing. The reader itself is built in Phase 3, once the verified Qur'an data service is connected.",
+    typographyNote: "Al-Fatiha 1:1 — displayed to preview Arabic typography and spacing.",
     dataTitle: "How Qur'an data is handled",
     dataIntro:
       "Each layer is imported from a documented source and stored separately. Conflicting translations or interpretations are never silently merged.",
     layers: [
-      { name: "Qur'anic Arabic", detail: "Verified Uthmani text, stored on its own and never modified." },
-      { name: "Translations", detail: "Each translation attributed to its translator and edition." },
+      {
+        name: "Qur'anic Arabic",
+        detail: "Verified Uthmani text, stored on its own and never modified.",
+      },
+      {
+        name: "Translations",
+        detail: "Each translation attributed to its translator and edition.",
+      },
       { name: "Transliteration", detail: "Kept separate so it can be toggled or replaced." },
       {
         name: "Word-level data",
@@ -27,6 +32,25 @@ export const quran = {
     translationFr: "French — Muhammad Hamidullah",
     searchNote:
       "Search will accept everyday words in your interface language — such as mercy, patience or prayer — and map them to verified Qur'anic vocabulary rather than matching raw text.",
+  },
+  reader: {
+    title: "Read",
+    intro:
+      "A curated set of short, commonly memorized Surahs to read, bookmark, note and memorize. The complete Mushaf arrives in a later phase.",
+    selectSurah: "Select a Surah",
+    ayahLabel: "Ayah {number}",
+    actions: {
+      bookmark: "Bookmark Ayah",
+      removeBookmark: "Remove Bookmark",
+      addNote: "Add Note",
+      memorize: "Memorize",
+      more: "More actions",
+    },
+    loading: "Loading Surah…",
+    error: {
+      title: "Couldn't load this Surah.",
+      retry: "Retry",
+    },
   },
   word: {
     meaning: "Meaning",
@@ -55,4 +79,3 @@ export const quran = {
     signInToSave: "Sign in to save words for review.",
   },
 };
-

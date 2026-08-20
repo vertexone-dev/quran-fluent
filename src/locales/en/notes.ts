@@ -1,0 +1,25 @@
+export const notes = {
+  title: "My Notes",
+  intro: "Your private study notes on Ayat.",
+  add: "Add Note",
+  edit: "Edit Note",
+  save: "Save",
+  delete: "Delete",
+  cancel: "Cancel",
+  placeholder: "Write a private note on this Ayah…",
+  deleteConfirmTitle: "Delete this note?",
+  deleteConfirmBody: "This can't be undone.",
+  updatedOn: "Updated {date}",
+  openAyah: "Open Ayah",
+  loading: "Loading your notes…",
+  saveError: "Couldn't save your note. Try again.",
+  deleteError: "Couldn't delete your note. Try again.",
+  empty: {
+    title: "No notes yet.",
+    body: "Your personal Qur'an study notes will appear here.",
+  },
+  error: {
+    title: "Couldn't load your notes.",
+    retry: "Retry",
+  },
+};

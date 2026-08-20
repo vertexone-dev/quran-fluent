@@ -71,6 +71,58 @@ test.describe("security", () => {
     expect(body).toEqual([]);
   });
 
+  test("an authenticated user cannot read, insert into, or update another user's bookmarks, notes or memorization rows", async ({
+    request,
+  }) => {
+    const { client, userId } = await createFreshTestUserClient();
+    const {
+      data: { session },
+    } = await client.auth.getSession();
+    expect(session?.access_token).toBeTruthy();
+
+    const url = process.env.VITE_SUPABASE_URL!;
+    const anonKey = process.env.VITE_SUPABASE_PUBLISHABLE_KEY!;
+    const forgedUserId = "00000000-0000-0000-0000-000000000000";
+    expect(forgedUserId).not.toBe(userId);
+    const headers = {
+      apikey: anonKey,
+      Authorization: `Bearer ${session!.access_token}`,
+      "Content-Type": "application/json",
+    };
+
+    for (const table of ["bookmarks", "notes", "memorization_progress"]) {
+      // SELECT: forging another user_id in the filter must not surface their rows.
+      const selectResponse = await request.get(
+        `${url}/rest/v1/${table}?select=*&user_id=eq.${forgedUserId}`,
+        {
+          headers,
+        },
+      );
+      expect(selectResponse.ok()).toBe(true);
+      expect(await selectResponse.json()).toEqual([]);
+
+      // INSERT: the WITH CHECK clause must reject a row claiming to belong
+      // to someone else, even though the request itself is authenticated.
+      const row =
+        table === "notes"
+          ? { user_id: forgedUserId, surah_number: 1, ayah_number: 1, content: "forged" }
+          : { user_id: forgedUserId, surah_number: 1, ayah_number: 1 };
+      const insertResponse = await request.post(`${url}/rest/v1/${table}`, { headers, data: row });
+      expect(insertResponse.ok()).toBe(false);
+    }
+
+    // UPDATE: forging the filter must affect zero rows rather than erroring
+    // or silently touching someone else's data. Prefer: return=representation
+    // is required here — without it PostgREST replies 204 with an empty body
+    // on a zero-row update, and there'd be nothing to assert against.
+    const updateResponse = await request.patch(`${url}/rest/v1/notes?user_id=eq.${forgedUserId}`, {
+      headers: { ...headers, Prefer: "return=representation" },
+      data: { content: "hijacked" },
+    });
+    expect(updateResponse.ok()).toBe(true);
+    expect(await updateResponse.json()).toEqual([]);
+  });
+
   test("no Supabase service-role key is present in the shipped client bundle", async ({ page }) => {
     const seenScripts: string[] = [];
     page.on("response", async (response) => {

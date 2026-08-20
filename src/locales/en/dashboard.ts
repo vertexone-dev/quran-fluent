@@ -36,10 +36,19 @@ export const dashboard = {
     tajweed: "Tajweed",
     memorization: "Memorization",
   },
-  savedLabel: "Saved content",
-  saved: [
-    { title: "Recent Surahs", body: "Your reading history will appear here." },
-    { title: "Bookmarks", body: "Ayat, lessons and words you save." },
-    { title: "Notes", body: "Your private study notes." },
-  ],
+  activityLabel: "Your activity",
+  memorizationCard: {
+    title: "Memorization",
+    memorizedCount: "{count} Ayat memorized",
+    dueCount: "{count} due for review",
+    empty: "Start memorizing your first Ayah.",
+  },
+  bookmarksCard: {
+    title: "Bookmarks",
+    empty: "No bookmarks yet.",
+  },
+  notesCard: {
+    title: "Notes",
+    empty: "No notes yet.",
+  },
 };

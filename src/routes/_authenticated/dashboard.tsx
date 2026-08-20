@@ -1,7 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { BookMarked, Brain, Flame, GraduationCap, Library, Repeat2, Target } from "lucide-react";
+import {
+  BookMarked,
+  Brain,
+  Flame,
+  GraduationCap,
+  Library,
+  NotebookPen,
+  Repeat2,
+  Target,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +23,9 @@ import { useI18n } from "@/lib/i18n";
 import { fetchLearnerSnapshot } from "@/lib/learner";
 import { fetchLearningPath, nextStep } from "@/lib/placement";
 import { countDueReviews, getDailyStats, getWeakAreas } from "@/lib/study";
-
+import { fetchBookmarks } from "@/lib/bookmarks";
+import { fetchNotes } from "@/lib/notes";
+import { countDueMemorizationReviews, fetchMemorizationProgress } from "@/lib/memorization";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -43,8 +54,6 @@ const UNDERSTANDING_KEYS = [
   "tajweed",
   "memorization",
 ] as const;
-
-const SAVED_LINKS = ["/quran", "/bookmarks", "/notes"] as const;
 
 function Dashboard() {
   const { user } = useAuth();
@@ -82,6 +91,29 @@ function Dashboard() {
     enabled: Boolean(user?.id),
   });
 
+  const { data: bookmarks } = useQuery({
+    queryKey: ["bookmarks", user?.id],
+    queryFn: () => fetchBookmarks(user!.id),
+    enabled: Boolean(user?.id),
+  });
+
+  const { data: notes } = useQuery({
+    queryKey: ["notes", user?.id],
+    queryFn: () => fetchNotes(user!.id),
+    enabled: Boolean(user?.id),
+  });
+
+  const { data: memorizationProgress } = useQuery({
+    queryKey: ["memorization-progress", user?.id],
+    queryFn: () => fetchMemorizationProgress(user!.id),
+    enabled: Boolean(user?.id),
+  });
+
+  const { data: memorizationDue } = useQuery({
+    queryKey: ["memorization-due-count", user?.id],
+    queryFn: () => countDueMemorizationReviews(user!.id),
+    enabled: Boolean(user?.id),
+  });
 
   const pathCopy = d.learning.path;
   const recommended = nextStep(path ?? null);
@@ -211,11 +243,15 @@ function Dashboard() {
           <Card className="h-full">
             <CardContent className="pt-6">
               <Repeat2 className="size-5 text-primary" aria-hidden />
-              <h3 className="mt-3 font-display text-base font-semibold">{copy.today.review.title}</h3>
+              <h3 className="mt-3 font-display text-base font-semibold">
+                {copy.today.review.title}
+              </h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 {t("dashboard.reviewsDue", { count: dueCount ?? 0 })}
               </p>
-              <Badge variant="outline" className="mt-3">{copy.today.review.cta}</Badge>
+              <Button variant="ghost" size="sm" className="mt-3 px-0" asChild>
+                <Link to="/practice">{copy.today.review.cta}</Link>
+              </Button>
             </CardContent>
           </Card>
 
@@ -224,12 +260,12 @@ function Dashboard() {
               <Brain className="size-5 text-primary" aria-hidden />
               <h3 className="mt-3 font-display text-base font-semibold">{copy.today.weak.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {weakAreas && weakAreas.length > 0
-                  ? weakAreas[0]?.area
-                  : copy.today.weak.none}
+                {weakAreas && weakAreas.length > 0 ? weakAreas[0]?.area : copy.today.weak.none}
               </p>
 
-              <Badge variant="outline" className="mt-3">{copy.today.weak.cta}</Badge>
+              <Badge variant="outline" className="mt-3">
+                {copy.today.weak.cta}
+              </Badge>
             </CardContent>
           </Card>
 
@@ -238,11 +274,11 @@ function Dashboard() {
               <Library className="size-5 text-primary" aria-hidden />
               <h3 className="mt-3 font-display text-base font-semibold">{copy.today.path.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {recommended && recommendedMeta
-                  ? recommendedMeta.label
-                  : copy.today.path.none}
+                {recommended && recommendedMeta ? recommendedMeta.label : copy.today.path.none}
               </p>
-              <Badge variant="outline" className="mt-3">{copy.today.path.cta}</Badge>
+              <Badge variant="outline" className="mt-3">
+                {copy.today.path.cta}
+              </Badge>
             </CardContent>
           </Card>
 
@@ -265,7 +301,6 @@ function Dashboard() {
         </div>
       </section>
 
-
       <section className="mt-10" aria-labelledby="understanding">
         <div className="flex flex-wrap items-center gap-3">
           <h2 id="understanding" className="font-display text-xl font-bold">
@@ -281,19 +316,70 @@ function Dashboard() {
         </div>
       </section>
 
-      <section className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-label={copy.savedLabel}>
-        {copy.saved.map((item, index) => (
-          <Card key={item.title} className="h-full">
-            <CardContent className="pt-6">
-              <BookMarked className="size-5 text-primary" aria-hidden />
-              <h3 className="mt-3 font-display text-base font-semibold">{item.title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{item.body}</p>
-              <Button variant="ghost" size="sm" className="mt-3 px-0" asChild>
-                <Link to={SAVED_LINKS[index] ?? "/quran"}>{t("common.actions.open")}</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
+      <section
+        className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        aria-label={copy.activityLabel}
+      >
+        <Card className="h-full">
+          <CardContent className="pt-6">
+            <Library className="size-5 text-primary" aria-hidden />
+            <h3 className="mt-3 font-display text-base font-semibold">
+              {copy.memorizationCard.title}
+            </h3>
+            {memorizationProgress && memorizationProgress.some((p) => p.status === "memorized") ? (
+              <>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {copy.memorizationCard.memorizedCount.replace(
+                    "{count}",
+                    String(memorizationProgress.filter((p) => p.status === "memorized").length),
+                  )}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {copy.memorizationCard.dueCount.replace("{count}", String(memorizationDue ?? 0))}
+                </p>
+              </>
+            ) : (
+              <p className="mt-1 text-sm text-muted-foreground">{copy.memorizationCard.empty}</p>
+            )}
+            <Button variant="ghost" size="sm" className="mt-3 px-0" asChild>
+              <Link to="/memorize">{t("common.actions.open")}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="h-full">
+          <CardContent className="pt-6">
+            <BookMarked className="size-5 text-primary" aria-hidden />
+            <h3 className="mt-3 font-display text-base font-semibold">
+              {copy.bookmarksCard.title}
+            </h3>
+            {bookmarks && bookmarks.length > 0 ? (
+              <p className="mt-1 text-sm text-muted-foreground">
+                {d.bookmarks.count.replace("{count}", String(bookmarks.length))}
+              </p>
+            ) : (
+              <p className="mt-1 text-sm text-muted-foreground">{copy.bookmarksCard.empty}</p>
+            )}
+            <Button variant="ghost" size="sm" className="mt-3 px-0" asChild>
+              <Link to="/bookmarks">{t("common.actions.open")}</Link>
+            </Button>
+          </CardContent>
+        </Card>
+
+        <Card className="h-full">
+          <CardContent className="pt-6">
+            <NotebookPen className="size-5 text-primary" aria-hidden />
+            <h3 className="mt-3 font-display text-base font-semibold">{copy.notesCard.title}</h3>
+            {notes && notes.length > 0 ? (
+              <p className="mt-1 truncate text-sm text-muted-foreground">{notes[0]?.content}</p>
+            ) : (
+              <p className="mt-1 text-sm text-muted-foreground">{copy.notesCard.empty}</p>
+            )}
+            <Button variant="ghost" size="sm" className="mt-3 px-0" asChild>
+              <Link to="/notes">{t("common.actions.open")}</Link>
+            </Button>
+          </CardContent>
+        </Card>
       </section>
     </main>
   );

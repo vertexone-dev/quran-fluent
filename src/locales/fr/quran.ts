@@ -7,7 +7,7 @@ export const quran: typeof EnQuran = {
       "Parcourez par sourate, verset ou juz', avec traduction, translittération, audio et un panneau d'étude pour chaque mot.",
     typographyBadge: "Aperçu typographique",
     typographyNote:
-      "Al-Fatiha 1:1 — affiché pour prévisualiser la typographie et l'espacement de l'arabe. Le lecteur complet arrive en phase 3, une fois le service de données coraniques vérifiées connecté.",
+      "Al-Fatiha 1:1 — affiché pour prévisualiser la typographie et l'espacement de l'arabe.",
     dataTitle: "Comment les données coraniques sont traitées",
     dataIntro:
       "Chaque couche provient d'une source documentée et est stockée séparément. Des traductions ou interprétations divergentes ne sont jamais fusionnées en silence.",
@@ -42,6 +42,25 @@ export const quran: typeof EnQuran = {
     searchNote:
       "La recherche acceptera des mots courants dans votre langue d'interface — miséricorde, patience, prière, paradis, jeûne — et les reliera au vocabulaire coranique vérifié, sans se limiter à une correspondance exacte de texte.",
   },
+  reader: {
+    title: "Lire",
+    intro:
+      "Une sélection de sourates courtes et couramment mémorisées à lire, mettre en favoris, annoter et mémoriser. Le Mushaf complet arrivera dans une phase ultérieure.",
+    selectSurah: "Choisir une sourate",
+    ayahLabel: "Verset {number}",
+    actions: {
+      bookmark: "Ajouter aux favoris",
+      removeBookmark: "Retirer des favoris",
+      addNote: "Ajouter une note",
+      memorize: "Mémoriser",
+      more: "Plus d'actions",
+    },
+    loading: "Chargement de la sourate…",
+    error: {
+      title: "Impossible de charger cette sourate.",
+      retry: "Réessayer",
+    },
+  },
   word: {
     meaning: "Signification",
     root: "Racine",
@@ -69,4 +88,3 @@ export const quran: typeof EnQuran = {
     signInToSave: "Connectez-vous pour enregistrer des mots à réviser.",
   },
 };
-

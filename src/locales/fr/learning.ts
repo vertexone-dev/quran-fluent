@@ -79,8 +79,14 @@ export const learning: typeof EnLearning = {
       hint: "Je reconnais les lettres et leurs sons",
     },
     reads_slowly: { label: "Je peux lire lentement", hint: "Je déchiffre encore mot à mot" },
-    reads_quran: { label: "Je sais lire le Coran", hint: "Je lis avec fluidité, le sens m'échappe" },
-    intermediate: { label: "J'ai un niveau intermédiaire", hint: "Je maîtrise les bases grammaticales" },
+    reads_quran: {
+      label: "Je sais lire le Coran",
+      hint: "Je lis avec fluidité, le sens m'échappe",
+    },
+    intermediate: {
+      label: "J'ai un niveau intermédiaire",
+      hint: "Je maîtrise les bases grammaticales",
+    },
   },
   goals: {
     read_quran: "Apprendre à lire le Coran",
@@ -143,21 +149,44 @@ export const learning: typeof EnLearning = {
     saveError: "Nous n'avons pas pu enregistrer vos paramètres. Veuillez réessayer.",
   },
   practice: {
-    title: "Centre d'entraînement",
-    phase: "Phase 2 et suivantes",
-    intro:
-      "Des exercices courts et ciblés qui transforment vos acquis en réflexes durables.",
-    planned: [
-      "Révision du vocabulaire",
-      "Entraînement à la lecture",
-      "Entraînement à l'écoute",
-      "Quiz de grammaire",
-      "Reconnaissance des racines",
-      "Compréhension de versets",
-      "Révision de mémorisation",
-      "Entraînement au Tajwid",
-    ],
-    note: "Chaque exercice proposera plusieurs niveaux de difficulté et enregistrera des résultats qui alimentent votre progression.",
+    title: "S'entraîner",
+    intro: "Des révisions courtes et ciblées qui transforment vos acquis en réflexes durables.",
+    today: {
+      title: "Révisions du jour",
+      vocabulary: "Vocabulaire",
+      weakAreas: "Points à revoir",
+      memorization: "Mémorisation",
+      dueCount: "{count} à réviser",
+      topicsCount: "{count} sujets",
+      ayatCount: "{count} versets",
+      start: "Commencer la révision",
+    },
+    session: {
+      reveal: "Toucher pour révéler",
+      hard: "À retravailler",
+      easy: "Acquis",
+      markPracticed: "Marquer comme pratiqué",
+      weakAreaNote:
+        "Une auto-évaluation rapide — évaluez votre maîtrise une fois que vous y avez réfléchi.",
+    },
+    summary: {
+      title: "Session terminée",
+      reviewed: "Éléments révisés",
+      correct: "Corrects",
+      needsReview: "À revoir",
+      time: "Temps passé",
+      backToDashboard: "Retour au tableau de bord",
+      practiceMore: "S'entraîner davantage",
+    },
+    empty: {
+      title: "Rien à réviser pour l'instant.",
+      body: "Vous êtes à jour. Continuez à apprendre ou étudiez une sourate.",
+    },
+    error: {
+      title: "Impossible de charger la révision.",
+      retry: "Réessayer",
+    },
+    loading: "Chargement de la révision…",
   },
   placement: {
     title: "Test de niveau",
@@ -208,8 +237,7 @@ export const learning: typeof EnLearning = {
     resultTitle: "Votre point de départ recommandé",
     scoreLine: "{score} bonnes réponses sur {total}",
     reasonLabel: "Pourquoi",
-    reasonStrong:
-      "Vous avez réussi toutes les sections : votre parcours commence donc plus loin.",
+    reasonStrong: "Vous avez réussi toutes les sections : votre parcours commence donc plus loin.",
     reasonWeak: "Vous devez encore travailler : {areas}.",
     startRecommended: "Commencer le parcours recommandé",
     chooseAnother: "Choisir un autre niveau",
@@ -233,7 +261,8 @@ export const learning: typeof EnLearning = {
       },
       developing_reader: {
         label: "Lecteur en progression",
-        blurb: "Vous lisez plutôt bien : concentrez-vous sur le vocabulaire fréquent et les racines.",
+        blurb:
+          "Vous lisez plutôt bien : concentrez-vous sur le vocabulaire fréquent et les racines.",
       },
       intermediate_quranic: {
         label: "Arabe coranique intermédiaire",
@@ -308,4 +337,3 @@ export const learning: typeof EnLearning = {
     },
   },
 };
-

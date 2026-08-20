@@ -1,6 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
+import { z } from "zod";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
@@ -10,12 +11,25 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { fetchWordFrequency, saveWordToVocabulary, removeWordFromVocabulary, fetchUserVocabulary, type WordFrequency } from "@/lib/vocabulary";
+import {
+  fetchWordFrequency,
+  saveWordToVocabulary,
+  removeWordFromVocabulary,
+  fetchUserVocabulary,
+  type WordFrequency,
+} from "@/lib/vocabulary";
 import { seedVocabularyToReviews, removeVocabularyReviewItem } from "@/lib/study";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { AyahReader } from "@/components/quran/AyahReader";
+
+const searchSchema = z.object({
+  surah: z.number().int().positive().optional(),
+  ayah: z.number().int().positive().optional(),
+});
 
 export const Route = createFileRoute("/quran")({
+  validateSearch: searchSchema,
   head: () => ({
     meta: [
       { title: "Interactive Qur'an study — QuranRoots" },
@@ -42,9 +56,17 @@ function QuranPage() {
   const { d, t, locale } = useI18n();
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const navigate = useNavigate({ from: Route.fullPath });
+  const readerParams = Route.useSearch();
   const page = d.quran.page;
   const vocab = d.quran.vocabulary;
   const wordCopy = d.quran.word;
+
+  useEffect(() => {
+    if (readerParams.ayah == null) return;
+    const el = document.getElementById(`ayah-${readerParams.surah}-${readerParams.ayah}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [readerParams.surah, readerParams.ayah]);
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>(null);
@@ -65,7 +87,9 @@ function QuranPage() {
   const saveMutation = useMutation({
     mutationFn: ({ wordId, saved }: { wordId: string; saved: boolean }) => {
       if (!user) throw new Error("unauthenticated");
-      return saved ? removeWordFromVocabulary(user.id, wordId) : saveWordToVocabulary(user.id, wordId);
+      return saved
+        ? removeWordFromVocabulary(user.id, wordId)
+        : saveWordToVocabulary(user.id, wordId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["user-vocabulary"] });
@@ -113,6 +137,14 @@ function QuranPage() {
           </CardContent>
         </Card>
 
+        <div className="mt-12">
+          <AyahReader
+            surahNumber={readerParams.surah}
+            onSurahChange={(surah) => void navigate({ search: { surah }, replace: true })}
+            highlightAyah={readerParams.ayah}
+          />
+        </div>
+
         <section className="mt-12" aria-labelledby="vocabulary">
           <h2 id="vocabulary" className="font-display text-2xl font-bold">
             {vocab.title}
@@ -121,7 +153,10 @@ function QuranPage() {
 
           <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="relative max-w-sm flex-1">
-              <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Search
+                className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
               <Input
                 placeholder={vocab.searchPlaceholder}
                 value={search}
@@ -143,9 +178,7 @@ function QuranPage() {
             </div>
           </div>
 
-          {!user && (
-            <p className="mt-4 text-sm text-muted-foreground">{vocab.signInToSave}</p>
-          )}
+          {!user && <p className="mt-4 text-sm text-muted-foreground">{vocab.signInToSave}</p>}
 
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {(words ?? []).map((word) => {
@@ -153,74 +186,78 @@ function QuranPage() {
               return (
                 <Card key={word.id} className="h-full shadow-soft">
                   <CardContent className="pt-6">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="text-right" dir="rtl" lang="ar">
-                      <p className="text-quran text-2xl font-semibold">{word.word}</p>
-                      {word.transliteration && (
-                        <p className="text-sm text-muted-foreground">{word.transliteration}</p>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="text-right" dir="rtl" lang="ar">
+                        <p className="text-quran text-2xl font-semibold">{word.word}</p>
+                        {word.transliteration && (
+                          <p className="text-sm text-muted-foreground">{word.transliteration}</p>
+                        )}
+                      </div>
+                      {word.frequency_rank && (
+                        <Badge variant="outline">
+                          {t("quran.vocabulary.frequencyRank", { rank: word.frequency_rank })}
+                        </Badge>
                       )}
                     </div>
-                    {word.frequency_rank && (
-                      <Badge variant="outline">
-                        {t("quran.vocabulary.frequencyRank", { rank: word.frequency_rank })}
-                      </Badge>
-                    )}
-                  </div>
 
-                  <div className="mt-4 space-y-1 text-sm">
-                    <p>
-                      <span className="text-muted-foreground">{wordCopy.meaning}:</span>{" "}
-                      <span className="font-medium">{word.meaning}</span>
-                      {d.common.language.fr === "Français" && word.meaning_fr && (
-                        <span className="block text-xs text-muted-foreground">{word.meaning_fr}</span>
+                    <div className="mt-4 space-y-1 text-sm">
+                      <p>
+                        <span className="text-muted-foreground">{wordCopy.meaning}:</span>{" "}
+                        <span className="font-medium">{word.meaning}</span>
+                        {d.common.language.fr === "Français" && word.meaning_fr && (
+                          <span className="block text-xs text-muted-foreground">
+                            {word.meaning_fr}
+                          </span>
+                        )}
+                      </p>
+                      {word.root && (
+                        <p>
+                          <span className="text-muted-foreground">{wordCopy.root}:</span>{" "}
+                          <span className="font-medium">{word.root}</span>
+                        </p>
                       )}
-                    </p>
-                    {word.root && (
-                      <p>
-                        <span className="text-muted-foreground">{wordCopy.root}:</span>{" "}
-                        <span className="font-medium">{word.root}</span>
-                      </p>
-                    )}
-                    {word.category && (
-                      <p>
-                        <span className="text-muted-foreground">{wordCopy.type}:</span>{" "}
-                        <span className="font-medium">{wordCopy[word.category]}</span>
-                      </p>
-                    )}
-                  </div>
-
-                  {word.example_ayah && (
-                    <div className="mt-4 rounded-lg bg-muted/50 p-3">
-                      <p className="text-quran text-right text-sm" dir="rtl" lang="ar">
-                        {word.example_ayah}
-                      </p>
-                      {word.example_reference && (
-                        <p className="mt-1 text-xs text-muted-foreground">{word.example_reference}</p>
+                      {word.category && (
+                        <p>
+                          <span className="text-muted-foreground">{wordCopy.type}:</span>{" "}
+                          <span className="font-medium">{wordCopy[word.category]}</span>
+                        </p>
                       )}
                     </div>
-                  )}
 
-                  {word.occurrences && (
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      {t("quran.vocabulary.occurrences", { count: word.occurrences })}
-                    </p>
-                  )}
+                    {word.example_ayah && (
+                      <div className="mt-4 rounded-lg bg-muted/50 p-3">
+                        <p className="text-quran text-right text-sm" dir="rtl" lang="ar">
+                          {word.example_ayah}
+                        </p>
+                        {word.example_reference && (
+                          <p className="mt-1 text-xs text-muted-foreground">
+                            {word.example_reference}
+                          </p>
+                        )}
+                      </div>
+                    )}
 
-                  {user && (
-                    <Button
-                      variant={isSaved ? "outline" : "secondary"}
-                      size="sm"
-                      className="mt-4 w-full"
-                      onClick={() => handleToggle(word)}
-                      disabled={saveMutation.isPending || seedMutation.isPending}
-                    >
-                      {isSaved ? vocab.saved : vocab.save}
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+                    {word.occurrences && (
+                      <p className="mt-3 text-xs text-muted-foreground">
+                        {t("quran.vocabulary.occurrences", { count: word.occurrences })}
+                      </p>
+                    )}
+
+                    {user && (
+                      <Button
+                        variant={isSaved ? "outline" : "secondary"}
+                        size="sm"
+                        className="mt-4 w-full"
+                        onClick={() => handleToggle(word)}
+                        disabled={saveMutation.isPending || seedMutation.isPending}
+                      >
+                        {isSaved ? vocab.saved : vocab.save}
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
 
           {words && words.length === 0 && (

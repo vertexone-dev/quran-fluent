@@ -1,10 +1,10 @@
 import { test, expect } from "@playwright/test";
 
 /**
- * The verse-by-verse Qur'an reader itself is roadmap (Phase 3, per the page's
- * own copy) — /quran today is a typography preview plus the vocabulary
- * browser (covered in vocabulary.spec.ts). This spec covers the read-only
- * content that does exist.
+ * Covers the typography preview and data-architecture teaser sections of
+ * /quran. The Ayah reader itself (Surah picker, bookmark/note/memorize
+ * actions) is covered by 10-bookmarks/11-notes/12-memorization.spec.ts, and
+ * the vocabulary browser by 05-vocabulary.spec.ts.
  */
 test.describe("Qur'an page (typography preview + data architecture)", () => {
   test("shows the Bismillah typography sample and explains the data layers", async ({ page }) => {

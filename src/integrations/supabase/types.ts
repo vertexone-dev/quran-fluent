@@ -14,6 +14,76 @@ export type Database = {
   }
   public: {
     Tables: {
+      ayahs: {
+        Row: {
+          arabic_text: string
+          ayah_number: number
+          created_at: string
+          id: string
+          surah_number: number
+          translation_en: string
+          translation_fr: string
+        }
+        Insert: {
+          arabic_text: string
+          ayah_number: number
+          created_at?: string
+          id?: string
+          surah_number: number
+          translation_en: string
+          translation_fr: string
+        }
+        Update: {
+          arabic_text?: string
+          ayah_number?: number
+          created_at?: string
+          id?: string
+          surah_number?: number
+          translation_en?: string
+          translation_fr?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ayahs_surah_number_fkey"
+            columns: ["surah_number"]
+            isOneToOne: false
+            referencedRelation: "surahs"
+            referencedColumns: ["number"]
+          },
+        ]
+      }
+      bookmarks: {
+        Row: {
+          ayah_number: number
+          created_at: string
+          id: string
+          surah_number: number
+          user_id: string
+        }
+        Insert: {
+          ayah_number: number
+          created_at?: string
+          id?: string
+          surah_number: number
+          user_id: string
+        }
+        Update: {
+          ayah_number?: number
+          created_at?: string
+          id?: string
+          surah_number?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookmarks_surah_number_ayah_number_fkey"
+            columns: ["surah_number", "ayah_number"]
+            isOneToOne: false
+            referencedRelation: "ayahs"
+            referencedColumns: ["surah_number", "ayah_number"]
+          },
+        ]
+      }
       learning_path_steps: {
         Row: {
           completed_at: string | null
@@ -129,6 +199,88 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      memorization_progress: {
+        Row: {
+          ayah_number: number
+          created_at: string
+          id: string
+          memorized_at: string | null
+          started_at: string
+          status: Database["public"]["Enums"]["memorization_status"]
+          surah_number: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ayah_number: number
+          created_at?: string
+          id?: string
+          memorized_at?: string | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["memorization_status"]
+          surah_number: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ayah_number?: number
+          created_at?: string
+          id?: string
+          memorized_at?: string | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["memorization_status"]
+          surah_number?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memorization_progress_surah_number_ayah_number_fkey"
+            columns: ["surah_number", "ayah_number"]
+            isOneToOne: false
+            referencedRelation: "ayahs"
+            referencedColumns: ["surah_number", "ayah_number"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          ayah_number: number
+          content: string
+          created_at: string
+          id: string
+          surah_number: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ayah_number: number
+          content: string
+          created_at?: string
+          id?: string
+          surah_number: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ayah_number?: number
+          content?: string
+          created_at?: string
+          id?: string
+          surah_number?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_surah_number_ayah_number_fkey"
+            columns: ["surah_number", "ayah_number"]
+            isOneToOne: false
+            referencedRelation: "ayahs"
+            referencedColumns: ["surah_number", "ayah_number"]
+          },
+        ]
       }
       placement_attempts: {
         Row: {
@@ -357,6 +509,39 @@ export type Database = {
         }
         Relationships: []
       }
+      surahs: {
+        Row: {
+          ayah_count: number
+          bismillah_pre: boolean
+          created_at: string
+          name_ar: string
+          name_en: string
+          name_fr: string
+          number: number
+          revelation_type: string
+        }
+        Insert: {
+          ayah_count: number
+          bismillah_pre?: boolean
+          created_at?: string
+          name_ar: string
+          name_en: string
+          name_fr: string
+          number: number
+          revelation_type: string
+        }
+        Update: {
+          ayah_count?: number
+          bismillah_pre?: boolean
+          created_at?: string
+          name_ar?: string
+          name_en?: string
+          name_fr?: string
+          number?: number
+          revelation_type?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -525,6 +710,7 @@ export type Database = {
         | "memorize_quran"
         | "improve_vocabulary"
         | "combination"
+      memorization_status: "not_started" | "learning" | "memorized"
       path_step_status: "locked" | "available" | "in_progress" | "completed"
       placement_level:
         | "complete_beginner"
@@ -683,6 +869,7 @@ export const Constants = {
         "improve_vocabulary",
         "combination",
       ],
+      memorization_status: ["not_started", "learning", "memorized"],
       path_step_status: ["locked", "available", "in_progress", "completed"],
       placement_level: [
         "complete_beginner",

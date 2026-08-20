@@ -54,14 +54,37 @@ test.describe("daily study", () => {
       "refresh afterwards does not create a duplicate (regression: the timer " +
       "used to insert a row on every 1s tick after the session finished)",
     async ({ page }) => {
+      // The loop below now sizes itself off the queue's real length, which
+      // is driven by however much upstream specs seeded — give it more room
+      // than the global 30s default so a larger queue doesn't trip the test
+      // timeout rather than the loop's own bound.
+      test.setTimeout(60_000);
+
       const { client, userId } = await createTestUserClient();
 
       await page.goto("/daily");
-      await expect(page.getByText(/Item 1 of \d+/)).toBeVisible();
+      const totalText = await page.getByText(/Item 1 of \d+/).innerText();
+      const totalMatch = /Item 1 of (\d+)/.exec(totalText);
+      // The queue's actual size depends on how much state earlier specs in
+      // the suite have seeded into review_items/weak_areas by the time this
+      // runs (e.g. 03-placement.spec.ts's zero-score test adds its own weak
+      // areas + review items) — a fixed iteration bound drifts stale as that
+      // upstream state grows. Read the real total from "Item 1 of N" and
+      // size the loop off it, with a small buffer for cards that render
+      // additional steps (e.g. a reveal-then-rate item counts once but takes
+      // two clicks).
+      const queueSize = totalMatch ? Number(totalMatch[1]) : 20;
 
       // Work through whatever mix of review / weak-area / path-preview cards
-      // the queue contains until the "Session complete" screen appears.
-      for (let i = 0; i < 20; i++) {
+      // the queue contains until the "Session complete" screen appears. Each
+      // item costs roughly 3 loop iterations in practice: one to reveal +
+      // grade it, then one or two more spent in the 300ms fallback wait
+      // while the next card's write/refetch round-trip settles before its
+      // "Show answer" button appears. queueSize + 10 was measured to run out
+      // partway through a real (12-item) queue; sizing off that per-item
+      // cost with headroom avoids re-tuning this every time upstream specs
+      // change how much they seed.
+      for (let i = 0; i < queueSize * 4 + 10; i++) {
         if (
           await page
             .getByText("Session complete")
