@@ -60,6 +60,7 @@ export const quran: typeof EnQuran = {
       title: "Impossible de charger cette sourate.",
       retry: "Réessayer",
     },
+    translationUnavailable: "Traduction française pas encore disponible pour ce verset.",
   },
   word: {
     meaning: "Signification",

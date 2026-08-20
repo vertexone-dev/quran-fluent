@@ -45,7 +45,11 @@ export const memorization = {
   },
   toast: {
     memorized: "Marked as memorized.",
+    memorizedNoTranslation:
+      "Marked as memorized. Review reminders will start once a translation is available for this Ayah.",
     addedToReview: "Added to your review queue.",
+    addedToReviewNoTranslation:
+      "Marked as learning. Review reminders will start once a translation is available for this Ayah.",
     actionFailed: "That didn't save. Try again.",
   },
   review: {

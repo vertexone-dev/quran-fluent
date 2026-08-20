@@ -16,33 +16,43 @@ export type Database = {
     Tables: {
       ayahs: {
         Row: {
+          arabic_source_id: string | null
           arabic_text: string
           ayah_number: number
           created_at: string
           id: string
           surah_number: number
-          translation_en: string
-          translation_fr: string
+          translation_en: string | null
+          translation_fr: string | null
         }
         Insert: {
+          arabic_source_id?: string | null
           arabic_text: string
           ayah_number: number
           created_at?: string
           id?: string
           surah_number: number
-          translation_en: string
-          translation_fr: string
+          translation_en?: string | null
+          translation_fr?: string | null
         }
         Update: {
+          arabic_source_id?: string | null
           arabic_text?: string
           ayah_number?: number
           created_at?: string
           id?: string
           surah_number?: number
-          translation_en?: string
-          translation_fr?: string
+          translation_en?: string | null
+          translation_fr?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "ayahs_arabic_source_id_fkey"
+            columns: ["arabic_source_id"]
+            isOneToOne: false
+            referencedRelation: "content_sources"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "ayahs_surah_number_fkey"
             columns: ["surah_number"]
@@ -83,6 +93,69 @@ export type Database = {
             referencedColumns: ["surah_number", "ayah_number"]
           },
         ]
+      }
+      content_sources: {
+        Row: {
+          attribution_required: boolean
+          content_type: string
+          created_at: string
+          dataset_name: string
+          edition_identifier: string | null
+          id: string
+          language: string
+          legacy_interim: boolean
+          license_name: string
+          license_url: string | null
+          modification_restricted: boolean
+          notes: string | null
+          provider_name: string
+          public_domain: boolean
+          retrieved_at: string | null
+          translator: string | null
+          verification_status: string
+          version: string | null
+        }
+        Insert: {
+          attribution_required?: boolean
+          content_type: string
+          created_at?: string
+          dataset_name: string
+          edition_identifier?: string | null
+          id?: string
+          language: string
+          legacy_interim?: boolean
+          license_name: string
+          license_url?: string | null
+          modification_restricted?: boolean
+          notes?: string | null
+          provider_name: string
+          public_domain?: boolean
+          retrieved_at?: string | null
+          translator?: string | null
+          verification_status?: string
+          version?: string | null
+        }
+        Update: {
+          attribution_required?: boolean
+          content_type?: string
+          created_at?: string
+          dataset_name?: string
+          edition_identifier?: string | null
+          id?: string
+          language?: string
+          legacy_interim?: boolean
+          license_name?: string
+          license_url?: string | null
+          modification_restricted?: boolean
+          notes?: string | null
+          provider_name?: string
+          public_domain?: boolean
+          retrieved_at?: string | null
+          translator?: string | null
+          verification_status?: string
+          version?: string | null
+        }
+        Relationships: []
       }
       learning_path_steps: {
         Row: {
@@ -514,33 +587,92 @@ export type Database = {
           ayah_count: number
           bismillah_pre: boolean
           created_at: string
+          metadata_source_id: string | null
           name_ar: string
           name_en: string
-          name_fr: string
+          name_fr: string | null
           number: number
           revelation_type: string
+          transliteration: string | null
         }
         Insert: {
           ayah_count: number
           bismillah_pre?: boolean
           created_at?: string
+          metadata_source_id?: string | null
           name_ar: string
           name_en: string
-          name_fr: string
+          name_fr?: string | null
           number: number
           revelation_type: string
+          transliteration?: string | null
         }
         Update: {
           ayah_count?: number
           bismillah_pre?: boolean
           created_at?: string
+          metadata_source_id?: string | null
           name_ar?: string
           name_en?: string
-          name_fr?: string
+          name_fr?: string | null
           number?: number
           revelation_type?: string
+          transliteration?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "surahs_metadata_source_id_fkey"
+            columns: ["metadata_source_id"]
+            isOneToOne: false
+            referencedRelation: "content_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      translations: {
+        Row: {
+          created_at: string
+          id: string
+          source_id: string
+          surah_number: number
+          ayah_number: number
+          text: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          source_id: string
+          surah_number: number
+          ayah_number: number
+          text: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          source_id?: string
+          surah_number?: number
+          ayah_number?: number
+          text?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "translations_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "content_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "translations_surah_number_ayah_number_fkey"
+            columns: ["surah_number", "ayah_number"]
+            isOneToOne: false
+            referencedRelation: "ayahs"
+            referencedColumns: ["surah_number", "ayah_number"]
+          },
+        ]
       }
       user_roles: {
         Row: {

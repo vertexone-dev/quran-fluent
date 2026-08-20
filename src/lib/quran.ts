@@ -10,7 +10,15 @@ export type Surah = {
   number: number;
   name_en: string;
   name_ar: string;
-  name_fr: string;
+  /** Null until a governed French source exists for this Surah's display
+   * name (see the Phase 2A transliteration migration) — never populate
+   * this with transliteration and call it French. Fall back to
+   * `transliteration`, not an invented translation. */
+  name_fr: string | null;
+  /** Language-neutral romanized name (e.g. "Al-Faatiha"), sourced from
+   * Tanzil's own metadata — not translated content in any language. Safe
+   * as a display fallback when name_fr is null. */
+  transliteration: string | null;
   ayah_count: number;
   revelation_type: string;
   /** True when recitation opens with a Bismillah that is NOT itself a
@@ -24,8 +32,11 @@ export type Ayah = {
   surah_number: number;
   ayah_number: number;
   arabic_text: string;
-  translation_en: string;
-  translation_fr: string;
+  /** Null until EN/FR translations are imported (Phase 2B) for this Ayah.
+   * Never invent a translation — render an explicit "not available yet"
+   * state instead. See ayahTranslation(). */
+  translation_en: string | null;
+  translation_fr: string | null;
 };
 
 export async function fetchSurahs(signal?: AbortSignal): Promise<Surah[]> {
@@ -87,13 +98,32 @@ export async function fetchAyah(surahNumber: number, ayahNumber: number): Promis
   return data;
 }
 
-export function surahName(surah: Pick<Surah, "name_en" | "name_fr">, locale: Locale): string {
-  return locale === "fr" ? surah.name_fr : surah.name_en;
+/**
+ * Always returns a real, displayable string — never null, never the
+ * literal text "null". French falls back to the language-neutral
+ * transliteration (not an invented translation) when no governed French
+ * name exists yet for this Surah, then to the English name as a last
+ * resort. name_en itself is never null.
+ */
+export function surahName(
+  surah: Pick<Surah, "name_en" | "name_fr" | "transliteration">,
+  locale: Locale,
+): string {
+  if (locale === "fr") return surah.name_fr ?? surah.transliteration ?? surah.name_en;
+  return surah.name_en;
 }
 
+/**
+ * Returns the Ayah's translation in the requested locale, or null if it
+ * hasn't been imported yet (Phase 2B) — deliberately does NOT fall back to
+ * the other language's text, since silently showing English under a French
+ * UI (or vice versa) without saying so would misattribute it. Callers must
+ * render an explicit localized "translation not available" state for null
+ * rather than leaving a blank or showing the literal word "null".
+ */
 export function ayahTranslation(
   ayah: Pick<Ayah, "translation_en" | "translation_fr">,
   locale: Locale,
-): string {
+): string | null {
   return locale === "fr" ? ayah.translation_fr : ayah.translation_en;
 }

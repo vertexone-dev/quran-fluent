@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Locale } from "@/lib/i18n";
 import { localDate, type ReviewItem } from "@/lib/study";
-import type { Ayah, Surah } from "@/lib/quran";
+import { ayahTranslation, type Ayah, type Surah } from "@/lib/quran";
 
 export type MemorizationStatus = "not_started" | "learning" | "memorized";
 
@@ -55,20 +55,33 @@ export async function fetchAyahProgress(
  * the existing review engine (src/lib/study.ts / review_items) rather than
  * a separate scheduling system. ignoreDuplicates so a re-add doesn't reset
  * an item that's already partway through its review interval.
+ *
+ * review_items.back is NOT NULL — a flashcard needs a "back" to quiz
+ * against, and this app never invents a translation to fill that gap. If
+ * this Ayah has no translation yet in the active locale (true for every
+ * newly-imported, not-yet-translated Ayah until Phase 2B), review
+ * scheduling is skipped rather than attempted with bad data; callers use
+ * the returned boolean to tell the learner why. Memorization *status*
+ * tracking (startLearning / markMemorized below) never depends on this —
+ * only the spaced-repetition flashcard queue does.
  */
-async function scheduleReview(userId: string, ayah: Ayah, locale: Locale) {
+async function scheduleReview(userId: string, ayah: Ayah, locale: Locale): Promise<boolean> {
+  const back = ayahTranslation(ayah, locale);
+  if (!back) return false;
+
   const { error } = await supabase.from("review_items").upsert(
     {
       user_id: userId,
       item_type: "ayah",
       item_key: ayahItemKey(ayah.surah_number, ayah.ayah_number),
       front: ayah.arabic_text,
-      back: locale === "fr" ? ayah.translation_fr : ayah.translation_en,
+      back,
       context: `${ayah.surah_number}:${ayah.ayah_number}`,
     },
     { onConflict: "user_id, item_key", ignoreDuplicates: true },
   );
   if (error) throw error;
+  return true;
 }
 
 export async function startLearning(
@@ -85,13 +98,38 @@ export async function startLearning(
   if (error) throw error;
 }
 
-export async function addToReview(userId: string, ayah: Ayah, locale: Locale): Promise<void> {
-  await scheduleReview(userId, ayah, locale);
+/**
+ * `reviewScheduled` tells the caller whether the spaced-repetition
+ * flashcard was actually queued — false only means this Ayah has no
+ * translation yet in the active locale, not that anything failed. The
+ * status/progress change itself always happens regardless: memorization
+ * tracking is usable before translations exist, review scheduling isn't.
+ *
+ * scheduleReview runs before the status upsert (not after): callers observe
+ * "learning"/"memorized" by polling memorization_progress directly, and
+ * that must remain a reliable signal that review scheduling has already
+ * settled — reversing the order would let a status poll resolve while the
+ * review_items write is still in flight.
+ */
+export async function addToReview(
+  userId: string,
+  ayah: Ayah,
+  locale: Locale,
+): Promise<{ reviewScheduled: boolean }> {
+  const reviewScheduled = await scheduleReview(userId, ayah, locale);
   await startLearning(userId, ayah.surah_number, ayah.ayah_number);
+  return { reviewScheduled };
 }
 
-export async function markMemorized(userId: string, ayah: Ayah, locale: Locale): Promise<void> {
-  await scheduleReview(userId, ayah, locale);
+/** Same ordering rationale as addToReview above: schedule the review first,
+ * so a poll observing status = "memorized" is a reliable signal that
+ * review_items has already settled, not a race against it. */
+export async function markMemorized(
+  userId: string,
+  ayah: Ayah,
+  locale: Locale,
+): Promise<{ reviewScheduled: boolean }> {
+  const reviewScheduled = await scheduleReview(userId, ayah, locale);
   const { error } = await supabase.from("memorization_progress").upsert(
     {
       user_id: userId,
@@ -103,6 +141,7 @@ export async function markMemorized(userId: string, ayah: Ayah, locale: Locale):
     { onConflict: "user_id, surah_number, ayah_number" },
   );
   if (error) throw error;
+  return { reviewScheduled };
 }
 
 /** Aggregate per-surah memorization counts against each surah's real ayah_count. */

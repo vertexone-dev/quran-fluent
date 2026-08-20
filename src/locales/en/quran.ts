@@ -51,6 +51,7 @@ export const quran = {
       title: "Couldn't load this Surah.",
       retry: "Retry",
     },
+    translationUnavailable: "English translation not available yet for this Ayah.",
   },
   word: {
     meaning: "Meaning",

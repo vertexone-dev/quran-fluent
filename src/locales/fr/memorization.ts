@@ -49,7 +49,11 @@ export const memorization: typeof EnMemorization = {
   },
   toast: {
     memorized: "Marqué comme mémorisé.",
+    memorizedNoTranslation:
+      "Marqué comme mémorisé. Les rappels de révision commenceront dès qu'une traduction sera disponible pour ce verset.",
     addedToReview: "Ajouté à votre file de révision.",
+    addedToReviewNoTranslation:
+      "Marqué en apprentissage. Les rappels de révision commenceront dès qu'une traduction sera disponible pour ce verset.",
     actionFailed: "Échec de l'enregistrement. Réessayez.",
   },
   review: {

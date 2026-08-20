@@ -19,7 +19,15 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import { fetchAyahs, fetchSurah, fetchSurahs, surahName, type Ayah, type Surah } from "@/lib/quran";
+import {
+  ayahTranslation,
+  fetchAyahs,
+  fetchSurah,
+  fetchSurahs,
+  surahName,
+  type Ayah,
+  type Surah,
+} from "@/lib/quran";
 import {
   addToReview,
   countDueMemorizationReviews,
@@ -275,16 +283,16 @@ function MemorizeSession({
   });
   const markMemorizedMutation = useMutation({
     mutationFn: () => markMemorized(userId, current!, locale),
-    onSuccess: () => {
-      toast.success(m.toast.memorized);
+    onSuccess: ({ reviewScheduled }) => {
+      toast.success(reviewScheduled ? m.toast.memorized : m.toast.memorizedNoTranslation);
       invalidateProgress();
     },
     onError: () => toast.error(m.toast.actionFailed),
   });
   const addToReviewMutation = useMutation({
     mutationFn: () => addToReview(userId, current!, locale),
-    onSuccess: () => {
-      toast.success(m.toast.addedToReview);
+    onSuccess: ({ reviewScheduled }) => {
+      toast.success(reviewScheduled ? m.toast.addedToReview : m.toast.addedToReviewNoTranslation);
       invalidateProgress();
     },
     onError: () => toast.error(m.toast.actionFailed),
@@ -341,7 +349,7 @@ function MemorizeSession({
               )}
               {showTranslation ? (
                 <p className="text-sm text-muted-foreground">
-                  {locale === "fr" ? current.translation_fr : current.translation_en}
+                  {ayahTranslation(current, locale) ?? d.quran.reader.translationUnavailable}
                 </p>
               ) : (
                 <Button variant="ghost" size="sm" onClick={() => setShowTranslation(true)}>
