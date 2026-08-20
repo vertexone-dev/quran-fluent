@@ -16,7 +16,12 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import { fetchAyahs, fetchBismillahText, fetchSurahs, surahName } from "@/lib/quran";
+import {
+  fetchAyahsWithTranslations,
+  fetchBismillahText,
+  fetchSurahs,
+  surahName,
+} from "@/lib/quran";
 import { addBookmark, fetchBookmarkedAyahKeys, removeBookmark } from "@/lib/bookmarks";
 import { AyahCard } from "./AyahCard";
 import { NoteDialog } from "./NoteDialog";
@@ -58,8 +63,8 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
     isError: ayahsError,
     refetch: refetchAyahs,
   } = useQuery({
-    queryKey: ["ayahs", activeSurah],
-    queryFn: ({ signal }) => fetchAyahs(activeSurah!, signal),
+    queryKey: ["ayahs", activeSurah, locale],
+    queryFn: ({ signal }) => fetchAyahsWithTranslations(activeSurah!, locale, signal),
     enabled: activeSurah != null,
   });
 
@@ -168,7 +173,6 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
                 key={ayah.id}
                 ayah={ayah}
                 surahLabel={`${surahName(activeSurahRow, locale)} ${ayah.surah_number}:${ayah.ayah_number}`}
-                locale={locale}
                 highlighted={highlightAyah === ayah.ayah_number}
                 actions={
                   user && (

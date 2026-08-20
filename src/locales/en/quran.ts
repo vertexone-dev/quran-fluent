@@ -28,7 +28,7 @@ export const quran = {
     translationsTitle: "Translations by language",
     translationsIntro:
       "Each language reads the Qur'an through its own verified translation, displayed with the translator's name. Translations are never machine-generated.",
-    translationEn: "English — Saheeh International",
+    translationEn: "English — Marmaduke Pickthall (Project Gutenberg eBook #16955)",
     translationFr: "French — Muhammad Hamidullah",
     searchNote:
       "Search will accept everyday words in your interface language — such as mercy, patience or prayer — and map them to verified Qur'anic vocabulary rather than matching raw text.",
@@ -52,6 +52,12 @@ export const quran = {
       retry: "Retry",
     },
     translationUnavailable: "English translation not available yet for this Ayah.",
+    attribution: {
+      label: "Translator: {translator}",
+      detailsAriaLabel: "Translation source details",
+      details:
+        "Marmaduke Pickthall — Project Gutenberg eBook #16955 digital edition. Public domain in the United States. Not represented as an exact reproduction of the 1930 first edition.",
+    },
   },
   word: {
     meaning: "Meaning",

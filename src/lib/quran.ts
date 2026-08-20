@@ -1,5 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Locale } from "@/lib/i18n";
+import {
+  fetchTranslationsForSurah,
+  resolveVerifiedEnglishSource,
+  type TranslationSource,
+} from "@/lib/translations";
 
 /**
  * A curated V1 bootstrap set (Al-Fatiha plus a handful of short, commonly
@@ -126,4 +131,59 @@ export function ayahTranslation(
   locale: Locale,
 ): string | null {
   return locale === "fr" ? ayah.translation_fr : ayah.translation_en;
+}
+
+/**
+ * An Ayah plus the translation actually resolved for one active locale.
+ * `translation_en`/`translation_fr` (the legacy columns) are always kept
+ * untouched on the base Ayah — this only adds derived fields on top.
+ */
+export type ResolvedAyah = Ayah & {
+  /** The text to display for the active locale, or null if nothing is
+   * available in that locale yet (render an explicit "unavailable" state,
+   * never a blank or the literal word "null"). */
+  resolvedTranslation: string | null;
+  /** Set only when resolvedTranslation came from a verified normalized
+   * source (public.translations) — drives the in-UI attribution. Null for
+   * legacy-column text and for "unavailable". */
+  translationSource: TranslationSource | null;
+};
+
+/**
+ * Batched, locale-aware translation resolution for a whole Surah: one query
+ * for the canonical Ayat, at most one more for normalized translations —
+ * never one request per Ayah, regardless of Surah length.
+ *
+ * Fallback chain (never crosses languages):
+ *   English: verified normalized Pickthall -> legacy ayahs.translation_en -> unavailable
+ *   French:  legacy ayahs.translation_fr -> unavailable (French governed
+ *            translations don't exist yet — this must never show English
+ *            text under a French UI)
+ */
+export async function fetchAyahsWithTranslations(
+  surahNumber: number,
+  locale: Locale,
+  signal?: AbortSignal,
+): Promise<ResolvedAyah[]> {
+  const ayahs = await fetchAyahs(surahNumber, signal);
+
+  if (locale !== "en") {
+    return ayahs.map((ayah) => ({
+      ...ayah,
+      resolvedTranslation: ayahTranslation(ayah, locale),
+      translationSource: null,
+    }));
+  }
+
+  const source = await resolveVerifiedEnglishSource();
+  const normalized = source
+    ? await fetchTranslationsForSurah(surahNumber, source.id, signal)
+    : new Map<number, string>();
+
+  return ayahs.map((ayah) => {
+    const normalizedText = normalized.get(ayah.ayah_number);
+    return normalizedText
+      ? { ...ayah, resolvedTranslation: normalizedText, translationSource: source }
+      : { ...ayah, resolvedTranslation: ayahTranslation(ayah, locale), translationSource: null };
+  });
 }

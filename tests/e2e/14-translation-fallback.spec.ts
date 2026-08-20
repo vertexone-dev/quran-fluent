@@ -4,17 +4,20 @@ import { createTestUserClient } from "./utils/db";
 
 /**
  * Covers the NULL-translation compatibility patch: newly imported Ayat
- * (Phase 2A's canonical Arabic import) have no EN/FR translation until
- * Phase 2B, and the app must handle that gracefully rather than crashing,
- * rendering the literal word "null", or silently failing writes.
+ * (Phase 2A's canonical Arabic import) have no EN/FR translation until a
+ * governed source is imported, and the app must handle that gracefully
+ * rather than crashing, rendering the literal word "null", or silently
+ * failing writes.
  *
- * No real translation-less Ayah exists yet (the full import hasn't been
- * applied). Route interception rewrites the /rest/v1/ayahs response for one
- * real bootstrap Ayah (Al-Kawthar 108:1, otherwise untouched by every other
- * spec) to null out its translation_en/translation_fr for the duration of
- * each test — the underlying row is real, so writes that reference it
- * (bookmarks, notes, review_items) hit real foreign keys and really
- * persist; only what the UI *displays* for that one Ayah is faked.
+ * No real translation-less Ayah exists for English any more — governed
+ * Pickthall (Phase 2B) now covers all 6,236 Ayat. Route interception
+ * simulates the "nothing available" case for one real bootstrap Ayah
+ * (Al-Kawthar 108:1, otherwise untouched by every other spec) on BOTH
+ * fetch paths the app now reads — legacy /rest/v1/ayahs (translation_en/fr)
+ * and normalized /rest/v1/translations (the governed Pickthall row) — for
+ * the duration of each test. The underlying rows are real, so writes that
+ * reference this Ayah (bookmarks, notes, review_items) hit real foreign
+ * keys and really persist; only what the UI *displays* is faked.
  */
 async function interceptAyah108WithNullTranslations(page: Page) {
   await page.route("**/rest/v1/ayahs*", async (route) => {
@@ -34,6 +37,24 @@ async function interceptAyah108WithNullTranslations(page: Page) {
       // (e.g. a fast re-render cancels an in-flight fetch) before this
       // handler finishes reading it — fall through to the real response
       // rather than fail the whole test over an unrelated race.
+      await route.continue();
+    }
+  });
+  await page.route("**/rest/v1/translations*", async (route) => {
+    // Only touch the Surah-108 request — this query selects just
+    // ayah_number/text (surah_number isn't in the payload, since it's
+    // already a query filter, not a selected column), so the URL itself is
+    // the only place to confirm which Surah this response is for.
+    if (!route.request().url().includes("surah_number=eq.108")) {
+      await route.continue();
+      return;
+    }
+    try {
+      const response = await route.fetch();
+      const body = await response.json();
+      const rewritten = Array.isArray(body) ? body.filter((row) => row.ayah_number !== 1) : body;
+      await route.fulfill({ response, json: rewritten });
+    } catch {
       await route.continue();
     }
   });

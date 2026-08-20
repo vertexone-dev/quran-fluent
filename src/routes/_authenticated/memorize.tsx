@@ -20,12 +20,11 @@ import {
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import {
-  ayahTranslation,
-  fetchAyahs,
+  fetchAyahsWithTranslations,
   fetchSurah,
   fetchSurahs,
   surahName,
-  type Ayah,
+  type ResolvedAyah,
   type Surah,
 } from "@/lib/quran";
 import {
@@ -236,8 +235,8 @@ function MemorizeSession({
     isError,
     refetch,
   } = useQuery({
-    queryKey: ["ayahs", surahNumber],
-    queryFn: ({ signal }) => fetchAyahs(surahNumber, signal),
+    queryKey: ["ayahs", surahNumber, locale],
+    queryFn: ({ signal }) => fetchAyahsWithTranslations(surahNumber, locale, signal),
   });
   const { data: progress } = useQuery({
     queryKey: ["memorization-progress", userId],
@@ -260,7 +259,7 @@ function MemorizeSession({
     setRepeatCount(0);
   }, [index]);
 
-  const current: Ayah | undefined = ayahs?.[index];
+  const current: ResolvedAyah | undefined = ayahs?.[index];
   const currentProgress = useMemo<MemorizationProgress | undefined>(
     () =>
       progress?.find(
@@ -282,7 +281,7 @@ function MemorizeSession({
     onError: () => toast.error(m.toast.actionFailed),
   });
   const markMemorizedMutation = useMutation({
-    mutationFn: () => markMemorized(userId, current!, locale),
+    mutationFn: () => markMemorized(userId, current!),
     onSuccess: ({ reviewScheduled }) => {
       toast.success(reviewScheduled ? m.toast.memorized : m.toast.memorizedNoTranslation);
       invalidateProgress();
@@ -290,7 +289,7 @@ function MemorizeSession({
     onError: () => toast.error(m.toast.actionFailed),
   });
   const addToReviewMutation = useMutation({
-    mutationFn: () => addToReview(userId, current!, locale),
+    mutationFn: () => addToReview(userId, current!),
     onSuccess: ({ reviewScheduled }) => {
       toast.success(reviewScheduled ? m.toast.addedToReview : m.toast.addedToReviewNoTranslation);
       invalidateProgress();
@@ -348,9 +347,19 @@ function MemorizeSession({
                 </Button>
               )}
               {showTranslation ? (
-                <p className="text-sm text-muted-foreground">
-                  {ayahTranslation(current, locale) ?? d.quran.reader.translationUnavailable}
-                </p>
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    {current.resolvedTranslation ?? d.quran.reader.translationUnavailable}
+                  </p>
+                  {current.translationSource && (
+                    <p className="mt-1 text-xs text-muted-foreground/60">
+                      {d.quran.reader.attribution.label.replace(
+                        "{translator}",
+                        current.translationSource.translator,
+                      )}
+                    </p>
+                  )}
+                </div>
               ) : (
                 <Button variant="ghost" size="sm" onClick={() => setShowTranslation(true)}>
                   <Eye className="size-4" aria-hidden />

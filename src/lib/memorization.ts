@@ -1,7 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Locale } from "@/lib/i18n";
 import { localDate, type ReviewItem } from "@/lib/study";
-import { ayahTranslation, type Ayah, type Surah } from "@/lib/quran";
+import type { ResolvedAyah, Surah } from "@/lib/quran";
 
 export type MemorizationStatus = "not_started" | "learning" | "memorized";
 
@@ -56,17 +55,22 @@ export async function fetchAyahProgress(
  * a separate scheduling system. ignoreDuplicates so a re-add doesn't reset
  * an item that's already partway through its review interval.
  *
+ * `ayah.resolvedTranslation` is whatever the learner actually sees for the
+ * active locale (verified normalized Pickthall when available, else the
+ * legacy column, else null) — see fetchAyahsWithTranslations. Using it here
+ * rather than re-deriving from locale keeps the flashcard's "back" always
+ * in sync with what was on screen when the learner acted.
+ *
  * review_items.back is NOT NULL — a flashcard needs a "back" to quiz
  * against, and this app never invents a translation to fill that gap. If
- * this Ayah has no translation yet in the active locale (true for every
- * newly-imported, not-yet-translated Ayah until Phase 2B), review
- * scheduling is skipped rather than attempted with bad data; callers use
- * the returned boolean to tell the learner why. Memorization *status*
- * tracking (startLearning / markMemorized below) never depends on this —
- * only the spaced-repetition flashcard queue does.
+ * this Ayah has no translation yet in the active locale, review scheduling
+ * is skipped rather than attempted with bad data; callers use the returned
+ * boolean to tell the learner why. Memorization *status* tracking
+ * (startLearning / markMemorized below) never depends on this — only the
+ * spaced-repetition flashcard queue does.
  */
-async function scheduleReview(userId: string, ayah: Ayah, locale: Locale): Promise<boolean> {
-  const back = ayahTranslation(ayah, locale);
+async function scheduleReview(userId: string, ayah: ResolvedAyah): Promise<boolean> {
+  const back = ayah.resolvedTranslation;
   if (!back) return false;
 
   const { error } = await supabase.from("review_items").upsert(
@@ -113,10 +117,9 @@ export async function startLearning(
  */
 export async function addToReview(
   userId: string,
-  ayah: Ayah,
-  locale: Locale,
+  ayah: ResolvedAyah,
 ): Promise<{ reviewScheduled: boolean }> {
-  const reviewScheduled = await scheduleReview(userId, ayah, locale);
+  const reviewScheduled = await scheduleReview(userId, ayah);
   await startLearning(userId, ayah.surah_number, ayah.ayah_number);
   return { reviewScheduled };
 }
@@ -126,10 +129,9 @@ export async function addToReview(
  * review_items has already settled, not a race against it. */
 export async function markMemorized(
   userId: string,
-  ayah: Ayah,
-  locale: Locale,
+  ayah: ResolvedAyah,
 ): Promise<{ reviewScheduled: boolean }> {
-  const reviewScheduled = await scheduleReview(userId, ayah, locale);
+  const reviewScheduled = await scheduleReview(userId, ayah);
   const { error } = await supabase.from("memorization_progress").upsert(
     {
       user_id: userId,

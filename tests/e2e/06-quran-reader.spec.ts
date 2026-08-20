@@ -19,7 +19,9 @@ test.describe("Qur'an page (typography preview + data architecture)", () => {
     await expect(page.getByText("Translations", { exact: true })).toBeVisible();
     await expect(page.getByText("Tafsir", { exact: true })).toBeVisible();
 
-    await expect(page.getByText("English — Saheeh International")).toBeVisible();
+    await expect(
+      page.getByText("English — Marmaduke Pickthall (Project Gutenberg eBook #16955)"),
+    ).toBeVisible();
     await expect(page.getByText("French — Muhammad Hamidullah")).toBeVisible();
   });
 

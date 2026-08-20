@@ -35,30 +35,102 @@ test.describe("full 114-surah dataset", () => {
     }
   });
 
-  test("shows the translation-unavailable fallback for a real new Ayah, and never the literal word null", async ({
+  test("English reader shows the normalized governed Pickthall translation on a non-bootstrap Ayah", async ({
     page,
   }) => {
-    await page.goto("/quran?surah=2");
-    await expect(
-      page.getByText("English translation not available yet for this Ayah.").first(),
-    ).toBeVisible();
+    await page.goto("/quran?surah=18");
+    // Al-Kahf 18:1's Pickthall wording — asserted against the actual live
+    // public.translations row rather than hand-typed, per this project's
+    // standing rule against hand-transcribing translation text for
+    // comparison.
+    const { client } = await createTestUserClient();
+    const { data: source } = await client
+      .from("content_sources")
+      .select("id")
+      .eq("content_type", "translation")
+      .eq("language", "en")
+      .eq("translator", "Marmaduke Pickthall")
+      .eq("edition_identifier", "pickthall-gutenberg-16955")
+      .single();
+    const { data: translation } = await client
+      .from("translations")
+      .select("text")
+      .eq("source_id", source!.id)
+      .eq("surah_number", 18)
+      .eq("ayah_number", 1)
+      .single();
 
+    await expect(page.getByText(translation!.text)).toBeVisible();
     const bodyText = await page.locator("main").innerText();
     expect(bodyText).not.toMatch(/\bnull\b/);
-  });
-
-  test("existing translated bootstrap Ayah still shows its real translation (regression)", async ({
-    page,
-  }) => {
-    await page.goto("/quran?surah=1");
-    await expect(page.getByText(/In the name of Allah/)).toBeVisible();
-    const bodyText = await page.locator("main").innerText();
     expect(bodyText).not.toContain("translation not available yet");
   });
 
-  test("bookmarks, notes and memorization all work on a real Arabic-only Ayah; review scheduling gracefully skips", async ({
+  test("English bootstrap Ayah prefers the normalized governed Pickthall translation over the legacy Sahih International text", async ({
     page,
   }) => {
+    await page.goto("/quran?surah=1");
+    // Pickthall renders 1:4 as "Master of the Day of Judgment," — the
+    // legacy bootstrap column instead holds Sahih International's "Sovereign
+    // of the Day of Recompense." Seeing the former (not the latter) proves
+    // the reader now reads public.translations, not ayahs.translation_en,
+    // even for Ayat the legacy column also covers.
+    await expect(page.getByText("Master of the Day of Judgment,")).toBeVisible();
+    await expect(page.getByText("Sovereign of the Day of Recompense.")).not.toBeVisible();
+
+    const bodyText = await page.locator("main").innerText();
+    expect(bodyText).not.toMatch(/\bnull\b/);
+    expect(bodyText).not.toContain("translation not available yet");
+  });
+
+  test("verified-source attribution is shown and its full details are discoverable, without claiming the exact 1930 first edition", async ({
+    page,
+  }) => {
+    await page.goto("/quran?surah=1");
+    const trigger = page.getByRole("button", { name: "Translator: Marmaduke Pickthall" }).first();
+    await expect(trigger).toBeVisible();
+    await trigger.click();
+    await expect(page.getByText(/Project Gutenberg eBook #16955 digital edition/)).toBeVisible();
+    await expect(page.getByText(/exact reproduction of the 1930 first edition/)).toBeVisible();
+  });
+
+  test("French still uses its legacy fallback and never leaks the English Pickthall translation", async ({
+    page,
+  }) => {
+    const { client, userId } = await createTestUserClient();
+    await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
+
+    // Surah 1 (bootstrap) has a real legacy translation_fr — must still show
+    // it, not the English Pickthall text and not the "unavailable" state.
+    await page.goto("/quran?surah=1");
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(page.getByText("Master of the Day of Judgment,")).not.toBeVisible();
+    await expect(page.getByText("Traduction française pas encore disponible")).not.toBeVisible();
+
+    // Surah 2 (non-bootstrap) has no governed French yet — must show the
+    // explicit French "unavailable" fallback, real live data, no mocking —
+    // and never fall back to showing the English Pickthall text instead.
+    await page.goto("/quran?surah=2");
+    await expect(
+      page.getByText("Traduction française pas encore disponible pour ce verset.").first(),
+    ).toBeVisible();
+    await expect(page.getByText("Alif. Lam. Mim.")).not.toBeVisible();
+
+    const bodyText = await page.locator("main").innerText();
+    expect(bodyText).not.toMatch(/\bnull\b/);
+
+    await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+  });
+
+  test("bookmarks, notes and memorization all work on a real Ayah; French review scheduling gracefully skips (no governed French yet)", async ({
+    page,
+  }) => {
+    // Al-Fil (105) now has a governed Pickthall translation like every
+    // other Surah, so it's no longer "Arabic-only" for English — this test
+    // switches to French for the memorization/review-scheduling portion,
+    // since French genuinely has no governed translation for any
+    // non-bootstrap Surah yet, and that's the real "no translation in the
+    // active locale" case this test exists to cover.
     const { client, userId } = await createTestUserClient();
     await client.from("bookmarks").delete().eq("user_id", userId).eq("surah_number", 105);
     await client.from("notes").delete().eq("user_id", userId).eq("surah_number", 105);
@@ -82,7 +154,7 @@ test.describe("full 114-surah dataset", () => {
 
     await card.getByRole("button", { name: "Add Note" }).click();
     const dialog = page.getByRole("dialog");
-    await dialog.getByRole("textbox").fill("Note on a real Arabic-only Ayah (105:1).");
+    await dialog.getByRole("textbox").fill("Note on a real Ayah (105:1).");
     await Promise.all([
       page.waitForResponse(
         (res) => res.url().includes("/rest/v1/notes") && res.request().method() === "POST",
@@ -113,12 +185,13 @@ test.describe("full 114-surah dataset", () => {
       })
       .toBe(1);
 
+    await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
     await page.goto("/memorize?surah=105&ayah=1");
-    await expect(page.getByText("Ayah 1")).toBeVisible();
-    await page.getByRole("button", { name: "Mark as memorized" }).click();
+    await expect(page.getByText("Verset 1")).toBeVisible();
+    await page.getByRole("button", { name: "Marquer comme mémorisé" }).click();
     await expect(
       page.getByText(
-        "Marked as memorized. Review reminders will start once a translation is available for this Ayah.",
+        "Marqué comme mémorisé. Les rappels de révision commenceront dès qu'une traduction sera disponible pour ce verset.",
       ),
     ).toBeVisible();
 
@@ -142,6 +215,58 @@ test.describe("full 114-surah dataset", () => {
       .eq("item_type", "ayah")
       .eq("item_key", "ayah:105:1");
     expect(reviewCount).toBe(0);
+
+    await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+  });
+
+  test("review_items.back for an English Ayah contains the normalized Pickthall translation", async ({
+    page,
+  }) => {
+    const { client, userId } = await createTestUserClient();
+    await client
+      .from("memorization_progress")
+      .delete()
+      .eq("user_id", userId)
+      .eq("surah_number", 105);
+    await client
+      .from("review_items")
+      .delete()
+      .eq("user_id", userId)
+      .eq("item_type", "ayah")
+      .eq("item_key", "ayah:105:1");
+
+    const { data: source } = await client
+      .from("content_sources")
+      .select("id")
+      .eq("content_type", "translation")
+      .eq("language", "en")
+      .eq("translator", "Marmaduke Pickthall")
+      .eq("edition_identifier", "pickthall-gutenberg-16955")
+      .single();
+    const { data: translation } = await client
+      .from("translations")
+      .select("text")
+      .eq("source_id", source!.id)
+      .eq("surah_number", 105)
+      .eq("ayah_number", 1)
+      .single();
+
+    await page.goto("/memorize?surah=105&ayah=1");
+    await page.getByRole("button", { name: "Mark as memorized" }).click();
+    await expect(page.getByText("Marked as memorized.", { exact: true })).toBeVisible();
+
+    await expect
+      .poll(async () => {
+        const { data } = await client
+          .from("review_items")
+          .select("back")
+          .eq("user_id", userId)
+          .eq("item_type", "ayah")
+          .eq("item_key", "ayah:105:1")
+          .maybeSingle();
+        return data?.back;
+      })
+      .toBe(translation!.text);
   });
 
   test("EN/FR UI stays stable when reading a non-bootstrap Surah", async ({ page }) => {

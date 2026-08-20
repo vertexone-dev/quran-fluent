@@ -37,7 +37,7 @@ export const quran: typeof EnQuran = {
     translationsTitle: "Traductions par langue",
     translationsIntro:
       "Chaque langue lit le Coran à travers sa propre traduction vérifiée, affichée avec le nom du traducteur. Aucune traduction n'est générée automatiquement.",
-    translationEn: "Anglais — Saheeh International",
+    translationEn: "Anglais — Marmaduke Pickthall (Project Gutenberg eBook #16955)",
     translationFr: "Français — Muhammad Hamidullah",
     searchNote:
       "La recherche acceptera des mots courants dans votre langue d'interface — miséricorde, patience, prière, paradis, jeûne — et les reliera au vocabulaire coranique vérifié, sans se limiter à une correspondance exacte de texte.",
@@ -61,6 +61,12 @@ export const quran: typeof EnQuran = {
       retry: "Réessayer",
     },
     translationUnavailable: "Traduction française pas encore disponible pour ce verset.",
+    attribution: {
+      label: "Traducteur : {translator}",
+      detailsAriaLabel: "Détails de la source de traduction",
+      details:
+        "Marmaduke Pickthall — édition numérique Project Gutenberg eBook #16955. Domaine public aux États-Unis. Non présentée comme une reproduction exacte de la première édition de 1930.",
+    },
   },
   word: {
     meaning: "Signification",

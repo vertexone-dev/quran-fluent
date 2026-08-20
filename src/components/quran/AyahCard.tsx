@@ -1,24 +1,25 @@
 import type { ReactNode } from "react";
+import { Info } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import type { Locale } from "@/lib/i18n";
 import { useI18n } from "@/lib/i18n";
-import { ayahTranslation, type Ayah } from "@/lib/quran";
+import type { ResolvedAyah } from "@/lib/quran";
 
 type AyahCardProps = {
-  ayah: Ayah;
+  ayah: ResolvedAyah;
   surahLabel: string;
-  locale: Locale;
   highlighted?: boolean;
   actions?: ReactNode;
 };
 
 /** Shared ayah display: reader, bookmarks and notes all render the same card. */
-export function AyahCard({ ayah, surahLabel, locale, highlighted, actions }: AyahCardProps) {
+export function AyahCard({ ayah, surahLabel, highlighted, actions }: AyahCardProps) {
   const { d } = useI18n();
-  const translation = ayahTranslation(ayah, locale);
+  const r = d.quran.reader;
+  const translation = ayah.resolvedTranslation;
   return (
     <Card
       id={`ayah-${ayah.surah_number}-${ayah.ayah_number}`}
@@ -39,8 +40,27 @@ export function AyahCard({ ayah, surahLabel, locale, highlighted, actions }: Aya
             translation ? "text-muted-foreground" : "italic text-muted-foreground/70",
           )}
         >
-          {translation ?? d.quran.reader.translationUnavailable}
+          {translation ?? r.translationUnavailable}
         </p>
+        {ayah.translationSource && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground"
+              >
+                <Info className="size-3" aria-hidden />
+                {r.attribution.label.replace("{translator}", ayah.translationSource.translator)}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              className="w-auto max-w-xs text-xs text-muted-foreground"
+              aria-label={r.attribution.detailsAriaLabel}
+            >
+              {r.attribution.details}
+            </PopoverContent>
+          </Popover>
+        )}
         {actions && <div className="mt-4 flex flex-wrap items-center gap-1">{actions}</div>}
       </CardContent>
     </Card>
