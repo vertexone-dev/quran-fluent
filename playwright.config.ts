@@ -66,6 +66,7 @@ export default defineConfig({
         "12-memorization.spec.ts",
         "13-practice.spec.ts",
         "14-translation-fallback.spec.ts",
+        "15-full-dataset.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
