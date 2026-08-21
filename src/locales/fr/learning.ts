@@ -313,7 +313,7 @@ export const learning: typeof EnLearning = {
     },
   },
   daily: {
-    title: "Apprentissage du jour",
+    title: "Leçon du jou",
     loading: "Préparation de votre session quotidienne…",
     empty: "Votre file d'apprentissage est vide. Passez le test de niveau pour commencer.",
     back: "Retour au tableau de bord",

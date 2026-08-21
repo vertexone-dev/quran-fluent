@@ -14,8 +14,8 @@ export const common: typeof EnCommon = {
     quran: "Coran",
     features: "Fonctionnalités",
     about: "À propos",
-    dashboard: "Tableau de bord",
-    daily: "Apprentissage du jour",
+    dashboard: "Accueil",
+    daily: "Leçon du jour",
     memorize: "Mémoriser",
     practice: "S'entraîner",
     progress: "Progression",
@@ -87,7 +87,6 @@ export const common: typeof EnCommon = {
       "Une erreur est survenue de notre côté. Vous pouvez actualiser la page ou revenir à l'accueil.",
     tryAgain: "Réessayer",
     generic: "Une erreur est survenue",
-    loadFailed:
-      "Nous n'avons pas pu charger ce contenu. Vérifiez votre connexion, puis réessayez.",
+    loadFailed: "Nous n'avons pas pu charger ce contenu. Vérifiez votre connexion, puis réessayez.",
   },
 };
