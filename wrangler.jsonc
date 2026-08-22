@@ -9,5 +9,13 @@
   // Every other field (main, assets, compatibility_date, compatibility_flags,
   // rules, etc.) is left for Nitro to generate automatically at build time —
   // intentionally not duplicated here.
-  "name": "quranroots"
+  "name": "quranroots",
+
+  // Persists console.error/console.log output as queryable Workers Logs in
+  // the Cloudflare dashboard instead of only being visible via a live
+  // `wrangler tail` session. No external account, DSN, or billing decision
+  // needed — this is Cloudflare's own included observability.
+  "observability": {
+    "enabled": true
+  }
 }
