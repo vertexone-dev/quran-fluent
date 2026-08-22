@@ -151,6 +151,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      courses: {
+        Row: {
+          created_at: string;
+          description_en: string | null;
+          description_fr: string | null;
+          id: string;
+          order_index: number;
+          slug: string;
+          title_en: string;
+          title_fr: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          description_en?: string | null;
+          description_fr?: string | null;
+          id?: string;
+          order_index?: number;
+          slug: string;
+          title_en: string;
+          title_fr: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          description_en?: string | null;
+          description_fr?: string | null;
+          id?: string;
+          order_index?: number;
+          slug?: string;
+          title_en?: string;
+          title_fr?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       learning_path_steps: {
         Row: {
           completed_at: string | null;
@@ -267,6 +303,279 @@ export type Database = {
         };
         Relationships: [];
       };
+      lesson_exercises: {
+        Row: {
+          ayah_number: number | null;
+          created_at: string;
+          exercise_type: string;
+          explanation_en: string | null;
+          explanation_fr: string | null;
+          id: string;
+          lesson_id: string;
+          order_index: number;
+          payload: Json;
+          prompt_en: string;
+          prompt_fr: string;
+          review_item_type: string;
+          section_id: string | null;
+          surah_number: number | null;
+          updated_at: string;
+        };
+        Insert: {
+          ayah_number?: number | null;
+          created_at?: string;
+          exercise_type: string;
+          explanation_en?: string | null;
+          explanation_fr?: string | null;
+          id?: string;
+          lesson_id: string;
+          order_index?: number;
+          payload: Json;
+          prompt_en: string;
+          prompt_fr: string;
+          review_item_type: string;
+          section_id?: string | null;
+          surah_number?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          ayah_number?: number | null;
+          created_at?: string;
+          exercise_type?: string;
+          explanation_en?: string | null;
+          explanation_fr?: string | null;
+          id?: string;
+          lesson_id?: string;
+          order_index?: number;
+          payload?: Json;
+          prompt_en?: string;
+          prompt_fr?: string;
+          review_item_type?: string;
+          section_id?: string | null;
+          surah_number?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lesson_exercises_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lesson_exercises_section_id_fkey";
+            columns: ["section_id"];
+            isOneToOne: false;
+            referencedRelation: "lesson_sections";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lesson_exercises_surah_number_ayah_number_fkey";
+            columns: ["surah_number", "ayah_number"];
+            isOneToOne: false;
+            referencedRelation: "ayahs";
+            referencedColumns: ["surah_number", "ayah_number"];
+          },
+        ];
+      };
+      lesson_sections: {
+        Row: {
+          arabic_text: string | null;
+          ayah_number: number | null;
+          body_en: string | null;
+          body_fr: string | null;
+          content_type: string;
+          created_at: string;
+          id: string;
+          lesson_id: string;
+          metadata: Json;
+          order_index: number;
+          surah_number: number | null;
+          updated_at: string;
+        };
+        Insert: {
+          arabic_text?: string | null;
+          ayah_number?: number | null;
+          body_en?: string | null;
+          body_fr?: string | null;
+          content_type: string;
+          created_at?: string;
+          id?: string;
+          lesson_id: string;
+          metadata?: Json;
+          order_index?: number;
+          surah_number?: number | null;
+          updated_at?: string;
+        };
+        Update: {
+          arabic_text?: string | null;
+          ayah_number?: number | null;
+          body_en?: string | null;
+          body_fr?: string | null;
+          content_type?: string;
+          created_at?: string;
+          id?: string;
+          lesson_id?: string;
+          metadata?: Json;
+          order_index?: number;
+          surah_number?: number | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lesson_sections_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lesson_sections_surah_number_ayah_number_fkey";
+            columns: ["surah_number", "ayah_number"];
+            isOneToOne: false;
+            referencedRelation: "ayahs";
+            referencedColumns: ["surah_number", "ayah_number"];
+          },
+        ];
+      };
+      lesson_vocabulary_words: {
+        Row: {
+          lesson_id: string;
+          order_index: number;
+          word_id: string;
+        };
+        Insert: {
+          lesson_id: string;
+          order_index?: number;
+          word_id: string;
+        };
+        Update: {
+          lesson_id?: string;
+          order_index?: number;
+          word_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lesson_vocabulary_words_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lesson_vocabulary_words_word_id_fkey";
+            columns: ["word_id"];
+            isOneToOne: false;
+            referencedRelation: "word_frequency";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      lessons: {
+        Row: {
+          content_source_id: string | null;
+          created_at: string;
+          estimated_minutes: number;
+          id: string;
+          module_id: string;
+          order_index: number;
+          slug: string;
+          title_en: string;
+          title_fr: string;
+          updated_at: string;
+        };
+        Insert: {
+          content_source_id?: string | null;
+          created_at?: string;
+          estimated_minutes?: number;
+          id?: string;
+          module_id: string;
+          order_index?: number;
+          slug: string;
+          title_en: string;
+          title_fr: string;
+          updated_at?: string;
+        };
+        Update: {
+          content_source_id?: string | null;
+          created_at?: string;
+          estimated_minutes?: number;
+          id?: string;
+          module_id?: string;
+          order_index?: number;
+          slug?: string;
+          title_en?: string;
+          title_fr?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lessons_content_source_id_fkey";
+            columns: ["content_source_id"];
+            isOneToOne: false;
+            referencedRelation: "content_sources";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "lessons_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      levels: {
+        Row: {
+          course_id: string;
+          created_at: string;
+          goal_en: string | null;
+          goal_fr: string | null;
+          id: string;
+          number: number;
+          order_index: number;
+          slug: string;
+          title_en: string;
+          title_fr: string;
+          updated_at: string;
+        };
+        Insert: {
+          course_id: string;
+          created_at?: string;
+          goal_en?: string | null;
+          goal_fr?: string | null;
+          id?: string;
+          number: number;
+          order_index?: number;
+          slug: string;
+          title_en: string;
+          title_fr: string;
+          updated_at?: string;
+        };
+        Update: {
+          course_id?: string;
+          created_at?: string;
+          goal_en?: string | null;
+          goal_fr?: string | null;
+          id?: string;
+          number?: number;
+          order_index?: number;
+          slug?: string;
+          title_en?: string;
+          title_fr?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "levels_course_id_fkey";
+            columns: ["course_id"];
+            isOneToOne: false;
+            referencedRelation: "courses";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       memorization_progress: {
         Row: {
           ayah_number: number;
@@ -308,6 +617,53 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "ayahs";
             referencedColumns: ["surah_number", "ayah_number"];
+          },
+        ];
+      };
+      modules: {
+        Row: {
+          created_at: string;
+          goal_en: string | null;
+          goal_fr: string | null;
+          id: string;
+          level_id: string;
+          order_index: number;
+          slug: string;
+          title_en: string;
+          title_fr: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          goal_en?: string | null;
+          goal_fr?: string | null;
+          id?: string;
+          level_id: string;
+          order_index?: number;
+          slug: string;
+          title_en: string;
+          title_fr: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          goal_en?: string | null;
+          goal_fr?: string | null;
+          id?: string;
+          level_id?: string;
+          order_index?: number;
+          slug?: string;
+          title_en?: string;
+          title_fr?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "modules_level_id_fkey";
+            columns: ["level_id"];
+            isOneToOne: false;
+            referencedRelation: "levels";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -665,6 +1021,98 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "ayahs";
             referencedColumns: ["surah_number", "ayah_number"];
+          },
+        ];
+      };
+      user_exercise_attempts: {
+        Row: {
+          correct: boolean;
+          created_at: string;
+          exercise_id: string | null;
+          id: string;
+          lesson_id: string;
+          response_time_ms: number | null;
+          user_id: string;
+        };
+        Insert: {
+          correct: boolean;
+          created_at?: string;
+          exercise_id?: string | null;
+          id?: string;
+          lesson_id: string;
+          response_time_ms?: number | null;
+          user_id: string;
+        };
+        Update: {
+          correct?: boolean;
+          created_at?: string;
+          exercise_id?: string | null;
+          id?: string;
+          lesson_id?: string;
+          response_time_ms?: number | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_exercise_attempts_exercise_id_fkey";
+            columns: ["exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "lesson_exercises";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "user_exercise_attempts_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_lesson_progress: {
+        Row: {
+          completed_at: string | null;
+          created_at: string;
+          id: string;
+          last_section_index: number;
+          lesson_id: string;
+          progress_percent: number;
+          started_at: string | null;
+          status: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          last_section_index?: number;
+          lesson_id: string;
+          progress_percent?: number;
+          started_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          created_at?: string;
+          id?: string;
+          last_section_index?: number;
+          lesson_id?: string;
+          progress_percent?: number;
+          started_at?: string | null;
+          status?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_lesson_progress_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
           },
         ];
       };

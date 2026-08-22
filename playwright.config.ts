@@ -41,7 +41,7 @@ export default defineConfig({
     // spec's storageState depends on — is the last, uncontested sign-in.
     {
       name: "public",
-      testMatch: ["auth.spec.ts", "security.spec.ts"],
+      testMatch: ["auth.spec.ts", "security.spec.ts", "16-curriculum-schema.spec.ts"],
       use: { ...devices["Desktop Chrome"] },
     },
     { name: "setup", testMatch: /auth\.setup\.ts/, dependencies: ["public"] },
