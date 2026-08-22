@@ -21,7 +21,6 @@ import {
 } from "@/lib/placement";
 import { seedFromPlacement } from "@/lib/study";
 
-
 export const Route = createFileRoute("/_authenticated/placement")({
   head: () => ({
     meta: [
@@ -73,7 +72,6 @@ function Placement() {
       }
     }
   }
-
 
   async function startPath(level: PlacementLevel) {
     if (!user) return;
@@ -139,7 +137,11 @@ function Placement() {
           </CardHeader>
           <CardContent className="space-y-6">
             {question.arabic && (
-              <p dir="rtl" lang="ar" className="font-quran text-4xl leading-relaxed text-foreground">
+              <p
+                dir="rtl"
+                lang="ar"
+                className="font-quran text-4xl leading-relaxed text-foreground"
+              >
                 {question.arabic}
               </p>
             )}
@@ -164,7 +166,10 @@ function Placement() {
                     )}
                   >
                     <span
-                      className={cn("font-medium text-foreground", isArabic && "font-arabic text-xl")}
+                      className={cn(
+                        "font-medium text-foreground",
+                        isArabic && "font-arabic text-xl",
+                      )}
                     >
                       {option}
                     </span>

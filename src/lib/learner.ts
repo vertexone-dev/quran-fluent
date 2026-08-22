@@ -1,11 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export type ArabicLevel =
-  | "complete_beginner"
-  | "knows_alphabet"
-  | "reads_slowly"
-  | "reads_quran"
-  | "intermediate";
+  "complete_beginner" | "knows_alphabet" | "reads_slowly" | "reads_quran" | "intermediate";
 
 export type LearningGoal =
   | "read_quran"
@@ -37,7 +33,11 @@ export const ARABIC_LEVELS: { value: ArabicLevel; label: string; hint: string }[
   { value: "complete_beginner", label: "Complete beginner", hint: "New to Arabic letters" },
   { value: "knows_alphabet", label: "I know the alphabet", hint: "Recognise letters and sounds" },
   { value: "reads_slowly", label: "I can read slowly", hint: "Still decoding word by word" },
-  { value: "reads_quran", label: "I can read the Qur'an", hint: "Reading fluently, meaning is limited" },
+  {
+    value: "reads_quran",
+    label: "I can read the Qur'an",
+    hint: "Reading fluently, meaning is limited",
+  },
   { value: "intermediate", label: "Intermediate Arabic", hint: "Comfortable with grammar basics" },
 ];
 
@@ -75,7 +75,11 @@ export type LearnerSnapshot = {
     preferred_reciter: string;
     onboarding_completed: boolean;
   } | null;
-  streak: { current_streak: number; longest_streak: number; last_active_date: string | null } | null;
+  streak: {
+    current_streak: number;
+    longest_streak: number;
+    last_active_date: string | null;
+  } | null;
 };
 
 export async function fetchLearnerSnapshot(userId: string): Promise<LearnerSnapshot> {

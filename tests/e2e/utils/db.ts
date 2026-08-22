@@ -92,7 +92,9 @@ async function restoreBrowserSession(): Promise<TestUserClient> {
     refresh_token: stored.refresh_token,
   });
   if (error || !data.user) {
-    throw new Error(`Failed to restore the browser's session: ${error?.message ?? "no user returned"}`);
+    throw new Error(
+      `Failed to restore the browser's session: ${error?.message ?? "no user returned"}`,
+    );
   }
   return { client, userId: data.user.id, email, password };
 }

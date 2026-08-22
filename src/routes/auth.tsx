@@ -214,7 +214,11 @@ function AuthPage() {
                     />
                     <p
                       id="password-hint"
-                      className={errors.password ? "text-sm text-destructive" : "text-xs text-muted-foreground"}
+                      className={
+                        errors.password
+                          ? "text-sm text-destructive"
+                          : "text-xs text-muted-foreground"
+                      }
                       role={errors.password ? "alert" : undefined}
                     >
                       {errors.password ?? a.validation.passwordHint}

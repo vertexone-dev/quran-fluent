@@ -148,9 +148,7 @@ function Settings() {
                   ))}
                 </SelectContent>
               </Select>
-              <p className="text-sm text-muted-foreground">
-                {t("learning.settings.languageHint")}
-              </p>
+              <p className="text-sm text-muted-foreground">{t("learning.settings.languageHint")}</p>
             </div>
           </CardContent>
         </Card>

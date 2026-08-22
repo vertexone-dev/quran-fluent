@@ -77,11 +77,28 @@ const PROMOTE_MIGRATION_FILENAME = "20260820190000_19c164f7-b323-47fe-8275-4642b
 // source of truth.
 const CORRECTION_MANIFEST = [
   { rawIdentifier: "0.033", correctedSurah: 17, correctedAyah: 33, correctedIdentifier: "017.033" },
-  { rawIdentifier: "039.04", correctedSurah: 39, correctedAyah: 46, correctedIdentifier: "039.046" },
-  { rawIdentifier: "04.032", correctedSurah: 45, correctedAyah: 32, correctedIdentifier: "045.032" },
-  { rawIdentifier: "05.026", correctedSurah: 56, correctedAyah: 26, correctedIdentifier: "056.026" },
+  {
+    rawIdentifier: "039.04",
+    correctedSurah: 39,
+    correctedAyah: 46,
+    correctedIdentifier: "039.046",
+  },
+  {
+    rawIdentifier: "04.032",
+    correctedSurah: 45,
+    correctedAyah: 32,
+    correctedIdentifier: "045.032",
+  },
+  {
+    rawIdentifier: "05.026",
+    correctedSurah: 56,
+    correctedAyah: 26,
+    correctedIdentifier: "056.026",
+  },
 ];
-const CORRECTION_MAP = new Map(CORRECTION_MANIFEST.map((c) => [c.rawIdentifier, c.correctedIdentifier]));
+const CORRECTION_MAP = new Map(
+  CORRECTION_MANIFEST.map((c) => [c.rawIdentifier, c.correctedIdentifier]),
+);
 
 const MANDATORY_REFS = ["1:4", "2:255", "6:9"];
 
@@ -120,7 +137,8 @@ function parsePickthall(raw) {
     if (m) {
       const rawId = m[1];
       const corrected = CORRECTION_MAP.get(rawId);
-      if (corrected) appliedCorrections.push({ rawIdentifier: rawId, correctedIdentifier: corrected });
+      if (corrected)
+        appliedCorrections.push({ rawIdentifier: rawId, correctedIdentifier: corrected });
       const id = corrected || rawId;
       const [surah, ayah] = id.split(".").map(Number);
       i++;
@@ -165,9 +183,13 @@ function sqlQuote(str) {
 async function main() {
   console.log("=== Generating Pickthall (Gutenberg #16955) translation migration SQL ===\n");
 
-  const client = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_PUBLISHABLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
+  const client = createClient(
+    process.env.VITE_SUPABASE_URL,
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: { persistSession: false, autoRefreshToken: false },
+    },
+  );
 
   console.log("Fetching Gutenberg artifact (fresh, mirror fallback)...");
   const { url, buf, retrievedAt } = await fetchWithFallback(GUTENBERG_URLS);
@@ -201,26 +223,36 @@ async function main() {
 
   // ---- Hard gates: abort and write nothing if any fail ----
   const gateFailures = [];
-  if (surahs.length !== 114) gateFailures.push(`Expected 114 canonical surahs, got ${surahs.length}`);
-  if (totalExpected !== 6236) gateFailures.push(`Expected 6236 canonical ayahs, got ${totalExpected}`);
-  if (verses.size !== 6236) gateFailures.push(`Expected 6236 extracted translations, got ${verses.size}`);
-  if (surahsRepresented.size !== 114) gateFailures.push(`Expected 114 surahs represented, got ${surahsRepresented.size}`);
-  if (missingRefs.length !== 0) gateFailures.push(`${missingRefs.length} missing canonical references`);
+  if (surahs.length !== 114)
+    gateFailures.push(`Expected 114 canonical surahs, got ${surahs.length}`);
+  if (totalExpected !== 6236)
+    gateFailures.push(`Expected 6236 canonical ayahs, got ${totalExpected}`);
+  if (verses.size !== 6236)
+    gateFailures.push(`Expected 6236 extracted translations, got ${verses.size}`);
+  if (surahsRepresented.size !== 114)
+    gateFailures.push(`Expected 114 surahs represented, got ${surahsRepresented.size}`);
+  if (missingRefs.length !== 0)
+    gateFailures.push(`${missingRefs.length} missing canonical references`);
   if (duplicates.length !== 0) gateFailures.push(`${duplicates.length} duplicate references`);
   if (blanks.length !== 0) gateFailures.push(`${blanks.length} blank translations`);
-  if (appliedCorrections.length !== 4) gateFailures.push(`Expected exactly 4 applied corrections, got ${appliedCorrections.length}`);
+  if (appliedCorrections.length !== 4)
+    gateFailures.push(`Expected exactly 4 applied corrections, got ${appliedCorrections.length}`);
 
   if (gateFailures.length > 0) {
     console.error("\nGATE FAILURES — aborting, no files written:");
     for (const f of gateFailures) console.error(`  - ${f}`);
     process.exit(1);
   }
-  console.log("\nAll gates passed: 114/114 surahs, 6236/6236 translations, 0 missing/duplicate/blank, 4/4 corrections.");
+  console.log(
+    "\nAll gates passed: 114/114 surahs, 6236/6236 translations, 0 missing/duplicate/blank, 4/4 corrections.",
+  );
 
   console.log("\nResolving existing Pickthall candidate content_sources row (read-only)...");
   const { data: existingRows, error: srcErr } = await client
     .from("content_sources")
-    .select("id, content_type, provider_name, dataset_name, edition_identifier, language, translator")
+    .select(
+      "id, content_type, provider_name, dataset_name, edition_identifier, language, translator",
+    )
     .eq("content_type", "translation")
     .eq("language", "en")
     .eq("translator", "Marmaduke Pickthall");
@@ -231,7 +263,9 @@ async function main() {
     );
   }
   const existing = existingRows[0];
-  console.log(`  found: id=${existing.id}, provider_name=${existing.provider_name}, edition_identifier=${existing.edition_identifier}`);
+  console.log(
+    `  found: id=${existing.id}, provider_name=${existing.provider_name}, edition_identifier=${existing.edition_identifier}`,
+  );
 
   await mkdir(GENERATED_DIR, { recursive: true });
   await mkdir(REPORT_DIR, { recursive: true });
@@ -576,7 +610,9 @@ WHERE cs.language = 'fr'; -- expect 0 (French import is a separate, later, not-y
   console.log(`  ${importPath}\n    sha256: ${importSha}\n    rows: ${sortedRefs.length}`);
   console.log(`  ${promotePath}\n    sha256: ${promoteSha}`);
   console.log(`  ${verificationPath}`);
-  console.log("\nNone of these were applied to any database. None were copied into supabase/migrations/.");
+  console.log(
+    "\nNone of these were applied to any database. None were copied into supabase/migrations/.",
+  );
 
   const summary = {
     generatedAt: new Date().toISOString(),
@@ -597,8 +633,13 @@ WHERE cs.language = 'fr'; -- expect 0 (French import is a separate, later, not-y
     },
     mandatoryVerses: Object.fromEntries(MANDATORY_REFS.map((r) => [r, verses.get(r)])),
   };
-  await writeFile(path.join(REPORT_DIR, "pickthall-migration-generation-summary.json"), JSON.stringify(summary, null, 2));
-  console.log("\nSummary written to scripts/quran-import/reports/pickthall-migration-generation-summary.json");
+  await writeFile(
+    path.join(REPORT_DIR, "pickthall-migration-generation-summary.json"),
+    JSON.stringify(summary, null, 2),
+  );
+  console.log(
+    "\nSummary written to scripts/quran-import/reports/pickthall-migration-generation-summary.json",
+  );
 }
 
 main().catch((e) => {

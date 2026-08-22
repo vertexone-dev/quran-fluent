@@ -9,10 +9,22 @@ export const home = {
   how: {
     title: "How it works",
     steps: [
-      { title: "Choose your level", body: "Tell us where you are, from the alphabet to fluent reading." },
-      { title: "Follow your plan", body: "Short daily lessons built around real Qur'anic vocabulary." },
-      { title: "Open the Qur'an", body: "Read verified Arabic text with translation and word study." },
-      { title: "Practice and review", body: "Quizzes, memorization and spaced review keep it durable." },
+      {
+        title: "Choose your level",
+        body: "Tell us where you are, from the alphabet to fluent reading.",
+      },
+      {
+        title: "Follow your plan",
+        body: "Short daily lessons built around real Qur'anic vocabulary.",
+      },
+      {
+        title: "Open the Qur'an",
+        body: "Read verified Arabic text with translation and word study.",
+      },
+      {
+        title: "Practice and review",
+        body: "Quizzes, memorization and spaced review keep it durable.",
+      },
     ],
   },
   pillars: {

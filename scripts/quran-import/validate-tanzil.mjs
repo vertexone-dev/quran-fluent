@@ -208,14 +208,16 @@ function validateNoBlankText(ayahs) {
 function applyBismillahRules(ayahs) {
   const issues = [];
   const fatiha1 = ayahs.find((a) => a.surah_number === 1 && a.ayah_number === 1);
-  if (!fatiha1) throw new Error("Al-Fatiha 1:1 not found in parsed data — cannot derive the Bismillah string");
+  if (!fatiha1)
+    throw new Error("Al-Fatiha 1:1 not found in parsed data — cannot derive the Bismillah string");
   const bismillahStandard = fatiha1.arabic_text.trim();
 
   // Derive the shadda-idgham form structurally from surah 95's own ayah 1
   // (never hand-typed) rather than constructing it by guessing where to
   // insert a shadda character.
   const surah95Ayah1 = ayahs.find((a) => a.surah_number === 95 && a.ayah_number === 1);
-  if (!surah95Ayah1) throw new Error("Surah 95 ayah 1 not found — cannot derive the shadda-idgham Bismillah form");
+  if (!surah95Ayah1)
+    throw new Error("Surah 95 ayah 1 not found — cannot derive the shadda-idgham Bismillah form");
   const shaddaVariant = detectBismillahVariant(surah95Ayah1.arabic_text, bismillahStandard);
   if (!shaddaVariant) {
     throw new Error(
@@ -225,8 +227,10 @@ function applyBismillahRules(ayahs) {
   const bismillahShaddaForm = shaddaVariant.variantPrefix;
 
   function matchBismillah(text) {
-    if (text.startsWith(bismillahStandard)) return { form: "standard", prefixLength: bismillahStandard.length };
-    if (text.startsWith(bismillahShaddaForm)) return { form: "shadda-idgham", prefixLength: bismillahShaddaForm.length };
+    if (text.startsWith(bismillahStandard))
+      return { form: "standard", prefixLength: bismillahStandard.length };
+    if (text.startsWith(bismillahShaddaForm))
+      return { form: "shadda-idgham", prefixLength: bismillahShaddaForm.length };
     return null;
   }
 
@@ -252,7 +256,9 @@ function applyBismillahRules(ayahs) {
     } else if (s === 9) {
       bismillahPreBySurah[s] = false; // At-Tawbah: no Bismillah at all
       if (matchBismillah(first.arabic_text)) {
-        issues.push("At-Tawbah (9) ayah 1 unexpectedly starts with a Bismillah form in the source text");
+        issues.push(
+          "At-Tawbah (9) ayah 1 unexpectedly starts with a Bismillah form in the source text",
+        );
       }
     } else {
       bismillahPreBySurah[s] = true; // includes 95 and 97 — Bismillah present, structurally separate from ayah 1
@@ -270,9 +276,17 @@ function applyBismillahRules(ayahs) {
 // Explicit pass/fail assertions for the named special cases, per instruction
 // to "explicitly test Surahs 95 and 97 as special orthographic cases" and
 // continue treating 1 and 9 per the adopted convention.
-function runSpecialCaseTests({ rawAyahs, strippedAyahs, bismillahPreBySurah, bismillahStandard, bismillahShaddaForm }) {
+function runSpecialCaseTests({
+  rawAyahs,
+  strippedAyahs,
+  bismillahPreBySurah,
+  bismillahStandard,
+  bismillahShaddaForm,
+}) {
   const rawByKey = new Map(rawAyahs.map((a) => [`${a.surah_number}:${a.ayah_number}`, a]));
-  const strippedByKey = new Map(strippedAyahs.map((a) => [`${a.surah_number}:${a.ayah_number}`, a]));
+  const strippedByKey = new Map(
+    strippedAyahs.map((a) => [`${a.surah_number}:${a.ayah_number}`, a]),
+  );
   const tests = [];
   const check = (name, pass) => tests.push({ name, pass: Boolean(pass) });
 
@@ -310,7 +324,8 @@ function runSpecialCaseTests({ rawAyahs, strippedAyahs, bismillahPreBySurah, bis
     );
     check(
       `Surah ${s}: stripped ayah 1 is strictly shorter than raw ayah 1 (the Bismillah was actually removed)`,
-      (strippedByKey.get(`${s}:1`)?.arabic_text.length ?? 0) < (rawByKey.get(`${s}:1`)?.arabic_text.length ?? 0),
+      (strippedByKey.get(`${s}:1`)?.arabic_text.length ?? 0) <
+        (rawByKey.get(`${s}:1`)?.arabic_text.length ?? 0),
     );
   }
 
@@ -323,7 +338,9 @@ async function fetchBootstrapAyahs() {
   if (!url || !anonKey) {
     throw new Error("Missing VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY in .env.test");
   }
-  const client = createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const client = createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
   const { data, error } = await client
     .from("ayahs")
     .select("surah_number, ayah_number, arabic_text")
@@ -338,15 +355,17 @@ async function fetchBootstrapAyahs() {
 // tatweel/annotation-mark differences already documented in Migration 1's
 // header comment as the only kind of difference found between digitizations.
 function normalizeForComparison(text) {
-  return text
-    .normalize("NFC") // canonicalize combining-mark order/composition — without
-    // this, two sources can encode visually identical text with combining
-    // marks in a different codepoint order and compare as "substantively"
-    // different when they are not
-    .replace(/ـ/g, "") // tatweel
-    .replace(/[ۖ-ۭ]/g, "") // Quranic annotation signs (waqf marks etc.)
-    .replace(/\s+/g, " ")
-    .trim();
+  return (
+    text
+      .normalize("NFC") // canonicalize combining-mark order/composition — without
+      // this, two sources can encode visually identical text with combining
+      // marks in a different codepoint order and compare as "substantively"
+      // different when they are not
+      .replace(/ـ/g, "") // tatweel
+      .replace(/[ۖ-ۭ]/g, "") // Quranic annotation signs (waqf marks etc.)
+      .replace(/\s+/g, " ")
+      .trim()
+  );
 }
 
 // Some ayat carry an orthographic Bismillah variant with an extra shadda
@@ -374,7 +393,9 @@ function detectBismillahVariant(text, bismillahText) {
 }
 
 function compareBootstrap(bootstrapAyahs, strippedTanzilAyahs) {
-  const tanzilMap = new Map(strippedTanzilAyahs.map((a) => [`${a.surah_number}:${a.ayah_number}`, a]));
+  const tanzilMap = new Map(
+    strippedTanzilAyahs.map((a) => [`${a.surah_number}:${a.ayah_number}`, a]),
+  );
   const exactMatches = [];
   const formattingOnlyDifferences = [];
   const substantiveDifferences = [];
@@ -422,10 +443,12 @@ async function main() {
   const metaSurahs = parseMetadataXml(metaArtifact.text);
 
   const surahCoverageIssues = validateSurahCoverage(metaSurahs);
-  const { issues: ayahCoverageIssues, duplicateCount, missingCount, outOfRangeCount } = validateAyahCoverage(
-    rawAyahs,
-    metaSurahs,
-  );
+  const {
+    issues: ayahCoverageIssues,
+    duplicateCount,
+    missingCount,
+    outOfRangeCount,
+  } = validateAyahCoverage(rawAyahs, metaSurahs);
   const blankTextIssues = validateNoBlankText(rawAyahs);
   const {
     strippedAyahs,
@@ -448,7 +471,12 @@ async function main() {
   const bootstrapAyahs = await fetchBootstrapAyahs();
   const comparison = compareBootstrap(bootstrapAyahs, strippedAyahs);
 
-  const allStructuralIssues = [...surahCoverageIssues, ...ayahCoverageIssues, ...blankTextIssues, ...bismillahIssues];
+  const allStructuralIssues = [
+    ...surahCoverageIssues,
+    ...ayahCoverageIssues,
+    ...blankTextIssues,
+    ...bismillahIssues,
+  ];
 
   // The exact gates required before migration drafting.
   const gates = {
@@ -510,7 +538,9 @@ async function main() {
       missingInTanzil: comparison.missingInTanzil,
     },
     gates,
-    verdict: allGatesPass ? "ALL GATES PASS — clear to proceed to migration drafting" : "STOP — one or more gates failed",
+    verdict: allGatesPass
+      ? "ALL GATES PASS — clear to proceed to migration drafting"
+      : "STOP — one or more gates failed",
   };
 
   await mkdir(REPORT_DIR, { recursive: true });

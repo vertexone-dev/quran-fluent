@@ -90,8 +90,7 @@ const CORRECTION_MANIFEST = [
     correctedSurah: 39,
     correctedAyah: 46,
     correctedIdentifier: "039.046",
-    context:
-      'Preceded by "039.045"; followed by "039.047" (chapter Az-Zumar).',
+    context: 'Preceded by "039.045"; followed by "039.047" (chapter Az-Zumar).',
     reason:
       'Trailing digit dropped: "039.046" printed as "039.04". Previous ref is 039.045, so the only value continuing the sequence is 039.046.',
     validationEvidence:
@@ -102,8 +101,7 @@ const CORRECTION_MANIFEST = [
     correctedSurah: 45,
     correctedAyah: 32,
     correctedIdentifier: "045.032",
-    context:
-      'Preceded by "045.031"; followed by "045.033" (chapter Al-Jathiyah).',
+    context: 'Preceded by "045.031"; followed by "045.033" (chapter Al-Jathiyah).',
     reason:
       'Middle digit dropped: "045.032" printed as "04.032" (the surah number\'s middle "5" missing). Previous ref is 045.031, so 045.032 is the only value continuing the sequence.',
     validationEvidence:
@@ -114,15 +112,16 @@ const CORRECTION_MANIFEST = [
     correctedSurah: 56,
     correctedAyah: 26,
     correctedIdentifier: "056.026",
-    context:
-      'Preceded by "056.025"; followed by "056.027" (chapter Al-Waqi\'ah).',
+    context: 'Preceded by "056.025"; followed by "056.027" (chapter Al-Waqi\'ah).',
     reason:
       'Trailing surah digit dropped: "056.026" printed as "05.026" (the surah number\'s trailing "6" missing). Previous ref is 056.025, so 056.026 is the only value continuing the sequence.',
     validationEvidence:
       "Sequential-position check: previous ref 056.025, next ref 056.027. Matches canonical ayah_count for Surah 56 (96 ayahs) with no gap.",
   },
 ];
-const CORRECTION_MAP = new Map(CORRECTION_MANIFEST.map((c) => [c.rawIdentifier, c.correctedIdentifier]));
+const CORRECTION_MAP = new Map(
+  CORRECTION_MANIFEST.map((c) => [c.rawIdentifier, c.correctedIdentifier]),
+);
 
 // Fixed, reproducible stratified sample: 3 mandatory + 22 additional across
 // long/medium/short surahs and several from chapters 6-38. Identical to the
@@ -130,13 +129,29 @@ const CORRECTION_MAP = new Map(CORRECTION_MANIFEST.map((c) => [c.rawIdentifier, 
 // directly comparable to that report's findings.
 const MANDATORY_REFS = ["1:4", "2:255", "6:9"];
 const SPOT_CHECK_REFS = [
-  "2:1", "2:100", "2:282",
-  "4:1", "4:34",
-  "7:1", "7:157",
-  "18:1", "18:110",
+  "2:1",
+  "2:100",
+  "2:282",
+  "4:1",
+  "4:34",
+  "7:1",
+  "7:157",
+  "18:1",
+  "18:110",
   "36:1",
-  "105:1", "112:1", "112:4", "114:1", "108:1",
-  "6:1", "10:1", "15:9", "20:1", "25:1", "30:1", "33:35", "38:1",
+  "105:1",
+  "112:1",
+  "112:4",
+  "114:1",
+  "108:1",
+  "6:1",
+  "10:1",
+  "15:9",
+  "20:1",
+  "25:1",
+  "30:1",
+  "33:35",
+  "38:1",
 ];
 
 function sha256(buffer) {
@@ -176,7 +191,8 @@ function parsePickthall(raw) {
     if (m) {
       const rawId = m[1];
       const corrected = CORRECTION_MAP.get(rawId);
-      if (corrected) appliedCorrections.push({ rawIdentifier: rawId, correctedIdentifier: corrected });
+      if (corrected)
+        appliedCorrections.push({ rawIdentifier: rawId, correctedIdentifier: corrected });
       const id = corrected || rawId;
       const [surah, ayah] = id.split(".").map(Number);
       i++;
@@ -227,7 +243,9 @@ async function main() {
   console.log(`  sha256: ${checksumSha256}`);
 
   const checksumMatch = checksumSha256 === EXPECTED_SHA256;
-  console.log(`  checksum match vs. Candidate 5 investigation (${EXPECTED_SHA256}): ${checksumMatch ? "MATCH" : "MISMATCH — STOP"}`);
+  console.log(
+    `  checksum match vs. Candidate 5 investigation (${EXPECTED_SHA256}): ${checksumMatch ? "MATCH" : "MISMATCH — STOP"}`,
+  );
 
   await mkdir(ARTIFACT_DIR, { recursive: true });
   await writeFile(path.join(ARTIFACT_DIR, "pg16955.txt"), buf);
@@ -240,10 +258,17 @@ async function main() {
   console.log(`Blanks: ${blanks.length}, Duplicates: ${duplicates.length}`);
 
   // ---- Canonical alignment against live public.surahs ----
-  const client = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_PUBLISHABLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false },
-  });
-  const { data: surahs, error } = await client.from("surahs").select("number, transliteration, ayah_count").order("number");
+  const client = createClient(
+    process.env.VITE_SUPABASE_URL,
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: { persistSession: false, autoRefreshToken: false },
+    },
+  );
+  const { data: surahs, error } = await client
+    .from("surahs")
+    .select("number, transliteration, ayah_count")
+    .order("number");
   if (error) throw error;
 
   const surahsRepresented = new Set([...verses.keys()].map((k) => Number(k.split(":")[0])));
@@ -308,7 +333,10 @@ async function main() {
   };
 
   await mkdir(REPORT_DIR, { recursive: true });
-  await writeFile(path.join(REPORT_DIR, "pickthall-gutenberg-dry-run.json"), JSON.stringify(report, null, 2));
+  await writeFile(
+    path.join(REPORT_DIR, "pickthall-gutenberg-dry-run.json"),
+    JSON.stringify(report, null, 2),
+  );
 
   const md = [
     "# Pickthall (Gutenberg #16955) — Dry-Run Validation Report",
@@ -344,8 +372,12 @@ async function main() {
   await writeFile(path.join(REPORT_DIR, "pickthall-gutenberg-dry-run.md"), md);
 
   console.log(`\nGates passed: ${gatesPassed}`);
-  console.log(`Report written to scripts/quran-import/reports/pickthall-gutenberg-dry-run.{json,md}`);
-  console.log("\nThis script performed NO writes to public.ayahs, public.translations, or public.content_sources.");
+  console.log(
+    `Report written to scripts/quran-import/reports/pickthall-gutenberg-dry-run.{json,md}`,
+  );
+  console.log(
+    "\nThis script performed NO writes to public.ayahs, public.translations, or public.content_sources.",
+  );
 
   if (!gatesPassed) process.exitCode = 1;
 }

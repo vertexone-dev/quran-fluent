@@ -31,8 +31,7 @@ export const auth: typeof EnAuth = {
   haveAccount: "Vous avez déjà un compte ?",
   confirmSent:
     "Consultez votre boîte de réception et confirmez votre adresse e-mail pour activer votre compte.",
-  resetSent:
-    "Si un compte existe pour cette adresse, un lien de réinitialisation vient de partir.",
+  resetSent: "Si un compte existe pour cette adresse, un lien de réinitialisation vient de partir.",
   validation: {
     email: "Saisissez une adresse e-mail valide.",
     password: "Votre mot de passe doit contenir au moins 8 caractères.",

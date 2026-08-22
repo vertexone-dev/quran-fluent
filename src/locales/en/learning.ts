@@ -1,7 +1,8 @@
 export const learning = {
   course: {
     title: "The Qur'anic Arabic course",
-    intro: "Every lesson follows the same rhythm: Learn → Example → Listen → Practice → Quiz → Review.",
+    intro:
+      "Every lesson follows the same rhythm: Learn → Example → Listen → Practice → Quiz → Review.",
     ctaNote:
       "Lesson content arrives in Phase 2. Create your account now so your level, goal and plan are ready the moment lessons open.",
     goToDashboard: "Go to dashboard",
@@ -120,7 +121,8 @@ export const learning = {
     profile: "Profile",
     firstName: "First name",
     interfaceLanguage: "Interface language",
-    languageHint: "Your interface language is saved to your account and follows you on every device.",
+    languageHint:
+      "Your interface language is saved to your account and follows you on every device.",
     quranDisplay: "Learning and Qur'an display",
     dailyGoalMinutes: "Daily goal (minutes)",
     preferredTranslation: "Preferred translation",
@@ -175,8 +177,7 @@ export const learning = {
   },
   placement: {
     title: "Placement test",
-    subtitle:
-      "About 4 minutes. It only sets your starting point — you can change it at any time.",
+    subtitle: "About 4 minutes. It only sets your starting point — you can change it at any time.",
     optional: "Optional",
     intro:
       "Twelve short questions on letters, harakat, reading, Qur'anic vocabulary and basic grammar.",
@@ -222,8 +223,7 @@ export const learning = {
     resultTitle: "Your recommended starting point",
     scoreLine: "{score} of {total} correct",
     reasonLabel: "Reason",
-    reasonStrong:
-      "You answered every section correctly, so your path begins further along.",
+    reasonStrong: "You answered every section correctly, so your path begins further along.",
     reasonWeak: "You need more practice with: {areas}.",
     startRecommended: "Start recommended course",
     chooseAnother: "Choose another level",
@@ -316,5 +316,3 @@ export const learning = {
     },
   },
 };
-
-

@@ -51,14 +51,16 @@ function DailyStudy() {
   const [loadError, setLoadError] = useState(false);
   const loggedRef = useRef(false);
 
-
   const learnerId = user?.id ?? null;
 
   // Timer stops once the session is finished so the elapsed time (and the
   // logged minutes) are frozen at the moment the learner completed the queue.
   useEffect(() => {
     if (finished) return;
-    const interval = setInterval(() => setElapsed(Math.floor((Date.now() - startTime) / 1000)), 1000);
+    const interval = setInterval(
+      () => setElapsed(Math.floor((Date.now() - startTime) / 1000)),
+      1000,
+    );
     return () => clearInterval(interval);
   }, [startTime, finished]);
 
@@ -111,9 +113,6 @@ function DailyStudy() {
       </main>
     );
   }
-
-
-
 
   if (loading) {
     return (
@@ -212,7 +211,12 @@ function DailyStudy() {
           <WeakAreaCard area={current.area} onContinue={handleWeakAreaContinue} t={t} copy={copy} />
         )}
         {current?.kind === "path_preview" && (
-          <PathPreviewCard step={current.step_key} onContinue={handlePathPreviewContinue} t={t} d={d} />
+          <PathPreviewCard
+            step={current.step_key}
+            onContinue={handlePathPreviewContinue}
+            t={t}
+            d={d}
+          />
         )}
       </div>
     </main>
@@ -282,9 +286,7 @@ function ReviewCard({
             <p className="mt-4 text-sm text-muted-foreground">{item.context}</p>
           )}
           {!flipped && (
-            <p className="mt-6 text-sm text-muted-foreground">
-              {d.learning.daily.tapReveal}
-            </p>
+            <p className="mt-6 text-sm text-muted-foreground">{d.learning.daily.tapReveal}</p>
           )}
         </div>
 
@@ -318,7 +320,9 @@ function WeakAreaCard({
   area: { area: string; strength: number };
   onContinue: () => void;
   t: ReturnType<typeof useI18n>["t"];
-  copy: (typeof useI18n extends (...args: unknown[]) => infer R ? R : never)["d"]["learning"]["daily"];
+  copy: (typeof useI18n extends (...args: unknown[]) => infer R
+    ? R
+    : never)["d"]["learning"]["daily"];
 }) {
   return (
     <Card className="shadow-soft">

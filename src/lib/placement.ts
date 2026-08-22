@@ -7,13 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
  */
 
 export type PlacementSection =
-  | "letters"
-  | "forms"
-  | "harakat"
-  | "reading"
-  | "vocabulary"
-  | "comprehension"
-  | "grammar";
+  "letters" | "forms" | "harakat" | "reading" | "vocabulary" | "comprehension" | "grammar";
 
 export type PlacementLevel =
   | "complete_beginner"
@@ -33,16 +27,38 @@ export type PlacementQuestion = {
 };
 
 export const PLACEMENT_QUESTIONS: PlacementQuestion[] = [
-  { id: "q1", section: "letters", arabic: "ب", literalOptions: ["Bā'", "Tā'", "Thā'", "Nūn"], correct: 0 },
+  {
+    id: "q1",
+    section: "letters",
+    arabic: "ب",
+    literalOptions: ["Bā'", "Tā'", "Thā'", "Nūn"],
+    correct: 0,
+  },
   { id: "q2", section: "letters", literalOptions: ["م", "ن", "ح", "ع"], correct: 0 },
   { id: "q3", section: "forms", arabic: "ك", literalOptions: ["كـ", "ـك", "ـكـ", "ك"], correct: 0 },
-  { id: "q4", section: "forms", literalOptions: ["الْحَمْدُ", "أُمّ", "هُوَ", "دَعَا"], correct: 0 },
+  {
+    id: "q4",
+    section: "forms",
+    literalOptions: ["الْحَمْدُ", "أُمّ", "هُوَ", "دَعَا"],
+    correct: 0,
+  },
   { id: "q5", section: "harakat", literalOptions: ["فَ", "فِ", "فُ", "فْ"], correct: 2 },
   { id: "q6", section: "harakat", arabic: "رَبِّ", correct: 1 },
-  { id: "q7", section: "reading", arabic: "كِتَاب", literalOptions: ["kitāb", "katab", "kutub", "kataba"], correct: 0 },
+  {
+    id: "q7",
+    section: "reading",
+    arabic: "كِتَاب",
+    literalOptions: ["kitāb", "katab", "kutub", "kataba"],
+    correct: 0,
+  },
   { id: "q8", section: "vocabulary", arabic: "رَحْمَة", correct: 0 },
   { id: "q9", section: "vocabulary", arabic: "رَبّ", correct: 0 },
-  { id: "q10", section: "comprehension", arabic: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", correct: 0 },
+  {
+    id: "q10",
+    section: "comprehension",
+    arabic: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+    correct: 0,
+  },
   { id: "q11", section: "grammar", arabic: "بِسْمِ اللَّهِ", correct: 0 },
   { id: "q12", section: "grammar", arabic: "الْمُسْلِمُونَ", correct: 1 },
 ];
@@ -190,7 +206,11 @@ export async function saveLearningPath(
   if (error || !path) throw error ?? new Error("Could not save learning path");
 
   await supabase.from("learning_path_steps").delete().eq("path_id", path.id);
-  const rows = buildPathSteps(level).map((step) => ({ ...step, path_id: path.id, user_id: userId }));
+  const rows = buildPathSteps(level).map((step) => ({
+    ...step,
+    path_id: path.id,
+    user_id: userId,
+  }));
   const { error: stepsError } = await supabase.from("learning_path_steps").insert(rows);
   if (stepsError) throw stepsError;
   return path.id;

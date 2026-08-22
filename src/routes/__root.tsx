@@ -84,8 +84,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "QuranRoots — Learn Arabic. Understand the Qur'an." },
       {
         name: "description",
-        content:
-          "Build your Qur'anic Arabic skills one word, one verse, and one lesson at a time.",
+        content: "Build your Qur'anic Arabic skills one word, one verse, and one lesson at a time.",
       },
       { name: "author", content: "QuranRoots" },
       { property: "og:type", content: "website" },

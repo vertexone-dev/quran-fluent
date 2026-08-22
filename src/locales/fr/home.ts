@@ -5,8 +5,7 @@ export const home: typeof EnHome = {
     badge: "L'arabe coranique, étape par étape",
     titleLine1: "Apprenez l'arabe.",
     titleLine2: "Comprenez le Coran.",
-    subtitle:
-      "Progressez en arabe coranique, un mot, un verset et une leçon à la fois.",
+    subtitle: "Progressez en arabe coranique, un mot, un verset et une leçon à la fois.",
     note: "Le texte coranique et les traductions proviennent exclusivement de sources vérifiées.",
   },
   how: {
@@ -131,12 +130,7 @@ export const home: typeof EnHome = {
       },
       {
         phase: "Phase 5 — avancé",
-        items: [
-          "Explorateur de racines",
-          "Grammaire",
-          "Tajwid",
-          "Score de compréhension du Coran",
-        ],
+        items: ["Explorateur de racines", "Grammaire", "Tajwid", "Score de compréhension du Coran"],
       },
       {
         phase: "Phase 6 — tuteur IA",

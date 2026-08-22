@@ -29,8 +29,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "QuranRoots — Learn Arabic. Understand the Qur'an." },
       {
         property: "og:description",
-        content:
-          "Build your Qur'anic Arabic skills one word, one verse, and one lesson at a time.",
+        content: "Build your Qur'anic Arabic skills one word, one verse, and one lesson at a time.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

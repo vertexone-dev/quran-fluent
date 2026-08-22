@@ -30,9 +30,11 @@ export const progress: typeof EnProgress = {
     mastered: "Maîtrisé",
   },
   weakAreas: "Points faibles",
-  weakAreasEmpty: "Aucun point faible pour le moment. Passez le test de placement ou pratiquez pour les faire apparaître.",
+  weakAreasEmpty:
+    "Aucun point faible pour le moment. Passez le test de placement ou pratiquez pour les faire apparaître.",
   vocabularyTitle: "Force du vocabulaire",
-  vocabularyEmpty: "Vous n'avez encore enregistré aucun mot. Visitez la page du Coran pour commencer à construire votre vocabulaire.",
+  vocabularyEmpty:
+    "Vous n'avez encore enregistré aucun mot. Visitez la page du Coran pour commencer à construire votre vocabulaire.",
   recentActivity: "Activité récente",
   weeklyMinutes: "7 derniers jours",
   today: "Aujourd'hui",

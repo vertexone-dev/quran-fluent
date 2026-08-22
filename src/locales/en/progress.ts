@@ -29,7 +29,8 @@ export const progress = {
   weakAreas: "Weak areas",
   weakAreasEmpty: "No weak areas yet. Take the placement test or practice to reveal them.",
   vocabularyTitle: "Vocabulary strength",
-  vocabularyEmpty: "You haven't saved any words yet. Visit the Qur'an page to start building your vocabulary.",
+  vocabularyEmpty:
+    "You haven't saved any words yet. Visit the Qur'an page to start building your vocabulary.",
   recentActivity: "Recent activity",
   weeklyMinutes: "Past 7 days",
   today: "Today",

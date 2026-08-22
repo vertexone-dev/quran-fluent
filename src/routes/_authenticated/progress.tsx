@@ -17,9 +17,15 @@ export const Route = createFileRoute("/_authenticated/progress")({
   head: () => ({
     meta: [
       { title: "Your progress — QuranRoots" },
-      { name: "description", content: "Streaks, vocabulary mastery, reading level and study time." },
+      {
+        name: "description",
+        content: "Streaks, vocabulary mastery, reading level and study time.",
+      },
       { property: "og:title", content: "Your progress — QuranRoots" },
-      { property: "og:description", content: "Meaningful progress visualisations built from real activity." },
+      {
+        property: "og:description",
+        content: "Meaningful progress visualisations built from real activity.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "robots", content: "noindex" },
@@ -162,7 +168,9 @@ function ProgressPage() {
                   return (
                     <li key={status}>
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">{p.vocabulary[labelKey as keyof typeof p.vocabulary]}</span>
+                        <span className="text-muted-foreground">
+                          {p.vocabulary[labelKey as keyof typeof p.vocabulary]}
+                        </span>
                         <span className="font-medium">
                           {count} ({Math.round(percentage)}%)
                         </span>

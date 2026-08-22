@@ -13,7 +13,9 @@ export function SiteFooter() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div>
             <Logo tagline />
-            <p className="mt-4 max-w-sm text-sm text-muted-foreground">{t("common.footer.intro")}</p>
+            <p className="mt-4 max-w-sm text-sm text-muted-foreground">
+              {t("common.footer.intro")}
+            </p>
             <div className="mt-5">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {t("common.language.label")}

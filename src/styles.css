@@ -108,18 +108,24 @@
   --sidebar-border: oklch(0.886 0.026 87.8);
   --sidebar-ring: oklch(0.469 0.07 132.8);
 
-  --gradient-hero: radial-gradient(
+  --gradient-hero:
+    radial-gradient(
       120% 90% at 15% 0%,
       color-mix(in oklab, var(--gold) 16%, transparent),
       transparent 60%
     ),
-    linear-gradient(160deg, var(--background), color-mix(in oklab, var(--parchment) 85%, transparent));
+    linear-gradient(
+      160deg,
+      var(--background),
+      color-mix(in oklab, var(--parchment) 85%, transparent)
+    );
   --gradient-emerald: linear-gradient(
     145deg,
     var(--primary),
     color-mix(in oklab, var(--primary) 72%, var(--gold))
   );
-  --shadow-soft: 0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent),
+  --shadow-soft:
+    0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent),
     0 12px 32px -18px color-mix(in oklab, var(--primary) 45%, transparent);
   --shadow-elevated: 0 24px 60px -30px color-mix(in oklab, var(--primary) 55%, transparent);
 }
@@ -163,7 +169,8 @@
   --sidebar-border: oklch(0.949 0.02 88 / 14%);
   --sidebar-ring: oklch(0.719 0.084 133.7);
 
-  --gradient-hero: radial-gradient(
+  --gradient-hero:
+    radial-gradient(
       120% 90% at 15% 0%,
       color-mix(in oklab, var(--gold) 12%, transparent),
       transparent 60%

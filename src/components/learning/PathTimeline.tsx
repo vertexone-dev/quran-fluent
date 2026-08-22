@@ -46,7 +46,9 @@ export function PathTimeline({ steps }: { steps: LearningPathStep[] }) {
             </span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-display text-base font-semibold">{meta?.label ?? step.step_key}</h3>
+                <h3 className="font-display text-base font-semibold">
+                  {meta?.label ?? step.step_key}
+                </h3>
                 <Badge variant={active ? "default" : "outline"}>{copy.status[step.status]}</Badge>
               </div>
               <p className="mt-1 text-sm text-muted-foreground">{meta?.blurb}</p>

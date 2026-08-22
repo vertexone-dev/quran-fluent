@@ -75,11 +75,13 @@ const STARTER_CONTENT: Record<string, { front: string; back: string; context?: s
     { front: "فُ", back: "fu — Damma (u)", context: "Short vowel 'u'" },
   ],
   connected_letters: [
-    { front: "كـ / ـك / ـكـ / ك", back: "All forms of Kāf", context: "Initial, medial, final and isolated" },
+    {
+      front: "كـ / ـك / ـكـ / ك",
+      back: "All forms of Kāf",
+      context: "Initial, medial, final and isolated",
+    },
   ],
-  reading: [
-    { front: "كِتَاب", back: "kitāb — book", context: "A common Qur'anic word" },
-  ],
+  reading: [{ front: "كِتَاب", back: "kitāb — book", context: "A common Qur'anic word" }],
   vocabulary: [
     { front: "رَحْمَة", back: "mercy", context: "One of the most frequent words in the Qur'an" },
     { front: "رَبّ", back: "Lord and Sustainer", context: "Often paired with 'al-'ālamīn'" },
@@ -91,13 +93,20 @@ const STARTER_CONTENT: Record<string, { front: string; back: string; context?: s
     { front: "بِسْمِ", back: "bi-smi — 'in the name of'", context: "Preposition bi- + noun" },
   ],
   ayah_comprehension: [
-    { front: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ", back: "All praise is due to Allah, Lord of the worlds", context: "Al-Fatiha 1:2" },
+    {
+      front: "الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ",
+      back: "All praise is due to Allah, Lord of the worlds",
+      context: "Al-Fatiha 1:2",
+    },
   ],
   surah_mastery: [
-    { front: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ", back: "In the name of Allah, the Most Gracious, the Most Merciful", context: "Every Surah but one begins with this" },
+    {
+      front: "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ",
+      back: "In the name of Allah, the Most Gracious, the Most Merciful",
+      context: "Every Surah but one begins with this",
+    },
   ],
 };
-
 
 /**
  * Spaced repetition works on the learner's *local* calendar day. Using the UTC
@@ -183,7 +192,13 @@ export async function seedStarterItemsForStep(userId: string, stepKey: string) {
   const content = STARTER_CONTENT[stepKey] ?? [];
   const rows = content.map((item) => ({
     user_id: userId,
-    item_type: (stepKey === "roots" ? "root" : stepKey === "ayah_comprehension" || stepKey === "surah_mastery" ? "ayah" : stepKey === "vocabulary" || stepKey === "reading" ? "word" : "letter") as ReviewItemType,
+    item_type: (stepKey === "roots"
+      ? "root"
+      : stepKey === "ayah_comprehension" || stepKey === "surah_mastery"
+        ? "ayah"
+        : stepKey === "vocabulary" || stepKey === "reading"
+          ? "word"
+          : "letter") as ReviewItemType,
     item_key: `${stepKey}:${item.front}`,
     front: item.front,
     back: item.back,
@@ -224,7 +239,10 @@ export async function getTodaysStudy(
       .limit(1),
   ]);
 
-  const items: DailyStudyItem[] = (due ?? []).map((item) => ({ kind: "review", item: item as ReviewItem }));
+  const items: DailyStudyItem[] = (due ?? []).map((item) => ({
+    kind: "review",
+    item: item as ReviewItem,
+  }));
 
   const weakArea = (weak ?? [])[0] as WeakArea | undefined;
   if (weakArea && items.length < limit) {
@@ -273,7 +291,10 @@ export async function recordPracticeAttempt(
     } else if (repetitions === 1) {
       nextInterval = 6;
     } else {
-      nextInterval = Math.min(MAX_INTERVAL_DAYS, Math.max(1, Math.round(interval_days * ease_factor)));
+      nextInterval = Math.min(
+        MAX_INTERVAL_DAYS,
+        Math.max(1, Math.round(interval_days * ease_factor)),
+      );
     }
     nextReps = repetitions + 1;
     nextEase = Math.min(MAX_EASE, ease_factor + 0.1);
@@ -367,8 +388,7 @@ export async function touchStreak(userId: string) {
   if (existing?.last_active_date === today) return;
 
   const yesterday = localDate(new Date(startOfLocalDay().getTime() - 24 * 60 * 60 * 1000));
-  const current =
-    existing?.last_active_date === yesterday ? (existing.current_streak ?? 0) + 1 : 1;
+  const current = existing?.last_active_date === yesterday ? (existing.current_streak ?? 0) + 1 : 1;
   const longest = Math.max(current, existing?.longest_streak ?? 0);
 
   await supabase.from("streaks").upsert(
@@ -432,11 +452,8 @@ export async function seedVocabularyToReviews(
   word: WordFrequency,
   locale: "en" | "fr",
 ) {
-  const back =
-    locale === "fr" && word.meaning_fr ? word.meaning_fr : word.meaning;
-  const contextParts = [word.transliteration ?? "", word.example_reference ?? ""].filter(
-    Boolean,
-  );
+  const back = locale === "fr" && word.meaning_fr ? word.meaning_fr : word.meaning;
+  const contextParts = [word.transliteration ?? "", word.example_reference ?? ""].filter(Boolean);
   if (word.example_ayah) {
     contextParts.push(`“${word.example_ayah}”`);
   }
@@ -457,5 +474,9 @@ export async function seedVocabularyToReviews(
 
 /** Remove the review item tied to a saved word when the user unsaves it. */
 export async function removeVocabularyReviewItem(userId: string, wordId: string) {
-  await supabase.from("review_items").delete().eq("user_id", userId).eq("item_key", `word:${wordId}`);
+  await supabase
+    .from("review_items")
+    .delete()
+    .eq("user_id", userId)
+    .eq("item_key", `word:${wordId}`);
 }
