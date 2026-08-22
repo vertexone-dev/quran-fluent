@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 
@@ -118,18 +117,21 @@ function AuthPage() {
     }
   }
 
+  // Native Supabase OAuth. Not wired to any button yet — the Google
+  // provider isn't enabled on the Supabase project (see project audit),
+  // so this is kept implemented-but-unused rather than shipping a
+  // clickable button that redirects into a provider error. Wire it back
+  // in once the provider is enabled in Supabase's Auth settings.
   async function signInWithGoogle() {
     setBusy(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/dashboard` },
     });
-    if (result.error) {
+    if (error) {
       setBusy(false);
       toast.error(a.googleError);
-      return;
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard" });
   }
 
   return (
@@ -230,23 +232,11 @@ function AuthPage() {
                 </Button>
               </form>
 
-              {mode !== "forgot" && (
-                <>
-                  <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="h-px flex-1 bg-border" />
-                    {a.or}
-                    <span className="h-px flex-1 bg-border" />
-                  </div>
-                  <Button
-                    variant="secondary"
-                    className="w-full"
-                    onClick={signInWithGoogle}
-                    disabled={busy}
-                  >
-                    {a.google}
-                  </Button>
-                </>
-              )}
+              {/* Google sign-in is hidden until the Google provider is
+                  enabled in Supabase's Auth settings — see
+                  signInWithGoogle() above. No "or" divider either, since
+                  it has nothing to separate the password form from right
+                  now. */}
 
               <div className="mt-6 space-y-2 text-center text-sm text-muted-foreground">
                 {mode === "login" && (
