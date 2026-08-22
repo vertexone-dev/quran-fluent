@@ -109,6 +109,8 @@ export async function resetTestUserData(client: SupabaseClient, userId: string) 
     "placement_attempts",
     "learning_paths", // cascades learning_path_steps
     "user_vocabulary",
+    "user_exercise_attempts",
+    "user_lesson_progress",
   ];
   for (const table of deletions) {
     const { error } = await client.from(table).delete().eq("user_id", userId);
