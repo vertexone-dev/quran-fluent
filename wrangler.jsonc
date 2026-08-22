@@ -1,0 +1,13 @@
+{
+  // Pins the deployed Worker name. Without this file, Nitro's Cloudflare
+  // preset auto-generates a name from the git remote's org/repo
+  // ("vertexone-dev-quran-fluent") instead of package.json's "quranroots" —
+  // see nitro's generateWorkerName() in node_modules/nitro/dist/_presets.mjs.
+  // This ensures every build/deploy consistently targets the existing
+  // "quranroots" Worker rather than creating a differently-named one.
+  //
+  // Every other field (main, assets, compatibility_date, compatibility_flags,
+  // rules, etc.) is left for Nitro to generate automatically at build time —
+  // intentionally not duplicated here.
+  "name": "quranroots"
+}
