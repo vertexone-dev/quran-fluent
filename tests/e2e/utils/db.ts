@@ -141,6 +141,31 @@ export async function resetTestUserData(client: SupabaseClient, userId: string) 
   if (profileError) throw new Error(`Failed to reset profile: ${profileError.message}`);
 }
 
+/**
+ * Deletes both the position/status row and any exercise-attempt rows for
+ * one lesson, so a lifecycle test — and critically, a Playwright *retry* of
+ * a `test.describe.serial` group — always starts from a genuinely clean
+ * slate. `user_exercise_attempts` is intentionally append-only application
+ * data: when a serial group retries, Playwright re-runs it from its first
+ * test, which re-answers exercises already answered in the abandoned
+ * attempt. If only `user_lesson_progress` were cleared, those old attempt
+ * rows would survive into the retry and any later count-based assertion in
+ * the group (e.g. `expect(count).toBe(3)`) would see double.
+ */
+export async function resetLessonProgress(lessonId: string): Promise<void> {
+  const { client, userId } = await createTestUserClient();
+  await client
+    .from("user_exercise_attempts")
+    .delete()
+    .eq("user_id", userId)
+    .eq("lesson_id", lessonId);
+  await client
+    .from("user_lesson_progress")
+    .delete()
+    .eq("user_id", userId)
+    .eq("lesson_id", lessonId);
+}
+
 export async function countRows(
   client: SupabaseClient,
   table: string,

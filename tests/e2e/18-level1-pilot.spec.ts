@@ -1,6 +1,6 @@
 import { test, expect, type APIRequestContext } from "@playwright/test";
 
-import { createTestUserClient } from "./utils/db";
+import { createTestUserClient, resetLessonProgress } from "./utils/db";
 
 /**
  * Covers Sub-phase 2.3 — the Level 1 pilot module ("Letter Shapes I"),
@@ -22,23 +22,6 @@ async function fetchLessonId(request: APIRequestContext, slug: string): Promise<
   const rows = (await apiGet(request, `lessons?select=id&slug=eq.${slug}`)) as { id: string }[];
   if (rows.length !== 1) throw new Error(`Lesson "${slug}" not found.`);
   return rows[0]!.id;
-}
-
-/**
- * Several checks below reuse the same lesson and assume a fresh
- * (not_started) view. Progress genuinely persists across page loads by
- * design (that's the resume feature), so without this reset a lesson
- * already advanced by one test would resume mid-lesson in the next one
- * that opens it. Deleting any prior row makes each such test independent
- * of run order.
- */
-async function resetLessonProgress(lessonId: string): Promise<void> {
-  const { client, userId } = await createTestUserClient();
-  await client
-    .from("user_lesson_progress")
-    .delete()
-    .eq("user_id", userId)
-    .eq("lesson_id", lessonId);
 }
 
 test.describe("Level 1 pilot module", () => {
@@ -130,6 +113,11 @@ test.describe("Level 1 pilot module", () => {
     test("starting the lesson persists in_progress, and completing both exercises persists completion", async ({
       page,
     }) => {
+      // Guards against a Playwright retry of this serial group: without
+      // this, a retry would re-answer both exercises on top of the
+      // abandoned attempt's rows (user_exercise_attempts is append-only),
+      // and the count assertion below would see 4 instead of 2.
+      await resetLessonProgress(lessonId);
       await page.goto(`/lesson/${lessonId}`);
       await expect(
         page.getByRole("heading", { level: 1, name: "The First Letter: Alif" }),

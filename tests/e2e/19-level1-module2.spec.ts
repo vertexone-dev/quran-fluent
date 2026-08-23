@@ -1,6 +1,6 @@
 import { test, expect, type APIRequestContext } from "@playwright/test";
 
-import { createTestUserClient } from "./utils/db";
+import { createTestUserClient, resetLessonProgress } from "./utils/db";
 
 /**
  * Covers Sub-phase 2.4 — the first chunk of Level 1 Module 2 ("Letter
@@ -23,15 +23,6 @@ async function fetchLessonId(request: APIRequestContext, slug: string): Promise<
   const rows = (await apiGet(request, `lessons?select=id&slug=eq.${slug}`)) as { id: string }[];
   if (rows.length !== 1) throw new Error(`Lesson "${slug}" not found.`);
   return rows[0]!.id;
-}
-
-async function resetLessonProgress(lessonId: string): Promise<void> {
-  const { client, userId } = await createTestUserClient();
-  await client
-    .from("user_lesson_progress")
-    .delete()
-    .eq("user_id", userId)
-    .eq("lesson_id", lessonId);
 }
 
 test.describe("Level 1 Module 2 (Letter Shapes II, chunk 1)", () => {
@@ -259,6 +250,22 @@ test.describe("Level 1 Module 2 (Letter Shapes II, chunk 1)", () => {
       if (error) throw error;
       expect(count).toBe(3);
       expect(data[0]?.correct).toBe(false);
+
+      // The two Next clicks above persist position fire-and-forget (the
+      // same asymmetry documented in the previous test) — wait for the
+      // write to actually land before the next test navigates fresh, or
+      // that navigation can race it and resume at a stale, earlier step.
+      await expect
+        .poll(async () => {
+          const { data: progress } = await client
+            .from("user_lesson_progress")
+            .select("last_section_index")
+            .eq("user_id", userId)
+            .eq("lesson_id", lessonId)
+            .single();
+          return progress?.last_section_index;
+        })
+        .toBe(4);
     });
 
     test("completing the lesson via the final matching exercise persists completed status", async ({

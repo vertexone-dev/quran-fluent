@@ -1,6 +1,6 @@
 import { test, expect, type APIRequestContext } from "@playwright/test";
 
-import { createTestUserClient } from "./utils/db";
+import { createTestUserClient, resetLessonProgress } from "./utils/db";
 
 /**
  * Covers Sub-phase 2.2 — the first real lesson player, built against the
@@ -102,6 +102,11 @@ test.describe("lesson player", () => {
     test("opens the lesson, shows title and module context, and renders the section before the exercise", async ({
       page,
     }) => {
+      // Guards against a Playwright retry of this serial group: without
+      // this, a retry would re-answer the exercise on top of the
+      // abandoned attempt's row (user_exercise_attempts is append-only),
+      // and the count assertion two tests down would see 4 instead of 2.
+      await resetLessonProgress(lessonId);
       await page.goto(`/lesson/${lessonId}`);
       await expect(
         page.getByRole("heading", { level: 1, name: PLACEHOLDER_TITLE_EN }),
