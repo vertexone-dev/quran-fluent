@@ -26,15 +26,17 @@ async function fetchLessonId(request: APIRequestContext, slug: string): Promise<
 }
 
 test.describe("Level 1 Module 2 (Letter Shapes II, chunk 1)", () => {
-  test("the 5 module-2 lessons exist, in order, in the correct module", async ({ request }) => {
+  test("the 5 chunk-1 lessons exist, in order, at the start of the module", async ({ request }) => {
     const moduleRows = (await apiGet(request, "modules?select=id&slug=eq.letter-shapes-2")) as {
       id: string;
     }[];
     const moduleId = moduleRows[0]!.id;
 
+    // Scoped to the first 5 (chunk 1's own lessons), not "every lesson in
+    // the module" — chunk 2 legitimately added 4 more after this shipped.
     const lessons = (await apiGet(
       request,
-      `lessons?select=slug,order_index&module_id=eq.${moduleId}&order=order_index.asc`,
+      `lessons?select=slug,order_index&module_id=eq.${moduleId}&order=order_index.asc&limit=5`,
     )) as { slug: string; order_index: number }[];
 
     expect(lessons.map((l) => l.slug)).toEqual([

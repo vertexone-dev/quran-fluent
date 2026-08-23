@@ -70,6 +70,7 @@ export default defineConfig({
         "17-lesson-player.spec.ts",
         "18-level1-pilot.spec.ts",
         "19-level1-module2.spec.ts",
+        "20-level1-module2-chunk2.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
