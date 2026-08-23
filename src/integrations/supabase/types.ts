@@ -192,6 +192,7 @@ export type Database = {
           completed_at: string | null;
           created_at: string;
           id: string;
+          lesson_id: string | null;
           order_index: number;
           path_id: string;
           progress: number;
@@ -204,6 +205,7 @@ export type Database = {
           completed_at?: string | null;
           created_at?: string;
           id?: string;
+          lesson_id?: string | null;
           order_index: number;
           path_id: string;
           progress?: number;
@@ -216,6 +218,7 @@ export type Database = {
           completed_at?: string | null;
           created_at?: string;
           id?: string;
+          lesson_id?: string | null;
           order_index?: number;
           path_id?: string;
           progress?: number;
@@ -230,6 +233,13 @@ export type Database = {
             columns: ["path_id"];
             isOneToOne: false;
             referencedRelation: "learning_paths";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "learning_path_steps_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
             referencedColumns: ["id"];
           },
         ];

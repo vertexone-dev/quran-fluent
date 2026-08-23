@@ -264,6 +264,9 @@ export const learning = {
     takeTest: "Take the placement test",
     viewPath: "View my learning path",
     stepOf: "Stage {index} of {total}",
+    openLesson: "Start lesson",
+    reviewLesson: "Review lesson",
+    continueLesson: "Continue lesson",
     status: {
       locked: "Locked",
       available: "Up next",

@@ -72,6 +72,7 @@ export default defineConfig({
         "19-level1-module2.spec.ts",
         "20-level1-module2-chunk2.spec.ts",
         "21-lesson-review-integration.spec.ts",
+        "22-placement-curriculum.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],

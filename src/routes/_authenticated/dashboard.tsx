@@ -193,7 +193,13 @@ function Dashboard() {
                   </>
                 )}
               </div>
-              {recommended ? (
+              {recommended?.lesson_id ? (
+                <Button className="shrink-0" asChild>
+                  <Link to="/lesson/$lessonId" params={{ lessonId: recommended.lesson_id }}>
+                    {pathCopy.continueLesson}
+                  </Link>
+                </Button>
+              ) : recommended ? (
                 <Button className="shrink-0" asChild>
                   <Link to="/learning-plan">{pathCopy.viewPath}</Link>
                 </Button>

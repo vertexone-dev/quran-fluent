@@ -279,6 +279,9 @@ export const learning: typeof EnLearning = {
     takeTest: "Passer le test de niveau",
     viewPath: "Voir mon parcours",
     stepOf: "Étape {index} sur {total}",
+    openLesson: "Commencer la leçon",
+    reviewLesson: "Revoir la leçon",
+    continueLesson: "Continuer la leçon",
     status: {
       locked: "Verrouillé",
       available: "À suivre",

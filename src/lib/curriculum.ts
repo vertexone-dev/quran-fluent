@@ -209,6 +209,85 @@ export async function fetchLessonProgress(
   return data as UserLessonProgress | null;
 }
 
+const PLACEHOLDER_LESSON_SLUG = "schema-validation-placeholder";
+
+export type CurriculumEntryPoint = {
+  lessonId: string;
+  slug: string;
+  titleEn: string;
+  titleFr: string;
+  moduleSlug: string;
+  completedCount: number;
+  totalCount: number;
+};
+
+/**
+ * The current real curriculum entry point for Level 1: the first
+ * not-yet-completed lesson across letter-shapes-1 and letter-shapes-2, in
+ * module then lesson order, excluding the schema-validation placeholder
+ * (test-only content, never a real entry point). Returns null only when
+ * there is no real content to enter at all. When every real lesson is
+ * already completed, this still returns the last one (so there's always
+ * something to open and review) — completedCount === totalCount is how a
+ * caller distinguishes "fully done" from "in progress" without this
+ * function guessing what a "done" destination should look like.
+ */
+export async function findLevel1EntryPoint(userId: string): Promise<CurriculumEntryPoint | null> {
+  const { data: modules, error: modulesError } = await supabase
+    .from("modules")
+    .select("id, slug, order_index")
+    .in("slug", ["letter-shapes-1", "letter-shapes-2"])
+    .order("order_index", { ascending: true });
+  if (modulesError) throw modulesError;
+  if (!modules || modules.length === 0) return null;
+
+  const moduleById = new Map(modules.map((m) => [m.id, m]));
+  const { data: lessons, error: lessonsError } = await supabase
+    .from("lessons")
+    .select("id, slug, title_en, title_fr, module_id, order_index")
+    .in(
+      "module_id",
+      modules.map((m) => m.id),
+    )
+    .neq("slug", PLACEHOLDER_LESSON_SLUG);
+  if (lessonsError) throw lessonsError;
+  if (!lessons || lessons.length === 0) return null;
+
+  const sorted = [...lessons].sort((a, b) => {
+    const moduleOrderA = moduleById.get(a.module_id)!.order_index;
+    const moduleOrderB = moduleById.get(b.module_id)!.order_index;
+    return moduleOrderA !== moduleOrderB
+      ? moduleOrderA - moduleOrderB
+      : a.order_index - b.order_index;
+  });
+
+  const { data: progress, error: progressError } = await supabase
+    .from("user_lesson_progress")
+    .select("lesson_id, status")
+    .eq("user_id", userId)
+    .in(
+      "lesson_id",
+      sorted.map((l) => l.id),
+    );
+  if (progressError) throw progressError;
+
+  const completedIds = new Set(
+    (progress ?? []).filter((p) => p.status === "completed").map((p) => p.lesson_id),
+  );
+  const target = sorted.find((l) => !completedIds.has(l.id)) ?? sorted[sorted.length - 1]!;
+  const targetModule = moduleById.get(target.module_id)!;
+
+  return {
+    lessonId: target.id,
+    slug: target.slug,
+    titleEn: target.title_en,
+    titleFr: target.title_fr,
+    moduleSlug: targetModule.slug,
+    completedCount: completedIds.size,
+    totalCount: sorted.length,
+  };
+}
+
 /** Idempotent upsert into `in_progress`. `startedAt` should be the existing
  * row's started_at when resuming, so re-entering a lesson never resets it. */
 export async function upsertLessonProgressInProgress(

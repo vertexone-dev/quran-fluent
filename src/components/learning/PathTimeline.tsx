@@ -1,6 +1,8 @@
+import { Link } from "@tanstack/react-router";
 import { Check, Circle, Lock, PlayCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import type { LearningPathStep } from "@/lib/placement";
@@ -55,6 +57,19 @@ export function PathTimeline({ steps }: { steps: LearningPathStep[] }) {
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("learning.path.stepOf", { index: index + 1, total: steps.length })}
               </p>
+              {/* Only ever rendered when lesson_id is set, which only ever
+                  happens for real curriculum content (see saveLearningPath
+                  in src/lib/placement.ts) — never a guessed link, and a
+                  legacy step saved before this column existed simply has
+                  no lesson_id yet, so it falls through to the same
+                  read-only display this timeline always had. */}
+              {step.lesson_id && step.status !== "locked" && (
+                <Button size="sm" variant="outline" className="mt-3" asChild>
+                  <Link to="/lesson/$lessonId" params={{ lessonId: step.lesson_id }}>
+                    {step.status === "completed" ? copy.reviewLesson : copy.openLesson}
+                  </Link>
+                </Button>
+              )}
             </div>
           </li>
         );

@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { findLevel1EntryPoint } from "./curriculum";
 
 /**
  * Placement test + personalized learning path.
@@ -161,6 +162,11 @@ export type LearningPathStep = {
   order_index: number;
   status: "locked" | "available" | "in_progress" | "completed";
   progress: number;
+  /** Real curriculum entry point for this step, when one exists. Null for
+   * every step whose module has no real content yet (Task H: never a
+   * guessed/fake link), and for legacy rows saved before this column
+   * existed — those pick one up the next time the path is regenerated. */
+  lesson_id: string | null;
 };
 
 export type LearningPath = {
@@ -180,7 +186,7 @@ export async function fetchLearningPath(userId: string): Promise<LearningPath | 
 
   const { data: steps } = await supabase
     .from("learning_path_steps")
-    .select("id, step_key, order_index, status, progress")
+    .select("id, step_key, order_index, status, progress, lesson_id")
     .eq("path_id", path.id)
     .order("order_index", { ascending: true });
 
@@ -192,7 +198,28 @@ export async function fetchLearningPath(userId: string): Promise<LearningPath | 
   };
 }
 
-/** Creates or replaces the learner's path for the chosen level. */
+/**
+ * Creates or replaces the learner's path for the chosen level.
+ *
+ * The 'alphabet' step's lesson_id/status/progress are always overridden
+ * from real user_lesson_progress via findLevel1EntryPoint, regardless of
+ * level — never left at buildPathSteps' synthetic "completed because your
+ * placement level implies you're past this" value. The placement test has
+ * only 2 raw letter-recognition questions spanning both Level 1 modules
+ * (see Sub-phase 2.6's own placement audit), nowhere near enough to prove
+ * a learner has mastered all 28 isolated letter shapes — and Level 1 is
+ * also the only real curriculum that exists at all right now, so there is
+ * nowhere else real to send a higher-scoring learner anyway. Every other
+ * step's lesson_id stays null: Modules 3-8 have no real content, so
+ * nothing here ever fakes a link into them.
+ *
+ * This deletes and reinserts all 9 step rows on every call (including a
+ * placement retake), same as before this sub-phase — but because status/
+ * progress for the one step that matters is now derived from real
+ * completion data rather than stored, a retake can never regress a
+ * learner's visible progress: the recomputed value is the true value
+ * either way.
+ */
 export async function saveLearningPath(
   userId: string,
   level: PlacementLevel,
@@ -205,12 +232,33 @@ export async function saveLearningPath(
     .single();
   if (error || !path) throw error ?? new Error("Could not save learning path");
 
+  const entryPoint = await findLevel1EntryPoint(userId);
+
+  const rows = buildPathSteps(level).map((step) => {
+    if (step.step_key !== "alphabet" || !entryPoint) {
+      return { ...step, lesson_id: null, path_id: path.id, user_id: userId };
+    }
+    const status: LearningPathStep["status"] =
+      entryPoint.completedCount === entryPoint.totalCount
+        ? "completed"
+        : entryPoint.completedCount > 0
+          ? "in_progress"
+          : "available";
+    const progress =
+      entryPoint.totalCount === 0
+        ? 0
+        : Math.round((entryPoint.completedCount / entryPoint.totalCount) * 100);
+    return {
+      ...step,
+      status,
+      progress,
+      lesson_id: entryPoint.lessonId,
+      path_id: path.id,
+      user_id: userId,
+    };
+  });
+
   await supabase.from("learning_path_steps").delete().eq("path_id", path.id);
-  const rows = buildPathSteps(level).map((step) => ({
-    ...step,
-    path_id: path.id,
-    user_id: userId,
-  }));
   const { error: stepsError } = await supabase.from("learning_path_steps").insert(rows);
   if (stepsError) throw stepsError;
   return path.id;
