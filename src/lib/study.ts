@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { LessonExercise } from "./curriculum";
 import type { PlacementResult, PlacementSection } from "./placement";
 import type { WordFrequency } from "./vocabulary";
 
@@ -470,6 +471,83 @@ export async function seedVocabularyToReviews(
     },
     { onConflict: "user_id, item_key", ignoreDuplicates: false },
   );
+}
+
+/**
+ * Seeds one review_items row per {left, right} pair in a completed lesson's
+ * `matching` exercises — the only exercise type whose payload structurally
+ * carries both a glyph and its name together. `letter_recognition` tests
+ * the same glyphs but its payload has no name field (only a choices array),
+ * so a lesson with no matching exercise (e.g. the Alif lesson, Module 1's
+ * first) has no reliable, non-guessed source for the name and is left
+ * unseeded rather than parsed out of prose section text. `true_false` and
+ * `reading_check` exercises test a whole-script or multi-letter fact, not
+ * one durable glyph, so they're excluded the same way.
+ *
+ * item_key is scoped to the glyph alone (`${item_type}:${left}`), not the
+ * lesson or exercise, so a letter re-tested by a later recap exercise
+ * (chunk 2's closing lesson re-tests two chunk-1 letters) resolves to the
+ * SAME review item instead of a duplicate — the durable concept is
+ * "know this letter," not "encountered it in this specific exercise." That
+ * scoping, combined with `ignoreDuplicates: true`, is also what makes this
+ * idempotent: replaying a lesson (or a completion retry) never creates a
+ * second row or resets a learner's accumulated SM-2 progress on an
+ * already-seeded item.
+ *
+ * `back` is the transliterated name as authored (e.g. "Bā'", "Kāf") — the
+ * same string regardless of interface language, since transliterations
+ * aren't translated per locale anywhere else in this schema either. `back`
+ * is not locale-baked because there is nothing to bake: the only
+ * locale-dependent piece is `context`, so that alone takes the caller's
+ * locale, following the same pattern already used by
+ * seedVocabularyToReviews.
+ *
+ * step_key is left null: no learning_path_steps <-> curriculum module
+ * mapping has been established (documented as unresolved since
+ * Sub-phase 2.4), and guessing one here would silently create the exact
+ * hardcoded linkage that phase explicitly avoided.
+ */
+export async function seedLessonReviewItems(
+  userId: string,
+  lesson: { title_en: string; title_fr: string; exercises: LessonExercise[] },
+  locale: "en" | "fr",
+): Promise<void> {
+  const rows: {
+    user_id: string;
+    item_type: ReviewItemType;
+    item_key: string;
+    front: string;
+    back: string;
+    context: string;
+  }[] = [];
+
+  const seenKeys = new Set<string>();
+  for (const exercise of lesson.exercises) {
+    if (exercise.exercise_type !== "matching") continue;
+    const pairs = exercise.payload["pairs"] as { left: string; right: string }[] | undefined;
+    if (!pairs) continue;
+
+    for (const pair of pairs) {
+      const itemKey = `${exercise.review_item_type}:${pair.left}`;
+      if (seenKeys.has(itemKey)) continue;
+      seenKeys.add(itemKey);
+      rows.push({
+        user_id: userId,
+        item_type: exercise.review_item_type,
+        item_key: itemKey,
+        front: pair.left,
+        back: pair.right,
+        context: locale === "fr" ? lesson.title_fr : lesson.title_en,
+      });
+    }
+  }
+
+  if (rows.length === 0) return;
+
+  const { error } = await supabase
+    .from("review_items")
+    .upsert(rows, { onConflict: "user_id, item_key", ignoreDuplicates: true });
+  if (error) throw error;
 }
 
 /** Remove the review item tied to a saved word when the user unsaves it. */

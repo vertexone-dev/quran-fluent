@@ -63,7 +63,10 @@ function PracticeHome({ userId, onStart }: { userId: string; onStart: () => void
   });
 
   const total =
-    (summary?.vocabularyDue ?? 0) + (summary?.weakAreaCount ?? 0) + (summary?.memorizationDue ?? 0);
+    (summary?.vocabularyDue ?? 0) +
+    (summary?.weakAreaCount ?? 0) +
+    (summary?.memorizationDue ?? 0) +
+    (summary?.lettersDue ?? 0);
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-10">

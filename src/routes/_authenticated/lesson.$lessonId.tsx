@@ -24,6 +24,7 @@ import {
   upsertLessonProgressInProgress,
   type PlayerStep,
 } from "@/lib/curriculum";
+import { seedLessonReviewItems } from "@/lib/study";
 
 export const Route = createFileRoute("/_authenticated/lesson/$lessonId")({
   head: () => ({
@@ -206,6 +207,7 @@ function LessonPlayerRoute() {
     if (!canAdvance || !user?.id || !startedAt) return;
     if (onLastStep) {
       await upsertLessonProgressCompleted(user.id, lessonId, totalSteps, startedAt);
+      await seedLessonReviewItems(user.id, lesson!, locale);
       await refetchProgress();
       setCompleted(true);
       return;
