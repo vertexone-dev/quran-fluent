@@ -69,6 +69,7 @@ export default defineConfig({
         "15-full-dataset.spec.ts",
         "17-lesson-player.spec.ts",
         "18-level1-pilot.spec.ts",
+        "19-level1-module2.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],

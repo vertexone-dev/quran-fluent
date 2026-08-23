@@ -65,12 +65,18 @@ test.describe("Level 1 pilot module", () => {
     expect(lessons.map((l) => l.order_index)).toEqual([0, 1, 2, 3, 999]);
   });
 
-  test("no other Level 1 module has real content yet", async ({ request }) => {
+  test("no Level 1 module beyond letter-shapes-1/letter-shapes-2 has real content yet", async ({
+    request,
+  }) => {
+    // letter-shapes-2 legitimately gained content in Sub-phase 2.4 — this
+    // check is scoped to the modules that should still be untouched, not
+    // to "everything except the pilot" (which was only ever true before
+    // 2.4 shipped).
     const otherModules = (await apiGet(
       request,
-      "modules?select=id,slug&slug=neq.letter-shapes-1",
+      "modules?select=id,slug&slug=neq.letter-shapes-1&slug=neq.letter-shapes-2",
     )) as { id: string; slug: string }[];
-    expect(otherModules.length).toBe(7);
+    expect(otherModules.length).toBe(6);
 
     for (const m of otherModules) {
       const lessons = (await apiGet(
