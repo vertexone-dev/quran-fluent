@@ -74,6 +74,7 @@ export default defineConfig({
         "21-lesson-review-integration.spec.ts",
         "22-placement-curriculum.spec.ts",
         "23-daily-learning-plan.spec.ts",
+        "24-practice-concept-review.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
