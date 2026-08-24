@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { findLevel1EntryPoint, pickLocale, type CurriculumEntryPoint } from "@/lib/curriculum";
 import { fetchLearningPath, nextStep } from "@/lib/placement";
 import {
   type DailyStudyItem,
@@ -36,7 +37,7 @@ export const Route = createFileRoute("/_authenticated/daily")({
 
 function DailyStudy() {
   const { user } = useAuth();
-  const { t, d } = useI18n();
+  const { t, d, locale } = useI18n();
   const copy = d.learning.daily;
 
   const [items, setItems] = useState<DailyStudyItem[]>([]);
@@ -49,6 +50,7 @@ function DailyStudy() {
   const [startTime] = useState(() => Date.now());
   const [elapsed, setElapsed] = useState(0);
   const [loadError, setLoadError] = useState(false);
+  const [lessonEntryPoint, setLessonEntryPoint] = useState<CurriculumEntryPoint | null>(null);
   const loggedRef = useRef(false);
 
   const learnerId = user?.id ?? null;
@@ -71,13 +73,24 @@ function DailyStudy() {
       setLoading(true);
       setLoadError(false);
       try {
-        const path = await fetchLearningPath(id);
+        const [path, entryPoint] = await Promise.all([
+          fetchLearningPath(id),
+          findLevel1EntryPoint(id),
+        ]);
         const step = nextStep(path)?.step_key ?? null;
-        if (step) {
+        // The 'alphabet' step now has real, lesson-seeded review items
+        // (Sub-phase 2.5) — seeding the old hardcoded starter flashcards
+        // for it too would just create confusing, duplicate cards for the
+        // same letters. Other steps still have no real content, so their
+        // starter seed remains the only thing they can offer.
+        if (step && step !== "alphabet") {
           await seedStarterItemsForStep(id, step);
         }
-        const queue = await getTodaysStudy(id, step, 12);
-        if (!cancelled) setItems(queue);
+        const queue = await getTodaysStudy(id, step, 12, entryPoint);
+        if (!cancelled) {
+          setItems(queue);
+          setLessonEntryPoint(entryPoint);
+        }
       } catch {
         if (!cancelled) setLoadError(true);
       } finally {
@@ -126,6 +139,14 @@ function DailyStudy() {
     );
   }
 
+  // Distinct from "never took placement": this learner has a real
+  // curriculum entry point and has finished every lesson currently
+  // authored for it — an honest, positive state, not a placement prompt.
+  const allLessonsComplete =
+    lessonEntryPoint !== null && lessonEntryPoint.completedCount === lessonEntryPoint.totalCount;
+  const hasIncompleteLesson =
+    lessonEntryPoint !== null && lessonEntryPoint.completedCount < lessonEntryPoint.totalCount;
+
   if (finished) {
     return (
       <main className="mx-auto w-full max-w-2xl px-4 py-10">
@@ -149,20 +170,45 @@ function DailyStudy() {
             </div>
           </CardContent>
         </Card>
+        {/* Reviews are done; the recommended lesson (if any) is presented
+            here rather than as a queue item — it's a one-way exit into the
+            real Lesson Player, never something this queue can mark
+            "answered" (see getTodaysStudy in src/lib/study.ts). */}
+        {hasIncompleteLesson && (
+          <div className="mt-4">
+            <LessonCard lesson={lessonEntryPoint} copy={copy} d={d} locale={locale} />
+          </div>
+        )}
       </main>
     );
   }
 
   if (items.length === 0) {
+    if (hasIncompleteLesson) {
+      return (
+        <main className="mx-auto w-full max-w-2xl px-4 py-10">
+          <h1 className="sr-only">{copy.title}</h1>
+          <LessonCard lesson={lessonEntryPoint} copy={copy} d={d} locale={locale} />
+        </main>
+      );
+    }
     return (
       <main className="mx-auto w-full max-w-2xl px-4 py-10">
         <Card className="shadow-soft">
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">{copy.empty}</p>
+            <p className="text-muted-foreground">
+              {allLessonsComplete ? copy.allLessonsComplete : copy.empty}
+            </p>
             <div className="mt-6 flex justify-center gap-3">
-              <Button asChild>
-                <Link to="/placement">{copy.takePlacement}</Link>
-              </Button>
+              {allLessonsComplete ? (
+                <Button asChild>
+                  <Link to="/learning-plan">{copy.viewLearningPlan}</Link>
+                </Button>
+              ) : (
+                <Button asChild>
+                  <Link to="/placement">{copy.takePlacement}</Link>
+                </Button>
+              )}
               <Button variant="secondary" asChild>
                 <Link to="/dashboard">{copy.backToDashboard}</Link>
               </Button>
@@ -178,6 +224,7 @@ function DailyStudy() {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10">
+      <h1 className="sr-only">{copy.title}</h1>
       <div className="mb-4 flex items-center justify-between">
         <Button variant="ghost" size="sm" asChild>
           <Link to="/dashboard">
@@ -337,6 +384,47 @@ function WeakAreaCard({
         </p>
         <p className="text-sm text-muted-foreground">{copy.weakAreaNote}</p>
         <Button onClick={onContinue}>{copy.markPracticed}</Button>
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * Unlike every other card here, answering this one means leaving the
+ * queue entirely — the click navigates to the real Lesson Player rather
+ * than advancing a local index, since actual lesson progress/completion
+ * is tracked by that page, not by this queue (Sub-phase 2.7).
+ */
+function LessonCard({
+  lesson,
+  copy,
+  d,
+  locale,
+}: {
+  lesson: CurriculumEntryPoint;
+  copy: ReturnType<typeof useI18n>["d"]["learning"]["daily"];
+  d: ReturnType<typeof useI18n>["d"];
+  locale: "en" | "fr";
+}) {
+  const title = pickLocale(lesson.titleEn, lesson.titleFr, locale);
+  const inProgress = lesson.completedCount > 0;
+  return (
+    <Card className="shadow-soft">
+      <CardHeader>
+        <CardTitle className="font-display text-xl">{copy.lessonCardTitle}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-lg font-semibold text-foreground">{title}</p>
+        <p className="text-sm text-muted-foreground">
+          {copy.lessonProgress
+            .replace("{completed}", String(lesson.completedCount))
+            .replace("{total}", String(lesson.totalCount))}
+        </p>
+        <Button asChild>
+          <Link to="/lesson/$lessonId" params={{ lessonId: lesson.lessonId }}>
+            {inProgress ? d.learning.path.continueLesson : d.learning.path.openLesson}
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );

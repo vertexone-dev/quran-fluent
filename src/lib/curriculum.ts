@@ -222,10 +222,15 @@ export type CurriculumEntryPoint = {
 };
 
 /**
- * The current real curriculum entry point for Level 1: the first
- * not-yet-completed lesson across letter-shapes-1 and letter-shapes-2, in
- * module then lesson order, excluding the schema-validation placeholder
- * (test-only content, never a real entry point). Returns null only when
+ * The current real curriculum entry point for Level 1 — the single
+ * authoritative "what lesson should this learner open next" resolver, used
+ * by the dashboard, learning plan, and Daily Study alike (Sub-phase 2.7:
+ * no route computes this independently). Prefers a lesson already
+ * in_progress, if one exists; otherwise the first not-yet-completed lesson
+ * across letter-shapes-1 and letter-shapes-2, in module then lesson order.
+ * Excludes the schema-validation placeholder (test-only content, never a
+ * real entry point) and never returns anything from Modules 3-8 (not
+ * queried at all — they have no real content). Returns null only when
  * there is no real content to enter at all. When every real lesson is
  * already completed, this still returns the last one (so there's always
  * something to open and review) — completedCount === totalCount is how a
@@ -271,10 +276,12 @@ export async function findLevel1EntryPoint(userId: string): Promise<CurriculumEn
     );
   if (progressError) throw progressError;
 
-  const completedIds = new Set(
-    (progress ?? []).filter((p) => p.status === "completed").map((p) => p.lesson_id),
-  );
-  const target = sorted.find((l) => !completedIds.has(l.id)) ?? sorted[sorted.length - 1]!;
+  const statusByLessonId = new Map((progress ?? []).map((p) => [p.lesson_id, p.status]));
+  const inProgress = sorted.find((l) => statusByLessonId.get(l.id) === "in_progress");
+  const target =
+    inProgress ??
+    sorted.find((l) => statusByLessonId.get(l.id) !== "completed") ??
+    sorted[sorted.length - 1]!;
   const targetModule = moduleById.get(target.module_id)!;
 
   return {
@@ -283,7 +290,7 @@ export async function findLevel1EntryPoint(userId: string): Promise<CurriculumEn
     titleEn: target.title_en,
     titleFr: target.title_fr,
     moduleSlug: targetModule.slug,
-    completedCount: completedIds.size,
+    completedCount: [...statusByLessonId.values()].filter((s) => s === "completed").length,
     totalCount: sorted.length,
   };
 }

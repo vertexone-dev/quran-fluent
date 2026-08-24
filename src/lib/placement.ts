@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { findLevel1EntryPoint } from "./curriculum";
+import { findLevel1EntryPoint, type CurriculumEntryPoint } from "./curriculum";
 
 /**
  * Placement test + personalized learning path.
@@ -176,6 +176,15 @@ export type LearningPath = {
   steps: LearningPathStep[];
 };
 
+/**
+ * Reads the learner's path, then resyncs the alphabet step's status/
+ * progress/lesson_id against real, live user_lesson_progress before
+ * returning it — the same computation saveLearningPath does at write
+ * time, applied again at read time so every caller (dashboard, Daily
+ * Study, learning plan) agrees with reality even between placement
+ * retakes, rather than showing whatever was stored at the last retake.
+ * A pure read-time projection, not a write: nothing is persisted here.
+ */
 export async function fetchLearningPath(userId: string): Promise<LearningPath | null> {
   const { data: path } = await supabase
     .from("learning_paths")
@@ -184,17 +193,26 @@ export async function fetchLearningPath(userId: string): Promise<LearningPath | 
     .maybeSingle();
   if (!path) return null;
 
-  const { data: steps } = await supabase
-    .from("learning_path_steps")
-    .select("id, step_key, order_index, status, progress, lesson_id")
-    .eq("path_id", path.id)
-    .order("order_index", { ascending: true });
+  const [{ data: steps }, entryPoint] = await Promise.all([
+    supabase
+      .from("learning_path_steps")
+      .select("id, step_key, order_index, status, progress, lesson_id")
+      .eq("path_id", path.id)
+      .order("order_index", { ascending: true }),
+    findLevel1EntryPoint(userId),
+  ]);
+
+  const resyncedSteps = ((steps ?? []) as LearningPathStep[]).map((step) =>
+    step.step_key === "alphabet" && entryPoint
+      ? { ...step, ...resolveAlphabetStepFields(entryPoint) }
+      : step,
+  );
 
   return {
     id: path.id,
     level: path.level as PlacementLevel,
     source: path.source,
-    steps: (steps ?? []) as LearningPathStep[],
+    steps: resyncedSteps,
   };
 }
 
@@ -220,6 +238,27 @@ export async function fetchLearningPath(userId: string): Promise<LearningPath | 
  * learner's visible progress: the recomputed value is the true value
  * either way.
  */
+/** Shared by saveLearningPath (write) and fetchLearningPath (read-time
+ * resync) — the one place that turns a live findLevel1EntryPoint result
+ * into the alphabet step's displayed status/progress/lesson_id. */
+function resolveAlphabetStepFields(entryPoint: CurriculumEntryPoint): {
+  status: LearningPathStep["status"];
+  progress: number;
+  lesson_id: string;
+} {
+  const status: LearningPathStep["status"] =
+    entryPoint.completedCount === entryPoint.totalCount
+      ? "completed"
+      : entryPoint.completedCount > 0
+        ? "in_progress"
+        : "available";
+  const progress =
+    entryPoint.totalCount === 0
+      ? 0
+      : Math.round((entryPoint.completedCount / entryPoint.totalCount) * 100);
+  return { status, progress, lesson_id: entryPoint.lessonId };
+}
+
 export async function saveLearningPath(
   userId: string,
   level: PlacementLevel,
@@ -238,21 +277,9 @@ export async function saveLearningPath(
     if (step.step_key !== "alphabet" || !entryPoint) {
       return { ...step, lesson_id: null, path_id: path.id, user_id: userId };
     }
-    const status: LearningPathStep["status"] =
-      entryPoint.completedCount === entryPoint.totalCount
-        ? "completed"
-        : entryPoint.completedCount > 0
-          ? "in_progress"
-          : "available";
-    const progress =
-      entryPoint.totalCount === 0
-        ? 0
-        : Math.round((entryPoint.completedCount / entryPoint.totalCount) * 100);
     return {
       ...step,
-      status,
-      progress,
-      lesson_id: entryPoint.lessonId,
+      ...resolveAlphabetStepFields(entryPoint),
       path_id: path.id,
       user_id: userId,
     };

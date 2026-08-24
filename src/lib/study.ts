@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { LessonExercise } from "./curriculum";
+import type { CurriculumEntryPoint, LessonExercise } from "./curriculum";
 import type { PlacementResult, PlacementSection } from "./placement";
 import type { WordFrequency } from "./vocabulary";
 
@@ -215,11 +215,35 @@ export async function seedStarterItemsForStep(userId: string, stepKey: string) {
   }
 }
 
-/** Build today's queue: due review items, then a weak-area focus, then a path preview. */
+/**
+ * Build today's queue: due review items, then a weak-area focus. The
+ * abstract path-preview fallback is appended only when there's no real
+ * lesson to recommend at all (a future, not-yet-built module).
+ *
+ * The recommended lesson itself is deliberately NOT a queue item here — an
+ * earlier version pushed one as a swipeable `{kind: "lesson"}` card, but
+ * unlike every other card in this queue it's a one-way exit link (opening
+ * the real Lesson Player), never something `advance()` can mark answered.
+ * A learner who reached it without clicking through would sit on an
+ * un-completable queue forever, and the finished/session-summary screen —
+ * along with the study-time logging tied to it — would never fire even
+ * though they'd genuinely finished every review. The caller instead shows
+ * the recommended lesson alongside the empty/finished states directly,
+ * using the live `findLevel1EntryPoint` result it already holds.
+ *
+ * `lessonEntryPoint` (Sub-phase 2.7) is that live result, not the stored
+ * learning_path_steps.lesson_id snapshot — a learner who finishes lessons
+ * without retaking placement still sees the correct next lesson. When
+ * Level 1 is fully complete (completedCount === totalCount), or a real
+ * lesson exists at all, the path_preview fallback never fires: the caller
+ * renders an honest "all done" state instead of a fake preview implying
+ * content that doesn't exist (Modules 3-8 have none).
+ */
 export async function getTodaysStudy(
   userId: string,
   pathStep: string | null,
   limit = 12,
+  lessonEntryPoint: CurriculumEntryPoint | null = null,
 ): Promise<DailyStudyItem[]> {
   const today = localDate();
 
@@ -250,7 +274,7 @@ export async function getTodaysStudy(
     items.push({ kind: "weak_area", area: weakArea });
   }
 
-  if (pathStep && items.length < limit) {
+  if (!lessonEntryPoint && pathStep && items.length < limit) {
     items.push({ kind: "path_preview", step_key: pathStep, label: "", blurb: "" });
   }
 
@@ -519,6 +543,7 @@ export async function seedLessonReviewItems(
     front: string;
     back: string;
     context: string;
+    due_date: string;
   }[] = [];
 
   const seenKeys = new Set<string>();
@@ -538,6 +563,16 @@ export async function seedLessonReviewItems(
         front: pair.left,
         back: pair.right,
         context: locale === "fr" ? lesson.title_fr : lesson.title_en,
+        // Explicit, not the column's CURRENT_DATE default: that default is
+        // evaluated by the DB server in UTC, while every "due today" read
+        // in this file (getTodaysStudy, fetchPracticeSummary's due-count,
+        // countDueReviews) compares against localDate() — the learner's
+        // device-local calendar day. Left implicit, a lesson completed
+        // after UTC midnight but before local midnight (true every evening
+        // for any timezone behind UTC) got a due_date one day in the
+        // future, making a review item invisible in Practice/Daily Study
+        // until the next local day even though it was seeded moments ago.
+        due_date: localDate(),
       });
     }
   }

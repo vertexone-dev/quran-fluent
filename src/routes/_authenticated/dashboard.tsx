@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProgressRing } from "@/components/common/ProgressRing";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { findLevel1EntryPoint, pickLocale } from "@/lib/curriculum";
 import { fetchLearnerSnapshot } from "@/lib/learner";
 import { fetchLearningPath, nextStep } from "@/lib/placement";
 import { countDueReviews, getDailyStats, getWeakAreas } from "@/lib/study";
@@ -58,7 +59,7 @@ const UNDERSTANDING_KEYS = [
 function Dashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { t, d } = useI18n();
+  const { t, d, locale } = useI18n();
   const copy = d.dashboard;
 
   const { data, isLoading } = useQuery({
@@ -70,6 +71,15 @@ function Dashboard() {
   const { data: path } = useQuery({
     queryKey: ["learning-path", user?.id],
     queryFn: () => fetchLearningPath(user!.id),
+    enabled: Boolean(user?.id),
+  });
+
+  // Live, always-accurate ("Continue learning" must never point at an
+  // already-completed lesson, even if the learner hasn't retaken
+  // placement since finishing it — see findLevel1EntryPoint).
+  const { data: lessonEntryPoint } = useQuery({
+    queryKey: ["level1-entry-point", user?.id],
+    queryFn: () => findLevel1EntryPoint(user!.id),
     enabled: Boolean(user?.id),
   });
 
@@ -174,7 +184,31 @@ function Dashboard() {
           <CardContent>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
-                {recommended && recommendedMeta ? (
+                {lessonEntryPoint &&
+                lessonEntryPoint.completedCount < lessonEntryPoint.totalCount ? (
+                  <>
+                    <Badge variant="secondary">{pathCopy.nextUp}</Badge>
+                    <h2 className="mt-3 font-display text-xl font-semibold">
+                      {pickLocale(lessonEntryPoint.titleEn, lessonEntryPoint.titleFr, locale)}
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {d.learning.daily.lessonProgress
+                        .replace("{completed}", String(lessonEntryPoint.completedCount))
+                        .replace("{total}", String(lessonEntryPoint.totalCount))}
+                    </p>
+                    <Progress
+                      value={(lessonEntryPoint.completedCount / lessonEntryPoint.totalCount) * 100}
+                      className="mt-4 max-w-sm"
+                    />
+                  </>
+                ) : lessonEntryPoint ? (
+                  <>
+                    <Badge variant="secondary">{copy.today.path.title}</Badge>
+                    <h2 className="mt-3 font-display text-xl font-semibold">
+                      {d.learning.daily.allLessonsComplete}
+                    </h2>
+                  </>
+                ) : recommended && recommendedMeta ? (
                   <>
                     <Badge variant="secondary">{pathCopy.nextUp}</Badge>
                     <h2 className="mt-3 font-display text-xl font-semibold">
@@ -193,11 +227,17 @@ function Dashboard() {
                   </>
                 )}
               </div>
-              {recommended?.lesson_id ? (
+              {lessonEntryPoint && lessonEntryPoint.completedCount < lessonEntryPoint.totalCount ? (
                 <Button className="shrink-0" asChild>
-                  <Link to="/lesson/$lessonId" params={{ lessonId: recommended.lesson_id }}>
-                    {pathCopy.continueLesson}
+                  <Link to="/lesson/$lessonId" params={{ lessonId: lessonEntryPoint.lessonId }}>
+                    {lessonEntryPoint.completedCount > 0
+                      ? pathCopy.continueLesson
+                      : pathCopy.openLesson}
                   </Link>
+                </Button>
+              ) : lessonEntryPoint ? (
+                <Button className="shrink-0" asChild>
+                  <Link to="/learning-plan">{d.learning.daily.viewLearningPlan}</Link>
                 </Button>
               ) : recommended ? (
                 <Button className="shrink-0" asChild>
@@ -280,7 +320,9 @@ function Dashboard() {
               <Library className="size-5 text-primary" aria-hidden />
               <h3 className="mt-3 font-display text-base font-semibold">{copy.today.path.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {recommended && recommendedMeta ? recommendedMeta.label : copy.today.path.none}
+                {lessonEntryPoint
+                  ? pickLocale(lessonEntryPoint.titleEn, lessonEntryPoint.titleFr, locale)
+                  : copy.today.path.none}
               </p>
               <Badge variant="outline" className="mt-3">
                 {copy.today.path.cta}
