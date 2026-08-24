@@ -78,12 +78,20 @@ function DailyStudy() {
           findLevel1EntryPoint(id),
         ]);
         const step = nextStep(path)?.step_key ?? null;
-        // The 'alphabet' step now has real, lesson-seeded review items
-        // (Sub-phase 2.5) — seeding the old hardcoded starter flashcards
-        // for it too would just create confusing, duplicate cards for the
-        // same letters. Other steps still have no real content, so their
-        // starter seed remains the only thing they can offer.
-        if (step && step !== "alphabet") {
+        // Gated on !entryPoint (a real curriculum entry point exists at
+        // all), not step !== "alphabet": nextStep() naturally advances the
+        // *stored* path to "harakat" once every real Level 1 lesson is
+        // complete (learning_path_steps.harakat is seeded "available" at
+        // path-creation time and never resynced, unlike the alphabet step
+        // — see resolveAlphabetStepFields in placement.ts), even though
+        // harakat has no real content of its own yet. Seeding fake starter
+        // flashcards for it at that point would defeat the honest "all
+        // lessons complete" empty state entirely. The alphabet step itself
+        // already has real, lesson-seeded review items (Sub-phase 2.5), so
+        // this condition is equivalent to the old one for every step that
+        // still lacks real content — it only additionally suppresses the
+        // fake seed once Level 1 is genuinely done.
+        if (step && !entryPoint) {
           await seedStarterItemsForStep(id, step);
         }
         const queue = await getTodaysStudy(id, step, 12, entryPoint);
