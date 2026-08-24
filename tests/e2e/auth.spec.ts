@@ -2,8 +2,6 @@ import { test, expect } from "@playwright/test";
 
 import { loginAndExpect } from "./utils/auth";
 
-import { fillUntil } from "./utils/retry";
-
 /**
  * Runs in the "public" project (no stored session). Uses the shared
  * E2E_TEST_EMAIL/PASSWORD account for the login case; signup/reset cases use
@@ -109,18 +107,42 @@ test.describe("auth", () => {
   }) => {
     await page.goto("/auth?mode=forgot");
 
-    await fillUntil(page.getByLabel("Email"), "no-such-account-e2e-probe@example.com", async () => {
-      await page
-        .getByRole("button", {
-          name: "Send reset link",
-        })
-        .click();
+    // Same documented cold-compile hydration-remount race as login (see
+    // utils/auth.ts): the /auth route can occasionally regenerate its tree
+    // client-side shortly after first render, discarding form state
+    // Playwright had just filled. Unlike login, this mode's handleSubmit
+    // awaits a real, rate-limited Supabase Auth call (resetPasswordForEmail)
+    // — retrying the *whole* submission (fillUntil's original approach)
+    // re-fires that real network call on every attempt, and previously
+    // compounded real latency/rate-limiting until Playwright force-closed
+    // the page mid-retry ("locator.fill: Target page, context or browser
+    // has been closed"). Bounded to 2 attempts (not 3) to cap how many real
+    // requests a flaky run can fire, with a page-closed guard so a timed-
+    // out first attempt can't try to act on a torn-down page.
+    const emailInput = page.getByLabel("Email");
+    const probeEmail = "no-such-account-e2e-probe@example.com";
+    const successText = page.getByText(
+      "If that address has an account, a password reset link is on its way.",
+    );
 
-      await expect(
-        page.getByText("If that address has an account, a password reset link is on its way."),
-      ).toBeVisible({
-        timeout: 3_000,
-      });
-    });
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      if (page.isClosed()) break;
+      try {
+        // The whole attempt — fill through the network-bound success wait
+        // — is inside this try so a remount that wipes the just-typed
+        // value (caught by the value assertion below) retries the entire
+        // thing, not just the final wait. A 3s bound on the value check
+        // lets a wiped value fail fast into a retry instead of burning
+        // most of the attempt's budget on a check that's already lost.
+        await expect(emailInput).toBeVisible();
+        await emailInput.fill(probeEmail);
+        await expect(emailInput).toHaveValue(probeEmail, { timeout: 3_000 });
+        await page.getByRole("button", { name: "Send reset link" }).click();
+        await expect(successText).toBeVisible({ timeout: 10_000 });
+        return;
+      } catch (error) {
+        if (attempt === 2 || page.isClosed()) throw error;
+      }
+    }
   });
 });

@@ -67,7 +67,7 @@ function AuthPage() {
     if (!loading && user) navigate({ to: "/dashboard", replace: true });
   }, [loading, user, navigate]);
 
-  async function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
     if (busy) return;
 
@@ -227,7 +227,17 @@ function AuthPage() {
                     </p>
                   </div>
                 )}
-                <Button type="submit" className="w-full" disabled={busy}>
+                {/* type="button", not "submit": before React hydrates and
+                    attaches the form's onSubmit, a type="submit" button
+                    falls through to the browser's native GET-to-self form
+                    submission, which strips the mode search param entirely
+                    and lands on validateSearch's "login" fallback — losing
+                    signup/forgot context on any click that lands in that
+                    window. onClick calls the same handler directly, so a
+                    pre-hydration click is simply inert instead of
+                    triggering a stray navigation; Enter-key submission
+                    still works via the form's onSubmit once hydrated. */}
+                <Button type="button" className="w-full" disabled={busy} onClick={handleSubmit}>
                   {busy ? t("common.actions.pleaseWait") : copy.cta}
                 </Button>
               </form>
