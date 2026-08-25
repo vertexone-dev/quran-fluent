@@ -8,7 +8,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, ".env.test") });
 
 const PORT = 4300;
-const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
+const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
+const baseURL = externalBaseURL ?? `http://localhost:${PORT}`;
 
 /**
  * A single shared E2E_TEST_EMAIL account is reused across every spec, so
@@ -85,11 +86,17 @@ export default defineConfig({
       dependencies: ["setup"],
     },
   ],
-  webServer: {
-    command: `npm run dev -- --port ${PORT} --strictPort`,
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 60_000,
-    stdout: "pipe",
-  },
+  // Omitted entirely (rather than pointed at baseURL) when PLAYWRIGHT_BASE_URL
+  // targets an external deployment: Playwright's webServer pre-flight check
+  // fails fast with "url is already used" against a live URL that's already
+  // responding, since reuseExistingServer is forced off in CI.
+  webServer: externalBaseURL
+    ? undefined
+    : {
+        command: `npm run dev -- --port ${PORT} --strictPort`,
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 60_000,
+        stdout: "pipe",
+      },
 });
