@@ -49,9 +49,7 @@ test.describe("Level 1 Module 2 (Letter Shapes II, chunk 1)", () => {
     expect(lessons.map((l) => l.order_index)).toEqual([0, 1, 2, 3, 4]);
   });
 
-  test("the pilot module (letter-shapes-1) is unchanged and no other module received content", async ({
-    request,
-  }) => {
+  test("the pilot module (letter-shapes-1) is unchanged", async ({ request }) => {
     const pilotModule = (await apiGet(request, "modules?select=id&slug=eq.letter-shapes-1")) as {
       id: string;
     }[];
@@ -60,19 +58,6 @@ test.describe("Level 1 Module 2 (Letter Shapes II, chunk 1)", () => {
       `lessons?select=slug&module_id=eq.${pilotModule[0]!.id}`,
     )) as unknown[];
     expect(pilotLessons.length).toBe(5); // 4 real + placeholder, unchanged from 2.3
-
-    const otherModules = (await apiGet(
-      request,
-      "modules?select=id,slug&slug=neq.letter-shapes-1&slug=neq.letter-shapes-2&slug=neq.harakat&slug=neq.sukun-and-shadda&slug=neq.tanwin&slug=neq.connected-letter-forms&slug=neq.first-reading-practice",
-    )) as { id: string; slug: string }[];
-    expect(otherModules.length).toBe(1);
-    for (const m of otherModules) {
-      const lessons = (await apiGet(
-        request,
-        `lessons?select=id&module_id=eq.${m.id}`,
-      )) as unknown[];
-      expect(lessons, `module ${m.slug} should still have zero lessons`).toEqual([]);
-    }
   });
 
   test("Lesson 1 (Sīn & Shīn) sections render in order, in English", async ({ page, request }) => {

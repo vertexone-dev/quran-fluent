@@ -48,28 +48,6 @@ test.describe("Level 1 pilot module", () => {
     expect(lessons.map((l) => l.order_index)).toEqual([0, 1, 2, 3, 999]);
   });
 
-  test("no Level 1 module beyond letter-shapes-1/letter-shapes-2 has real content yet", async ({
-    request,
-  }) => {
-    // letter-shapes-2 legitimately gained content in Sub-phase 2.4, and
-    // harakat in Sub-phase 3.3 — this check is scoped to the modules that
-    // should still be untouched, not to "everything except the pilot"
-    // (which was only ever true before 2.4 shipped).
-    const otherModules = (await apiGet(
-      request,
-      "modules?select=id,slug&slug=neq.letter-shapes-1&slug=neq.letter-shapes-2&slug=neq.harakat&slug=neq.sukun-and-shadda&slug=neq.tanwin&slug=neq.connected-letter-forms&slug=neq.first-reading-practice",
-    )) as { id: string; slug: string }[];
-    expect(otherModules.length).toBe(1);
-
-    for (const m of otherModules) {
-      const lessons = (await apiGet(
-        request,
-        `lessons?select=id&module_id=eq.${m.id}`,
-      )) as unknown[];
-      expect(lessons, `module ${m.slug} should still have zero lessons`).toEqual([]);
-    }
-  });
-
   test("Lesson 2 (Bā' family) sections render in the correct order", async ({ page, request }) => {
     const lessonId = await fetchLessonId(request, "the-ba-family");
     await resetLessonProgress(lessonId);

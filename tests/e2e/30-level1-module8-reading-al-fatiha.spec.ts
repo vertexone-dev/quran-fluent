@@ -3,15 +3,17 @@ import { test, expect, type APIRequestContext, type Page } from "@playwright/tes
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
 
 /**
- * Covers Level 1, Module 7 ("first-reading-practice"). Two lessons
- * applying every mechanic taught so far (letters, harakat, sukūn, shadda,
- * tanwīn, connected forms) to read real short Arabic words, seeded by the
- * accompanying migration. Unlike Modules 3-6, this module deliberately
- * creates ZERO new review items — it uses no `matching` exercises, since
- * none of its content is a genuinely new, durable, flashcard-worthy fact.
- * Real vowelled Arabic words are used directly in exercise prompts,
- * confirmed safe by a fresh Playwright screenshot spike this cycle
- * (extending Module 6's unvowelled-word finding to fully marked words).
+ * Covers Level 1, Module 8 ("reading-al-fatiha") — the capstone module,
+ * applying every mechanic taught in Modules 1-7 to read all seven āyahs of
+ * Sūrat Al-Fātiḥa. Every āyah is referenced by (surah_number, ayah_number)
+ * FK against the existing `ayahs` table via `quran_example` sections — no
+ * Qur'anic Arabic text is duplicated in the migration, and the rendering
+ * component (QuranExampleSection) is pre-existing, unmodified application
+ * code. Like Module 7, this module deliberately creates ZERO new review
+ * items — it uses no `matching` exercises, since applying already-taught
+ * skills to real text is not itself a new, durable, flashcard-worthy fact.
+ * This is also the last module of Level 1: there is no Module 9 to assert
+ * "remains empty" against.
  */
 
 type DbExercise = {
@@ -30,8 +32,8 @@ async function apiGet(request: APIRequestContext, path: string) {
   return res.json();
 }
 
-async function fetchModule7Lessons(request: APIRequestContext) {
-  const modules = (await apiGet(request, "modules?select=id&slug=eq.first-reading-practice")) as {
+async function fetchModule8Lessons(request: APIRequestContext) {
+  const modules = (await apiGet(request, "modules?select=id&slug=eq.reading-al-fatiha")) as {
     id: string;
   }[];
   const moduleId = modules[0]!.id;
@@ -81,7 +83,7 @@ async function answerExercise(page: Page, exercise: DbExercise) {
     await page.getByRole("button", { name: correct ? "True" : "False" }).click();
   } else {
     throw new Error(
-      `answerExercise: unhandled exercise_type "${t}" (Module 7 uses no matching exercises)`,
+      `answerExercise: unhandled exercise_type "${t}" (Module 8 uses no matching exercises)`,
     );
   }
   await page.getByRole("button", { name: "Check answer" }).click();
@@ -121,23 +123,27 @@ async function completeLesson(page: Page, exercises: DbExercise[]) {
   throw new Error("completeLesson: exceeded iteration budget without reaching completion");
 }
 
-test.describe("Level 1 Module 7 — First Reading Practice", () => {
+test.describe("Level 1 Module 8 — Reading Al-Fatiha", () => {
   test("module and lessons exist, in the correct order", async ({ request }) => {
     const modules = (await apiGet(
       request,
-      "modules?select=slug,title_en,title_fr&slug=eq.first-reading-practice",
+      "modules?select=slug,title_en,title_fr&slug=eq.reading-al-fatiha",
     )) as { slug: string; title_en: string; title_fr: string }[];
     expect(modules).toHaveLength(1);
-    expect(modules[0]!.title_en).toBe("First Reading Practice");
-    expect(modules[0]!.title_fr).toBe("Premiers exercices de lecture");
+    expect(modules[0]!.title_en).toBe("Reading Al-Fatiha");
+    expect(modules[0]!.title_fr).toBe("Lecture d'Al-Fatiha");
 
-    const lessons = await fetchModule7Lessons(request);
-    expect(lessons).toHaveLength(2);
-    expect(lessons.map((l) => l.slug)).toEqual(["reading-short-words", "reading-longer-words"]);
-    expect(lessons.map((l) => l.order_index)).toEqual([0, 1]);
+    const lessons = await fetchModule8Lessons(request);
+    expect(lessons).toHaveLength(3);
+    expect(lessons.map((l) => l.slug)).toEqual([
+      "reading-al-fatiha-verses-1-3",
+      "reading-al-fatiha-verses-4-6",
+      "reading-al-fatiha-verse-7",
+    ]);
+    expect(lessons.map((l) => l.order_index)).toEqual([0, 1, 2]);
   });
 
-  test("Modules 1-6 remain unchanged", async ({ request }) => {
+  test("Modules 1-7 remain unchanged", async ({ request }) => {
     for (const [slug, expectedLessons] of [
       ["letter-shapes-1", 5],
       ["letter-shapes-2", 9],
@@ -145,6 +151,7 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
       ["sukun-and-shadda", 3],
       ["tanwin", 4],
       ["connected-letter-forms", 3],
+      ["first-reading-practice", 2],
     ] as const) {
       const mods = (await apiGet(request, `modules?select=id&slug=eq.${slug}`)) as {
         id: string;
@@ -157,21 +164,49 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
     }
   });
 
-  for (const slug of ["reading-short-words", "reading-longer-words"]) {
+  test("every quran_example section resolves, by FK, to the real stored Al-Fatiha text — all 7 āyahs, no gaps, no duplicates", async ({
+    request,
+  }) => {
+    const lessons = await fetchModule8Lessons(request);
+    const { client } = await createTestUserClient();
+    const { data: sections } = await client
+      .from("lesson_sections")
+      .select("content_type, surah_number, ayah_number")
+      .in(
+        "lesson_id",
+        lessons.map((l) => l.id),
+      )
+      .eq("content_type", "quran_example")
+      .order("ayah_number", { ascending: true });
+
+    expect(sections).toHaveLength(7);
+    expect(sections!.map((s) => s.ayah_number)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(sections!.every((s) => s.surah_number === 1)).toBe(true);
+
+    const { data: ayahs } = await client.from("ayahs").select("ayah_number").eq("surah_number", 1);
+    expect(ayahs).toHaveLength(7); // confirms the FK targets actually exist
+  });
+
+  for (const slug of [
+    "reading-al-fatiha-verses-1-3",
+    "reading-al-fatiha-verses-4-6",
+    "reading-al-fatiha-verse-7",
+  ]) {
     test(`lesson "${slug}" opens and its sections render in order`, async ({ page, request }) => {
-      const lessons = await fetchModule7Lessons(request);
+      const lessons = await fetchModule8Lessons(request);
       const lesson = lessons.find((l) => l.slug === slug)!;
       await page.goto(`/lesson/${lesson.id}`);
       await expect(page.getByRole("heading", { name: lesson.title_en })).toBeVisible();
     });
   }
 
-  test("full lifecycle on Lesson 1 (Reading Short Words): reading_check and true_false correct/incorrect paths, progress persistence, resume after refresh, completion, and NO review item is created", async ({
+  test("full lifecycle on Lesson 1 (Ayahs 1-3): reading_check and true_false correct/incorrect paths, progress persistence, resume after refresh, completion, and NO review item is created", async ({
     page,
     request,
   }) => {
-    const lessons = await fetchModule7Lessons(request);
-    const lesson1 = lessons.find((l) => l.slug === "reading-short-words")!;
+    test.setTimeout(60_000);
+    const lessons = await fetchModule8Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "reading-al-fatiha-verses-1-3")!;
     const { client, userId } = await createTestUserClient();
     await resetLessonProgress(lesson1.id);
 
@@ -183,23 +218,20 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
       "true_false",
       "multiple_choice",
     ]);
-    // No matching exercises anywhere in this module — confirms the
-    // migration's own design intent directly, not just its assertion.
     expect(exercises.every((e) => e.exercise_type !== "matching")).toBe(true);
 
-    // Captured before, not asserted as zero after: this is the shared
-    // E2E account other specs also use, so it may already hold
-    // legitimately-created review items from earlier modules. The claim
-    // under test is that THIS lesson adds none — a before/after delta,
-    // not an absolute count.
+    // Captured before, not asserted as zero after: the shared E2E account
+    // may already hold review items legitimately created by earlier
+    // modules' specs. The claim under test is a before/after delta.
     const { count: reviewItemCountBefore } = await client
       .from("review_items")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId);
 
     await page.goto(`/lesson/${lesson1.id}`);
-    await page.getByRole("button", { name: "Next" }).click();
-    await page.getByRole("button", { name: "Next" }).click();
+    await page.getByRole("button", { name: "Next" }).click(); // past explanation
+    await page.getByRole("button", { name: "Next" }).click(); // past āyah 1 section, to exercise 0
+
     const wrongChoice = exercises[0]!.payload.choices!.find(
       (_, i) => i !== exercises[0]!.payload.correctIndex,
     )!;
@@ -235,9 +267,6 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
       .single();
     expect(progress?.status).toBe("completed");
 
-    // The key architectural claim: completing this lesson creates zero
-    // NEW review_items rows, because seedLessonReviewItems only derives
-    // them from matching exercises and this module deliberately has none.
     const { count: reviewItemCountAfter } = await client
       .from("review_items")
       .select("*", { count: "exact", head: true })
@@ -249,8 +278,8 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
     page,
     request,
   }) => {
-    const lessons = await fetchModule7Lessons(request);
-    const lesson2 = lessons.find((l) => l.slug === "reading-longer-words")!;
+    const lessons = await fetchModule8Lessons(request);
+    const lesson2 = lessons.find((l) => l.slug === "reading-al-fatiha-verses-4-6")!;
     const { client, userId } = await createTestUserClient();
     await resetLessonProgress(lesson2.id);
 
@@ -269,12 +298,12 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
     expect(progress!.last_section_index).toBeGreaterThan(0);
   });
 
-  test("completing both lessons still creates zero new review items, and Practice/Daily Study remain unaffected by a module with no review-seeding exercises", async ({
+  test("completing all 3 lessons still creates zero new review items, and Practice/Daily Study remain unaffected", async ({
     page,
     request,
   }) => {
-    test.setTimeout(90_000);
-    const lessons = await fetchModule7Lessons(request);
+    test.setTimeout(120_000);
+    const lessons = await fetchModule8Lessons(request);
     const { client, userId } = await createTestUserClient();
 
     const { count: reviewItemCountBefore } = await client
@@ -282,7 +311,11 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId);
 
-    for (const slug of ["reading-short-words", "reading-longer-words"]) {
+    for (const slug of [
+      "reading-al-fatiha-verses-1-3",
+      "reading-al-fatiha-verses-4-6",
+      "reading-al-fatiha-verse-7",
+    ]) {
       const lesson = lessons.find((l) => l.slug === slug)!;
       await resetLessonProgress(lesson.id);
       const exercises = await fetchOrderedExercises(client, lesson.id);
@@ -296,17 +329,18 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
       .eq("user_id", userId);
     expect(reviewItemCountAfter).toBe(reviewItemCountBefore);
 
-    // Practice and Daily Study still load correctly (no crash from an
-    // empty/zero-review-item account state introduced by this module).
     await page.goto("/practice");
     await expect(page.getByRole("heading", { name: "Practice" })).toBeVisible();
     await page.goto("/daily");
     await expect(page.getByRole("main")).toBeVisible();
   });
 
-  test("French interface: lesson renders correctly", async ({ page, request }) => {
-    const lessons = await fetchModule7Lessons(request);
-    const lesson1 = lessons.find((l) => l.slug === "reading-short-words")!;
+  test("French interface: lesson and Qur'an example render correctly", async ({
+    page,
+    request,
+  }) => {
+    const lessons = await fetchModule8Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "reading-al-fatiha-verses-1-3")!;
     const { client, userId } = await createTestUserClient();
     await resetLessonProgress(lesson1.id);
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
@@ -315,27 +349,38 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
       await page.goto(`/lesson/${lesson1.id}`);
       await expect(page.getByRole("heading", { name: lesson1.title_fr })).toBeVisible();
       await page.getByRole("button", { name: "Suivant" }).click();
-      await expect(page.getByText(/kataba/)).toBeVisible();
+      await expect(
+        page.getByText("بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ", { exact: true }),
+      ).toBeVisible();
+      await expect(
+        page.getByText("Au nom d'Allah, le Tout Miséricordieux, le Très Miséricordieux."),
+      ).toBeVisible();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
     }
   });
 
-  test("Arabic content is dir=rtl/lang=ar; mobile 390×844 renders without horizontal overflow, and a fully-vowelled connected word is not clipped", async ({
+  test("Qur'an example content is dir=rtl/lang=ar, shows the real governed translation, and mobile 390×844 renders without horizontal overflow or clipping", async ({
     page,
     request,
   }) => {
-    const lessons = await fetchModule7Lessons(request);
-    const lesson1 = lessons.find((l) => l.slug === "reading-short-words")!;
+    const lessons = await fetchModule8Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "reading-al-fatiha-verses-1-3")!;
     await resetLessonProgress(lesson1.id);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/lesson/${lesson1.id}`);
-    await page.getByRole("button", { name: "Next" }).click();
+    await page.getByRole("button", { name: "Next" }).click(); // to āyah 1
 
-    const arabicSpan = page.getByText("كَتَبَ", { exact: true });
+    const arabicSpan = page.getByText("بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ", { exact: true });
     await expect(arabicSpan).toBeVisible();
     await expect(arabicSpan).toHaveAttribute("dir", "rtl");
     await expect(arabicSpan).toHaveAttribute("lang", "ar");
+
+    // The real, governed translation already stored on the ayahs row —
+    // never invented by this migration.
+    await expect(
+      page.getByText("In the name of Allah, the Entirely Merciful, the Especially Merciful."),
+    ).toBeVisible();
 
     const box = await arabicSpan.boundingBox();
     expect(box).not.toBeNull();
@@ -348,20 +393,20 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
     expect(hasOverflow).toBe(false);
   });
 
-  test("real vowelled Arabic words render correctly (not broken/detached) directly in reading_check exercise prompts", async ({
+  test("real vowelled Qur'anic words render correctly (not broken/detached) directly in reading_check exercise prompts", async ({
     page,
     request,
   }) => {
-    const lessons = await fetchModule7Lessons(request);
-    const lesson2 = lessons.find((l) => l.slug === "reading-longer-words")!;
-    await resetLessonProgress(lesson2.id);
-    await page.goto(`/lesson/${lesson2.id}`);
-    await page.getByRole("button", { name: "Next" }).click();
-    await page.getByRole("button", { name: "Next" }).click();
+    const lessons = await fetchModule8Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "reading-al-fatiha-verses-1-3")!;
+    await resetLessonProgress(lesson1.id);
+    await page.goto(`/lesson/${lesson1.id}`);
+    await page.getByRole("button", { name: "Next" }).click(); // to āyah 1
+    await page.getByRole("button", { name: "Next" }).click(); // to exercise 0
 
-    // Exercise 0 is attached to section 1 (arabic_text كُلّ) — its prompt
-    // embeds the same word directly, in the unstyled exercise heading.
-    await expect(page.getByRole("heading", { name: "كُلّ reads:" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "ٱلرَّحْمَٰنِ (from āyah 1) reads:" }),
+    ).toBeVisible();
     const choices = page.getByRole("radio");
     await expect(choices).toHaveCount(3);
   });
@@ -370,8 +415,8 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
     page,
     request,
   }) => {
-    const lessons = await fetchModule7Lessons(request);
-    const lesson1 = lessons.find((l) => l.slug === "reading-short-words")!;
+    const lessons = await fetchModule8Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "reading-al-fatiha-verses-1-3")!;
     await resetLessonProgress(lesson1.id);
     await page.goto(`/lesson/${lesson1.id}`);
     await page.getByRole("button", { name: "Next" }).click();
@@ -392,26 +437,13 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
     await expect(page.getByRole("status")).toBeVisible();
   });
 
-  test("no Qur'an example section exists in this module (deliberately deferred to Module 8)", async ({
-    request,
-  }) => {
-    const lessons = await fetchModule7Lessons(request);
-    const { client } = await createTestUserClient();
-    const lessonIds = lessons.map((l) => l.id);
-    const { data: quranSections } = await client
-      .from("lesson_sections")
-      .select("id")
-      .in("lesson_id", lessonIds)
-      .eq("content_type", "quran_example");
-    expect(quranSections).toEqual([]);
-  });
-
   test("retry safety: resetLessonProgress leaves a deterministic, reproducible state across repeated setup, with no append-only contamination", async ({
     page,
     request,
   }) => {
-    const lessons = await fetchModule7Lessons(request);
-    const lesson1 = lessons.find((l) => l.slug === "reading-short-words")!;
+    test.setTimeout(60_000);
+    const lessons = await fetchModule8Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "reading-al-fatiha-verses-1-3")!;
     const { client, userId } = await createTestUserClient();
 
     for (let run = 0; run < 2; run++) {

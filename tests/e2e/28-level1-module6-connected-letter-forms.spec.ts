@@ -182,21 +182,6 @@ test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
     }
   });
 
-  test("Module 8 remains empty", async ({ request }) => {
-    // first-reading-practice (Module 7) legitimately gained content in a
-    // later cycle.
-    for (const slug of ["reading-al-fatiha"]) {
-      const mods = (await apiGet(request, `modules?select=id&slug=eq.${slug}`)) as {
-        id: string;
-      }[];
-      const lessons = (await apiGet(
-        request,
-        `lessons?select=id&module_id=eq.${mods[0]!.id}`,
-      )) as unknown[];
-      expect(lessons, `module ${slug}`).toEqual([]);
-    }
-  });
-
   for (const slug of ["how-letters-connect", "non-connecting-letters", "reading-connected-words"]) {
     test(`lesson "${slug}" opens and its sections render in order`, async ({ page, request }) => {
       const lessons = await fetchModule6Lessons(request);
