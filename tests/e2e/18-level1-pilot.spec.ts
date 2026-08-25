@@ -51,15 +51,15 @@ test.describe("Level 1 pilot module", () => {
   test("no Level 1 module beyond letter-shapes-1/letter-shapes-2 has real content yet", async ({
     request,
   }) => {
-    // letter-shapes-2 legitimately gained content in Sub-phase 2.4 — this
-    // check is scoped to the modules that should still be untouched, not
-    // to "everything except the pilot" (which was only ever true before
-    // 2.4 shipped).
+    // letter-shapes-2 legitimately gained content in Sub-phase 2.4, and
+    // harakat in Sub-phase 3.3 — this check is scoped to the modules that
+    // should still be untouched, not to "everything except the pilot"
+    // (which was only ever true before 2.4 shipped).
     const otherModules = (await apiGet(
       request,
-      "modules?select=id,slug&slug=neq.letter-shapes-1&slug=neq.letter-shapes-2",
+      "modules?select=id,slug&slug=neq.letter-shapes-1&slug=neq.letter-shapes-2&slug=neq.harakat",
     )) as { id: string; slug: string }[];
-    expect(otherModules.length).toBe(6);
+    expect(otherModules.length).toBe(5);
 
     for (const m of otherModules) {
       const lessons = (await apiGet(

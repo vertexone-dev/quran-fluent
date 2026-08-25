@@ -75,6 +75,7 @@ export default defineConfig({
         "22-placement-curriculum.spec.ts",
         "23-daily-learning-plan.spec.ts",
         "24-practice-concept-review.spec.ts",
+        "25-level1-module3-harakat.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
