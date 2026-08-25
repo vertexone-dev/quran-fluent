@@ -57,9 +57,9 @@ test.describe("Level 1 pilot module", () => {
     // (which was only ever true before 2.4 shipped).
     const otherModules = (await apiGet(
       request,
-      "modules?select=id,slug&slug=neq.letter-shapes-1&slug=neq.letter-shapes-2&slug=neq.harakat&slug=neq.sukun-and-shadda&slug=neq.tanwin",
+      "modules?select=id,slug&slug=neq.letter-shapes-1&slug=neq.letter-shapes-2&slug=neq.harakat&slug=neq.sukun-and-shadda&slug=neq.tanwin&slug=neq.connected-letter-forms",
     )) as { id: string; slug: string }[];
-    expect(otherModules.length).toBe(3);
+    expect(otherModules.length).toBe(2);
 
     for (const m of otherModules) {
       const lessons = (await apiGet(

@@ -78,6 +78,7 @@ export default defineConfig({
         "25-level1-module3-harakat.spec.ts",
         "26-level1-module4-sukun-shadda.spec.ts",
         "27-level1-module5-tanwin.spec.ts",
+        "28-level1-module6-connected-letter-forms.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],

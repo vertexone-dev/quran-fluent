@@ -3,18 +3,14 @@ import { test, expect, type APIRequestContext, type Page } from "@playwright/tes
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
 
 /**
- * Covers Level 1, Module 5 ("tanwin"). Four lessons teaching fatḥatān,
- * kasratān, and ḍammatān, plus a reading-synthesis lesson, seeded by the
- * accompanying migration. Mirrors the proven pattern from
- * 25-level1-module3-harakat.spec.ts and 26-level1-module4-sukun-shadda.spec.ts:
- * exercise choices/matching pairs use the mark's transliterated name
- * ("Fatḥatān"/"Kasratān"/"Ḍammatān"), never the raw combining-mark glyph
- * — confirmed by a fresh Playwright screenshot spike this cycle (tanwīn
- * uses different Unicode combining marks than harakat/sukūn/shadda) that
- * the same ChoiceControl/MatchingControl rendering gap applies. The
- * glyphs بً/بٍ/بٌ only ever appear in arabic_text/example lesson sections
- * and review-item fronts. This module has no Qur'an example section —
- * verified that none of Al-Fatiha's 7 āyāt contain a tanwīn mark.
+ * Covers Level 1, Module 6 ("connected-letter-forms"). Three lessons
+ * teaching how letters change shape by position, the six non-connecting
+ * letters, and a reading-synthesis lesson, seeded by the accompanying
+ * migration. Unlike Modules 3-5 (combining diacritics), connected-word
+ * glyphs render correctly even in the unstyled exercise-choice/matching
+ * path — confirmed by a fresh Playwright screenshot spike this cycle — so
+ * exercise choices/matching pairs here use real Arabic connected words
+ * directly, not transliterated names.
  */
 
 type DbExercise = {
@@ -34,8 +30,10 @@ async function apiGet(request: APIRequestContext, path: string) {
   return res.json();
 }
 
-async function fetchModule5Lessons(request: APIRequestContext) {
-  const modules = (await apiGet(request, "modules?select=id&slug=eq.tanwin")) as { id: string }[];
+async function fetchModule6Lessons(request: APIRequestContext) {
+  const modules = (await apiGet(request, "modules?select=id&slug=eq.connected-letter-forms")) as {
+    id: string;
+  }[];
   const moduleId = modules[0]!.id;
   const lessons = (await apiGet(
     request,
@@ -128,7 +126,7 @@ async function completeLesson(page: Page, exercises: DbExercise[]) {
   throw new Error("completeLesson: exceeded iteration budget without reaching completion");
 }
 
-async function resetModule5State(
+async function resetModule6State(
   client: Awaited<ReturnType<typeof createTestUserClient>>["client"],
   userId: string,
   lessonIds: string[],
@@ -140,38 +138,38 @@ async function resetModule5State(
     .from("review_items")
     .delete()
     .eq("user_id", userId)
-    .in("item_key", ["concept:fathatan", "concept:kasratan", "concept:dammatan"]);
+    .in("item_key", ["concept:letter-positions", "concept:non-connectors"]);
   await client.from("practice_attempts").delete().eq("user_id", userId);
   await client.from("weak_areas").delete().eq("user_id", userId);
 }
 
-test.describe("Level 1 Module 5 — Tanwīn", () => {
+test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
   test("module and lessons exist, in the correct order", async ({ request }) => {
     const modules = (await apiGet(
       request,
-      "modules?select=slug,title_en,title_fr&slug=eq.tanwin",
+      "modules?select=slug,title_en,title_fr&slug=eq.connected-letter-forms",
     )) as { slug: string; title_en: string; title_fr: string }[];
     expect(modules).toHaveLength(1);
-    expect(modules[0]!.title_en).toBe("Nunation (Tanwīn)");
-    expect(modules[0]!.title_fr).toBe("Nunation (tanwīn)");
+    expect(modules[0]!.title_en).toBe("Connected Letter Forms");
+    expect(modules[0]!.title_fr).toBe("Formes de lettres liées");
 
-    const lessons = await fetchModule5Lessons(request);
-    expect(lessons).toHaveLength(4);
+    const lessons = await fetchModule6Lessons(request);
+    expect(lessons).toHaveLength(3);
     expect(lessons.map((l) => l.slug)).toEqual([
-      "fathatan",
-      "kasratan",
-      "dammatan",
-      "reading-tanwin",
+      "how-letters-connect",
+      "non-connecting-letters",
+      "reading-connected-words",
     ]);
-    expect(lessons.map((l) => l.order_index)).toEqual([0, 1, 2, 3]);
+    expect(lessons.map((l) => l.order_index)).toEqual([0, 1, 2]);
   });
 
-  test("Modules 1-4 remain unchanged", async ({ request }) => {
+  test("Modules 1-5 remain unchanged", async ({ request }) => {
     for (const [slug, expectedLessons] of [
       ["letter-shapes-1", 5],
       ["letter-shapes-2", 9],
       ["harakat", 4],
       ["sukun-and-shadda", 3],
+      ["tanwin", 4],
     ] as const) {
       const mods = (await apiGet(request, `modules?select=id&slug=eq.${slug}`)) as {
         id: string;
@@ -185,8 +183,6 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
   });
 
   test("Modules 7-8 remain empty", async ({ request }) => {
-    // connected-letter-forms (Module 6) legitimately gained content in a
-    // later cycle.
     for (const slug of ["first-reading-practice", "reading-al-fatiha"]) {
       const mods = (await apiGet(request, `modules?select=id&slug=eq.${slug}`)) as {
         id: string;
@@ -199,29 +195,29 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
     }
   });
 
-  for (const slug of ["fathatan", "kasratan", "dammatan", "reading-tanwin"]) {
+  for (const slug of ["how-letters-connect", "non-connecting-letters", "reading-connected-words"]) {
     test(`lesson "${slug}" opens and its sections render in order`, async ({ page, request }) => {
-      const lessons = await fetchModule5Lessons(request);
+      const lessons = await fetchModule6Lessons(request);
       const lesson = lessons.find((l) => l.slug === slug)!;
       await page.goto(`/lesson/${lesson.id}`);
       await expect(page.getByRole("heading", { name: lesson.title_en })).toBeVisible();
     });
   }
 
-  test("full lifecycle on Lesson 1 (Fatḥatān): multiple_choice and true_false correct/incorrect paths, progress persistence, resume after refresh, completion, and concept:fathatan review creation", async ({
+  test("full lifecycle on Lesson 1 (How Letters Connect): multiple_choice and true_false correct/incorrect paths, progress persistence, resume after refresh, completion, and concept:letter-positions review creation", async ({
     page,
     request,
   }) => {
-    const lessons = await fetchModule5Lessons(request);
-    const fathatan = lessons.find((l) => l.slug === "fathatan")!;
+    const lessons = await fetchModule6Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
     const { client, userId } = await createTestUserClient();
-    await resetModule5State(
+    await resetModule6State(
       client,
       userId,
       lessons.map((l) => l.id),
     );
 
-    const exercises = await fetchOrderedExercises(client, fathatan.id);
+    const exercises = await fetchOrderedExercises(client, lesson1.id);
     expect(exercises.map((e) => e.exercise_type)).toEqual([
       "multiple_choice",
       "multiple_choice",
@@ -230,7 +226,9 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
       "matching",
     ]);
 
-    await page.goto(`/lesson/${fathatan.id}`);
+    await page.goto(`/lesson/${lesson1.id}`);
+    // Section 0 (explanation), then section 1 (arabic_text) — the first
+    // multiple_choice exercise is a separate step attached after it.
     await page.getByRole("button", { name: "Next" }).click();
     await page.getByRole("button", { name: "Next" }).click();
     const wrongChoice = exercises[0]!.payload.choices!.find(
@@ -264,7 +262,7 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
       .from("user_lesson_progress")
       .select("status")
       .eq("user_id", userId)
-      .eq("lesson_id", fathatan.id)
+      .eq("lesson_id", lesson1.id)
       .single();
     expect(progress?.status).toBe("completed");
 
@@ -272,12 +270,14 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
       .from("review_items")
       .select("item_key, item_type, front, back, status, repetitions, ease_factor")
       .eq("user_id", userId)
-      .eq("item_key", "concept:fathatan")
+      .eq("item_key", "concept:letter-positions")
       .single();
     if (error) throw error;
     expect(review.item_type).toBe("concept");
-    expect(review.front).toBe("fathatan");
-    expect(review.back).toBe("a doubled fatḥa mark, adding an unwritten final 'n' sound");
+    expect(review.front).toBe("letter-positions");
+    expect(review.back).toBe(
+      "a letter's shape can change depending on where it sits in a word: isolated, initial, medial, or final",
+    );
     expect(review.status).toBe("new");
     expect(review.repetitions).toBe(0);
     expect(review.ease_factor).toBeCloseTo(2.5);
@@ -287,16 +287,16 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
     page,
     request,
   }) => {
-    const lessons = await fetchModule5Lessons(request);
-    const kasratan = lessons.find((l) => l.slug === "kasratan")!;
+    const lessons = await fetchModule6Lessons(request);
+    const lesson2 = lessons.find((l) => l.slug === "non-connecting-letters")!;
     const { client, userId } = await createTestUserClient();
-    await resetModule5State(
+    await resetModule6State(
       client,
       userId,
       lessons.map((l) => l.id),
     );
 
-    await page.goto(`/lesson/${kasratan.id}`);
+    await page.goto(`/lesson/${lesson2.id}`);
     await page.getByRole("button", { name: "Next" }).click();
     await page.getByRole("button", { name: "Next" }).click();
 
@@ -305,26 +305,30 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
       .from("user_lesson_progress")
       .select("status, last_section_index")
       .eq("user_id", userId)
-      .eq("lesson_id", kasratan.id)
+      .eq("lesson_id", lesson2.id)
       .single();
     expect(progress?.status).toBe("in_progress");
     expect(progress!.last_section_index).toBeGreaterThan(0);
   });
 
-  test("completing Lessons 1-3 seeds all three concept items, and re-answering Lesson 4's recap does not duplicate any", async ({
+  test("completing Lessons 1-2 seeds both concept items, and re-answering Lesson 3's recap does not duplicate either", async ({
     page,
     request,
   }) => {
     test.setTimeout(120_000);
-    const lessons = await fetchModule5Lessons(request);
+    const lessons = await fetchModule6Lessons(request);
     const { client, userId } = await createTestUserClient();
-    await resetModule5State(
+    await resetModule6State(
       client,
       userId,
       lessons.map((l) => l.id),
     );
 
-    for (const slug of ["fathatan", "kasratan", "dammatan", "reading-tanwin"]) {
+    for (const slug of [
+      "how-letters-connect",
+      "non-connecting-letters",
+      "reading-connected-words",
+    ]) {
       const lesson = lessons.find((l) => l.slug === slug)!;
       const exercises = await fetchOrderedExercises(client, lesson.id);
       await page.goto(`/lesson/${lesson.id}`);
@@ -335,13 +339,12 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
       .from("review_items")
       .select("item_key, front")
       .eq("user_id", userId)
-      .in("item_key", ["concept:fathatan", "concept:kasratan", "concept:dammatan"])
+      .in("item_key", ["concept:letter-positions", "concept:non-connectors"])
       .order("item_key", { ascending: true });
-    expect(reviews).toHaveLength(3);
+    expect(reviews).toHaveLength(2);
     expect(reviews!.map((r) => r.item_key)).toEqual([
-      "concept:dammatan",
-      "concept:fathatan",
-      "concept:kasratan",
+      "concept:letter-positions",
+      "concept:non-connectors",
     ]);
   });
 
@@ -349,24 +352,24 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
     page,
     request,
   }) => {
-    const lessons = await fetchModule5Lessons(request);
-    const fathatan = lessons.find((l) => l.slug === "fathatan")!;
+    const lessons = await fetchModule6Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
     const { client, userId } = await createTestUserClient();
-    await resetModule5State(
+    await resetModule6State(
       client,
       userId,
       lessons.map((l) => l.id),
     );
 
-    const exercises = await fetchOrderedExercises(client, fathatan.id);
-    await page.goto(`/lesson/${fathatan.id}`);
+    const exercises = await fetchOrderedExercises(client, lesson1.id);
+    await page.goto(`/lesson/${lesson1.id}`);
     await completeLesson(page, exercises);
 
     const { data: before } = await client
       .from("review_items")
       .select("*")
       .eq("user_id", userId)
-      .eq("item_key", "concept:fathatan")
+      .eq("item_key", "concept:letter-positions")
       .single();
 
     await page.goto("/practice");
@@ -386,7 +389,7 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
       if (await reveal.isVisible().catch(() => false)) {
         if (
           await page
-            .getByText("fathatan", { exact: true })
+            .getByText("letter-positions", { exact: true })
             .isVisible()
             .catch(() => false)
         ) {
@@ -405,7 +408,7 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
       .from("review_items")
       .select("*")
       .eq("user_id", userId)
-      .eq("item_key", "concept:fathatan")
+      .eq("item_key", "concept:letter-positions")
       .single();
     expect(after.status).toBe("learning");
     expect(after.repetitions).toBe(1);
@@ -416,28 +419,28 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
     page,
     request,
   }) => {
-    const lessons = await fetchModule5Lessons(request);
-    const fathatan = lessons.find((l) => l.slug === "fathatan")!;
+    const lessons = await fetchModule6Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
     const { client, userId } = await createTestUserClient();
-    await resetModule5State(
+    await resetModule6State(
       client,
       userId,
       lessons.map((l) => l.id),
     );
-    const exercises = await fetchOrderedExercises(client, fathatan.id);
-    await page.goto(`/lesson/${fathatan.id}`);
+    const exercises = await fetchOrderedExercises(client, lesson1.id);
+    await page.goto(`/lesson/${lesson1.id}`);
     await completeLesson(page, exercises);
 
     await page.goto("/daily");
     await expect(page.getByText(/Item 1 of \d+/)).toBeVisible();
-    await expect(page.getByText("fathatan", { exact: true })).toBeVisible();
+    await expect(page.getByText("letter-positions", { exact: true })).toBeVisible();
   });
 
   test("French interface: lesson renders correctly", async ({ page, request }) => {
-    const lessons = await fetchModule5Lessons(request);
-    const dammatan = lessons.find((l) => l.slug === "dammatan")!;
+    const lessons = await fetchModule6Lessons(request);
+    const lesson2 = lessons.find((l) => l.slug === "non-connecting-letters")!;
     const { client, userId } = await createTestUserClient();
-    await resetModule5State(
+    await resetModule6State(
       client,
       userId,
       lessons.map((l) => l.id),
@@ -445,27 +448,27 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
 
     try {
-      await page.goto(`/lesson/${dammatan.id}`);
-      await expect(page.getByRole("heading", { name: dammatan.title_fr })).toBeVisible();
+      await page.goto(`/lesson/${lesson2.id}`);
+      await expect(page.getByRole("heading", { name: lesson2.title_fr })).toBeVisible();
       await page.getByRole("button", { name: "Suivant" }).click();
-      await expect(page.getByText(/son bref « u »/)).toBeVisible();
+      await expect(page.getByText(/ne se lient jamais vers l'avant/)).toBeVisible();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
     }
   });
 
-  test("Arabic content is dir=rtl/lang=ar; mobile 390×844 renders without horizontal overflow or visible diacritic clipping", async ({
+  test("Arabic content is dir=rtl/lang=ar; mobile 390×844 renders without horizontal overflow, and the connected word (no combining marks) is not clipped", async ({
     page,
     request,
   }) => {
-    const lessons = await fetchModule5Lessons(request);
-    const fathatan = lessons.find((l) => l.slug === "fathatan")!;
-    await resetLessonProgress(fathatan.id);
+    const lessons = await fetchModule6Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
+    await resetLessonProgress(lesson1.id);
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto(`/lesson/${fathatan.id}`);
+    await page.goto(`/lesson/${lesson1.id}`);
     await page.getByRole("button", { name: "Next" }).click();
 
-    const arabicSpan = page.getByText("بً", { exact: true });
+    const arabicSpan = page.getByText("ب بـ ـبـ ـب", { exact: true });
     await expect(arabicSpan).toBeVisible();
     await expect(arabicSpan).toHaveAttribute("dir", "rtl");
     await expect(arabicSpan).toHaveAttribute("lang", "ar");
@@ -481,14 +484,41 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
     expect(hasOverflow).toBe(false);
   });
 
+  test("the connected word كتاب renders correctly (not broken/detached) in the exercise-choice control", async ({
+    page,
+    request,
+  }) => {
+    const lessons = await fetchModule6Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
+    const { client } = await createTestUserClient();
+    await resetLessonProgress(lesson1.id);
+    const exercises = await fetchOrderedExercises(client, lesson1.id);
+    // exercises[0] is attached to section 1 (arabic_text); exercises[1],
+    // with the ك/ت/ب choices, is attached to section 2 (example, كتاب).
+    expect(exercises[1]!.payload.choices).toEqual(["ك", "ت", "ب"]);
+
+    await page.goto(`/lesson/${lesson1.id}`);
+    await page.getByRole("button", { name: "Next" }).click(); // section 0 -> 1
+    await page.getByRole("button", { name: "Next" }).click(); // section 1 -> exercise 0
+    await answerExercise(page, exercises[0]!);
+    await page.getByRole("button", { name: "Next" }).click(); // exercise 0 -> section 2
+    await page.getByRole("button", { name: "Next" }).click(); // section 2 -> exercise 1
+
+    const choices = page.getByRole("radio");
+    await expect(choices).toHaveCount(3);
+    await expect(page.getByText("ك", { exact: true })).toBeVisible();
+    await expect(page.getByText("ت", { exact: true })).toBeVisible();
+    await expect(page.getByText("ب", { exact: true })).toBeVisible();
+  });
+
   test("accessibility: multiple_choice options are keyboard-operable radios with distinct accessible names, no color-only feedback", async ({
     page,
     request,
   }) => {
-    const lessons = await fetchModule5Lessons(request);
-    const fathatan = lessons.find((l) => l.slug === "fathatan")!;
-    await resetLessonProgress(fathatan.id);
-    await page.goto(`/lesson/${fathatan.id}`);
+    const lessons = await fetchModule6Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
+    await resetLessonProgress(lesson1.id);
+    await page.goto(`/lesson/${lesson1.id}`);
     await page.getByRole("button", { name: "Next" }).click();
     await page.getByRole("button", { name: "Next" }).click();
 
@@ -507,43 +537,54 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
     await expect(page.getByRole("status")).toBeVisible();
   });
 
-  test("no Qur'an example section exists in this module (verified: no āyah of Al-Fatiha contains a tanwīn mark)", async ({
-    request,
-  }) => {
-    const lessons = await fetchModule5Lessons(request);
-    const { client } = await createTestUserClient();
-    const lessonIds = lessons.map((l) => l.id);
-    const { data: quranSections } = await client
-      .from("lesson_sections")
-      .select("id")
-      .in("lesson_id", lessonIds)
-      .eq("content_type", "quran_example");
-    expect(quranSections).toEqual([]);
-  });
-
-  test("retry safety: resetModule5State leaves a deterministic, reproducible state across repeated setup, with no append-only contamination", async ({
+  test("Surah 1:6 renders in Lesson 3 via the real FK, and Qur'anic Arabic is never duplicated into the migration's own content", async ({
     page,
     request,
   }) => {
-    const lessons = await fetchModule5Lessons(request);
-    const fathatan = lessons.find((l) => l.slug === "fathatan")!;
+    const lessons = await fetchModule6Lessons(request);
+    const lesson3 = lessons.find((l) => l.slug === "reading-connected-words")!;
+    const { client } = await createTestUserClient();
+
+    const { data: quranSections } = await client
+      .from("lesson_sections")
+      .select("arabic_text, surah_number, ayah_number")
+      .eq("lesson_id", lesson3.id)
+      .eq("content_type", "quran_example");
+    expect(quranSections).toHaveLength(1);
+    expect(quranSections![0]!.surah_number).toBe(1);
+    expect(quranSections![0]!.ayah_number).toBe(6);
+    expect(quranSections![0]!.arabic_text).toBeNull();
+
+    await resetLessonProgress(lesson3.id);
+    await page.goto(`/lesson/${lesson3.id}`);
+    await page.getByRole("button", { name: "Next" }).click();
+    await page.getByRole("button", { name: "Next" }).click();
+    await expect(page.getByText("ٱهْدِنَا", { exact: false })).toBeVisible();
+  });
+
+  test("retry safety: resetModule6State leaves a deterministic, reproducible state across repeated setup, with no append-only contamination", async ({
+    page,
+    request,
+  }) => {
+    const lessons = await fetchModule6Lessons(request);
+    const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
     const { client, userId } = await createTestUserClient();
 
     for (let run = 0; run < 2; run++) {
-      await resetModule5State(
+      await resetModule6State(
         client,
         userId,
         lessons.map((l) => l.id),
       );
-      const exercises = await fetchOrderedExercises(client, fathatan.id);
-      await page.goto(`/lesson/${fathatan.id}`);
+      const exercises = await fetchOrderedExercises(client, lesson1.id);
+      await page.goto(`/lesson/${lesson1.id}`);
       await completeLesson(page, exercises);
 
       const { count: attemptCount } = await client
         .from("user_exercise_attempts")
         .select("*", { count: "exact", head: true })
         .eq("user_id", userId)
-        .eq("lesson_id", fathatan.id);
+        .eq("lesson_id", lesson1.id);
       expect(attemptCount).toBe(5);
 
       const { count: reviewAttemptCount } = await client
