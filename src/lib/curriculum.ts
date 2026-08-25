@@ -227,21 +227,41 @@ export type CurriculumEntryPoint = {
  * by the dashboard, learning plan, and Daily Study alike (Sub-phase 2.7:
  * no route computes this independently). Prefers a lesson already
  * in_progress, if one exists; otherwise the first not-yet-completed lesson
- * across letter-shapes-1 and letter-shapes-2, in module then lesson order.
- * Excludes the schema-validation placeholder (test-only content, never a
- * real entry point) and never returns anything from Modules 3-8 (not
- * queried at all — they have no real content). Returns null only when
- * there is no real content to enter at all. When every real lesson is
- * already completed, this still returns the last one (so there's always
- * something to open and review) — completedCount === totalCount is how a
- * caller distinguishes "fully done" from "in progress" without this
- * function guessing what a "done" destination should look like.
+ * across all 8 Level 1 modules, in module then lesson order. Excludes the
+ * schema-validation placeholder (test-only content, never a real entry
+ * point). Returns null only when there is no real content to enter at
+ * all. When every real lesson is already completed, this still returns
+ * the last one (so there's always something to open and review) —
+ * completedCount === totalCount is how a caller distinguishes "fully
+ * done" from "in progress" without this function guessing what a "done"
+ * destination should look like.
+ *
+ * The module slug list below is exhaustive for Level 1 (Phase 3, Modules
+ * 1-8, now production-complete — verified during the Phase 4 release
+ * audit) and was previously hardcoded to only the first two, silently
+ * excluding Modules 3-8 the whole time each was authored and shipped:
+ * once a learner finished letter-shapes-1/letter-shapes-2, the dashboard
+ * and Daily Study would report "all lessons complete" with 19 of the 33
+ * real Level 1 lessons (harakat through reading-al-fatiha) permanently
+ * unreachable through the UI. Level 1 has no further modules coming, so
+ * this list does not need to grow again — Level 2's own entry point will
+ * need its own resolver when that work begins, not an extension of this
+ * one.
  */
 export async function findLevel1EntryPoint(userId: string): Promise<CurriculumEntryPoint | null> {
   const { data: modules, error: modulesError } = await supabase
     .from("modules")
     .select("id, slug, order_index")
-    .in("slug", ["letter-shapes-1", "letter-shapes-2"])
+    .in("slug", [
+      "letter-shapes-1",
+      "letter-shapes-2",
+      "harakat",
+      "sukun-and-shadda",
+      "tanwin",
+      "connected-letter-forms",
+      "first-reading-practice",
+      "reading-al-fatiha",
+    ])
     .order("order_index", { ascending: true });
   if (modulesError) throw modulesError;
   if (!modules || modules.length === 0) return null;

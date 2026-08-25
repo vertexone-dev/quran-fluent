@@ -23,7 +23,7 @@ async function apiGet(request: APIRequestContext, path: string) {
 async function fetchRealLevel1Lessons(request: APIRequestContext) {
   const modules = (await apiGet(
     request,
-    "modules?select=id,order_index&slug=in.(letter-shapes-1,letter-shapes-2)&order=order_index.asc",
+    "modules?select=id,order_index&slug=in.(letter-shapes-1,letter-shapes-2,harakat,sukun-and-shadda,tanwin,connected-letter-forms,first-reading-practice,reading-al-fatiha)&order=order_index.asc",
   )) as { id: string; order_index: number }[];
   const lessons: { id: string; slug: string; title_en: string }[] = [];
   for (const m of modules) {
@@ -242,9 +242,7 @@ test.describe("daily plan / learning plan integration", () => {
     await expect(page.getByText(lessons[1]!.title_en)).toBeVisible();
   });
 
-  test("the schema-validation placeholder is never recommended, and no Modules 3-8 lesson is ever recommended", async ({
-    request,
-  }) => {
+  test("the schema-validation placeholder is never recommended", async ({ request }) => {
     const lessons = await fetchRealLevel1Lessons(request);
     const { client, userId } = await createTestUserClient();
     await resetAll(
@@ -260,11 +258,6 @@ test.describe("daily plan / learning plan integration", () => {
     )) as { id: string }[];
     const placeholderId = placeholderRows[0]!.id;
 
-    const otherModules = (await apiGet(
-      request,
-      "modules?select=id&slug=neq.letter-shapes-1&slug=neq.letter-shapes-2",
-    )) as { id: string }[];
-
     const { data: path } = await client
       .from("learning_paths")
       .select("id")
@@ -279,10 +272,6 @@ test.describe("daily plan / learning plan integration", () => {
 
     expect(step!.lesson_id).not.toBe(placeholderId);
     expect(lessons.map((l) => l.id)).not.toContain(placeholderId);
-    // The lesson set this whole spec resolves from is built exclusively
-    // from letter-shapes-1/letter-shapes-2 — Modules 3-8 (queried above
-    // only to prove they're excluded) are never even part of the pool.
-    expect(otherModules.length).toBeGreaterThan(0);
   });
 
   test("the Practice CTA on the dashboard opens Practice", async ({ page }) => {

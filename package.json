@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:setup": "node scripts/e2e/ensure-local-test-user.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
