@@ -1,0 +1,56 @@
+name: Production Validation
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  production-validation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      CI: true
+      PLAYWRIGHT_BASE_URL: https://quranroots.vertexone.workers.dev
+
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run targeted E2E (specs 17-29) against production
+        run: >
+          npx playwright test
+          --reporter=list
+          tests/e2e/17-lesson-player.spec.ts
+          tests/e2e/18-level1-pilot.spec.ts
+          tests/e2e/19-level1-module2.spec.ts
+          tests/e2e/20-level1-module2-chunk2.spec.ts
+          tests/e2e/21-lesson-review-integration.spec.ts
+          tests/e2e/22-placement-curriculum.spec.ts
+          tests/e2e/23-daily-learning-plan.spec.ts
+          tests/e2e/24-practice-concept-review.spec.ts
+          tests/e2e/25-level1-module3-harakat.spec.ts
+          tests/e2e/26-level1-module4-sukun-shadda.spec.ts
+          tests/e2e/27-level1-module5-tanwin.spec.ts
+          tests/e2e/28-level1-module6-connected-letter-forms.spec.ts
+          tests/e2e/29-level1-module7-first-reading-practice.spec.ts
