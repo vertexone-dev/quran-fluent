@@ -180,9 +180,9 @@ test.describe("Level 1 Module 2 chunk 2 (Letter Shapes II, complete)", () => {
     // harakat (Module 3) legitimately gained content in Sub-phase 3.3.
     const otherModules = (await apiGet(
       request,
-      "modules?select=id,slug&slug=neq.letter-shapes-1&slug=neq.letter-shapes-2&slug=neq.harakat&slug=neq.sukun-and-shadda&slug=neq.tanwin&slug=neq.connected-letter-forms",
+      "modules?select=id,slug&slug=neq.letter-shapes-1&slug=neq.letter-shapes-2&slug=neq.harakat&slug=neq.sukun-and-shadda&slug=neq.tanwin&slug=neq.connected-letter-forms&slug=neq.first-reading-practice",
     )) as { id: string; slug: string }[];
-    expect(otherModules.length).toBe(2);
+    expect(otherModules.length).toBe(1);
     for (const m of otherModules) {
       const lessons = (await apiGet(
         request,

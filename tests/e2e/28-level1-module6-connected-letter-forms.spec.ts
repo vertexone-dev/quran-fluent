@@ -182,8 +182,10 @@ test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
     }
   });
 
-  test("Modules 7-8 remain empty", async ({ request }) => {
-    for (const slug of ["first-reading-practice", "reading-al-fatiha"]) {
+  test("Module 8 remains empty", async ({ request }) => {
+    // first-reading-practice (Module 7) legitimately gained content in a
+    // later cycle.
+    for (const slug of ["reading-al-fatiha"]) {
       const mods = (await apiGet(request, `modules?select=id&slug=eq.${slug}`)) as {
         id: string;
       }[];
