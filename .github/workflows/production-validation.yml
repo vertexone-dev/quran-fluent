@@ -37,7 +37,7 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run targeted E2E (specs 17-35, 37) against production
+      - name: Run targeted E2E (specs 17-35, 37-39) against production
         run: >
           npx playwright test
           --reporter=list
@@ -61,3 +61,5 @@ jobs:
           tests/e2e/34-level2-batch3-vocabulary-capstone.spec.ts
           tests/e2e/35-level2-release-journey.spec.ts
           tests/e2e/37-level3-batch1-arabic-roots-intro-and-word-patterns.spec.ts
+          tests/e2e/38-level3-batch2-roots-capstone.spec.ts
+          tests/e2e/39-level3-release-journey.spec.ts
