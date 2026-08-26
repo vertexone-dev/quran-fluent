@@ -122,10 +122,16 @@ test.describe("Level 1 release journey", () => {
     await expect(page.getByRole("main")).toBeVisible();
   });
 
-  test("Module 8 (reading-al-fatiha) is reachable and is the final module", async ({ request }) => {
+  test("Module 8 (reading-al-fatiha) is reachable and is the final Level 1 module", async ({
+    request,
+  }) => {
+    // Scoped to Level 1 specifically: order_index is unique per level, not
+    // globally (Phase 5, Level 2's own modules also start at order_index
+    // 0), so an unscoped query would interleave across levels once a
+    // second level gained modules.
     const modules = (await apiGet(
       request,
-      "modules?select=slug,order_index&order=order_index.asc",
+      "modules?select=slug,order_index,levels!inner(slug)&levels.slug=eq.foundations-of-arabic-script&order=order_index.asc",
     )) as { slug: string; order_index: number }[];
     expect(modules.map((m) => m.slug)).toEqual(LEVEL1_MODULES);
     expect(modules[modules.length - 1]!.slug).toBe("reading-al-fatiha");

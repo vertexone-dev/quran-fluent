@@ -290,7 +290,7 @@ test.describe("placement -> curriculum integration", () => {
     await expect(harakatCard.getByRole("link")).toHaveCount(0);
   });
 
-  test("no fake links into Modules 3-8: every non-alphabet step has lesson_id null after a fresh save", async ({
+  test("no fake links into Modules 3-8/roots/grammar/etc.: every step with no real curriculum content has lesson_id null after a fresh save", async ({
     page,
     request,
   }) => {
@@ -308,9 +308,14 @@ test.describe("placement -> curriculum integration", () => {
       .from("learning_path_steps")
       .select("step_key, lesson_id")
       .eq("path_id", path.id)
-      .neq("step_key", "alphabet");
+      // "vocabulary" legitimately gained real content in Level 2 Batch 1
+      // (Phase 5) — it is now resynced from real progress exactly like
+      // "alphabet" already was, per src/lib/placement.ts's
+      // STEP_LEVEL_SLUGS map. Every other step still has no real
+      // curriculum behind it and must still never fake a link.
+      .not("step_key", "in", "(alphabet,vocabulary)");
     if (stepsError) throw stepsError;
-    expect(steps).toHaveLength(8);
+    expect(steps).toHaveLength(7);
     for (const s of steps) {
       expect(s.lesson_id, `step ${s.step_key} should have no lesson_id`).toBeNull();
     }

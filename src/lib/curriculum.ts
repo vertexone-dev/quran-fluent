@@ -222,46 +222,46 @@ export type CurriculumEntryPoint = {
 };
 
 /**
- * The current real curriculum entry point for Level 1 — the single
+ * The current real curriculum entry point for a given level — the single
  * authoritative "what lesson should this learner open next" resolver, used
  * by the dashboard, learning plan, and Daily Study alike (Sub-phase 2.7:
  * no route computes this independently). Prefers a lesson already
  * in_progress, if one exists; otherwise the first not-yet-completed lesson
- * across all 8 Level 1 modules, in module then lesson order. Excludes the
- * schema-validation placeholder (test-only content, never a real entry
- * point). Returns null only when there is no real content to enter at
- * all. When every real lesson is already completed, this still returns
- * the last one (so there's always something to open and review) —
- * completedCount === totalCount is how a caller distinguishes "fully
- * done" from "in progress" without this function guessing what a "done"
- * destination should look like.
+ * across every module belonging to `levelSlug`, in module then lesson
+ * order. Excludes the schema-validation placeholder (test-only content,
+ * never a real entry point). Returns null only when there is no real
+ * content to enter at all under that level. When every real lesson is
+ * already completed, this still returns the last one (so there's always
+ * something to open and review) — completedCount === totalCount is how a
+ * caller distinguishes "fully done" from "in progress" without this
+ * function guessing what a "done" destination should look like.
  *
- * The module slug list below is exhaustive for Level 1 (Phase 3, Modules
- * 1-8, now production-complete — verified during the Phase 4 release
- * audit) and was previously hardcoded to only the first two, silently
- * excluding Modules 3-8 the whole time each was authored and shipped:
- * once a learner finished letter-shapes-1/letter-shapes-2, the dashboard
- * and Daily Study would report "all lessons complete" with 19 of the 33
- * real Level 1 lessons (harakat through reading-al-fatiha) permanently
- * unreachable through the UI. Level 1 has no further modules coming, so
- * this list does not need to grow again — Level 2's own entry point will
- * need its own resolver when that work begins, not an extension of this
- * one.
+ * Data-driven off `modules.level_id` rather than a hardcoded slug list —
+ * the Phase 4 release audit found `findLevel1EntryPoint` (this function's
+ * predecessor) hardcoded to only letter-shapes-1/letter-shapes-2, silently
+ * excluding every module authored afterward: once a learner finished
+ * those two, the dashboard and Daily Study reported "all lessons
+ * complete" with 19 of Level 1's 33 real lessons permanently unreachable.
+ * Scoping by level_id instead means a newly-authored module becomes
+ * reachable the moment its migration lands, with no follow-up code change
+ * and no way to silently regress this again for either level.
  */
-export async function findLevel1EntryPoint(userId: string): Promise<CurriculumEntryPoint | null> {
+export async function findCurriculumEntryPoint(
+  userId: string,
+  levelSlug: string,
+): Promise<CurriculumEntryPoint | null> {
+  const { data: level, error: levelError } = await supabase
+    .from("levels")
+    .select("id")
+    .eq("slug", levelSlug)
+    .maybeSingle();
+  if (levelError) throw levelError;
+  if (!level) return null;
+
   const { data: modules, error: modulesError } = await supabase
     .from("modules")
     .select("id, slug, order_index")
-    .in("slug", [
-      "letter-shapes-1",
-      "letter-shapes-2",
-      "harakat",
-      "sukun-and-shadda",
-      "tanwin",
-      "connected-letter-forms",
-      "first-reading-practice",
-      "reading-al-fatiha",
-    ])
+    .eq("level_id", level.id)
     .order("order_index", { ascending: true });
   if (modulesError) throw modulesError;
   if (!modules || modules.length === 0) return null;
@@ -313,6 +313,12 @@ export async function findLevel1EntryPoint(userId: string): Promise<CurriculumEn
     completedCount: [...statusByLessonId.values()].filter((s) => s === "completed").length,
     totalCount: sorted.length,
   };
+}
+
+/** Thin wrapper preserving the exact pre-Phase-5 call signature every
+ * existing caller (dashboard, daily study, placement) already uses. */
+export function findLevel1EntryPoint(userId: string): Promise<CurriculumEntryPoint | null> {
+  return findCurriculumEntryPoint(userId, "foundations-of-arabic-script");
 }
 
 /** Idempotent upsert into `in_progress`. `startedAt` should be the existing

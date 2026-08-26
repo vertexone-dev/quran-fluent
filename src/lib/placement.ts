@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { findLevel1EntryPoint, type CurriculumEntryPoint } from "./curriculum";
+import { findCurriculumEntryPoint, type CurriculumEntryPoint } from "./curriculum";
 
 /**
  * Placement test + personalized learning path.
@@ -177,8 +177,8 @@ export type LearningPath = {
 };
 
 /**
- * Reads the learner's path, then resyncs the alphabet step's status/
- * progress/lesson_id against real, live user_lesson_progress before
+ * Reads the learner's path, then resyncs every step with real curriculum
+ * content (see STEP_LEVEL_SLUGS) against live user_lesson_progress before
  * returning it — the same computation saveLearningPath does at write
  * time, applied again at read time so every caller (dashboard, Daily
  * Study, learning plan) agrees with reality even between placement
@@ -193,20 +193,19 @@ export async function fetchLearningPath(userId: string): Promise<LearningPath | 
     .maybeSingle();
   if (!path) return null;
 
-  const [{ data: steps }, entryPoint] = await Promise.all([
+  const [{ data: steps }, entryPoints] = await Promise.all([
     supabase
       .from("learning_path_steps")
       .select("id, step_key, order_index, status, progress, lesson_id")
       .eq("path_id", path.id)
       .order("order_index", { ascending: true }),
-    findLevel1EntryPoint(userId),
+    fetchStepEntryPoints(userId),
   ]);
 
-  const resyncedSteps = ((steps ?? []) as LearningPathStep[]).map((step) =>
-    step.step_key === "alphabet" && entryPoint
-      ? { ...step, ...resolveAlphabetStepFields(entryPoint) }
-      : step,
-  );
+  const resyncedSteps = ((steps ?? []) as LearningPathStep[]).map((step) => {
+    const entryPoint = entryPoints[step.step_key as PathStepKey];
+    return entryPoint ? { ...step, ...resolveStepFields(entryPoint) } : step;
+  });
 
   return {
     id: path.id,
@@ -217,31 +216,96 @@ export async function fetchLearningPath(userId: string): Promise<LearningPath | 
 }
 
 /**
+ * Every path step backed by real, live curriculum content, keyed by
+ * step_key — currently "alphabet" (Level 1, foundations-of-arabic-script)
+ * and "vocabulary" (Level 2, basic-vocabulary-and-patterns, Phase 5/Batch
+ * 1). A step_key absent from this map has no real content behind it yet
+ * (roots/grammar/ayah_comprehension/surah_mastery) and is deliberately
+ * left alone — do not add a step here speculatively before its level
+ * actually has modules, the same discipline that keeps this map from
+ * ever silently going stale the way the old hardcoded module list did.
+ *
+ * `requiresLevelSlug`, when set, gates the step on that OTHER level being
+ * fully complete first — per Phase 5's placement-strategy review, Level 2
+ * unlocks on Level 1 completion, never on placement score (the placement
+ * test has nowhere near enough questions to certify that). Without this
+ * gate, a learner still on "alphabet" would see "vocabulary" resolve to a
+ * real, immediately-clickable lesson the moment Level 2 content existed
+ * at all — found via the Phase 5 Batch 1 E2E boundary run, the same class
+ * of check that caught the Phase 4 hardcoded-module defect.
+ */
+const STEP_LEVEL_SLUGS: Partial<
+  Record<PathStepKey, { levelSlug: string; requiresLevelSlug?: string }>
+> = {
+  alphabet: { levelSlug: "foundations-of-arabic-script" },
+  vocabulary: {
+    levelSlug: "basic-vocabulary-and-patterns",
+    requiresLevelSlug: "foundations-of-arabic-script",
+  },
+};
+
+async function fetchStepEntryPoints(
+  userId: string,
+): Promise<Partial<Record<PathStepKey, CurriculumEntryPoint>>> {
+  const configs = Object.entries(STEP_LEVEL_SLUGS) as [
+    PathStepKey,
+    { levelSlug: string; requiresLevelSlug?: string },
+  ][];
+
+  const distinctLevelSlugs = [
+    ...new Set(
+      configs.flatMap(([, c]) => [c.levelSlug, c.requiresLevelSlug].filter(Boolean) as string[]),
+    ),
+  ];
+  const entryPointByLevelSlug = new Map(
+    await Promise.all(
+      distinctLevelSlugs.map(
+        async (levelSlug) =>
+          [levelSlug, await findCurriculumEntryPoint(userId, levelSlug)] as const,
+      ),
+    ),
+  );
+
+  const result: Partial<Record<PathStepKey, CurriculumEntryPoint>> = {};
+  for (const [stepKey, { levelSlug, requiresLevelSlug }] of configs) {
+    if (requiresLevelSlug) {
+      const prerequisite = entryPointByLevelSlug.get(requiresLevelSlug);
+      const prerequisiteComplete =
+        prerequisite != null && prerequisite.completedCount === prerequisite.totalCount;
+      if (!prerequisiteComplete) continue;
+    }
+    const entryPoint = entryPointByLevelSlug.get(levelSlug);
+    if (entryPoint) result[stepKey] = entryPoint;
+  }
+  return result;
+}
+
+/**
  * Creates or replaces the learner's path for the chosen level.
  *
- * The 'alphabet' step's lesson_id/status/progress are always overridden
- * from real user_lesson_progress via findLevel1EntryPoint, regardless of
- * level — never left at buildPathSteps' synthetic "completed because your
- * placement level implies you're past this" value. The placement test has
- * only 2 raw letter-recognition questions spanning both Level 1 modules
- * (see Sub-phase 2.6's own placement audit), nowhere near enough to prove
- * a learner has mastered all 28 isolated letter shapes — and Level 1 is
- * also the only real curriculum that exists at all right now, so there is
- * nowhere else real to send a higher-scoring learner anyway. Every other
- * step's lesson_id stays null: Modules 3-8 have no real content, so
- * nothing here ever fakes a link into them.
+ * Every step in STEP_LEVEL_SLUGS has its lesson_id/status/progress always
+ * overridden from real user_lesson_progress, regardless of the learner's
+ * placement level — never left at buildPathSteps' synthetic "completed
+ * because your placement level implies you're past this" value. The
+ * placement test has only 2 raw letter-recognition questions and 2
+ * vocabulary questions (see Sub-phase 2.6's own placement audit and the
+ * Phase 5 placement-strategy review), nowhere near enough to prove
+ * mastery of either level's full content — so a higher placement score
+ * never fakes completion of real content the learner hasn't actually
+ * done. Every other step's lesson_id stays null: those levels have no
+ * real content yet, so nothing here ever fakes a link into them.
  *
  * This deletes and reinserts all 9 step rows on every call (including a
  * placement retake), same as before this sub-phase — but because status/
- * progress for the one step that matters is now derived from real
+ * progress for every step that matters is now derived from real
  * completion data rather than stored, a retake can never regress a
  * learner's visible progress: the recomputed value is the true value
  * either way.
  */
 /** Shared by saveLearningPath (write) and fetchLearningPath (read-time
- * resync) — the one place that turns a live findLevel1EntryPoint result
- * into the alphabet step's displayed status/progress/lesson_id. */
-function resolveAlphabetStepFields(entryPoint: CurriculumEntryPoint): {
+ * resync) — the one place that turns a live findCurriculumEntryPoint
+ * result into a step's displayed status/progress/lesson_id. */
+function resolveStepFields(entryPoint: CurriculumEntryPoint): {
   status: LearningPathStep["status"];
   progress: number;
   lesson_id: string;
@@ -271,15 +335,16 @@ export async function saveLearningPath(
     .single();
   if (error || !path) throw error ?? new Error("Could not save learning path");
 
-  const entryPoint = await findLevel1EntryPoint(userId);
+  const entryPoints = await fetchStepEntryPoints(userId);
 
   const rows = buildPathSteps(level).map((step) => {
-    if (step.step_key !== "alphabet" || !entryPoint) {
+    const entryPoint = entryPoints[step.step_key];
+    if (!entryPoint) {
       return { ...step, lesson_id: null, path_id: path.id, user_id: userId };
     }
     return {
       ...step,
-      ...resolveAlphabetStepFields(entryPoint),
+      ...resolveStepFields(entryPoint),
       path_id: path.id,
       user_id: userId,
     };
