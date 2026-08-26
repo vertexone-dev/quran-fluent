@@ -549,8 +549,13 @@ test.describe("Level 2 progression resolver (Phase 5 architecture, Phase 4 regre
     const mod2LessonIds = new Set(mod2Lessons.map((l) => l.id));
     expect(mod2LessonIds.has(hrefAfterModule1?.split("/lesson/")[1] ?? "")).toBe(true);
 
-    // Complete Module 2 too -> fully done, matching the exact
-    // completedCount === totalCount signal Level 1's fix already proved.
+    // Complete Module 2 too -> the resolved link must move into Batch 2's
+    // core-vocabulary-2 (Level 2 Batch 2 added two more modules under the
+    // same level_id after this spec was first written), never report the
+    // whole "vocabulary" step done after just these first two modules.
+    // Full walk-to-Completed coverage across all four Level 2 modules
+    // lives in 33-level2-batch2-...spec.ts's own progression-resolver
+    // test, so it is intentionally not duplicated here.
     await client.from("user_lesson_progress").insert(
       mod2Lessons.map((l) => ({
         user_id: userId,
@@ -563,7 +568,10 @@ test.describe("Level 2 progression resolver (Phase 5 architecture, Phase 4 regre
       })),
     );
     await page.reload();
-    await expect(vocabRow.getByText("Completed", { exact: true })).toBeVisible();
-    await expect(vocabRow.getByRole("link", { name: "Review lesson" })).toBeVisible();
+    await expect(vocabRow.getByText("In progress")).toBeVisible();
+    const hrefAfterModule2 = await vocabRow.getByRole("link").getAttribute("href");
+    const vocab2Lessons = await fetchModuleLessons(request, "core-vocabulary-2");
+    const vocab2LessonIds = new Set(vocab2Lessons.map((l) => l.id));
+    expect(vocab2LessonIds.has(hrefAfterModule2?.split("/lesson/")[1] ?? "")).toBe(true);
   });
 });
