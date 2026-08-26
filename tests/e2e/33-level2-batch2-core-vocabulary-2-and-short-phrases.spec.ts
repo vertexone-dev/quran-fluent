@@ -537,7 +537,7 @@ test.describe("Level 2 Batch 2 — Module 4: Short Phrases", () => {
 });
 
 test.describe("Level 2 Batch 1 -> Batch 2 progression resolver", () => {
-  test("the 'vocabulary' learning-path step walks core-vocabulary-1 -> core-vocabulary-2 -> short-phrases as each module completes, then reports fully Completed", async ({
+  test("the 'vocabulary' learning-path step walks core-vocabulary-1 -> core-vocabulary-2 -> short-phrases as each module completes, then moves on into vocabulary-capstone", async ({
     page,
     request,
   }) => {
@@ -676,11 +676,20 @@ test.describe("Level 2 Batch 1 -> Batch 2 progression resolver", () => {
     const phraseLessonIds = new Set(phraseLessons.map((l) => l.id));
     expect(phraseLessonIds.has(hrefAfterVocab2?.split("/lesson/")[1] ?? "")).toBe(true);
 
-    // Complete short-phrases too -> fully done.
+    // Complete short-phrases too -> the resolved link must move into
+    // Batch 3's vocabulary-capstone (Level 2 Batch 3 added a fifth module
+    // under the same level_id after this spec was first written), never
+    // report the whole "vocabulary" step done after just these four
+    // modules. Full walk-to-Completed coverage across all five Level 2
+    // modules lives in 35-level2-release-journey.spec.ts, so it is
+    // intentionally not duplicated here.
     await markCompleted(phraseLessons);
     await page.reload();
-    await expect(vocabRow.getByText("Completed", { exact: true })).toBeVisible();
-    await expect(vocabRow.getByRole("link", { name: "Review lesson" })).toBeVisible();
+    await expect(vocabRow.getByText("In progress")).toBeVisible();
+    const hrefAfterBatch2 = await vocabRow.getByRole("link").getAttribute("href");
+    const capstoneLessons = await fetchModuleLessons(request, "vocabulary-capstone");
+    const capstoneLessonIds = new Set(capstoneLessons.map((l) => l.id));
+    expect(capstoneLessonIds.has(hrefAfterBatch2?.split("/lesson/")[1] ?? "")).toBe(true);
   });
 });
 
