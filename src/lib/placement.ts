@@ -242,6 +242,10 @@ const STEP_LEVEL_SLUGS: Partial<
     levelSlug: "basic-vocabulary-and-patterns",
     requiresLevelSlug: "foundations-of-arabic-script",
   },
+  roots: {
+    levelSlug: "roots-and-word-patterns",
+    requiresLevelSlug: "basic-vocabulary-and-patterns",
+  },
 };
 
 async function fetchStepEntryPoints(

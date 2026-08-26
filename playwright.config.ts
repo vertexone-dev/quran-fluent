@@ -87,6 +87,7 @@ export default defineConfig({
         "33-level2-batch2-core-vocabulary-2-and-short-phrases.spec.ts",
         "34-level2-batch3-vocabulary-capstone.spec.ts",
         "35-level2-release-journey.spec.ts",
+        "37-level3-batch1-arabic-roots-intro-and-word-patterns.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
