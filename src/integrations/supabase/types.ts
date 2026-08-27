@@ -1,13 +1,68 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.15";
+  graphql_public: {
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
   public: {
     Tables: {
+      ayah_translations: {
+        Row: {
+          ayah_id: string;
+          created_at: string;
+          id: string;
+          locale: string;
+          translation: string;
+          updated_at: string;
+        };
+        Insert: {
+          ayah_id: string;
+          created_at?: string;
+          id?: string;
+          locale: string;
+          translation: string;
+          updated_at?: string;
+        };
+        Update: {
+          ayah_id?: string;
+          created_at?: string;
+          id?: string;
+          locale?: string;
+          translation?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ayah_translations_ayah_id_fkey";
+            columns: ["ayah_id"];
+            isOneToOne: false;
+            referencedRelation: "ayahs";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       ayahs: {
         Row: {
           arabic_source_id: string | null;
@@ -80,6 +135,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "bookmarks_surah_ayah_fkey";
+            columns: ["surah_number", "ayah_number"];
+            isOneToOne: false;
+            referencedRelation: "ayahs";
+            referencedColumns: ["surah_number", "ayah_number"];
+          },
+          {
             foreignKeyName: "bookmarks_surah_number_ayah_number_fkey";
             columns: ["surah_number", "ayah_number"];
             isOneToOne: false;
@@ -105,6 +167,7 @@ export type Database = {
           provider_name: string;
           public_domain: boolean;
           retrieved_at: string | null;
+          source_url: string;
           translator: string | null;
           verification_status: string;
           version: string | null;
@@ -125,6 +188,7 @@ export type Database = {
           provider_name: string;
           public_domain?: boolean;
           retrieved_at?: string | null;
+          source_url: string;
           translator?: string | null;
           verification_status?: string;
           version?: string | null;
@@ -145,6 +209,7 @@ export type Database = {
           provider_name?: string;
           public_domain?: boolean;
           retrieved_at?: string | null;
+          source_url?: string;
           translator?: string | null;
           verification_status?: string;
           version?: string | null;
@@ -229,17 +294,17 @@ export type Database = {
         };
         Relationships: [
           {
-            foreignKeyName: "learning_path_steps_path_id_fkey";
-            columns: ["path_id"];
-            isOneToOne: false;
-            referencedRelation: "learning_paths";
-            referencedColumns: ["id"];
-          },
-          {
             foreignKeyName: "learning_path_steps_lesson_id_fkey";
             columns: ["lesson_id"];
             isOneToOne: false;
             referencedRelation: "lessons";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "learning_path_steps_path_id_fkey";
+            columns: ["path_id"];
+            isOneToOne: false;
+            referencedRelation: "learning_paths";
             referencedColumns: ["id"];
           },
         ];
@@ -312,6 +377,47 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [];
+      };
+      lesson_exercise_translations: {
+        Row: {
+          created_at: string;
+          exercise_id: string;
+          explanation: string | null;
+          id: string;
+          locale: string;
+          payload: Json | null;
+          prompt: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          exercise_id: string;
+          explanation?: string | null;
+          id?: string;
+          locale: string;
+          payload?: Json | null;
+          prompt: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          exercise_id?: string;
+          explanation?: string | null;
+          id?: string;
+          locale?: string;
+          payload?: Json | null;
+          prompt?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lesson_exercise_translations_exercise_id_fkey";
+            columns: ["exercise_id"];
+            isOneToOne: false;
+            referencedRelation: "lesson_exercises";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       lesson_exercises: {
         Row: {
@@ -389,6 +495,41 @@ export type Database = {
           },
         ];
       };
+      lesson_section_translations: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: string;
+          locale: string;
+          section_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          body: string;
+          created_at?: string;
+          id?: string;
+          locale: string;
+          section_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          locale?: string;
+          section_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lesson_section_translations_section_id_fkey";
+            columns: ["section_id"];
+            isOneToOne: false;
+            referencedRelation: "lesson_sections";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       lesson_sections: {
         Row: {
           arabic_text: string | null;
@@ -446,6 +587,41 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "ayahs";
             referencedColumns: ["surah_number", "ayah_number"];
+          },
+        ];
+      };
+      lesson_translations: {
+        Row: {
+          created_at: string;
+          id: string;
+          lesson_id: string;
+          locale: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          lesson_id: string;
+          locale: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          lesson_id?: string;
+          locale?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "lesson_translations_lesson_id_fkey";
+            columns: ["lesson_id"];
+            isOneToOne: false;
+            referencedRelation: "lessons";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -536,6 +712,44 @@ export type Database = {
           },
         ];
       };
+      level_translations: {
+        Row: {
+          created_at: string;
+          goal: string;
+          id: string;
+          level_id: string;
+          locale: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          goal: string;
+          id?: string;
+          level_id: string;
+          locale: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          goal?: string;
+          id?: string;
+          level_id?: string;
+          locale?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "level_translations_level_id_fkey";
+            columns: ["level_id"];
+            isOneToOne: false;
+            referencedRelation: "levels";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       levels: {
         Row: {
           course_id: string;
@@ -622,11 +836,56 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "memorization_progress_surah_ayah_fkey";
+            columns: ["surah_number", "ayah_number"];
+            isOneToOne: false;
+            referencedRelation: "ayahs";
+            referencedColumns: ["surah_number", "ayah_number"];
+          },
+          {
             foreignKeyName: "memorization_progress_surah_number_ayah_number_fkey";
             columns: ["surah_number", "ayah_number"];
             isOneToOne: false;
             referencedRelation: "ayahs";
             referencedColumns: ["surah_number", "ayah_number"];
+          },
+        ];
+      };
+      module_translations: {
+        Row: {
+          created_at: string;
+          goal: string | null;
+          id: string;
+          locale: string;
+          module_id: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          goal?: string | null;
+          id?: string;
+          locale: string;
+          module_id: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          goal?: string | null;
+          id?: string;
+          locale?: string;
+          module_id?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "module_translations_module_id_fkey";
+            columns: ["module_id"];
+            isOneToOne: false;
+            referencedRelation: "modules";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -706,6 +965,13 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "notes_surah_ayah_fkey";
+            columns: ["surah_number", "ayah_number"];
+            isOneToOne: false;
+            referencedRelation: "ayahs";
+            referencedColumns: ["surah_number", "ayah_number"];
+          },
           {
             foreignKeyName: "notes_surah_number_ayah_number_fkey";
             columns: ["surah_number", "ayah_number"];
@@ -942,6 +1208,41 @@ export type Database = {
         };
         Relationships: [];
       };
+      surah_translations: {
+        Row: {
+          created_at: string;
+          id: string;
+          locale: string;
+          name: string;
+          surah_number: number;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          locale: string;
+          name: string;
+          surah_number: number;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          locale?: string;
+          name?: string;
+          surah_number?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "surah_translations_surah_number_fkey";
+            columns: ["surah_number"];
+            isOneToOne: false;
+            referencedRelation: "surahs";
+            referencedColumns: ["number"];
+          },
+        ];
+      };
       surahs: {
         Row: {
           ayah_count: number;
@@ -991,29 +1292,29 @@ export type Database = {
       };
       translations: {
         Row: {
+          ayah_number: number;
           created_at: string;
           id: string;
           source_id: string;
           surah_number: number;
-          ayah_number: number;
           text: string;
           updated_at: string;
         };
         Insert: {
+          ayah_number: number;
           created_at?: string;
           id?: string;
           source_id: string;
           surah_number: number;
-          ayah_number: number;
           text: string;
           updated_at?: string;
         };
         Update: {
+          ayah_number?: number;
           created_at?: string;
           id?: string;
           source_id?: string;
           surah_number?: number;
-          ayah_number?: number;
           text?: string;
           updated_at?: string;
         };
@@ -1266,6 +1567,41 @@ export type Database = {
         };
         Relationships: [];
       };
+      word_frequency_translations: {
+        Row: {
+          created_at: string;
+          id: string;
+          locale: string;
+          meaning: string;
+          updated_at: string;
+          word_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          locale: string;
+          meaning: string;
+          updated_at?: string;
+          word_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          locale?: string;
+          meaning?: string;
+          updated_at?: string;
+          word_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "word_frequency_translations_word_id_fkey";
+            columns: ["word_id"];
+            isOneToOne: false;
+            referencedRelation: "word_frequency";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       [_ in never]: never;
@@ -1420,6 +1756,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       app_role: ["student", "teacher", "admin"],

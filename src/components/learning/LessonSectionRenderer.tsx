@@ -4,7 +4,7 @@ import { BookOpen, Lightbulb, ListChecks, Quote, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useI18n } from "@/lib/i18n";
-import { pickLocale, type LessonSection } from "@/lib/curriculum";
+import type { LessonSection } from "@/lib/curriculum";
 import { ayahTranslation, fetchAyah } from "@/lib/quran";
 import { cn } from "@/lib/utils";
 
@@ -22,10 +22,10 @@ const CALLOUT_ICON: Partial<Record<LessonSection["content_type"], typeof Lightbu
  * addition can never crash an in-progress lesson.
  */
 export function LessonSectionRenderer({ section }: { section: LessonSection }) {
-  const { locale, d } = useI18n();
+  const { d } = useI18n();
   const copy = d.learning.lesson;
   const Icon = CALLOUT_ICON[section.content_type];
-  const body = pickLocale(section.body_en, section.body_fr, locale);
+  const body = section.body;
 
   const bodyBlock = body && (
     <p className="whitespace-pre-line leading-relaxed text-foreground">{body}</p>
@@ -91,7 +91,7 @@ export function LessonSectionRenderer({ section }: { section: LessonSection }) {
 function QuranExampleSection({ section }: { section: LessonSection }) {
   const { locale, t, d } = useI18n();
   const copy = d.learning.lesson;
-  const body = pickLocale(section.body_en, section.body_fr, locale);
+  const body = section.body;
   const surah = section.surah_number;
   const ayah = section.ayah_number;
 

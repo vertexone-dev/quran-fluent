@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import { findLevel1EntryPoint, pickLocale, type CurriculumEntryPoint } from "@/lib/curriculum";
+import { findLevel1EntryPoint, type CurriculumEntryPoint } from "@/lib/curriculum";
 import { fetchLearningPath, nextStep } from "@/lib/placement";
 import {
   type DailyStudyItem,
@@ -75,7 +75,7 @@ function DailyStudy() {
       try {
         const [path, entryPoint] = await Promise.all([
           fetchLearningPath(id),
-          findLevel1EntryPoint(id),
+          findLevel1EntryPoint(id, locale),
         ]);
         const step = nextStep(path)?.step_key ?? null;
         // Gated on !entryPoint (a real curriculum entry point exists at
@@ -109,7 +109,7 @@ function DailyStudy() {
     return () => {
       cancelled = true;
     };
-  }, [learnerId]);
+  }, [learnerId, locale]);
 
   // Guarded by a ref: the effect used to depend on `elapsed`, which ticks every
   // second, so a finished session inserted a study_sessions row per second.
@@ -184,7 +184,7 @@ function DailyStudy() {
             "answered" (see getTodaysStudy in src/lib/study.ts). */}
         {hasIncompleteLesson && (
           <div className="mt-4">
-            <LessonCard lesson={lessonEntryPoint} copy={copy} d={d} locale={locale} />
+            <LessonCard lesson={lessonEntryPoint} copy={copy} d={d} />
           </div>
         )}
       </main>
@@ -196,7 +196,7 @@ function DailyStudy() {
       return (
         <main className="mx-auto w-full max-w-2xl px-4 py-10">
           <h1 className="sr-only">{copy.title}</h1>
-          <LessonCard lesson={lessonEntryPoint} copy={copy} d={d} locale={locale} />
+          <LessonCard lesson={lessonEntryPoint} copy={copy} d={d} />
         </main>
       );
     }
@@ -407,14 +407,12 @@ function LessonCard({
   lesson,
   copy,
   d,
-  locale,
 }: {
   lesson: CurriculumEntryPoint;
   copy: ReturnType<typeof useI18n>["d"]["learning"]["daily"];
   d: ReturnType<typeof useI18n>["d"];
-  locale: "en" | "fr";
 }) {
-  const title = pickLocale(lesson.titleEn, lesson.titleFr, locale);
+  const title = lesson.title;
   const inProgress = lesson.completedCount > 0;
   return (
     <Card className="shadow-soft">

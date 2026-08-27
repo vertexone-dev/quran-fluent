@@ -19,7 +19,6 @@ import {
   fetchLessonForPlayer,
   fetchLessonProgress,
   isLastStep,
-  pickLocale,
   upsertLessonProgressCompleted,
   upsertLessonProgressInProgress,
   type PlayerStep,
@@ -46,8 +45,8 @@ function LessonPlayerRoute() {
     isLoading: lessonLoading,
     isError: lessonErrored,
   } = useQuery({
-    queryKey: ["lesson-player", lessonId],
-    queryFn: () => fetchLessonForPlayer(lessonId),
+    queryKey: ["lesson-player", lessonId, locale],
+    queryFn: () => fetchLessonForPlayer(lessonId, locale),
   });
 
   const {
@@ -141,8 +140,8 @@ function LessonPlayerRoute() {
 
   if (!user) return null;
 
-  const title = pickLocale(lesson.title_en, lesson.title_fr, locale);
-  const moduleTitle = pickLocale(lesson.module.title_en, lesson.module.title_fr, locale);
+  const title = lesson.title;
+  const moduleTitle = lesson.module.title;
   const isPlaceholder = lesson.slug === PLACEHOLDER_SLUG;
 
   if (completed) {

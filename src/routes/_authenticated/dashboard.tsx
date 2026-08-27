@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProgressRing } from "@/components/common/ProgressRing";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import { findLevel1EntryPoint, pickLocale } from "@/lib/curriculum";
+import { findLevel1EntryPoint } from "@/lib/curriculum";
 import { fetchLearnerSnapshot } from "@/lib/learner";
 import { fetchLearningPath, nextStep } from "@/lib/placement";
 import { countDueReviews, getDailyStats, getWeakAreas } from "@/lib/study";
@@ -78,8 +78,8 @@ function Dashboard() {
   // already-completed lesson, even if the learner hasn't retaken
   // placement since finishing it — see findLevel1EntryPoint).
   const { data: lessonEntryPoint } = useQuery({
-    queryKey: ["level1-entry-point", user?.id],
-    queryFn: () => findLevel1EntryPoint(user!.id),
+    queryKey: ["level1-entry-point", user?.id, locale],
+    queryFn: () => findLevel1EntryPoint(user!.id, locale),
     enabled: Boolean(user?.id),
   });
 
@@ -189,7 +189,7 @@ function Dashboard() {
                   <>
                     <Badge variant="secondary">{pathCopy.nextUp}</Badge>
                     <h2 className="mt-3 font-display text-xl font-semibold">
-                      {pickLocale(lessonEntryPoint.titleEn, lessonEntryPoint.titleFr, locale)}
+                      {lessonEntryPoint.title}
                     </h2>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {d.learning.daily.lessonProgress
@@ -320,9 +320,7 @@ function Dashboard() {
               <Library className="size-5 text-primary" aria-hidden />
               <h3 className="mt-3 font-display text-base font-semibold">{copy.today.path.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {lessonEntryPoint
-                  ? pickLocale(lessonEntryPoint.titleEn, lessonEntryPoint.titleFr, locale)
-                  : copy.today.path.none}
+                {lessonEntryPoint ? lessonEntryPoint.title : copy.today.path.none}
               </p>
               <Badge variant="outline" className="mt-3">
                 {copy.today.path.cta}

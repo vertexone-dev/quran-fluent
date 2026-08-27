@@ -204,7 +204,7 @@ function QuranPage() {
                       <p>
                         <span className="text-muted-foreground">{wordCopy.meaning}:</span>{" "}
                         <span className="font-medium">{word.meaning}</span>
-                        {d.common.language.fr === "Français" && word.meaning_fr && (
+                        {locale === "fr" && word.meaning_fr && (
                           <span className="block text-xs text-muted-foreground">
                             {word.meaning_fr}
                           </span>

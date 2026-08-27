@@ -11,11 +11,12 @@ import {
 import { dictionaries, isLocale, SUPPORTED_LOCALES, type Dictionary, type Locale } from "@/locales";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { isRtlLocale } from "@/lib/locale-resolution";
 
 const STORAGE_KEY = "quranroots-locale";
 
 export type { Locale };
-export { SUPPORTED_LOCALES };
+export { SUPPORTED_LOCALES, isRtlLocale };
 
 export const LOCALE_LABELS: Record<Locale, { label: string; short: string }> = {
   en: { label: "English", short: "EN" },
@@ -114,9 +115,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (typeof document === "undefined") return;
-    // UI direction stays LTR; Arabic content sets dir="rtl" on its own elements.
+    // Global app direction now follows the active locale (ar/ur -> rtl,
+    // everything else -> ltr) -- previously hardcoded to "ltr" always.
+    // Canonical Qur'anic/Arabic content is unaffected: it carries its own
+    // local dir="rtl" lang="ar" marking independent of this setting.
     document.documentElement.lang = locale;
-    document.documentElement.dir = "ltr";
+    document.documentElement.dir = isRtlLocale(locale) ? "rtl" : "ltr";
   }, [locale, hydrated]);
 
   const setLocale = useCallback(

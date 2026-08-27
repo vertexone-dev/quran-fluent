@@ -1,6 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Locale } from "@/lib/i18n";
+import { resolveLessonLocale, resolveTranslation } from "@/lib/locale-resolution";
 import type { WordFrequency } from "@/lib/vocabulary";
+
+export { resolveLessonLocale, resolveTranslation };
 
 export type LessonSectionContentType =
   | "explanation"
@@ -32,6 +35,8 @@ export type Level = {
   goal_en: string | null;
   goal_fr: string | null;
   order_index: number;
+  /** Resolved via level_translations for the caller's locale (falls back to English). */
+  title: string;
 };
 
 export type Module = {
@@ -43,6 +48,8 @@ export type Module = {
   goal_en: string | null;
   goal_fr: string | null;
   order_index: number;
+  /** Resolved via module_translations for the caller's locale (falls back to English). */
+  title: string;
 };
 
 export type LessonSection = {
@@ -56,6 +63,8 @@ export type LessonSection = {
   surah_number: number | null;
   ayah_number: number | null;
   metadata: Record<string, unknown>;
+  /** Resolved via lesson_section_translations at the lesson's resolvedLocale. */
+  body: string | null;
 };
 
 /**
@@ -77,6 +86,12 @@ export type LessonExercise = {
   surah_number: number | null;
   ayah_number: number | null;
   review_item_type: ReviewItemTypeForExercise;
+  /** Resolved via lesson_exercise_translations at the lesson's resolvedLocale
+   * -- includes the payload (choices/pairs), closing the gap where answer
+   * text was previously never locale-aware at all. */
+  prompt: string;
+  explanation: string | null;
+  resolvedPayload: Record<string, unknown>;
 };
 
 export type LessonVocabularyWord = { order_index: number; word: WordFrequency };
@@ -94,6 +109,14 @@ export type LessonForPlayer = {
   sections: LessonSection[];
   exercises: LessonExercise[];
   vocabulary: LessonVocabularyWord[];
+  /** Resolved via lesson_translations for the caller's locale (falls back to English). */
+  title: string;
+  /** The locale actually used to render this lesson's own content (title,
+   * sections, exercises) -- equals the requested locale unless any part of
+   * the lesson was missing that locale's translation, in which case the
+   * whole lesson fell back to English together (see resolveLessonLocale).
+   * Never "en" for one section and "fr" for another. */
+  resolvedLocale: Locale;
 };
 
 export type UserLessonProgress = {
@@ -113,10 +136,6 @@ export function isValidLessonId(value: string): boolean {
   return UUID_RE.test(value);
 }
 
-export function pickLocale<T extends string | null>(en: T, fr: T, locale: Locale): T {
-  return locale === "fr" ? fr : en;
-}
-
 /**
  * Fetches everything the lesson player needs in one pass: the lesson, its
  * module and level (for breadcrumb context), ordered sections, ordered
@@ -129,6 +148,7 @@ export function pickLocale<T extends string | null>(en: T, fr: T, locale: Locale
  */
 export async function fetchLessonForPlayer(
   lessonId: string,
+  locale: Locale,
   signal?: AbortSignal,
 ): Promise<LessonForPlayer | null> {
   if (!isValidLessonId(lessonId)) return null;
@@ -139,7 +159,9 @@ export async function fetchLessonForPlayer(
   if (lessonError) throw lessonError;
   if (!lesson) return null;
 
-  const [moduleRes, sectionsRes, exercisesRes, vocabLinksRes] = await Promise.all([
+  const localeFilter = locale === "en" ? ["en"] : [locale, "en"];
+
+  const [moduleRes, sectionsRes, exercisesRes, vocabLinksRes, lessonTrRes] = await Promise.all([
     supabase.from("modules").select("*").eq("id", lesson.module_id).maybeSingle(),
     supabase
       .from("lesson_sections")
@@ -156,15 +178,26 @@ export async function fetchLessonForPlayer(
       .select("order_index, word_id")
       .eq("lesson_id", lessonId)
       .order("order_index", { ascending: true }),
+    supabase
+      .from("lesson_translations")
+      .select("locale, title")
+      .eq("lesson_id", lessonId)
+      .in("locale", localeFilter),
   ]);
   if (moduleRes.error) throw moduleRes.error;
   if (sectionsRes.error) throw sectionsRes.error;
   if (exercisesRes.error) throw exercisesRes.error;
   if (vocabLinksRes.error) throw vocabLinksRes.error;
+  if (lessonTrRes.error) throw lessonTrRes.error;
   if (!moduleRes.data) throw new Error(`Lesson ${lessonId} references a missing module.`);
 
+  const sections = sectionsRes.data ?? [];
+  const exercises = exercisesRes.data ?? [];
+  const sectionIds = sections.map((s) => s.id);
+  const exerciseIds = exercises.map((e) => e.id);
+
   const vocabLinks = vocabLinksRes.data ?? [];
-  const [levelRes, wordsRes] = await Promise.all([
+  const [levelRes, wordsRes, moduleTrRes, sectionTrRes, exerciseTrRes] = await Promise.all([
     supabase.from("levels").select("*").eq("id", moduleRes.data.level_id).maybeSingle(),
     vocabLinks.length > 0
       ? supabase
@@ -175,22 +208,122 @@ export async function fetchLessonForPlayer(
             vocabLinks.map((v) => v.word_id),
           )
       : Promise.resolve({ data: [] as WordFrequency[], error: null }),
+    supabase
+      .from("module_translations")
+      .select("locale, title")
+      .eq("module_id", moduleRes.data.id)
+      .in("locale", localeFilter),
+    sectionIds.length > 0
+      ? supabase
+          .from("lesson_section_translations")
+          .select("section_id, locale, body")
+          .in("section_id", sectionIds)
+          .in("locale", localeFilter)
+      : Promise.resolve({ data: [], error: null }),
+    exerciseIds.length > 0
+      ? supabase
+          .from("lesson_exercise_translations")
+          .select("exercise_id, locale, prompt, explanation, payload")
+          .in("exercise_id", exerciseIds)
+          .in("locale", localeFilter)
+      : Promise.resolve({ data: [], error: null }),
   ]);
   if (levelRes.error) throw levelRes.error;
   if (wordsRes.error) throw wordsRes.error;
+  if (moduleTrRes.error) throw moduleTrRes.error;
+  if (sectionTrRes.error) throw sectionTrRes.error;
+  if (exerciseTrRes.error) throw exerciseTrRes.error;
   if (!levelRes.data) throw new Error(`Module ${moduleRes.data.id} references a missing level.`);
+
+  const levelTrRes = await supabase
+    .from("level_translations")
+    .select("locale, title")
+    .eq("level_id", levelRes.data.id)
+    .in("locale", localeFilter);
+  if (levelTrRes.error) throw levelTrRes.error;
 
   const wordsById = new Map((wordsRes.data ?? []).map((w) => [w.id, w]));
   const vocabulary: LessonVocabularyWord[] = vocabLinks
     .map((v) => ({ order_index: v.order_index, word: wordsById.get(v.word_id) }))
     .filter((v): v is LessonVocabularyWord => Boolean(v.word));
 
+  const sectionTrBySection = new Map<string, { locale: Locale; body: string }[]>();
+  for (const row of sectionTrRes.data ?? []) {
+    const list = sectionTrBySection.get(row.section_id) ?? [];
+    list.push({ locale: row.locale as Locale, body: row.body });
+    sectionTrBySection.set(row.section_id, list);
+  }
+  const exerciseTrByExercise = new Map<
+    string,
+    {
+      locale: Locale;
+      prompt: string;
+      explanation: string | null;
+      payload: Record<string, unknown>;
+    }[]
+  >();
+  for (const row of exerciseTrRes.data ?? []) {
+    const list = exerciseTrByExercise.get(row.exercise_id) ?? [];
+    list.push({
+      locale: row.locale as Locale,
+      prompt: row.prompt,
+      explanation: row.explanation,
+      payload: (row.payload ?? {}) as Record<string, unknown>,
+    });
+    exerciseTrByExercise.set(row.exercise_id, list);
+  }
+
+  const sectionLocales = new Map<string, ReadonlySet<Locale>>(
+    sectionIds.map((id) => [id, new Set((sectionTrBySection.get(id) ?? []).map((r) => r.locale))]),
+  );
+  const exerciseLocales = new Map<string, ReadonlySet<Locale>>(
+    exerciseIds.map((id) => [
+      id,
+      new Set((exerciseTrByExercise.get(id) ?? []).map((r) => r.locale)),
+    ]),
+  );
+
+  // resolveLessonLocale's declared return type is generic (string) so it
+  // stays dependency-free for unit testing -- in practice it only ever
+  // returns the `locale` argument (already Locale) or the "en" literal
+  // (also always a valid Locale), so this narrowing cast is safe.
+  const resolvedLocale = resolveLessonLocale(
+    locale,
+    (lessonTrRes.data ?? []).some((r) => r.locale === locale),
+    sectionIds,
+    sectionLocales,
+    exerciseIds,
+    exerciseLocales,
+  ) as Locale;
+
+  const lessonTitle =
+    resolveTranslation(lessonTrRes.data, resolvedLocale)?.title ?? lesson.title_en;
+  const moduleTitle =
+    resolveTranslation(moduleTrRes.data, locale)?.title ?? moduleRes.data.title_en;
+  const levelTitle = resolveTranslation(levelTrRes.data, locale)?.title ?? levelRes.data.title_en;
+
+  const resolvedSections = sections.map((s) => ({
+    ...s,
+    body: resolveTranslation(sectionTrBySection.get(s.id), resolvedLocale)?.body ?? s.body_en,
+  })) as LessonSection[];
+  const resolvedExercises = exercises.map((e) => {
+    const tr = resolveTranslation(exerciseTrByExercise.get(e.id), resolvedLocale);
+    return {
+      ...e,
+      prompt: tr?.prompt ?? e.prompt_en,
+      explanation: tr?.explanation ?? e.explanation_en,
+      resolvedPayload: tr?.payload ?? e.payload,
+    };
+  }) as LessonExercise[];
+
   return {
     ...lesson,
-    module: moduleRes.data,
-    level: levelRes.data,
-    sections: (sectionsRes.data ?? []) as LessonSection[],
-    exercises: (exercisesRes.data ?? []) as LessonExercise[],
+    title: lessonTitle,
+    resolvedLocale,
+    module: { ...moduleRes.data, title: moduleTitle },
+    level: { ...levelRes.data, title: levelTitle },
+    sections: resolvedSections,
+    exercises: resolvedExercises,
     vocabulary,
   };
 }
@@ -214,8 +347,8 @@ const PLACEHOLDER_LESSON_SLUG = "schema-validation-placeholder";
 export type CurriculumEntryPoint = {
   lessonId: string;
   slug: string;
-  titleEn: string;
-  titleFr: string;
+  /** Resolved via lesson_translations for the requested locale (falls back to English). */
+  title: string;
   moduleSlug: string;
   completedCount: number;
   totalCount: number;
@@ -249,6 +382,7 @@ export type CurriculumEntryPoint = {
 export async function findCurriculumEntryPoint(
   userId: string,
   levelSlug: string,
+  locale: Locale = "en",
 ): Promise<CurriculumEntryPoint | null> {
   const { data: level, error: levelError } = await supabase
     .from("levels")
@@ -269,7 +403,7 @@ export async function findCurriculumEntryPoint(
   const moduleById = new Map(modules.map((m) => [m.id, m]));
   const { data: lessons, error: lessonsError } = await supabase
     .from("lessons")
-    .select("id, slug, title_en, title_fr, module_id, order_index")
+    .select("id, slug, title_en, module_id, order_index")
     .in(
       "module_id",
       modules.map((m) => m.id),
@@ -304,11 +438,18 @@ export async function findCurriculumEntryPoint(
     sorted[sorted.length - 1]!;
   const targetModule = moduleById.get(target.module_id)!;
 
+  const { data: titleTr, error: titleTrError } = await supabase
+    .from("lesson_translations")
+    .select("locale, title")
+    .eq("lesson_id", target.id)
+    .in("locale", locale === "en" ? ["en"] : [locale, "en"]);
+  if (titleTrError) throw titleTrError;
+  const title = resolveTranslation(titleTr, locale)?.title ?? target.title_en;
+
   return {
     lessonId: target.id,
     slug: target.slug,
-    titleEn: target.title_en,
-    titleFr: target.title_fr,
+    title,
     moduleSlug: targetModule.slug,
     completedCount: [...statusByLessonId.values()].filter((s) => s === "completed").length,
     totalCount: sorted.length,
@@ -317,8 +458,11 @@ export async function findCurriculumEntryPoint(
 
 /** Thin wrapper preserving the exact pre-Phase-5 call signature every
  * existing caller (dashboard, daily study, placement) already uses. */
-export function findLevel1EntryPoint(userId: string): Promise<CurriculumEntryPoint | null> {
-  return findCurriculumEntryPoint(userId, "foundations-of-arabic-script");
+export function findLevel1EntryPoint(
+  userId: string,
+  locale: Locale = "en",
+): Promise<CurriculumEntryPoint | null> {
+  return findCurriculumEntryPoint(userId, "foundations-of-arabic-script", locale);
 }
 
 /** Idempotent upsert into `in_progress`. `startedAt` should be the existing
@@ -469,8 +613,15 @@ export function evaluateExerciseAnswer(
     }
     case "matching": {
       if (response.kind !== "matching") return false;
+      // Uses resolvedPayload, not the base English payload: the dropdown
+      // options the learner actually chose from are rendered from
+      // resolvedPayload (LessonExerciseRenderer), so the stored selection
+      // text is in that same locale -- comparing it against the English
+      // payload's `right` text would reject a correct answer in any other
+      // locale. correctIndex/correctAnswer above stay on the base payload
+      // deliberately: those are locale-invariant positions, never text.
       const pairs =
-        (exercise.payload["pairs"] as { left: string; right: string }[] | undefined) ?? [];
+        (exercise.resolvedPayload["pairs"] as { left: string; right: string }[] | undefined) ?? [];
       if (pairs.length === 0 || response.selections.length !== pairs.length) return false;
       return pairs.every((pair, i) => response.selections[i] === pair.right);
     }

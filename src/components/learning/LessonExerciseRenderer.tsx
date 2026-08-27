@@ -16,7 +16,6 @@ import { useI18n } from "@/lib/i18n";
 import {
   evaluateExerciseAnswer,
   hasCompleteResponse,
-  pickLocale,
   recordExerciseAttempt,
   type ExerciseResponse,
   type LessonExercise,
@@ -51,7 +50,7 @@ function shuffled<T>(items: T[]): T[] {
 }
 
 export function LessonExerciseRenderer({ exercise, userId, lessonId, onAnswered }: Props) {
-  const { locale, t, d } = useI18n();
+  const { t, d } = useI18n();
   const copy = d.learning.lesson;
   const [response, setResponse] = useState<ExerciseResponse | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -59,8 +58,8 @@ export function LessonExerciseRenderer({ exercise, userId, lessonId, onAnswered 
   const [saving, setSaving] = useState(false);
   const [startTime] = useState(() => Date.now());
 
-  const prompt = pickLocale(exercise.prompt_en, exercise.prompt_fr, locale);
-  const explanation = pickLocale(exercise.explanation_en, exercise.explanation_fr, locale);
+  const prompt = exercise.prompt;
+  const explanation = exercise.explanation;
   const canSubmit = !submitted && hasCompleteResponse(exercise, response);
 
   async function handleSubmit() {
@@ -147,7 +146,7 @@ function ChoiceControl({
   submitted: boolean;
   onChange: (r: ExerciseResponse) => void;
 }) {
-  const choices = (exercise.payload["choices"] as string[] | undefined) ?? [];
+  const choices = (exercise.resolvedPayload["choices"] as string[] | undefined) ?? [];
   const selectedIndex = response?.kind === "choice" ? response.index : null;
 
   return (
@@ -221,7 +220,8 @@ function MatchingControl({
 }) {
   const { d } = useI18n();
   const copy = d.learning.lesson.exercise;
-  const pairs = (exercise.payload["pairs"] as { left: string; right: string }[] | undefined) ?? [];
+  const pairs =
+    (exercise.resolvedPayload["pairs"] as { left: string; right: string }[] | undefined) ?? [];
   const options = useMemo(() => shuffled(pairs.map((p) => p.right)), [pairs]);
   const selections = response?.kind === "matching" ? response.selections : pairs.map(() => null);
 
