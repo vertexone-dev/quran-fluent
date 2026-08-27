@@ -91,6 +91,7 @@ export default defineConfig({
         "38-level3-batch2-roots-capstone.spec.ts",
         "39-level3-release-journey.spec.ts",
         "40-level4-batch1-pronouns-and-agreement.spec.ts",
+        "41-level4-batch2-grammar-capstone.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
