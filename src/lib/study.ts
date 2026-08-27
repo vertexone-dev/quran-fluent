@@ -195,11 +195,13 @@ export async function seedStarterItemsForStep(userId: string, stepKey: string) {
     user_id: userId,
     item_type: (stepKey === "roots"
       ? "root"
-      : stepKey === "ayah_comprehension" || stepKey === "surah_mastery"
-        ? "ayah"
-        : stepKey === "vocabulary" || stepKey === "reading"
-          ? "word"
-          : "letter") as ReviewItemType,
+      : stepKey === "grammar"
+        ? "concept"
+        : stepKey === "ayah_comprehension" || stepKey === "surah_mastery"
+          ? "ayah"
+          : stepKey === "vocabulary" || stepKey === "reading"
+            ? "word"
+            : "letter") as ReviewItemType,
     item_key: `${stepKey}:${item.front}`,
     front: item.front,
     back: item.back,

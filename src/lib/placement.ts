@@ -246,6 +246,10 @@ const STEP_LEVEL_SLUGS: Partial<
     levelSlug: "roots-and-word-patterns",
     requiresLevelSlug: "basic-vocabulary-and-patterns",
   },
+  grammar: {
+    levelSlug: "core-grammar",
+    requiresLevelSlug: "roots-and-word-patterns",
+  },
 };
 
 async function fetchStepEntryPoints(
