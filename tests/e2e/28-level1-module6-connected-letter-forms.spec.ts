@@ -1,6 +1,7 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
+import { completeLessonResilient, resilientAnswerAndCheck } from "./utils/lesson-interaction";
 
 /**
  * Covers Level 1, Module 6 ("connected-letter-forms"). Three lessons
@@ -70,60 +71,39 @@ async function fetchOrderedExercises(
   return ordered;
 }
 
+/**
+ * Selection is retried as a whole (not just the "Check answer" click) if
+ * no feedback appears -- a transient /lesson/:id hydration remount (see
+ * utils/lesson-interaction.ts) can discard an in-progress selection, so
+ * only re-running the click would retry against stale/wiped state.
+ */
 async function answerExercise(page: Page, exercise: DbExercise) {
   const t = exercise.exercise_type;
-  if (t === "multiple_choice" || t === "letter_recognition" || t === "reading_check") {
-    const choices = exercise.payload.choices!;
-    const correctIndex = exercise.payload.correctIndex!;
-    await page.getByRole("radio", { name: choices[correctIndex], exact: true }).click();
-  } else if (t === "true_false") {
-    const correct = exercise.payload.correctAnswer!;
-    await page.getByRole("button", { name: correct ? "True" : "False" }).click();
-  } else if (t === "matching") {
-    const pairs = exercise.payload.pairs!;
-    const comboboxes = page.getByRole("combobox");
-    for (let i = 0; i < pairs.length; i++) {
-      await comboboxes.nth(i).click();
-      await page.getByRole("option", { name: pairs[i]!.right, exact: true }).click();
+  await resilientAnswerAndCheck(page, async () => {
+    if (t === "multiple_choice" || t === "letter_recognition" || t === "reading_check") {
+      const choices = exercise.payload.choices!;
+      const correctIndex = exercise.payload.correctIndex!;
+      await page.getByRole("radio", { name: choices[correctIndex], exact: true }).click();
+    } else if (t === "true_false") {
+      const correct = exercise.payload.correctAnswer!;
+      await page.getByRole("button", { name: correct ? "True" : "False" }).click();
+    } else if (t === "matching") {
+      const pairs = exercise.payload.pairs!;
+      const comboboxes = page.getByRole("combobox");
+      for (let i = 0; i < pairs.length; i++) {
+        await comboboxes.nth(i).click();
+        await page.getByRole("option", { name: pairs[i]!.right, exact: true }).click();
+      }
+    } else {
+      throw new Error(`answerExercise: unhandled exercise_type "${t}"`);
     }
-  } else {
-    throw new Error(`answerExercise: unhandled exercise_type "${t}"`);
-  }
-  await page.getByRole("button", { name: "Check answer" }).click();
-  await expect(page.getByText("Correct!")).toBeVisible();
+  });
 }
 
-/** Resilient to the same async-completion-swap race documented in
- * 25-level1-module3-harakat.spec.ts. */
-async function clickNextOrComplete(page: Page) {
-  const nextOrComplete = page.getByRole("button", { name: /^(Next|Complete lesson)$/ });
-  try {
-    await nextOrComplete.click({ timeout: 5_000 });
-  } catch {
-    // Next loop iteration's "Lesson complete!" check resolves whether it
-    // actually landed.
-  }
-}
-
+/** Wall-clock-bounded, remount-resilient replacement for the old
+ * fixed-60-iteration loop -- see utils/lesson-interaction.ts. */
 async function completeLesson(page: Page, exercises: DbExercise[]) {
-  let exerciseIndex = 0;
-  for (let i = 0; i < 60; i++) {
-    if (
-      await page
-        .getByText("Lesson complete!")
-        .isVisible()
-        .catch(() => false)
-    )
-      return;
-    const checkAnswerBtn = page.getByRole("button", { name: "Check answer" });
-    if (await checkAnswerBtn.isVisible().catch(() => false)) {
-      await answerExercise(page, exercises[exerciseIndex]!);
-      exerciseIndex++;
-      continue;
-    }
-    await clickNextOrComplete(page);
-  }
-  throw new Error("completeLesson: exceeded iteration budget without reaching completion");
+  await completeLessonResilient(page, exercises, answerExercise);
 }
 
 async function resetModule6State(
@@ -226,23 +206,9 @@ test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
     await expect(page.getByText("Not quite.")).toBeVisible();
     await page.getByRole("button", { name: "Next" }).click();
 
-    let exerciseIndex = 1;
-    for (let i = 0; i < 40; i++) {
-      if (
-        await page
-          .getByText("Lesson complete!")
-          .isVisible()
-          .catch(() => false)
-      )
-        break;
-      const checkAnswerBtn = page.getByRole("button", { name: "Check answer" });
-      if (await checkAnswerBtn.isVisible().catch(() => false)) {
-        await answerExercise(page, exercises[exerciseIndex]!);
-        exerciseIndex++;
-        continue;
-      }
-      await clickNextOrComplete(page);
-    }
+    // exercises[0] was already handled manually above (incorrect-then-
+    // correct flow); slice(1) continues from exercises[1] onward.
+    await completeLessonResilient(page, exercises.slice(1), answerExercise);
     await expect(page.getByText("Lesson complete!")).toBeVisible();
 
     const { data: progress } = await client
@@ -553,6 +519,12 @@ test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
     page,
     request,
   }) => {
+    // Runs the lesson walk twice (retry-safety by design), each now
+    // wall-clock-bounded (see utils/lesson-interaction.ts) instead of a
+    // fixed iteration count -- needs headroom beyond the 30s default to
+    // let that bound actually do its job, same reasoning already applied
+    // to 33-level2-batch2-....spec.ts's analogous double-pass test.
+    test.setTimeout(90_000);
     const lessons = await fetchModule6Lessons(request);
     const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
     const { client, userId } = await createTestUserClient();
