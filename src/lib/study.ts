@@ -502,13 +502,14 @@ export async function seedVocabularyToReviews(
 /**
  * Seeds one review_items row per {left, right} pair in a completed lesson's
  * `matching` exercises — the only exercise type whose payload structurally
- * carries both a glyph and its name together. `letter_recognition` tests
- * the same glyphs but its payload has no name field (only a choices array),
- * so a lesson with no matching exercise (e.g. the Alif lesson, Module 1's
- * first) has no reliable, non-guessed source for the name and is left
- * unseeded rather than parsed out of prose section text. `true_false` and
- * `reading_check` exercises test a whole-script or multi-letter fact, not
- * one durable glyph, so they're excluded the same way.
+ * carries both a glyph/concept and its name/explanation together.
+ * `letter_recognition` tests the same glyphs but its payload has no name
+ * field (only a choices array), so a lesson with no matching exercise (e.g.
+ * the Alif lesson, Module 1's first) has no reliable, non-guessed source for
+ * the name and is left unseeded rather than parsed out of prose section
+ * text. `true_false` and `reading_check` exercises test a whole-script or
+ * multi-letter fact, not one durable glyph, so they're excluded the same
+ * way.
  *
  * item_key is scoped to the glyph alone (`${item_type}:${left}`), not the
  * lesson or exercise, so a letter re-tested by a later recap exercise
@@ -520,13 +521,16 @@ export async function seedVocabularyToReviews(
  * second row or resets a learner's accumulated SM-2 progress on an
  * already-seeded item.
  *
- * `back` is the transliterated name as authored (e.g. "Bā'", "Kāf") — the
- * same string regardless of interface language, since transliterations
- * aren't translated per locale anywhere else in this schema either. `back`
- * is not locale-baked because there is nothing to bake: the only
- * locale-dependent piece is `context`, so that alone takes the caller's
- * locale, following the same pattern already used by
- * seedVocabularyToReviews.
+ * `back`/`context` are read from `exercise.resolvedPayload` and
+ * `lesson.title` — both already resolved to the caller's locale upstream
+ * (fetchLessonForPlayer), with the same whole-lesson English-fallback
+ * guarantee. This function deliberately takes no `locale` parameter and
+ * does no resolution of its own: for letter/glyph-matching exercises `right`
+ * is a transliteration (locale-invariant in practice, so resolution is a
+ * no-op), but for grammar-concept matching exercises (e.g. pronoun-huwa,
+ * nominal-sentence) `right` genuinely is translated prose, so reading the
+ * raw English payload here previously seeded English-only review cards for
+ * French learners regardless of how the lesson itself was rendered.
  *
  * step_key is left null: no learning_path_steps <-> curriculum module
  * mapping has been established (documented as unresolved since
@@ -535,8 +539,7 @@ export async function seedVocabularyToReviews(
  */
 export async function seedLessonReviewItems(
   userId: string,
-  lesson: { title_en: string; title_fr: string; exercises: LessonExercise[] },
-  locale: "en" | "fr",
+  lesson: { title: string; exercises: LessonExercise[] },
 ): Promise<void> {
   const rows: {
     user_id: string;
@@ -551,7 +554,8 @@ export async function seedLessonReviewItems(
   const seenKeys = new Set<string>();
   for (const exercise of lesson.exercises) {
     if (exercise.exercise_type !== "matching") continue;
-    const pairs = exercise.payload["pairs"] as { left: string; right: string }[] | undefined;
+    const pairs = exercise.resolvedPayload["pairs"] as
+      { left: string; right: string }[] | undefined;
     if (!pairs) continue;
 
     for (const pair of pairs) {
@@ -564,7 +568,7 @@ export async function seedLessonReviewItems(
         item_key: itemKey,
         front: pair.left,
         back: pair.right,
-        context: locale === "fr" ? lesson.title_fr : lesson.title_en,
+        context: lesson.title,
         // Explicit, not the column's CURRENT_DATE default: that default is
         // evaluated by the DB server in UTC, while every "due today" read
         // in this file (getTodaysStudy, fetchPracticeSummary's due-count,

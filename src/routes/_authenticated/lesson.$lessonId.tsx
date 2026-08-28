@@ -206,7 +206,7 @@ function LessonPlayerRoute() {
     if (!canAdvance || !user?.id || !startedAt) return;
     if (onLastStep) {
       await upsertLessonProgressCompleted(user.id, lessonId, totalSteps, startedAt);
-      await seedLessonReviewItems(user.id, lesson!, locale);
+      await seedLessonReviewItems(user.id, lesson!);
       await refetchProgress();
       setCompleted(true);
       return;
