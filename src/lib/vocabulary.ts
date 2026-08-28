@@ -1,6 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Locale } from "@/lib/i18n";
+import { resolveTranslation } from "@/lib/locale-resolution";
 
-export type WordFrequency = {
+/** The raw word_frequency row shape, before locale resolution. */
+type WordFrequencyRow = {
   id: string;
   word: string;
   transliteration: string | null;
@@ -15,19 +18,32 @@ export type WordFrequency = {
   category: "noun" | "verb" | "particle" | "phrase" | null;
 };
 
+export type WordFrequency = WordFrequencyRow & {
+  /** Resolved via word_frequency_translations for the caller's locale
+   * (falls back to English). Learner-facing code should read this, not
+   * `meaning`/`meaning_fr` directly. */
+  resolvedMeaning: string;
+};
+
 export type UserVocabulary = {
   id: string;
   user_id: string;
   word_id: string;
   status: "new" | "learning" | "known" | "mastered";
   notes: string | null;
-  word: WordFrequency;
+  // Embedded, unresolved -- this data is only ever used to look up saved
+  // word_ids (never rendered for its meaning), so resolution isn't needed.
+  word: WordFrequencyRow;
 };
 
-export async function fetchWordFrequency(
-  options: { limit?: number; category?: string | null; search?: string; signal?: AbortSignal } = {},
-): Promise<WordFrequency[]> {
-  const { limit = 50, category, search, signal } = options;
+export async function fetchWordFrequency(options: {
+  limit?: number;
+  category?: string | null;
+  search?: string;
+  locale: Locale;
+  signal?: AbortSignal;
+}): Promise<WordFrequency[]> {
+  const { limit = 50, category, search, locale, signal } = options;
   let query = supabase
     .from("word_frequency")
     .select("*")
@@ -51,7 +67,37 @@ export async function fetchWordFrequency(
 
   const { data, error } = await query;
   if (error) throw error;
-  return (data ?? []) as WordFrequency[];
+  const words = (data ?? []) as WordFrequencyRow[];
+  if (words.length === 0) return [];
+
+  // Same resolved/fallback contract as fetchLessonForPlayer: request the
+  // caller's locale plus English (English alone when that's the request),
+  // then resolveTranslation falls back to English per-row if a specific
+  // word has no translation yet.
+  const localeFilter = locale === "en" ? ["en"] : [locale, "en"];
+  let trQuery = supabase
+    .from("word_frequency_translations")
+    .select("word_id, locale, meaning")
+    .in(
+      "word_id",
+      words.map((w) => w.id),
+    )
+    .in("locale", localeFilter);
+  if (signal) trQuery = trQuery.abortSignal(signal);
+  const { data: translations, error: trError } = await trQuery;
+  if (trError) throw trError;
+
+  const byWordId = new Map<string, { locale: string; meaning: string }[]>();
+  for (const row of translations ?? []) {
+    const list = byWordId.get(row.word_id) ?? [];
+    list.push({ locale: row.locale, meaning: row.meaning });
+    byWordId.set(row.word_id, list);
+  }
+
+  return words.map((w) => ({
+    ...w,
+    resolvedMeaning: resolveTranslation(byWordId.get(w.id), locale)?.meaning ?? w.meaning,
+  }));
 }
 
 export async function fetchUserVocabulary(userId: string): Promise<UserVocabulary[]> {

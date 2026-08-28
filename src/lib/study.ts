@@ -471,15 +471,14 @@ export async function getWeakAreas(userId: string): Promise<WeakArea[]> {
 
 /**
  * Turn a saved word from the vocabulary browser into a review item in the
- * spaced-repetition queue. The back of the card is in the user's interface
- * language; the front is always the Arabic word.
+ * spaced-repetition queue. The back of the card is `word.resolvedMeaning`
+ * (already resolved to the caller's locale by fetchWordFrequency, with the
+ * same whole-value English-fallback guarantee as the rest of the resolver
+ * infrastructure) -- this function does no locale resolution of its own.
+ * The front is always the Arabic word.
  */
-export async function seedVocabularyToReviews(
-  userId: string,
-  word: WordFrequency,
-  locale: "en" | "fr",
-) {
-  const back = locale === "fr" && word.meaning_fr ? word.meaning_fr : word.meaning;
+export async function seedVocabularyToReviews(userId: string, word: WordFrequency) {
+  const back = word.resolvedMeaning;
   const contextParts = [word.transliteration ?? "", word.example_reference ?? ""].filter(Boolean);
   if (word.example_ayah) {
     contextParts.push(`“${word.example_ayah}”`);

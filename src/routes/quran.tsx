@@ -72,8 +72,8 @@ function QuranPage() {
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>(null);
 
   const { data: words } = useQuery({
-    queryKey: ["word-frequency", category, search],
-    queryFn: ({ signal }) => fetchWordFrequency({ limit: 50, category, search, signal }),
+    queryKey: ["word-frequency", category, search, locale],
+    queryFn: ({ signal }) => fetchWordFrequency({ limit: 50, category, search, locale, signal }),
   });
 
   const { data: userVocab } = useQuery({
@@ -100,7 +100,7 @@ function QuranPage() {
     mutationFn: ({ word, save }: { word: WordFrequency; save: boolean }) => {
       if (!user) throw new Error("unauthenticated");
       return save
-        ? seedVocabularyToReviews(user.id, word, locale)
+        ? seedVocabularyToReviews(user.id, word)
         : removeVocabularyReviewItem(user.id, word.id);
     },
   });
@@ -203,12 +203,7 @@ function QuranPage() {
                     <div className="mt-4 space-y-1 text-sm">
                       <p>
                         <span className="text-muted-foreground">{wordCopy.meaning}:</span>{" "}
-                        <span className="font-medium">{word.meaning}</span>
-                        {locale === "fr" && word.meaning_fr && (
-                          <span className="block text-xs text-muted-foreground">
-                            {word.meaning_fr}
-                          </span>
-                        )}
+                        <span className="font-medium">{word.resolvedMeaning}</span>
                       </p>
                       {word.root && (
                         <p>
