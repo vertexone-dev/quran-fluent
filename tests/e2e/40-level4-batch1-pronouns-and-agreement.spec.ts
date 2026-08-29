@@ -1,7 +1,11 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
-import { completeLessonResilient, resilientAnswerAndCheck } from "./utils/lesson-interaction";
+import {
+  completeLessonResilient,
+  resilientAnswerAndCheck,
+  waitForHeadingResilient,
+} from "./utils/lesson-interaction";
 
 /**
  * Covers Level 4 (Core Grammar) Batch 1: "pronouns-and-nominal-sentences"
@@ -259,6 +263,12 @@ test.describe("Level 4 Batch 1 — Module 1: Pronouns and Simple Sentences", () 
     page,
     request,
   }) => {
+    // waitForHeadingResilient below is wall-clock-bounded (default 30s,
+    // see utils/lesson-interaction.ts) rather than relying on Playwright's
+    // built-in 5s assertion timeout -- same French-heading hydration race
+    // already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts.
+    test.setTimeout(60_000);
     const lessons = await fetchModuleLessons(request, "pronouns-and-nominal-sentences");
     const lesson = lessons.find((l) => l.slug === "he-is-allah-one")!;
     const { client, userId } = await createTestUserClient();
@@ -267,7 +277,7 @@ test.describe("Level 4 Batch 1 — Module 1: Pronouns and Simple Sentences", () 
 
     try {
       await page.goto(`/lesson/${lesson.id}`);
-      await expect(page.getByRole("heading", { name: "Il est Allah, Unique" })).toBeVisible();
+      await waitForHeadingResilient(page, "Il est Allah, Unique");
       await page.getByRole("button", { name: "Suivant" }).click(); // past explanation
       await page.getByRole("button", { name: "Suivant" }).click(); // past huwa word
       await page.getByRole("button", { name: "Suivant" }).click(); // past quran_example
@@ -475,6 +485,12 @@ test.describe("Level 4 Batch 1 — Module 2: Describing Words and 'Of' Phrases",
   });
 
   test("French interface renders correctly for both lessons", async ({ page, request }) => {
+    // Two sequential waitForHeadingResilient calls below, each
+    // wall-clock-bounded up to 30s (see utils/lesson-interaction.ts) --
+    // same French-heading hydration race already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts, doubled here since
+    // this test visits two lesson pages.
+    test.setTimeout(90_000);
     const lessons = await fetchModuleLessons(request, "agreement-and-genitive-constructions");
     const lesson1 = lessons.find((l) => l.slug === "the-straight-path")!;
     const lesson2 = lessons.find((l) => l.slug === "lord-of-the-worlds")!;
@@ -485,10 +501,10 @@ test.describe("Level 4 Batch 1 — Module 2: Describing Words and 'Of' Phrases",
 
     try {
       await page.goto(`/lesson/${lesson1.id}`);
-      await expect(page.getByRole("heading", { name: "Le droit chemin" })).toBeVisible();
+      await waitForHeadingResilient(page, "Le droit chemin");
 
       await page.goto(`/lesson/${lesson2.id}`);
-      await expect(page.getByRole("heading", { name: "Seigneur de l'univers" })).toBeVisible();
+      await waitForHeadingResilient(page, "Seigneur de l'univers");
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
     }

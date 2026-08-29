@@ -148,6 +148,13 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
     page,
     request,
   }) => {
+    // completeLessonResilient below is wall-clock-bounded up to 60s (see
+    // utils/lesson-interaction.ts) and a single call can legitimately
+    // overrun that by up to ~20s more if the last answer/check attempt is
+    // in flight when the budget elapses -- the 30s Playwright default is
+    // not enough headroom for that, the exact class of run #49 follow-up
+    // failure seen in 26-level1-module4-sukun-shadda.spec.ts.
+    test.setTimeout(90_000);
     const lessons = await fetchModule7Lessons(request);
     const lesson1 = lessons.find((l) => l.slug === "reading-short-words")!;
     const { client, userId } = await createTestUserClient();

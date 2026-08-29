@@ -1,7 +1,11 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
-import { completeLessonResilient, resilientAnswerAndCheck } from "./utils/lesson-interaction";
+import {
+  completeLessonResilient,
+  resilientAnswerAndCheck,
+  waitForHeadingResilient,
+} from "./utils/lesson-interaction";
 
 /**
  * Covers Level 3 (Roots & Word Patterns) Batch 2: "roots-capstone" -- the
@@ -262,6 +266,12 @@ test.describe("Level 3 Batch 2 — Module 3: Roots Capstone", () => {
     page,
     request,
   }) => {
+    // waitForHeadingResilient below is wall-clock-bounded (default 30s,
+    // see utils/lesson-interaction.ts) rather than relying on Playwright's
+    // built-in 5s assertion timeout -- same French-heading hydration race
+    // already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts.
+    test.setTimeout(60_000);
     const lessons = await fetchModuleLessons(request, "roots-capstone");
     const lesson = lessons.find((l) => l.slug === "reading-with-root-awareness")!;
     const ayah1_2 = await fetchAyah(request, 1, 2);
@@ -271,9 +281,7 @@ test.describe("Level 3 Batch 2 — Module 3: Roots Capstone", () => {
 
     try {
       await page.goto(`/lesson/${lesson.id}`);
-      await expect(
-        page.getByRole("heading", { name: "Lire avec conscience des racines" }),
-      ).toBeVisible();
+      await waitForHeadingResilient(page, "Lire avec conscience des racines");
       await page.getByRole("button", { name: "Suivant" }).click();
       await expect(page.getByText(ayah1_2.translation_fr, { exact: true })).toBeVisible();
     } finally {

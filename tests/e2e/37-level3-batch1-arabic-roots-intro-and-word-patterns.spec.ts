@@ -1,7 +1,11 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
-import { completeLessonResilient, resilientAnswerAndCheck } from "./utils/lesson-interaction";
+import {
+  completeLessonResilient,
+  resilientAnswerAndCheck,
+  waitForHeadingResilient,
+} from "./utils/lesson-interaction";
 
 /**
  * Covers Level 3 (Roots & Word Patterns) Batch 1: "arabic-roots-intro"
@@ -335,6 +339,12 @@ test.describe("Level 3 Batch 1 — Module 1: Understanding Roots", () => {
     page,
     request,
   }) => {
+    // waitForHeadingResilient below is wall-clock-bounded (default 30s,
+    // see utils/lesson-interaction.ts) rather than relying on Playwright's
+    // built-in 5s assertion timeout -- same French-heading hydration race
+    // already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts.
+    test.setTimeout(60_000);
     const lessons = await fetchModuleLessons(request, "arabic-roots-intro");
     const lesson1 = lessons.find((l) => l.slug === "three-letters-one-meaning")!;
     const { client, userId } = await createTestUserClient();
@@ -343,9 +353,7 @@ test.describe("Level 3 Batch 1 — Module 1: Understanding Roots", () => {
 
     try {
       await page.goto(`/lesson/${lesson1.id}`);
-      await expect(
-        page.getByRole("heading", { name: "Trois lettres, un seul sens" }),
-      ).toBeVisible();
+      await waitForHeadingResilient(page, "Trois lettres, un seul sens");
       await expect(page.getByText(/racine de trois lettres/)).toBeVisible();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
@@ -485,6 +493,12 @@ test.describe("Level 3 Batch 1 — Module 2: How Patterns Shape Meaning", () => 
   });
 
   test("French interface renders correctly", async ({ page, request }) => {
+    // waitForHeadingResilient below is wall-clock-bounded (default 30s,
+    // see utils/lesson-interaction.ts) rather than relying on Playwright's
+    // built-in 5s assertion timeout -- same French-heading hydration race
+    // already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts.
+    test.setTimeout(60_000);
     const lessons = await fetchModuleLessons(request, "word-patterns");
     const lesson = lessons.find((l) => l.slug === "same-root-different-shape")!;
     const { client, userId } = await createTestUserClient();
@@ -493,9 +507,7 @@ test.describe("Level 3 Batch 1 — Module 2: How Patterns Shape Meaning", () => 
 
     try {
       await page.goto(`/lesson/${lesson.id}`);
-      await expect(
-        page.getByRole("heading", { name: "Même racine, forme différente" }),
-      ).toBeVisible();
+      await waitForHeadingResilient(page, "Même racine, forme différente");
       await expect(page.getByText(/schèmes/).first()).toBeVisible();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
