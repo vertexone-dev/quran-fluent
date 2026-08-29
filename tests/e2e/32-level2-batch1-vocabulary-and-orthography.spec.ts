@@ -5,6 +5,7 @@ import {
   advanceUntilVisibleResilient,
   completeLessonResilient,
   resilientAnswerAndCheck,
+  waitForHeadingResilient,
 } from "./utils/lesson-interaction";
 
 /**
@@ -264,6 +265,12 @@ test.describe("Level 2 Batch 1 — Module 1: Long Vowels & Qur'anic Spelling", (
     page,
     request,
   }) => {
+    // waitForHeadingResilient below is wall-clock-bounded (default 30s,
+    // see utils/lesson-interaction.ts) rather than relying on Playwright's
+    // built-in 5s assertion timeout -- same French-heading hydration race
+    // already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts.
+    test.setTimeout(60_000);
     const lessons = await fetchModuleLessons(request, "long-vowels-and-orthography");
     const lesson2 = lessons.find((l) => l.slug === "dagger-alif")!;
     const { client, userId } = await createTestUserClient();
@@ -272,7 +279,7 @@ test.describe("Level 2 Batch 1 — Module 1: Long Vowels & Qur'anic Spelling", (
 
     try {
       await page.goto(`/lesson/${lesson2.id}`);
-      await expect(page.getByRole("heading", { name: "L'alif suscrit" })).toBeVisible();
+      await waitForHeadingResilient(page, "L'alif suscrit");
       await page.getByRole("button", { name: "Suivant" }).click();
       await expect(page.getByText(/'Ālamīn/)).toBeVisible();
     } finally {

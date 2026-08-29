@@ -1,7 +1,11 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
-import { completeLessonResilient, resilientAnswerAndCheck } from "./utils/lesson-interaction";
+import {
+  completeLessonResilient,
+  resilientAnswerAndCheck,
+  waitForHeadingResilient,
+} from "./utils/lesson-interaction";
 
 /**
  * Covers Level 1, Module 6 ("connected-letter-forms"). Three lessons
@@ -175,6 +179,13 @@ test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
     page,
     request,
   }) => {
+    // completeLessonResilient below is wall-clock-bounded up to 60s (see
+    // utils/lesson-interaction.ts) and a single call can legitimately
+    // overrun that by up to ~20s more if the last answer/check attempt is
+    // in flight when the budget elapses -- the 30s Playwright default is
+    // not enough headroom for that, the exact class of run #49 follow-up
+    // failure seen in 26-level1-module4-sukun-shadda.spec.ts.
+    test.setTimeout(90_000);
     const lessons = await fetchModule6Lessons(request);
     const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
     const { client, userId } = await createTestUserClient();
@@ -305,6 +316,8 @@ test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
     page,
     request,
   }) => {
+    // Same headroom reasoning as "full lifecycle on Lesson 1" above.
+    test.setTimeout(90_000);
     const lessons = await fetchModule6Lessons(request);
     const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
     const { client, userId } = await createTestUserClient();
@@ -372,6 +385,8 @@ test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
     page,
     request,
   }) => {
+    // Same headroom reasoning as "full lifecycle on Lesson 1" above.
+    test.setTimeout(90_000);
     const lessons = await fetchModule6Lessons(request);
     const lesson1 = lessons.find((l) => l.slug === "how-letters-connect")!;
     const { client, userId } = await createTestUserClient();
@@ -390,6 +405,12 @@ test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
   });
 
   test("French interface: lesson renders correctly", async ({ page, request }) => {
+    // waitForHeadingResilient below is wall-clock-bounded (default 30s,
+    // see utils/lesson-interaction.ts) rather than relying on Playwright's
+    // built-in 5s assertion timeout -- same French-heading hydration race
+    // already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts.
+    test.setTimeout(60_000);
     const lessons = await fetchModule6Lessons(request);
     const lesson2 = lessons.find((l) => l.slug === "non-connecting-letters")!;
     const { client, userId } = await createTestUserClient();
@@ -402,7 +423,7 @@ test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
 
     try {
       await page.goto(`/lesson/${lesson2.id}`);
-      await expect(page.getByRole("heading", { name: lesson2.title_fr })).toBeVisible();
+      await waitForHeadingResilient(page, lesson2.title_fr);
       await page.getByRole("button", { name: "Suivant" }).click();
       await expect(page.getByText(/ne se lient jamais vers l'avant/)).toBeVisible();
     } finally {

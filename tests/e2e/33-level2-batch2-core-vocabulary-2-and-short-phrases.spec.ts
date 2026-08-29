@@ -5,6 +5,7 @@ import {
   advanceUntilVisibleResilient,
   completeLessonResilient,
   resilientAnswerAndCheck,
+  waitForHeadingResilient,
 } from "./utils/lesson-interaction";
 
 /**
@@ -215,7 +216,14 @@ test.describe("Level 2 Batch 2 — Module 3: Core Vocabulary II", () => {
     page,
     request,
   }) => {
-    test.setTimeout(60_000);
+    // completeLessonResilient below is wall-clock-bounded up to 60s (see
+    // utils/lesson-interaction.ts) and a single call can legitimately
+    // overrun that by up to ~20s more if the last answer/check attempt is
+    // in flight when the budget elapses -- the previous 60s left no
+    // headroom for that overrun or for setup/assertion time, the exact
+    // class of run #49 follow-up failure seen in
+    // 26-level1-module4-sukun-shadda.spec.ts.
+    test.setTimeout(90_000);
     const lessons = await fetchModuleLessons(request, "core-vocabulary-2");
     const lesson = lessons.find((l) => l.slug === "vocabulary-3")!;
     const { client, userId } = await createTestUserClient();
@@ -302,6 +310,12 @@ test.describe("Level 2 Batch 2 — Module 3: Core Vocabulary II", () => {
     page,
     request,
   }) => {
+    // waitForHeadingResilient below is wall-clock-bounded (default 30s,
+    // see utils/lesson-interaction.ts) rather than relying on Playwright's
+    // built-in 5s assertion timeout -- same French-heading hydration race
+    // already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts.
+    test.setTimeout(60_000);
     const lessons = await fetchModuleLessons(request, "core-vocabulary-2");
     const lesson = lessons.find((l) => l.slug === "vocabulary-3")!;
     const { client, userId } = await createTestUserClient();
@@ -310,9 +324,7 @@ test.describe("Level 2 Batch 2 — Module 3: Core Vocabulary II", () => {
 
     try {
       await page.goto(`/lesson/${lesson.id}`);
-      await expect(
-        page.getByRole("heading", { name: "Vocabulaire de base : partie 3" }),
-      ).toBeVisible();
+      await waitForHeadingResilient(page, "Vocabulaire de base : partie 3");
       await page.getByRole("button", { name: "Suivant" }).click();
       await expect(page.getByText(/Dis/)).toBeVisible();
     } finally {
@@ -406,7 +418,8 @@ test.describe("Level 2 Batch 2 — Module 4: Short Phrases", () => {
     page,
     request,
   }) => {
-    test.setTimeout(60_000);
+    // Same headroom reasoning as vocabulary-3's full-lifecycle test above.
+    test.setTimeout(90_000);
     const lessons = await fetchModuleLessons(request, "short-phrases");
     const lesson = lessons.find((l) => l.slug === "phrases-of-sovereignty")!;
     const { client, userId } = await createTestUserClient();
@@ -486,6 +499,12 @@ test.describe("Level 2 Batch 2 — Module 4: Short Phrases", () => {
     page,
     request,
   }) => {
+    // waitForHeadingResilient below is wall-clock-bounded (default 30s,
+    // see utils/lesson-interaction.ts) rather than relying on Playwright's
+    // built-in 5s assertion timeout -- same French-heading hydration race
+    // already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts.
+    test.setTimeout(60_000);
     const lessons = await fetchModuleLessons(request, "short-phrases");
     const lesson = lessons.find((l) => l.slug === "phrases-of-sovereignty")!;
     const ayah114_2 = await fetchAyah(request, 114, 2);
@@ -495,7 +514,7 @@ test.describe("Level 2 Batch 2 — Module 4: Short Phrases", () => {
 
     try {
       await page.goto(`/lesson/${lesson.id}`);
-      await expect(page.getByRole("heading", { name: "Phrases de souveraineté" })).toBeVisible();
+      await waitForHeadingResilient(page, "Phrases de souveraineté");
       await page.getByRole("button", { name: "Suivant" }).click();
       await expect(page.getByText(ayah114_2.translation_fr, { exact: true })).toBeVisible();
     } finally {

@@ -1,7 +1,11 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
-import { completeLessonResilient, resilientAnswerAndCheck } from "./utils/lesson-interaction";
+import {
+  completeLessonResilient,
+  resilientAnswerAndCheck,
+  waitForHeadingResilient,
+} from "./utils/lesson-interaction";
 
 /**
  * Covers Level 1, Module 4 ("sukun-and-shadda"). Three lessons teaching
@@ -165,6 +169,14 @@ test.describe("Level 1 Module 4 — Sukūn & Shadda", () => {
     page,
     request,
   }) => {
+    // completeLessonResilient below is wall-clock-bounded up to 60s (see
+    // utils/lesson-interaction.ts) and a single call can legitimately
+    // overrun that by up to ~20s more if the last answer/check attempt is
+    // in flight when the budget elapses -- the 30s Playwright default is
+    // not enough headroom for that. This exact gap caused run #49's
+    // follow-up persistent failure on this file's "a due concept item"
+    // test.
+    test.setTimeout(90_000);
     const lessons = await fetchModule4Lessons(request);
     const sukun = lessons.find((l) => l.slug === "sukun")!;
     const { client, userId } = await createTestUserClient();
@@ -292,6 +304,8 @@ test.describe("Level 1 Module 4 — Sukūn & Shadda", () => {
     page,
     request,
   }) => {
+    // Same headroom reasoning as "full lifecycle on Lesson 1" above.
+    test.setTimeout(90_000);
     const lessons = await fetchModule4Lessons(request);
     const sukun = lessons.find((l) => l.slug === "sukun")!;
     const { client, userId } = await createTestUserClient();
@@ -359,6 +373,12 @@ test.describe("Level 1 Module 4 — Sukūn & Shadda", () => {
     page,
     request,
   }) => {
+    // Fixes run #49's follow-up failure: this test called completeLesson
+    // with no outer timeout override, so Playwright's 30s default fired
+    // while completeLessonResilient's own wall-clock budget (up to ~80s
+    // worst case, see utils/lesson-interaction.ts) was still legitimately
+    // running, force-closing the page mid-wait.
+    test.setTimeout(90_000);
     const lessons = await fetchModule4Lessons(request);
     const sukun = lessons.find((l) => l.slug === "sukun")!;
     const { client, userId } = await createTestUserClient();
@@ -377,6 +397,13 @@ test.describe("Level 1 Module 4 — Sukūn & Shadda", () => {
   });
 
   test("French interface: lesson renders correctly", async ({ page, request }) => {
+    // Fixes run #49's follow-up failure: this exact heading assertion used
+    // Playwright's default 5s assertion timeout, the same French-heading
+    // hydration race already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts. waitForHeadingResilient
+    // is wall-clock-bounded (default 30s, see utils/lesson-interaction.ts);
+    // the outer test timeout needs headroom beyond that budget.
+    test.setTimeout(60_000);
     const lessons = await fetchModule4Lessons(request);
     const shadda = lessons.find((l) => l.slug === "shadda")!;
     const { client, userId } = await createTestUserClient();
@@ -389,7 +416,7 @@ test.describe("Level 1 Module 4 — Sukūn & Shadda", () => {
 
     try {
       await page.goto(`/lesson/${shadda.id}`);
-      await expect(page.getByRole("heading", { name: shadda.title_fr })).toBeVisible();
+      await waitForHeadingResilient(page, shadda.title_fr);
       await page.getByRole("button", { name: "Suivant" }).click();
       await expect(page.getByText(/tenu deux fois plus longtemps/)).toBeVisible();
     } finally {

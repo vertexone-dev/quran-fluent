@@ -1,7 +1,11 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
-import { completeLessonResilient, resilientAnswerAndCheck } from "./utils/lesson-interaction";
+import {
+  completeLessonResilient,
+  resilientAnswerAndCheck,
+  waitForHeadingResilient,
+} from "./utils/lesson-interaction";
 
 /**
  * Covers Level 1, Module 5 ("tanwin"). Four lessons teaching fatḥatān,
@@ -171,6 +175,13 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
     page,
     request,
   }) => {
+    // completeLessonResilient below is wall-clock-bounded up to 60s (see
+    // utils/lesson-interaction.ts) and a single call can legitimately
+    // overrun that by up to ~20s more if the last answer/check attempt is
+    // in flight when the budget elapses -- the 30s Playwright default is
+    // not enough headroom for that, the exact class of run #49 follow-up
+    // failure seen in 26-level1-module4-sukun-shadda.spec.ts.
+    test.setTimeout(90_000);
     const lessons = await fetchModule5Lessons(request);
     const fathatan = lessons.find((l) => l.slug === "fathatan")!;
     const { client, userId } = await createTestUserClient();
@@ -294,6 +305,8 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
     page,
     request,
   }) => {
+    // Same headroom reasoning as "full lifecycle on Lesson 1" above.
+    test.setTimeout(90_000);
     const lessons = await fetchModule5Lessons(request);
     const fathatan = lessons.find((l) => l.slug === "fathatan")!;
     const { client, userId } = await createTestUserClient();
@@ -361,6 +374,8 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
     page,
     request,
   }) => {
+    // Same headroom reasoning as "full lifecycle on Lesson 1" above.
+    test.setTimeout(90_000);
     const lessons = await fetchModule5Lessons(request);
     const fathatan = lessons.find((l) => l.slug === "fathatan")!;
     const { client, userId } = await createTestUserClient();
@@ -379,6 +394,12 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
   });
 
   test("French interface: lesson renders correctly", async ({ page, request }) => {
+    // waitForHeadingResilient below is wall-clock-bounded (default 30s,
+    // see utils/lesson-interaction.ts) rather than relying on Playwright's
+    // built-in 5s assertion timeout -- same French-heading hydration race
+    // already proven and fixed in
+    // 29-level1-module7-first-reading-practice.spec.ts.
+    test.setTimeout(60_000);
     const lessons = await fetchModule5Lessons(request);
     const dammatan = lessons.find((l) => l.slug === "dammatan")!;
     const { client, userId } = await createTestUserClient();
@@ -391,7 +412,7 @@ test.describe("Level 1 Module 5 — Tanwīn", () => {
 
     try {
       await page.goto(`/lesson/${dammatan.id}`);
-      await expect(page.getByRole("heading", { name: dammatan.title_fr })).toBeVisible();
+      await waitForHeadingResilient(page, dammatan.title_fr);
       await page.getByRole("button", { name: "Suivant" }).click();
       await expect(page.getByText(/son bref « u »/)).toBeVisible();
     } finally {
