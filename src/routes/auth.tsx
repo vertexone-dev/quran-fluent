@@ -43,6 +43,7 @@ export const Route = createFileRoute("/auth")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  codeSplitGroupings: [],
   component: AuthPage,
 });
 
