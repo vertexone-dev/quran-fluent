@@ -38,6 +38,37 @@ function getLocalSupabaseStatus() {
   return JSON.parse(raw);
 }
 
+/**
+ * The GoTrue admin `/admin/users` endpoint has no server-side email filter
+ * (an `?email=` query param is silently ignored and returns the full,
+ * unfiltered, unstably-ordered user list) — confirmed directly against the
+ * local stack, not assumed. The only supported lookup is paginated listing
+ * (`page`/`per_page`), so every page must be inspected and matched against
+ * `email` client-side. A page short of `per_page` (including zero results)
+ * reliably signals there is no further page — verified directly: requesting
+ * a page far beyond the last one returns an empty array, not an error or a
+ * repeat of prior data — so this cannot infinite-loop or skip a page.
+ */
+async function findUserByEmail(apiUrl, headers, email) {
+  const target = email.toLowerCase();
+  const perPage = 200;
+  for (let page = 1; ; page++) {
+    const res = await fetch(`${apiUrl}/auth/v1/admin/users?page=${page}&per_page=${perPage}`, {
+      headers,
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to list local users: ${res.status} ${await res.text()}`);
+    }
+    const body = await res.json();
+    const users = Array.isArray(body?.users) ? body.users : [];
+    const match = users.find(
+      (u) => typeof u?.email === "string" && u.email.toLowerCase() === target,
+    );
+    if (match) return match;
+    if (users.length === 0) return null;
+  }
+}
+
 async function main() {
   const status = getLocalSupabaseStatus();
   const apiUrl = status.API_URL;
@@ -68,12 +99,7 @@ async function main() {
     "Content-Type": "application/json",
   };
 
-  const existingRes = await fetch(
-    `${apiUrl}/auth/v1/admin/users?email=${encodeURIComponent(email)}`,
-    { headers },
-  );
-  const existing = await existingRes.json();
-  const existingUser = Array.isArray(existing?.users) ? existing.users[0] : null;
+  const existingUser = await findUserByEmail(apiUrl, headers, email);
 
   if (existingUser) {
     console.log(`Local E2E test user already exists (${email}) — nothing to do.`);
