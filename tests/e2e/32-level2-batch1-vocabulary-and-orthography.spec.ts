@@ -1,6 +1,11 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
+import {
+  advanceUntilVisibleResilient,
+  completeLessonResilient,
+  resilientAnswerAndCheck,
+} from "./utils/lesson-interaction";
 
 /**
  * Covers Level 2 Batch 1: "long-vowels-and-orthography" (bridge module —
@@ -72,84 +77,40 @@ async function fetchOrderedExercises(
 
 async function answerExercise(page: Page, exercise: DbExercise) {
   const t = exercise.exercise_type;
-  if (t === "multiple_choice" || t === "reading_check") {
-    const choices = exercise.payload.choices!;
-    const correctIndex = exercise.payload.correctIndex!;
-    await page.getByRole("radio", { name: choices[correctIndex], exact: true }).click();
-  } else if (t === "true_false") {
-    const correct = exercise.payload.correctAnswer!;
-    await page.getByRole("button", { name: correct ? "True" : "False" }).click();
-  } else if (t === "matching") {
-    const pairs = exercise.payload.pairs!;
-    const comboboxes = page.getByRole("combobox");
-    for (let i = 0; i < pairs.length; i++) {
-      await comboboxes.nth(i).click();
-      await page.getByRole("option", { name: pairs[i]!.right, exact: true }).click();
+  await resilientAnswerAndCheck(page, async () => {
+    if (t === "multiple_choice" || t === "reading_check") {
+      const choices = exercise.payload.choices!;
+      const correctIndex = exercise.payload.correctIndex!;
+      await page.getByRole("radio", { name: choices[correctIndex], exact: true }).click();
+    } else if (t === "true_false") {
+      const correct = exercise.payload.correctAnswer!;
+      await page.getByRole("button", { name: correct ? "True" : "False" }).click();
+    } else if (t === "matching") {
+      const pairs = exercise.payload.pairs!;
+      const comboboxes = page.getByRole("combobox");
+      for (let i = 0; i < pairs.length; i++) {
+        await comboboxes.nth(i).click();
+        await page.getByRole("option", { name: pairs[i]!.right, exact: true }).click();
+      }
+    } else {
+      throw new Error(`answerExercise: unhandled exercise_type "${t}"`);
     }
-  } else {
-    throw new Error(`answerExercise: unhandled exercise_type "${t}"`);
-  }
-  await page.getByRole("button", { name: "Check answer" }).click();
-  await expect(page.getByText("Correct!")).toBeVisible();
-}
-
-async function clickNextOrComplete(page: Page) {
-  const nextOrComplete = page.getByRole("button", { name: /^(Next|Complete lesson)$/ });
-  try {
-    await nextOrComplete.click({ timeout: 5_000 });
-  } catch {
-    // Next loop iteration's "Lesson complete!" check resolves whether it
-    // actually landed.
-  }
+  });
 }
 
 /** Advances through sections and their attached exercises (answering each
  * as encountered, exactly as completeLesson does) until targetText becomes
- * visible, rather than running all the way to "Lesson complete!". */
+ * visible, rather than running all the way to "Lesson complete!".
+ * Wall-clock-bounded, remount-resilient replacement for the old
+ * fixed-60-iteration loop -- see utils/lesson-interaction.ts. */
 async function advanceUntilVisible(page: Page, exercises: DbExercise[], targetText: string) {
-  let exerciseIndex = 0;
-  for (let i = 0; i < 60; i++) {
-    // A short waitFor, not an instant isVisible() snapshot: quran_example
-    // sections fetch their ayah via useQuery (a real network round-trip),
-    // so the target text may not exist in the DOM yet on the exact
-    // iteration this step is reached — an instant check would click past
-    // it before the fetch resolves.
-    const appeared = await page
-      .getByText(targetText, { exact: true })
-      .waitFor({ state: "visible", timeout: 800 })
-      .then(() => true)
-      .catch(() => false);
-    if (appeared) return;
-    const checkAnswerBtn = page.getByRole("button", { name: "Check answer" });
-    if (await checkAnswerBtn.isVisible().catch(() => false)) {
-      await answerExercise(page, exercises[exerciseIndex]!);
-      exerciseIndex++;
-      continue;
-    }
-    await clickNextOrComplete(page);
-  }
-  throw new Error(`advanceUntilVisible: exceeded iteration budget waiting for "${targetText}"`);
+  await advanceUntilVisibleResilient(page, exercises, targetText, answerExercise);
 }
 
+/** Wall-clock-bounded, remount-resilient replacement for the old
+ * fixed-60-iteration loop -- see utils/lesson-interaction.ts. */
 async function completeLesson(page: Page, exercises: DbExercise[]) {
-  let exerciseIndex = 0;
-  for (let i = 0; i < 60; i++) {
-    if (
-      await page
-        .getByText("Lesson complete!")
-        .isVisible()
-        .catch(() => false)
-    )
-      return;
-    const checkAnswerBtn = page.getByRole("button", { name: "Check answer" });
-    if (await checkAnswerBtn.isVisible().catch(() => false)) {
-      await answerExercise(page, exercises[exerciseIndex]!);
-      exerciseIndex++;
-      continue;
-    }
-    await clickNextOrComplete(page);
-  }
-  throw new Error("completeLesson: exceeded iteration budget without reaching completion");
+  await completeLessonResilient(page, exercises, answerExercise);
 }
 
 test.describe("Level 2 Batch 1 — Module 1: Long Vowels & Qur'anic Spelling", () => {
@@ -208,7 +169,10 @@ test.describe("Level 2 Batch 1 — Module 1: Long Vowels & Qur'anic Spelling", (
     page,
     request,
   }) => {
-    test.setTimeout(60_000);
+    // Headroom beyond completeLesson's own wall-clock bound (see
+    // utils/lesson-interaction.ts), so that bound -- not this outer
+    // timeout -- is what governs a slow/degraded run.
+    test.setTimeout(90_000);
     const lessons = await fetchModuleLessons(request, "long-vowels-and-orthography");
     const lesson1 = lessons.find((l) => l.slug === "long-vowel-carriers")!;
     const { client, userId } = await createTestUserClient();
@@ -367,7 +331,10 @@ test.describe("Level 2 Batch 1 — Module 2: Core Vocabulary I", () => {
     page,
     request,
   }) => {
-    test.setTimeout(60_000);
+    // Headroom beyond completeLesson's own wall-clock bound (see
+    // utils/lesson-interaction.ts), so that bound -- not this outer
+    // timeout -- is what governs a slow/degraded run.
+    test.setTimeout(90_000);
     const lessons = await fetchModuleLessons(request, "core-vocabulary-1");
     const lesson1 = lessons.find((l) => l.slug === "vocabulary-1")!;
     const { client, userId } = await createTestUserClient();
@@ -419,6 +386,10 @@ test.describe("Level 2 Batch 1 — Module 2: Core Vocabulary I", () => {
     page,
     request,
   }) => {
+    // Headroom beyond advanceUntilVisible's own wall-clock bound (see
+    // utils/lesson-interaction.ts), so that bound -- not the 30s default
+    // -- is what governs a slow/degraded run.
+    test.setTimeout(90_000);
     const lessons = await fetchModuleLessons(request, "core-vocabulary-1");
     const lesson1 = lessons.find((l) => l.slug === "vocabulary-1")!;
     const { client } = await createTestUserClient();

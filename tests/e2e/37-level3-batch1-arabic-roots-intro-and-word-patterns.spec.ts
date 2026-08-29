@@ -1,6 +1,7 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
+import { completeLessonResilient, resilientAnswerAndCheck } from "./utils/lesson-interaction";
 
 /**
  * Covers Level 3 (Roots & Word Patterns) Batch 1: "arabic-roots-intro"
@@ -91,56 +92,31 @@ async function fetchOrderedExercises(
 
 async function answerExercise(page: Page, exercise: DbExercise) {
   const t = exercise.exercise_type;
-  if (t === "multiple_choice" || t === "reading_check") {
-    const choices = exercise.payload.choices!;
-    const correctIndex = exercise.payload.correctIndex!;
-    await page.getByRole("radio", { name: choices[correctIndex], exact: true }).click();
-  } else if (t === "true_false") {
-    const correct = exercise.payload.correctAnswer!;
-    await page.getByRole("button", { name: correct ? "True" : "False" }).click();
-  } else if (t === "matching") {
-    const pairs = exercise.payload.pairs!;
-    const comboboxes = page.getByRole("combobox");
-    for (let i = 0; i < pairs.length; i++) {
-      await comboboxes.nth(i).click();
-      await page.getByRole("option", { name: pairs[i]!.right, exact: true }).click();
+  await resilientAnswerAndCheck(page, async () => {
+    if (t === "multiple_choice" || t === "reading_check") {
+      const choices = exercise.payload.choices!;
+      const correctIndex = exercise.payload.correctIndex!;
+      await page.getByRole("radio", { name: choices[correctIndex], exact: true }).click();
+    } else if (t === "true_false") {
+      const correct = exercise.payload.correctAnswer!;
+      await page.getByRole("button", { name: correct ? "True" : "False" }).click();
+    } else if (t === "matching") {
+      const pairs = exercise.payload.pairs!;
+      const comboboxes = page.getByRole("combobox");
+      for (let i = 0; i < pairs.length; i++) {
+        await comboboxes.nth(i).click();
+        await page.getByRole("option", { name: pairs[i]!.right, exact: true }).click();
+      }
+    } else {
+      throw new Error(`answerExercise: unhandled exercise_type "${t}"`);
     }
-  } else {
-    throw new Error(`answerExercise: unhandled exercise_type "${t}"`);
-  }
-  await page.getByRole("button", { name: "Check answer" }).click();
-  await expect(page.getByText("Correct!")).toBeVisible();
+  });
 }
 
-async function clickNextOrComplete(page: Page) {
-  const nextOrComplete = page.getByRole("button", { name: /^(Next|Complete lesson)$/ });
-  try {
-    await nextOrComplete.click({ timeout: 5_000 });
-  } catch {
-    // Next loop iteration's "Lesson complete!" check resolves whether it
-    // actually landed.
-  }
-}
-
+/** Wall-clock-bounded, remount-resilient replacement for the old
+ * fixed-60-iteration loop -- see utils/lesson-interaction.ts. */
 async function completeLesson(page: Page, exercises: DbExercise[]) {
-  let exerciseIndex = 0;
-  for (let i = 0; i < 60; i++) {
-    if (
-      await page
-        .getByText("Lesson complete!")
-        .isVisible()
-        .catch(() => false)
-    )
-      return;
-    const checkAnswerBtn = page.getByRole("button", { name: "Check answer" });
-    if (await checkAnswerBtn.isVisible().catch(() => false)) {
-      await answerExercise(page, exercises[exerciseIndex]!);
-      exerciseIndex++;
-      continue;
-    }
-    await clickNextOrComplete(page);
-  }
-  throw new Error("completeLesson: exceeded iteration budget without reaching completion");
+  await completeLessonResilient(page, exercises, answerExercise);
 }
 
 test.describe("Level 3 Batch 1 — Module 1: Understanding Roots", () => {
@@ -217,7 +193,10 @@ test.describe("Level 3 Batch 1 — Module 1: Understanding Roots", () => {
     page,
     request,
   }) => {
-    test.setTimeout(60_000);
+    // Headroom beyond completeLesson's own wall-clock bound (see
+    // utils/lesson-interaction.ts), so that bound -- not this outer
+    // timeout -- is what governs a slow/degraded run.
+    test.setTimeout(90_000);
     const lessons = await fetchModuleLessons(request, "arabic-roots-intro");
     const lesson1 = lessons.find((l) => l.slug === "three-letters-one-meaning")!;
     const { client, userId } = await createTestUserClient();
@@ -292,7 +271,10 @@ test.describe("Level 3 Batch 1 — Module 1: Understanding Roots", () => {
     page,
     request,
   }) => {
-    test.setTimeout(60_000);
+    // Calls completeLesson twice, each now wall-clock-bounded (see
+    // utils/lesson-interaction.ts) instead of a fixed iteration count --
+    // needs headroom beyond the old single-call budget.
+    test.setTimeout(120_000);
     const lessons = await fetchModuleLessons(request, "arabic-roots-intro");
     const lesson1 = lessons.find((l) => l.slug === "three-letters-one-meaning")!;
     const lesson2 = lessons.find((l) => l.slug === "more-root-families")!;
@@ -436,7 +418,10 @@ test.describe("Level 3 Batch 1 — Module 2: How Patterns Shape Meaning", () => 
     page,
     request,
   }) => {
-    test.setTimeout(60_000);
+    // Headroom beyond completeLesson's own wall-clock bound (see
+    // utils/lesson-interaction.ts), so that bound -- not this outer
+    // timeout -- is what governs a slow/degraded run.
+    test.setTimeout(90_000);
     const lessons = await fetchModuleLessons(request, "word-patterns");
     const lesson = lessons.find((l) => l.slug === "same-root-different-shape")!;
     const { client, userId } = await createTestUserClient();
