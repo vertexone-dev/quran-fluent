@@ -1,6 +1,7 @@
 import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
+import { trackHydrationRemounts } from "./utils/lesson-interaction";
 
 /**
  * Covers Internationalization Foundation Phase 1: the normalized
@@ -195,6 +196,59 @@ async function completeHeIsAllahOneLesson(page: Page, locale: "en" | "fr") {
   await page.getByRole("button", { name: L.complete }).click();
 }
 
+/**
+ * Wall-clock-bounded replacement for a fixed-iteration polling loop: the
+ * number of due review cards ahead of the target on the shared local E2E
+ * account varies run to run (other specs leave their own due items
+ * behind), and PracticeSession's "Acquis"/"Difficile" click only advances
+ * to the next card after its Supabase write resolves (handleAnswer awaits
+ * recordPracticeAttempt before calling advance()) -- so a fixed card-count
+ * budget can be exhausted by CI latency alone before the target is ever
+ * reached, independent of anything actually being wrong. Time-bounding
+ * instead of counting cards removes that sensitivity. Each poll uses a
+ * genuinely retrying `.waitFor` (not a point-in-time `isVisible()`
+ * snapshot) to confirm the target front text is stably present before
+ * treating the card as found, and that same retry window supplies the
+ * loop's pacing -- no separate arbitrary sleep is needed.
+ */
+async function findDueReviewCardByFront(
+  page: Page,
+  options: {
+    frontText: string;
+    revealLabel: string;
+    easyLabel: string;
+    doneText: string;
+    maxMs?: number;
+  },
+): Promise<boolean> {
+  const { frontText, revealLabel, easyLabel, doneText, maxMs = 40_000 } = options;
+  const reveal = page.getByRole("button", { name: revealLabel });
+  const start = Date.now();
+
+  while (Date.now() - start < maxMs) {
+    if (
+      await page
+        .getByText(doneText)
+        .isVisible()
+        .catch(() => false)
+    )
+      return false;
+
+    const isTarget = await page
+      .getByText(frontText, { exact: true })
+      .waitFor({ state: "visible", timeout: 800 })
+      .then(() => true)
+      .catch(() => false);
+    if (isTarget) return true;
+
+    if (await reveal.isVisible().catch(() => false)) {
+      await reveal.click();
+      await page.getByRole("button", { name: easyLabel }).click();
+    }
+  }
+  return false;
+}
+
 test.describe("Internationalization Foundation Phase 1 — review-card localization (pre-Level-5 hardening)", () => {
   const CONCEPT_KEYS = ["concept:pronoun-huwa", "concept:nominal-sentence"];
 
@@ -284,35 +338,25 @@ test.describe("Internationalization Foundation Phase 1 — review-card localizat
 
       await page.goto("/practice");
       await page.getByRole("button", { name: "Commencer la révision" }).click();
-      let sawFrenchBack = false;
-      for (let i = 0; i < 25; i++) {
-        if (
-          await page
-            .getByText("Session terminée")
-            .isVisible()
-            .catch(() => false)
-        )
-          break;
-        const front = await page
-          .getByText("pronoun-huwa", { exact: true })
-          .isVisible()
-          .catch(() => false);
-        if (front) {
-          await page.getByRole("button", { name: "Toucher pour révéler" }).click();
-          await expect(page.getByText(/pronom qui remplace un nom/)).toBeVisible();
-          sawFrenchBack = true;
-          await page.getByRole("button", { name: "Acquis" }).click();
-          continue;
-        }
-        const reveal = page.getByRole("button", { name: "Toucher pour révéler" });
-        if (await reveal.isVisible().catch(() => false)) {
-          await reveal.click();
-          await page.getByRole("button", { name: "Acquis" }).click();
-          continue;
-        }
-        await page.waitForTimeout(300);
-      }
-      expect(sawFrenchBack).toBe(true);
+
+      const getRemounts = trackHydrationRemounts(page);
+      const foundTargetCard = await findDueReviewCardByFront(page, {
+        frontText: "pronoun-huwa",
+        revealLabel: "Toucher pour révéler",
+        easyLabel: "Acquis",
+        doneText: "Session terminée",
+        maxMs: 40_000,
+      });
+      expect(
+        foundTargetCard,
+        `Target review card "pronoun-huwa" never appeared within the wall-clock budget. ` +
+          `Hydration-remount events observed on this page during the wait: ${getRemounts()} ` +
+          `(diagnostic only -- not itself a pass/fail signal).`,
+      ).toBe(true);
+
+      await page.getByRole("button", { name: "Toucher pour révéler" }).click();
+      await expect(page.getByText(/pronom qui remplace un nom/)).toBeVisible();
+      await page.getByRole("button", { name: "Acquis" }).click();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
       await client.from("review_items").delete().eq("user_id", userId).in("item_key", CONCEPT_KEYS);
