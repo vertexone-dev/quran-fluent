@@ -94,6 +94,7 @@ export default defineConfig({
         "41-level4-batch2-grammar-capstone.spec.ts",
         "42-i18n-foundation-phase1.spec.ts",
         "43-level5-batch1-attached-particles.spec.ts",
+        "44-level5-batch2-imperative-capstone.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
