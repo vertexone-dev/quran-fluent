@@ -3,6 +3,7 @@ import { BookOpen, Lightbulb, ListChecks, Quote, Sparkles } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AyahPlayButton } from "@/components/quran/AyahPlayButton";
 import { useI18n } from "@/lib/i18n";
 import type { LessonSection } from "@/lib/curriculum";
 import { ayahTranslation, fetchAyah } from "@/lib/quran";
@@ -111,13 +112,16 @@ function QuranExampleSection({ section }: { section: LessonSection }) {
             {isLoading && <Skeleton className="h-16 w-full" />}
             {!isLoading && data && (
               <div>
-                <p
-                  className="font-quran text-right text-2xl leading-loose text-foreground"
-                  dir="rtl"
-                  lang="ar"
-                >
-                  {data.arabic_text}
-                </p>
+                <div className="flex items-start justify-between gap-2">
+                  <p
+                    className="font-quran text-right text-2xl leading-loose text-foreground"
+                    dir="rtl"
+                    lang="ar"
+                  >
+                    {data.arabic_text}
+                  </p>
+                  <AyahPlayButton surahNumber={surah!} ayahNumber={ayah!} />
+                </div>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {ayahTranslation(data, locale) ?? d.quran.reader.translationUnavailable}
                 </p>

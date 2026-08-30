@@ -59,6 +59,15 @@ export const quran = {
         "Marmaduke Pickthall — Project Gutenberg eBook #16955 digital edition. Public domain in the United States. Not represented as an exact reproduction of the 1930 first edition.",
     },
   },
+  audio: {
+    play: "Play recitation",
+    pause: "Pause recitation",
+    restart: "Replay from start",
+    loading: "Loading recitation…",
+    unavailable: "Recitation audio isn't available for this Ayah.",
+    error: "Couldn't play the recitation. Try again.",
+    reciterLabel: "Reciter: {reciter}",
+  },
   word: {
     meaning: "Meaning",
     root: "Root",
