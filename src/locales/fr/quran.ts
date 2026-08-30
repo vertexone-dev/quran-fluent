@@ -68,6 +68,15 @@ export const quran: typeof EnQuran = {
         "Marmaduke Pickthall — édition numérique Project Gutenberg eBook #16955. Domaine public aux États-Unis. Non présentée comme une reproduction exacte de la première édition de 1930.",
     },
   },
+  audio: {
+    play: "Lire la récitation",
+    pause: "Mettre en pause",
+    restart: "Rejouer depuis le début",
+    loading: "Chargement de la récitation…",
+    unavailable: "L'audio de récitation n'est pas disponible pour ce verset.",
+    error: "Impossible de lire la récitation. Réessayez.",
+    reciterLabel: "Récitateur : {reciter}",
+  },
   word: {
     meaning: "Signification",
     root: "Racine",

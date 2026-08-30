@@ -24,6 +24,7 @@ import {
 } from "@/lib/quran";
 import { addBookmark, fetchBookmarkedAyahKeys, removeBookmark } from "@/lib/bookmarks";
 import { AyahCard } from "./AyahCard";
+import { AyahPlayButton } from "./AyahPlayButton";
 import { NoteDialog } from "./NoteDialog";
 
 type AyahReaderProps = {
@@ -175,55 +176,58 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
                 surahLabel={`${surahName(activeSurahRow, locale)} ${ayah.surah_number}:${ayah.ayah_number}`}
                 highlighted={highlightAyah === ayah.ayah_number}
                 actions={
-                  user && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={isBookmarked ? d.bookmarks.remove : d.bookmarks.add}
-                        title={isBookmarked ? d.bookmarks.remove : d.bookmarks.add}
-                        disabled={toggleBookmark.isPending}
-                        onClick={() =>
-                          toggleBookmark.mutate({
-                            surah: ayah.surah_number,
-                            ayah: ayah.ayah_number,
-                            bookmarked: isBookmarked,
-                          })
-                        }
-                      >
-                        {isBookmarked ? (
-                          <BookmarkCheck className="size-4 text-primary" aria-hidden />
-                        ) : (
-                          <Bookmark className="size-4" aria-hidden />
-                        )}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={r.actions.addNote}
-                        title={r.actions.addNote}
-                        onClick={() =>
-                          setNoteTarget({ surah: ayah.surah_number, ayah: ayah.ayah_number })
-                        }
-                      >
-                        <NotebookPen className="size-4" aria-hidden />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        aria-label={r.actions.memorize}
-                        title={r.actions.memorize}
-                        asChild
-                      >
-                        <Link
-                          to="/memorize"
-                          search={{ surah: ayah.surah_number, ayah: ayah.ayah_number }}
+                  <>
+                    <AyahPlayButton surahNumber={ayah.surah_number} ayahNumber={ayah.ayah_number} />
+                    {user && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={isBookmarked ? d.bookmarks.remove : d.bookmarks.add}
+                          title={isBookmarked ? d.bookmarks.remove : d.bookmarks.add}
+                          disabled={toggleBookmark.isPending}
+                          onClick={() =>
+                            toggleBookmark.mutate({
+                              surah: ayah.surah_number,
+                              ayah: ayah.ayah_number,
+                              bookmarked: isBookmarked,
+                            })
+                          }
                         >
-                          <BookOpen className="size-4" aria-hidden />
-                        </Link>
-                      </Button>
-                    </>
-                  )
+                          {isBookmarked ? (
+                            <BookmarkCheck className="size-4 text-primary" aria-hidden />
+                          ) : (
+                            <Bookmark className="size-4" aria-hidden />
+                          )}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={r.actions.addNote}
+                          title={r.actions.addNote}
+                          onClick={() =>
+                            setNoteTarget({ surah: ayah.surah_number, ayah: ayah.ayah_number })
+                          }
+                        >
+                          <NotebookPen className="size-4" aria-hidden />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={r.actions.memorize}
+                          title={r.actions.memorize}
+                          asChild
+                        >
+                          <Link
+                            to="/memorize"
+                            search={{ surah: ayah.surah_number, ayah: ayah.ayah_number }}
+                          >
+                            <BookOpen className="size-4" aria-hidden />
+                          </Link>
+                        </Button>
+                      </>
+                    )}
+                  </>
                 }
               />
             );
