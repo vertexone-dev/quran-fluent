@@ -16,6 +16,7 @@ import {
   buildPlayerSteps,
   clampStepIndex,
   computeProgressPercent,
+  createSerialLatestQueue,
   fetchLessonForPlayer,
   fetchLessonProgress,
   isLastStep,
@@ -64,6 +65,8 @@ function LessonPlayerRoute() {
   const [answeredSteps, setAnsweredSteps] = useState<Set<number>>(new Set());
   const [startedAt, setStartedAt] = useState<string | null>(null);
   const initializedRef = useRef(false);
+  const positionQueueRef = useRef<ReturnType<typeof createSerialLatestQueue> | null>(null);
+  if (!positionQueueRef.current) positionQueueRef.current = createSerialLatestQueue();
 
   const steps: PlayerStep[] = lesson ? buildPlayerSteps(lesson.sections, lesson.exercises) : [];
   const totalSteps = steps.length;
@@ -90,12 +93,14 @@ function LessonPlayerRoute() {
     // First meaningful interaction: opening a not-yet-started lesson.
     const now = new Date().toISOString();
     setStartedAt(now);
-    void upsertLessonProgressInProgress(
-      user.id,
-      lessonId,
-      0,
-      computeProgressPercent(0, totalSteps),
-      now,
+    positionQueueRef.current!.enqueue(() =>
+      upsertLessonProgressInProgress(
+        user.id,
+        lessonId,
+        0,
+        computeProgressPercent(0, totalSteps),
+        now,
+      ),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lesson, progress, progressLoading, user?.id]);
@@ -185,12 +190,14 @@ function LessonPlayerRoute() {
 
   function persistPosition(nextIndex: number) {
     if (!user?.id || !startedAt) return;
-    void upsertLessonProgressInProgress(
-      user.id,
-      lessonId,
-      nextIndex,
-      computeProgressPercent(nextIndex, totalSteps),
-      startedAt,
+    positionQueueRef.current!.enqueue(() =>
+      upsertLessonProgressInProgress(
+        user.id,
+        lessonId,
+        nextIndex,
+        computeProgressPercent(nextIndex, totalSteps),
+        startedAt,
+      ),
     );
   }
 
@@ -205,6 +212,11 @@ function LessonPlayerRoute() {
   async function goNextOrComplete() {
     if (!canAdvance || !user?.id || !startedAt) return;
     if (onLastStep) {
+      // Drain any in-flight/pending position write first -- otherwise a
+      // still-settling in-progress write could resolve after this
+      // completion upsert and silently revert status back to
+      // "in_progress" (both writes replace the same full row).
+      await positionQueueRef.current!.idle();
       await upsertLessonProgressCompleted(user.id, lessonId, totalSteps, startedAt);
       await seedLessonReviewItems(user.id, lesson!);
       await refetchProgress();
