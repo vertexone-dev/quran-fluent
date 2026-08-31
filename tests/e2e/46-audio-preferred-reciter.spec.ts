@@ -43,7 +43,14 @@ function makeSilentWav(durationSeconds: number, sampleRate = 8000): Buffer {
   return buffer;
 }
 
-const LONG_WAV = makeSilentWav(3);
+// 60s, not the 3s originally used here: the "changing the reciter in
+// Settings" test below performs several real, unmocked UI steps (opening
+// a Select, saving, waiting for a toast, navigating) between starting
+// playback and its final assertion, and a too-short clip can reach a
+// genuine natural `ended` state under CI load before that assertion runs
+// -- indistinguishable from an actual interruption unless the clip simply
+// outlasts the real-time steps by a wide margin.
+const LONG_WAV = makeSilentWav(60);
 
 /** Records every reciter ID actually requested from the provider, and
  * serves a real playable WAV for any of them. */
@@ -93,6 +100,47 @@ test.describe("Audio Foundation Phase 2 — preferred reciter", () => {
       }
     });
   }
+
+  test("an authenticated user's preferred reciter is never used before the preference has finished loading", async ({
+    page,
+  }) => {
+    const { client, userId } = await createTestUserClient();
+    await client
+      .from("learning_preferences")
+      .update({ preferred_reciter: "husary" })
+      .eq("user_id", userId);
+
+    try {
+      const requestedIds = await mockRecitationAudio(page);
+      // Deterministically hold the learner-snapshot fetch open so the
+      // "not yet resolved" window is long enough to observe, instead of
+      // racing real (if fast) network timing.
+      await page.route("**/rest/v1/learning_preferences*", async (route) => {
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        await route.continue();
+      });
+
+      await page.goto("/quran");
+
+      // While the preference is still resolving, the control shows the
+      // existing loading state -- never a clickable "Play recitation"
+      // that could fire with the wrong (default) reciter.
+      await expect(page.getByRole("button", { name: "Loading recitation…" }).first()).toBeVisible();
+      expect(requestedIds).toEqual([]);
+
+      // Once resolved, playback becomes available and uses the real
+      // persisted preference -- never DEFAULT_RECITER's provider id (7).
+      await expect(page.getByRole("button", { name: "Play recitation" }).first()).toBeVisible();
+      await page.getByRole("button", { name: "Play recitation" }).first().click();
+      await expect(page.getByRole("button", { name: "Pause recitation" }).first()).toBeVisible();
+      expect(requestedIds).toEqual([RECITER_PROVIDER_IDS.husary]);
+    } finally {
+      await client
+        .from("learning_preferences")
+        .update({ preferred_reciter: "mishary_alafasy" })
+        .eq("user_id", userId);
+    }
+  });
 
   test("an invalid stored preference falls back to the default reciter without breaking playback", async ({
     page,

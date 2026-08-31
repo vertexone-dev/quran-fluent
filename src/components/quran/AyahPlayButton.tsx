@@ -8,6 +8,7 @@ import { useI18n } from "@/lib/i18n";
 import { fetchLearnerSnapshot } from "@/lib/learner";
 import {
   ayahAudioPlayer,
+  DEFAULT_RECITER,
   resolvePreferredReciter,
   type AyahAudioState,
   type ReciterKey,
@@ -40,15 +41,28 @@ function useAyahAudioState(): AyahAudioState {
  * or the same one after it stops) is simply the next place this hook's
  * current value gets read, which is exactly "next playback uses the new
  * reciter" with no special-casing required.
+ *
+ * `isReady` distinguishes "the query hasn't resolved yet" from "it
+ * resolved and there's no valid preference" -- those are not the same
+ * state. While unready, `reciter` is a placeholder value only; callers
+ * must not start playback with it, since for an authenticated user with a
+ * real non-default preference that placeholder is simply wrong, not a
+ * legitimate fallback. A query that ends in error also counts as ready
+ * (falling back to DEFAULT_RECITER) rather than blocking playback
+ * forever over a transient preference-fetch failure.
  */
-function usePreferredReciter(): ReciterKey {
+function usePreferredReciter(): { reciter: ReciterKey; isReady: boolean } {
   const { user } = useAuth();
-  const { data } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["learner", user?.id],
     queryFn: () => fetchLearnerSnapshot(user!.id),
     enabled: Boolean(user?.id),
   });
-  return resolvePreferredReciter(data?.preferences?.preferred_reciter);
+  if (!user) return { reciter: DEFAULT_RECITER, isReady: true };
+  return {
+    reciter: resolvePreferredReciter(data?.preferences?.preferred_reciter),
+    isReady: !isLoading,
+  };
 }
 
 /**
@@ -64,11 +78,16 @@ export function AyahPlayButton({ surahNumber, ayahNumber }: AyahPlayButtonProps)
   const { d } = useI18n();
   const copy = d.quran.audio;
   const state = useAyahAudioState();
-  const reciter = usePreferredReciter();
+  const { reciter, isReady } = usePreferredReciter();
   const isActive = state.surahNumber === surahNumber && state.ayahNumber === ayahNumber;
   const status = isActive ? state.status : "idle";
 
-  if (status === "loading") {
+  // A non-active button (status "idle") is the only place a *new* play()
+  // call can be initiated with `reciter`. While the preference is still
+  // loading, `reciter` is only a placeholder -- reuse the existing
+  // loading control instead of offering a click that would start playback
+  // with it.
+  if (status === "loading" || (status === "idle" && !isReady)) {
     return (
       <Button variant="ghost" size="icon" disabled aria-label={copy.loading} title={copy.loading}>
         <Loader2 className="size-4 animate-spin" aria-hidden />
