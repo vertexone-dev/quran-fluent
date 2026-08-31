@@ -35,10 +35,9 @@ const AUDIO_API_BASE = "https://api.quran.com/api/v4";
 const AUDIO_CDN_BASE = "https://audio.qurancdn.com/";
 
 /** Keyed identically to the `value`s already used by the reciter <Select>
- * on the settings page (src/routes/_authenticated/settings.tsx) -- Phase 1
- * doesn't wire that preference up to playback yet (no reciter-selector UI
- * is in scope), but the key scheme already matches so doing so later is a
- * one-line change here, not a new design. */
+ * on the settings page (src/routes/_authenticated/settings.tsx) -- and to
+ * `learning_preferences.preferred_reciter`'s stored values, confirmed
+ * identical before this was wired up (Phase 2), not assumed. */
 export const RECITER_IDS = {
   mishary_alafasy: 7,
   abdulbasit_murattal: 2,
@@ -53,9 +52,25 @@ export const RECITER_NAMES: Record<ReciterKey, string> = {
   husary: "Mahmoud Khalil Al-Husary",
 };
 
-/** Phase 1 default -- the only reciter actually played, until a
- * reciter-selector UI (explicitly out of Phase 1 scope) exists. */
+/** Used for anonymous visitors (no preference to read) and as the safe
+ * fallback for any unresolvable stored preference -- matches the
+ * settings page's own default. */
 export const DEFAULT_RECITER: ReciterKey = "mishary_alafasy";
+
+/**
+ * The single place "is this a real reciter key" is decided. Falls back to
+ * DEFAULT_RECITER for anything unrecognized -- missing preference row,
+ * null/undefined value, or (defensively, since the column is free-text
+ * with no CHECK constraint) a stored value that doesn't match any known
+ * key -- so no caller needs its own validation logic, and playback can
+ * never break because of a bad stored preference.
+ */
+export function resolvePreferredReciter(rawValue: string | null | undefined): ReciterKey {
+  if (rawValue != null && Object.hasOwn(RECITER_IDS, rawValue)) {
+    return rawValue as ReciterKey;
+  }
+  return DEFAULT_RECITER;
+}
 
 type AudioFilesResponse = {
   audio_files?: { url: string }[];
@@ -170,6 +185,7 @@ class AyahAudioPlayer {
     if (this.audioEl) return this.audioEl;
     const el = new Audio();
     el.preload = "none";
+    el.hidden = true;
     el.addEventListener("ended", () => this.setState({ status: "ended" }));
     el.addEventListener("error", () => {
       // A native media error (bad file, network drop mid-stream, etc.) on
@@ -177,6 +193,13 @@ class AyahAudioPlayer {
       // this element is only ever pointed at the current request's URL.
       this.setState({ status: "error", errorReason: "failed" });
     });
+    // Attached to the document (invisible) rather than left detached: a
+    // held JS reference already prevents garbage collection either way,
+    // but an attached element survives client-side route changes with
+    // more predictable, consistently-documented behavior across browsers
+    // than an unattached one, and lets the running instance be inspected
+    // like any other DOM node (including by this file's own test suite).
+    document.body.appendChild(el);
     this.audioEl = el;
     return el;
   }
