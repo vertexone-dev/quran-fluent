@@ -3,7 +3,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Eye, EyeOff } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  Loader2,
+  Pause,
+  Play,
+  RotateCcw,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +28,8 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { ayahAudioPlayer } from "@/lib/audio";
+import { useAyahAudioState, usePreferredReciter } from "@/components/quran/AyahPlayButton";
 import {
   fetchAyahsWithTranslations,
   fetchSurah,
@@ -246,18 +257,13 @@ function MemorizeSession({
   const [index, setIndex] = useState(0);
   const [showArabic, setShowArabic] = useState(true);
   const [showTranslation, setShowTranslation] = useState(true);
-  const [repeatTarget, setRepeatTarget] = useState<(typeof REPEAT_OPTIONS)[number]>(3);
-  const [repeatCount, setRepeatCount] = useState(0);
+  const [repeatTarget, setRepeatTarget] = useState<(typeof REPEAT_OPTIONS)[number]>(1);
 
   useEffect(() => {
     if (!ayahs || initialAyah == null) return;
     const i = ayahs.findIndex((a) => a.ayah_number === initialAyah);
     if (i >= 0) setIndex(i);
   }, [ayahs, initialAyah]);
-
-  useEffect(() => {
-    setRepeatCount(0);
-  }, [index]);
 
   const current: ResolvedAyah | undefined = ayahs?.[index];
   const currentProgress = useMemo<MemorizationProgress | undefined>(
@@ -404,17 +410,12 @@ function MemorizeSession({
                   </Button>
                 ))}
               </div>
-              <div className="flex items-center justify-center gap-3">
-                <Button onClick={() => setRepeatCount((c) => Math.min(repeatTarget, c + 1))}>
-                  {m.controls.repeatAyah}
-                </Button>
-                <span className="text-sm text-muted-foreground">
-                  {m.controls.repetitionOf
-                    .replace("{current}", String(repeatCount))
-                    .replace("{total}", String(repeatTarget))}
-                </span>
-              </div>
-              <p className="text-center text-xs text-muted-foreground">{m.controls.audioNote}</p>
+              <MemorizationAudioControls
+                key={`${surahNumber}:${current.ayah_number}`}
+                surahNumber={surahNumber}
+                ayahNumber={current.ayah_number}
+                repeatTarget={repeatTarget}
+              />
             </CardContent>
           </Card>
 
@@ -422,7 +423,10 @@ function MemorizeSession({
             <Button
               variant="ghost"
               disabled={index === 0}
-              onClick={() => setIndex((i) => Math.max(0, i - 1))}
+              onClick={() => {
+                ayahAudioPlayer.stop();
+                setIndex((i) => Math.max(0, i - 1));
+              }}
             >
               <ChevronLeft className="size-4" aria-hidden />
               {m.controls.previous}
@@ -430,7 +434,10 @@ function MemorizeSession({
             <Button
               variant="ghost"
               disabled={!ayahs || index >= ayahs.length - 1}
-              onClick={() => setIndex((i) => Math.min((ayahs?.length ?? 1) - 1, i + 1))}
+              onClick={() => {
+                ayahAudioPlayer.stop();
+                setIndex((i) => Math.min((ayahs?.length ?? 1) - 1, i + 1));
+              }}
             >
               {m.controls.next}
               <ChevronRight className="size-4" aria-hidden />
@@ -464,5 +471,147 @@ function MemorizeSession({
         </>
       )}
     </main>
+  );
+}
+
+/**
+ * Play / Pause / Replay for one āyah, driving `repeatTarget` total plays
+ * through `ayahAudioPlayer` -- reusing the same singleton, provider
+ * resolution and preferred-reciter loading gate as the Qur'an reader and
+ * lessons (usePreferredReciter, exported from AyahPlayButton). No second
+ * <audio> element and no separate player engine: the only new logic here
+ * is the repeat-cycle bookkeeping (`cycleTarget` / `playsCompleted`),
+ * which reacts to the player's own "ended" event rather than a timer.
+ *
+ * `cycleTarget` is a snapshot taken only when a fresh Play or Replay is
+ * pressed -- changing the repeatTarget selector mid-cycle therefore never
+ * alters the cycle already in flight, only the next one. Mounted with a
+ * `key` scoped to (surah, āyah) by the caller, so switching āyah always
+ * starts this component (and its cycle bookkeeping) fresh; the caller is
+ * responsible for stopping the actual player on that same transition.
+ */
+function MemorizationAudioControls({
+  surahNumber,
+  ayahNumber,
+  repeatTarget,
+}: {
+  surahNumber: number;
+  ayahNumber: number;
+  repeatTarget: number;
+}) {
+  const { d } = useI18n();
+  const copy = d.quran.audio;
+  const mCopy = d.memorization.controls;
+  const state = useAyahAudioState();
+  const { reciter, isReady } = usePreferredReciter();
+  const [cycleTarget, setCycleTarget] = useState<number | null>(null);
+  const [playsCompleted, setPlaysCompleted] = useState(0);
+
+  const isActive = state.surahNumber === surahNumber && state.ayahNumber === ayahNumber;
+  const status = isActive ? state.status : "idle";
+
+  useEffect(() => {
+    if (!isActive || cycleTarget == null) return;
+    if (status === "ended") {
+      const completed = playsCompleted + 1;
+      setPlaysCompleted(completed);
+      if (completed < cycleTarget) {
+        void ayahAudioPlayer.restart(reciter, surahNumber, ayahNumber);
+      } else {
+        setCycleTarget(null);
+      }
+    } else if (status === "error") {
+      // A failure mid-cycle stops the cycle -- the existing error state is
+      // shown below, never an endless retry, and memorization progress is
+      // a separate mutation entirely unaffected by playback outcome.
+      setCycleTarget(null);
+    }
+  }, [isActive, status, cycleTarget, playsCompleted, reciter, surahNumber, ayahNumber]);
+
+  function startCycle() {
+    setPlaysCompleted(0);
+    setCycleTarget(repeatTarget);
+  }
+
+  function handlePlayPauseClick() {
+    if (status === "playing") {
+      ayahAudioPlayer.pause();
+      return;
+    }
+    if (isActive && status === "paused") {
+      void ayahAudioPlayer.play(reciter, surahNumber, ayahNumber);
+      return;
+    }
+    startCycle();
+    // Same distinction AyahPlayButton makes: after a natural "ended", seek
+    // back to 0 explicitly via restart() rather than relying on re-setting
+    // the same src to implicitly reset playback position.
+    if (isActive && status === "ended") {
+      void ayahAudioPlayer.restart(reciter, surahNumber, ayahNumber);
+    } else {
+      void ayahAudioPlayer.play(reciter, surahNumber, ayahNumber);
+    }
+  }
+
+  function handleReplayClick() {
+    startCycle();
+    void ayahAudioPlayer.restart(reciter, surahNumber, ayahNumber);
+  }
+
+  const isUnavailable = isActive && status === "error" && state.errorReason === "unavailable";
+  const isBusy = status === "loading" || (status === "idle" && !isReady);
+  const playPauseLabel = isBusy
+    ? copy.loading
+    : status === "playing"
+      ? copy.pause
+      : isActive && status === "error"
+        ? isUnavailable
+          ? copy.unavailable
+          : copy.error
+        : copy.play;
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <div className="flex items-center justify-center gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label={playPauseLabel}
+          title={playPauseLabel}
+          disabled={isBusy || isUnavailable}
+          onClick={handlePlayPauseClick}
+        >
+          {isBusy ? (
+            <Loader2 className="size-4 animate-spin" aria-hidden />
+          ) : status === "playing" ? (
+            <Pause className="size-4" aria-hidden />
+          ) : (
+            <Play
+              className={isActive && status === "error" ? "size-4 text-destructive" : "size-4"}
+              aria-hidden
+            />
+          )}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label={copy.restart}
+          title={copy.restart}
+          disabled={isBusy}
+          onClick={handleReplayClick}
+        >
+          <RotateCcw className="size-4" aria-hidden />
+        </Button>
+      </div>
+      {cycleTarget != null && (
+        <span className="text-sm text-muted-foreground">
+          {mCopy.repetitionOf
+            .replace("{current}", String(Math.min(playsCompleted + 1, cycleTarget)))
+            .replace("{total}", String(cycleTarget))}
+        </span>
+      )}
+    </div>
   );
 }

@@ -19,7 +19,10 @@ type AyahPlayButtonProps = {
   ayahNumber: number;
 };
 
-function useAyahAudioState(): AyahAudioState {
+/** Exported for reuse by other audio-playback UI (e.g. the memorization
+ * page's repeat controls) that needs the same live player state without
+ * duplicating this subscription boilerplate. */
+export function useAyahAudioState(): AyahAudioState {
   const [state, setState] = useState(ayahAudioPlayer.getState());
   useEffect(() => ayahAudioPlayer.subscribe(setState), []);
   return state;
@@ -50,8 +53,14 @@ function useAyahAudioState(): AyahAudioState {
  * legitimate fallback. A query that ends in error also counts as ready
  * (falling back to DEFAULT_RECITER) rather than blocking playback
  * forever over a transient preference-fetch failure.
+ *
+ * Exported so any other authenticated audio-playback UI (e.g. the
+ * memorization page) that starts its own `ayahAudioPlayer.play()` calls
+ * can reuse this exact resolution + loading-gate logic instead of
+ * re-implementing it -- the "no default-reciter race" guarantee only
+ * holds if every caller goes through the same gate.
  */
-function usePreferredReciter(): { reciter: ReciterKey; isReady: boolean } {
+export function usePreferredReciter(): { reciter: ReciterKey; isReady: boolean } {
   const { user } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ["learner", user?.id],
