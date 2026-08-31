@@ -97,6 +97,7 @@ export default defineConfig({
         "44-level5-batch2-imperative-capstone.spec.ts",
         "45-audio-foundation.spec.ts",
         "46-audio-preferred-reciter.spec.ts",
+        "48-lesson-position-race.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],

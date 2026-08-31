@@ -629,3 +629,68 @@ export function evaluateExerciseAnswer(
       return false;
   }
 }
+
+type QueuedTask = () => Promise<void>;
+
+/**
+ * Serializes an unbounded stream of "persist this position" requests into
+ * at most one in-flight write at a time, coalescing to only the most
+ * recently enqueued task whenever an earlier one hasn't started yet.
+ *
+ * This exists because `user_lesson_progress` writes were previously fired
+ * fire-and-forget on every step change: two rapid navigations issued two
+ * concurrent Supabase upserts to the same (user_id, lesson_id) row with no
+ * ordering guarantee, so a slower *older* write could resolve after a
+ * faster *newer* one and silently regress the persisted position. A
+ * client-side "ignore stale responses" token cannot fix this -- by the
+ * time a stale response arrives to be ignored, the stale write has
+ * already reached the database and become the row's contents. The only
+ * way to guarantee the newest navigation intent is what's durably stored
+ * is to guarantee it's the last (or only) write ever dispatched.
+ *
+ * enqueue() always overwrites any task that hasn't started running yet,
+ * so a burst of clicks collapses to one dispatched write per settle
+ * window instead of one per click -- rapid clicking shouldn't multiply
+ * database writes. Because the pump loop only ever awaits one task at a
+ * time, and always re-checks for a newer task before finishing, no two
+ * writes are ever in flight simultaneously: there is nothing for an
+ * out-of-order response to race against.
+ */
+export function createSerialLatestQueue() {
+  let queuedTask: QueuedTask | null = null;
+  let pumpPromise: Promise<void> | null = null;
+
+  function pump(): Promise<void> {
+    if (pumpPromise) return pumpPromise;
+    pumpPromise = (async () => {
+      while (queuedTask) {
+        const task = queuedTask;
+        queuedTask = null;
+        try {
+          await task();
+        } catch {
+          // A failed write must not wedge the queue -- if another
+          // navigation already superseded it, that task still runs next.
+        }
+      }
+      pumpPromise = null;
+    })();
+    return pumpPromise;
+  }
+
+  return {
+    enqueue(task: QueuedTask): void {
+      queuedTask = task;
+      void pump();
+    },
+    /** Resolves once nothing is queued or in flight. Callers that must
+     * never be overwritten by a stale position write (i.e. completion)
+     * await this before writing, so any earlier in-progress write is
+     * fully settled first. */
+    async idle(): Promise<void> {
+      while (pumpPromise || queuedTask) {
+        await (pumpPromise ?? Promise.resolve());
+      }
+    },
+  };
+}
