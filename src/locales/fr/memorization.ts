@@ -29,12 +29,7 @@ export const memorization: typeof EnMemorization = {
     start: "Commencer la mémorisation",
   },
   controls: {
-    repeatAyah: "Répéter le verset",
-    repeatCount1: "1×",
-    repeatCount3: "3×",
-    repeatCount5: "5×",
-    repeatCount10: "10×",
-    repetitionOf: "Répétition {current} sur {total}",
+    repetitionOf: "Lecture {current} sur {total}",
     previous: "Verset précédent",
     next: "Verset suivant",
     hideArabic: "Masquer l'arabe",
@@ -44,8 +39,6 @@ export const memorization: typeof EnMemorization = {
     markLearning: "Marquer en apprentissage",
     markMemorized: "Marquer comme mémorisé",
     addToReview: "Ajouter à la révision",
-    audioNote:
-      "L'audio de récitation arrivera dans une prochaine mise à jour — répétez à votre rythme pour l'instant.",
   },
   toast: {
     memorized: "Marqué comme mémorisé.",

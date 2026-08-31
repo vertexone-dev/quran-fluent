@@ -26,12 +26,7 @@ export const memorization = {
     start: "Start memorizing",
   },
   controls: {
-    repeatAyah: "Repeat the Ayah",
-    repeatCount1: "1×",
-    repeatCount3: "3×",
-    repeatCount5: "5×",
-    repeatCount10: "10×",
-    repetitionOf: "Repetition {current} of {total}",
+    repetitionOf: "Playing {current} of {total}",
     previous: "Previous Ayah",
     next: "Next Ayah",
     hideArabic: "Hide Arabic",
@@ -41,7 +36,6 @@ export const memorization = {
     markLearning: "Mark as Learning",
     markMemorized: "Mark as memorized",
     addToReview: "Add to Review",
-    audioNote: "Recitation audio is coming in a future update — repeat at your own pace for now.",
   },
   toast: {
     memorized: "Marked as memorized.",
