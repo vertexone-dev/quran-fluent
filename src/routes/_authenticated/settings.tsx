@@ -37,10 +37,11 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: Settings,
 });
 
-const TRANSLATIONS = [
-  { value: "en_sahih", label: "English — Saheeh International" },
-  { value: "fr_hamidullah", label: "Français — Muhammad Hamidullah" },
-];
+// French removed: no approved French translation source exists yet (the
+// prior fr_hamidullah option pointed at a disputed, unlicensed edition --
+// see the fr.hamidullah-crf content_sources migration). Add it back only
+// once a governed French source is approved.
+const TRANSLATIONS = [{ value: "en_sahih", label: "English — Saheeh International" }];
 
 const RECITERS = [
   { value: "mishary_alafasy", label: "Mishary Rashid Alafasy" },
