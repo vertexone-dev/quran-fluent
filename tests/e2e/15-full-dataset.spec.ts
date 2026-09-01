@@ -100,26 +100,36 @@ test.describe("full 114-surah dataset", () => {
     const { client, userId } = await createTestUserClient();
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
 
-    // Surah 1 (bootstrap) has a real legacy translation_fr — must still show
-    // it, not the English Pickthall text and not the "unavailable" state.
-    await page.goto("/quran?surah=1");
-    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
-    await expect(page.getByText("Master of the Day of Judgment,")).not.toBeVisible();
-    await expect(page.getByText("Traduction française pas encore disponible")).not.toBeVisible();
+    try {
+      // Surah 1 (bootstrap) previously had a real legacy translation_fr,
+      // but that was the disputed fr.hamidullah-crf source, nulled by the
+      // 20260911110000_... remediation. It now has no governed French any
+      // more than Surah 2 does -- all 7 āyahs show the same explicit
+      // unavailable fallback, never the old disputed text and never a
+      // silent fall-back to English.
+      await page.goto("/quran?surah=1");
+      await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+      await expect(page.getByText("Master of the Day of Judgment,")).not.toBeVisible();
+      await expect(
+        page.getByText("Traduction française pas encore disponible pour ce verset."),
+      ).toHaveCount(7);
 
-    // Surah 2 (non-bootstrap) has no governed French yet — must show the
-    // explicit French "unavailable" fallback, real live data, no mocking —
-    // and never fall back to showing the English Pickthall text instead.
-    await page.goto("/quran?surah=2");
-    await expect(
-      page.getByText("Traduction française pas encore disponible pour ce verset.").first(),
-    ).toBeVisible();
-    await expect(page.getByText("Alif. Lam. Mim.")).not.toBeVisible();
+      // Surah 2 (non-bootstrap) has no governed French yet — must show the
+      // explicit French "unavailable" fallback, real live data, no mocking —
+      // and never fall back to showing the English Pickthall text instead.
+      await page.goto("/quran?surah=2");
+      await expect(
+        page.getByText("Traduction française pas encore disponible pour ce verset.").first(),
+      ).toBeVisible();
+      await expect(page.getByText("Alif. Lam. Mim.")).not.toBeVisible();
 
-    const bodyText = await page.locator("main").innerText();
-    expect(bodyText).not.toMatch(/\bnull\b/);
-
-    await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+      const bodyText = await page.locator("main").innerText();
+      expect(bodyText).not.toMatch(/\bnull\b/);
+    } finally {
+      // In a try/finally so a failed assertion above can never leave the
+      // shared E2E account stuck in French for every later test.
+      await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+    }
   });
 
   test("bookmarks, notes and memorization all work on a real Ayah; French review scheduling gracefully skips (no governed French yet)", async ({
@@ -186,37 +196,41 @@ test.describe("full 114-surah dataset", () => {
       .toBe(1);
 
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
-    await page.goto("/memorize?surah=105&ayah=1");
-    await expect(page.getByText("Verset 1")).toBeVisible();
-    await page.getByRole("button", { name: "Marquer comme mémorisé" }).click();
-    await expect(
-      page.getByText(
-        "Marqué comme mémorisé. Les rappels de révision commenceront dès qu'une traduction sera disponible pour ce verset.",
-      ),
-    ).toBeVisible();
+    try {
+      await page.goto("/memorize?surah=105&ayah=1");
+      await expect(page.getByText("Verset 1")).toBeVisible();
+      await page.getByRole("button", { name: "Marquer comme mémorisé" }).click();
+      await expect(
+        page.getByText(
+          "Marqué comme mémorisé. Les rappels de révision commenceront dès qu'une traduction sera disponible pour ce verset.",
+        ),
+      ).toBeVisible();
 
-    await expect
-      .poll(async () => {
-        const { data } = await client
-          .from("memorization_progress")
-          .select("status")
-          .eq("user_id", userId)
-          .eq("surah_number", 105)
-          .eq("ayah_number", 1)
-          .maybeSingle();
-        return data?.status;
-      })
-      .toBe("memorized");
+      await expect
+        .poll(async () => {
+          const { data } = await client
+            .from("memorization_progress")
+            .select("status")
+            .eq("user_id", userId)
+            .eq("surah_number", 105)
+            .eq("ayah_number", 1)
+            .maybeSingle();
+          return data?.status;
+        })
+        .toBe("memorized");
 
-    const { count: reviewCount } = await client
-      .from("review_items")
-      .select("*", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .eq("item_type", "ayah")
-      .eq("item_key", "ayah:105:1");
-    expect(reviewCount).toBe(0);
-
-    await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+      const { count: reviewCount } = await client
+        .from("review_items")
+        .select("*", { count: "exact", head: true })
+        .eq("user_id", userId)
+        .eq("item_type", "ayah")
+        .eq("item_key", "ayah:105:1");
+      expect(reviewCount).toBe(0);
+    } finally {
+      // In a try/finally so a failed assertion above can never leave the
+      // shared E2E account stuck in French for every later test.
+      await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+    }
   });
 
   test("review_items.back for an English Ayah contains the normalized Pickthall translation", async ({
@@ -273,13 +287,17 @@ test.describe("full 114-surah dataset", () => {
     const { client, userId } = await createTestUserClient();
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
 
-    await page.goto("/quran?surah=18");
-    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
-    const arabic = page.locator('[lang="ar"][dir="rtl"]').first();
-    await expect(arabic).toBeVisible();
-    const bodyText = await page.locator("main").innerText();
-    expect(bodyText).not.toMatch(/\bnull\b/);
-
-    await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+    try {
+      await page.goto("/quran?surah=18");
+      await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+      const arabic = page.locator('[lang="ar"][dir="rtl"]').first();
+      await expect(arabic).toBeVisible();
+      const bodyText = await page.locator("main").innerText();
+      expect(bodyText).not.toMatch(/\bnull\b/);
+    } finally {
+      // In a try/finally so a failed assertion above can never leave the
+      // shared E2E account stuck in French for every later test.
+      await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+    }
   });
 });
