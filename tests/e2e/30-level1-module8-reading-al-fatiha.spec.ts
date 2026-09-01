@@ -329,9 +329,16 @@ test.describe("Level 1 Module 8 — Reading Al-Fatiha", () => {
       await expect(
         page.getByText("بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ", { exact: true }),
       ).toBeVisible();
+      // The lesson's embedded Qur'an example reads the same translation_fr
+      // column as the Reader -- nulled for Al-Fatiha 1:1 by the
+      // fr.hamidullah-crf disputed-source remediation, so it now shows the
+      // same explicit unavailable fallback, never the old disputed text.
+      await expect(
+        page.getByText("Traduction française pas encore disponible pour ce verset."),
+      ).toBeVisible();
       await expect(
         page.getByText("Au nom d'Allah, le Tout Miséricordieux, le Très Miséricordieux."),
-      ).toBeVisible();
+      ).not.toBeVisible();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
     }

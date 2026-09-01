@@ -281,7 +281,6 @@ test.describe("Level 2 Batch 3 — Module 5: Vocabulary Capstone", () => {
     test.setTimeout(60_000);
     const lessons = await fetchModuleLessons(request, "vocabulary-capstone");
     const lesson = lessons.find((l) => l.slug === "capstone-reading")!;
-    const ayah113_1 = await fetchAyah(request, 113, 1);
     const { client, userId } = await createTestUserClient();
     await resetLessonProgress(lesson.id);
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
@@ -290,7 +289,13 @@ test.describe("Level 2 Batch 3 — Module 5: Vocabulary Capstone", () => {
       await page.goto(`/lesson/${lesson.id}`);
       await waitForHeadingResilient(page, "Lire deux nouveaux versets");
       await page.getByRole("button", { name: "Suivant" }).click();
-      await expect(page.getByText(ayah113_1.translation_fr, { exact: true })).toBeVisible();
+      // 113:1 (Al-Falaq) is part of the fr.hamidullah-crf disputed-source
+      // remediation -- translation_fr is nulled, so the lesson's embedded
+      // Qur'an example now shows the same explicit unavailable fallback
+      // as the Reader, never the old disputed text.
+      await expect(
+        page.getByText("Traduction française pas encore disponible pour ce verset."),
+      ).toBeVisible();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
     }

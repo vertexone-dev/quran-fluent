@@ -269,7 +269,6 @@ test.describe("Level 4 Batch 2 — Module 3: Grammar Capstone", () => {
     test.setTimeout(60_000);
     const lessons = await fetchModuleLessons(request, "grammar-in-context-capstone");
     const lesson = lessons.find((l) => l.slug === "reading-with-grammar-awareness")!;
-    const ayah1_2 = await fetchAyah(request, 1, 2);
     const { client, userId } = await createTestUserClient();
     await resetLessonProgress(lesson.id);
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
@@ -278,7 +277,13 @@ test.describe("Level 4 Batch 2 — Module 3: Grammar Capstone", () => {
       await page.goto(`/lesson/${lesson.id}`);
       await waitForHeadingResilient(page, "Lire avec conscience grammaticale");
       await page.getByRole("button", { name: "Suivant" }).click();
-      await expect(page.getByText(ayah1_2.translation_fr, { exact: true })).toBeVisible();
+      // 1:2 (Al-Fatiha) is part of the fr.hamidullah-crf disputed-source
+      // remediation -- translation_fr is nulled, so the lesson's embedded
+      // Qur'an example now shows the same explicit unavailable fallback
+      // as the Reader, never the old disputed text.
+      await expect(
+        page.getByText("Traduction française pas encore disponible pour ce verset."),
+      ).toBeVisible();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
     }

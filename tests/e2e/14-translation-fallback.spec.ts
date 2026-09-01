@@ -117,18 +117,29 @@ test.describe("translation-fallback compatibility", () => {
     const { client, userId } = await createTestUserClient();
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
 
-    await page.goto("/quran?surah=108");
-    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
-    await expect(
-      page.getByText("Traduction française pas encore disponible pour ce verset."),
-    ).toBeVisible();
+    try {
+      await page.goto("/quran?surah=108");
+      await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+      // All 3 āyahs of Al-Kawthar are covered by the fr.hamidullah-crf
+      // disputed-source remediation (translation_fr nulled for all of
+      // them), in addition to this test's own route interception on ayah
+      // 1 -- every āyah now shows the fallback, so asserting the count
+      // directly is a stronger proof than checking a single match exists.
+      await expect(
+        page.getByText("Traduction française pas encore disponible pour ce verset."),
+      ).toHaveCount(3);
+      // Never silently falls back to English under the French UI.
+      await expect(page.getByText(/^Lo! We have given thee Abundance/)).not.toBeVisible();
 
-    const bodyText = await page.locator("main").innerText();
-    expect(bodyText).not.toMatch(/\bnull\b/);
-
-    // Reset so downstream specs see the default locale's copy —
-    // interface_language is account-level state, not just client-side.
-    await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+      const bodyText = await page.locator("main").innerText();
+      expect(bodyText).not.toMatch(/\bnull\b/);
+    } finally {
+      // Reset so downstream specs see the default locale's copy —
+      // interface_language is account-level state, not just client-side.
+      // In a try/finally so a failed assertion above can never leave the
+      // shared E2E account stuck in French for every later test.
+      await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+    }
   });
 
   test("bookmarking a translation-less Ayah still works and persists", async ({ page }) => {

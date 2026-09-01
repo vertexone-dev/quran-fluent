@@ -507,7 +507,6 @@ test.describe("Level 2 Batch 2 — Module 4: Short Phrases", () => {
     test.setTimeout(60_000);
     const lessons = await fetchModuleLessons(request, "short-phrases");
     const lesson = lessons.find((l) => l.slug === "phrases-of-sovereignty")!;
-    const ayah114_2 = await fetchAyah(request, 114, 2);
     const { client, userId } = await createTestUserClient();
     await resetLessonProgress(lesson.id);
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
@@ -516,7 +515,13 @@ test.describe("Level 2 Batch 2 — Module 4: Short Phrases", () => {
       await page.goto(`/lesson/${lesson.id}`);
       await waitForHeadingResilient(page, "Phrases de souveraineté");
       await page.getByRole("button", { name: "Suivant" }).click();
-      await expect(page.getByText(ayah114_2.translation_fr, { exact: true })).toBeVisible();
+      // 114:2 (An-Nas) is part of the fr.hamidullah-crf disputed-source
+      // remediation -- translation_fr is nulled, so the lesson's embedded
+      // Qur'an example now shows the same explicit unavailable fallback
+      // as the Reader, never the old disputed text.
+      await expect(
+        page.getByText("Traduction française pas encore disponible pour ce verset."),
+      ).toBeVisible();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
     }
