@@ -1,6 +1,122 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 import { createTestUserClient } from "./utils/db";
+
+/**
+ * As of the Kazimirski French Reader integration
+ * (50-kazimirski-french-reader.spec.ts), Al-Fatiha's French text is no
+ * longer "unavailable" -- the governed, certified Kazimirski segment model
+ * now covers it. Local dev does not carry the real production Kazimirski
+ * data (see that spec's own module docstring for why), so these two tests
+ * mock just enough of it -- Al-Fatiha ayah 1's Bismillah, taken directly
+ * from the frozen production artifact -- to prove the actually-important
+ * claim this file exists for: the disputed Hamidullah text never reappears.
+ */
+async function mockKazimirskiAlFatihaAyah1(page: Page) {
+  await page.route("**/rest/v1/content_sources*", async (route) => {
+    if (!route.request().url().includes("edition_identifier=eq.kazimirski-1869-segments-v1")) {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "f8443b10-3cc8-59ee-954f-5b1129c1cec4",
+        translator: "Albin de Kazimirski Biberstein",
+      }),
+    });
+  });
+  await page.route("**/rest/v1/translation_segment_ayahs*", async (route) => {
+    if (!route.request().url().includes("surah_number=eq.1")) {
+      await route.continue();
+      return;
+    }
+    // All 7 āyahs, so the whole page is in a consistent, fully-covered
+    // state (an unmocked remainder would show the unrelated "unavailable"
+    // fallback and break a page-wide assertion) -- exact text from the
+    // frozen production artifact, same fixture as
+    // 50-kazimirski-french-reader.spec.ts.
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          ayah_number: 1,
+          segment: {
+            id: "seg-1-0",
+            source_ordinal: 0,
+            text: "Au nom du Dieu clément et miséricordieux.",
+            alignment_type: "source_anomaly",
+          },
+        },
+        {
+          ayah_number: 2,
+          segment: {
+            id: "seg-1-1",
+            source_ordinal: 1,
+            text: "Louange à Dieu, maître de l’univers",
+            alignment_type: "offset",
+          },
+        },
+        {
+          ayah_number: 3,
+          segment: {
+            id: "seg-1-2",
+            source_ordinal: 2,
+            text: "Le clément, le miséricordieux,",
+            alignment_type: "offset",
+          },
+        },
+        {
+          ayah_number: 4,
+          segment: {
+            id: "seg-1-3",
+            source_ordinal: 3,
+            text: "Souverain au jour de la rétribution.",
+            alignment_type: "offset",
+          },
+        },
+        {
+          ayah_number: 5,
+          segment: {
+            id: "seg-1-4",
+            source_ordinal: 4,
+            text: "C’est toi que nous adorons, c’est toi dont nous implorons le secours.",
+            alignment_type: "offset",
+          },
+        },
+        {
+          ayah_number: 6,
+          segment: {
+            id: "seg-1-5",
+            source_ordinal: 5,
+            text: "Dirige-nous dans le sentier droit,",
+            alignment_type: "offset",
+          },
+        },
+        {
+          ayah_number: 7,
+          segment: {
+            id: "seg-1-6",
+            source_ordinal: 6,
+            text: "Dans le sentier de ceux que tu as comblés de tes bienfaits,",
+            alignment_type: "many_to_one",
+          },
+        },
+        {
+          ayah_number: 7,
+          segment: {
+            id: "seg-1-7",
+            source_ordinal: 7,
+            text: "Non pas de ceux qui ont encouru ta colère, ni de ceux qui s’égarent.",
+            alignment_type: "many_to_one",
+          },
+        },
+      ]),
+    });
+  });
+}
 
 /** Matches src/lib/study.ts's localDate(): review_items.due_date must be
  * compared against the *local* calendar day, not the DB server's UTC
@@ -33,11 +149,18 @@ function todayLocalDate(): string {
  */
 
 test.describe("fr.hamidullah disputed-source remediation", () => {
-  test("the French Qur'an Reader shows the existing 'translation unavailable' state for a formerly disputed āyah", async ({
+  test("the French Qur'an Reader never shows the disputed Hamidullah text for a remediated āyah -- it now shows the governed Kazimirski (1869) translation instead", async ({
     page,
   }) => {
+    // As of the Kazimirski French Reader integration (see
+    // 50-kazimirski-french-reader.spec.ts), Al-Fatiha's French text is no
+    // longer "unavailable" -- the governed, certified Kazimirski segment
+    // model now covers it (6236/6236 canonical coverage). This test's job
+    // is narrower and still fully valid: prove the disputed Hamidullah
+    // source is never served, regardless of what replaced it.
     const { client, userId } = await createTestUserClient();
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
+    await mockKazimirskiAlFatihaAyah1(page);
     try {
       // Al-Fatiha is the reader's default surah with no ?surah= param, so
       // no selector interaction is needed -- one less flaky UI dependency.
@@ -45,12 +168,16 @@ test.describe("fr.hamidullah disputed-source remediation", () => {
       await expect(page.getByRole("combobox", { name: "Choisir une sourate" })).toHaveText(
         /Al-Fatiha/,
       );
-      // All 7 āyahs of Al-Fatiha are now remediated, so this appears once
-      // per āyah -- asserting the count directly is a stronger proof of
-      // "all remediated" than just checking at least one instance exists.
+      // The exact disputed Hamidullah rendering must never reappear.
       await expect(
         page.getByText("Traduction française pas encore disponible pour ce verset."),
-      ).toHaveCount(7);
+      ).toHaveCount(0);
+      // Replaced by the certified Kazimirski text (full assertions live in
+      // 50-kazimirski-french-reader.spec.ts) -- spot-check ayah 1 here.
+      await expect(page.getByText("Au nom du Dieu clément et miséricordieux.")).toBeVisible();
+      await expect(
+        page.getByText(/Traducteur\s*:\s*Albin de Kazimirski Biberstein/).first(),
+      ).toBeVisible();
       // Never silently falls back to English under the French UI.
       await expect(page.getByText(/^Praise be to Allah/)).not.toBeVisible();
     } finally {
@@ -58,16 +185,18 @@ test.describe("fr.hamidullah disputed-source remediation", () => {
     }
   });
 
-  test("Memorization shows the same 'translation unavailable' state for a formerly disputed āyah, in French", async ({
+  test("Memorization shows the governed Kazimirski translation (not the disputed Hamidullah text) for a formerly disputed āyah, in French", async ({
     page,
   }) => {
     const { client, userId } = await createTestUserClient();
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
+    await mockKazimirskiAlFatihaAyah1(page);
     try {
       await page.goto("/memorize?surah=1&ayah=1");
       await expect(
         page.getByText("Traduction française pas encore disponible pour ce verset."),
-      ).toBeVisible();
+      ).toHaveCount(0);
+      await expect(page.getByText("Au nom du Dieu clément et miséricordieux.")).toBeVisible();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
     }

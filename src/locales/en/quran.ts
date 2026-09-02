@@ -29,7 +29,7 @@ export const quran = {
     translationsIntro:
       "Each language reads the Qur'an through its own verified translation, displayed with the translator's name. Translations are never machine-generated.",
     translationEn: "English — Marmaduke Pickthall (Project Gutenberg eBook #16955)",
-    translationFr: "French — Muhammad Hamidullah",
+    translationFr: "French — Albin de Kazimirski Biberstein, Le Koran (1869)",
     searchNote:
       "Search will accept everyday words in your interface language — such as mercy, patience or prayer — and map them to verified Qur'anic vocabulary rather than matching raw text.",
   },
@@ -52,6 +52,7 @@ export const quran = {
       retry: "Retry",
     },
     translationUnavailable: "English translation not available yet for this Ayah.",
+    translationContinuesFrom: "↳ See Ayah {number} above — one historical verse spans both.",
     attribution: {
       label: "Translator: {translator}",
       detailsAriaLabel: "Translation source details",

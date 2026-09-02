@@ -1,0 +1,1329 @@
+{
+  "phase": "5",
+  "status": "COMPLETE — 25 of 25 review items decided (Tier 1: 2/2; Tier 2: 8/8; Tier 3: 15/15). All APPROVE. Production import remains blocked pending final Phase 5 integrity/sign-off audit.",
+  "generated_at": "2026-09-01T00:00:00Z",
+  "decisions": [
+    {
+      "decision_id": "phase5-001-surah2-tier1-approve",
+      "review_item": "TIER 1 — Surah 2 reconciliation",
+      "scope": "translation_segments rows: surah_number=2, source_ordinal IN (7, 286) ONLY — the two specific items that were disputed/corrected in Phase 4 (ordinal 7 -> newly-covered 2:8; ordinal 286 -> previously-unresolved, now 2:286). Explicitly NOT the other 284 Surah 2 segments, which were shown only as continuity context and were not individually re-verified by the reviewer.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the corrected Surah 2 reconciliation. The sequence around 2:8 is continuous, and the French text assigned to 2:8 corresponds to the canonical ayah. The final segment corresponds to 2:286 and is consistent with the closing verse of Al-Baqarah. Approved subject to correcting source_declared_number for the final segment to 286 only if that number is directly confirmed in the 1869 source. This approval applies ONLY to the Surah 2 Tier 1 review item. It does not constitute approval of Surah 36, Tier 2, Tier 3, the full Kazimirski manifest, or production import.",
+      "conditional_followup": {
+        "condition": "Backfill source_declared_number = 286 on the ordinal-286 segment, but ONLY if that number is directly confirmed printed in the 1869 Charpentier scan.",
+        "status": "NOT APPLIED — not yet met. Phase 4's evidence for this segment's target (2:286) was a Pickthall content cross-check plus its position as the 286th real-text item in a declared-286-verse surah; no one has yet directly read a printed \"286\" off the scan page near the end of Surah 2 (Phase 4 only viewed the scan near the *start* of Surah 2, page 3, to confirm the 2:8 gap). source_declared_number for this row remains NULL, unchanged, pending that direct confirmation.",
+        "next_step": "Locate and view the Wikisource djvu scan page covering the end of Surah 2 (final verse); if it shows a printed \"286\" at this item, backfill the field and record that as a separate, evidenced amendment; if not, leave NULL indefinitely rather than inferring it."
+      },
+      "mapping_before": {
+        "ordinal_7": {
+          "alignment_status": "cross_verified",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        "ordinal_286": {
+          "alignment_status": "cross_verified",
+          "reviewed_by": null,
+          "reviewed_at": null,
+          "source_declared_number": null
+        }
+      },
+      "mapping_after": {
+        "ordinal_7": {
+          "alignment_status": "human_verified",
+          "reviewed_by": "amkristian91@gmail.com",
+          "canonical_target": "2:8"
+        },
+        "ordinal_286": {
+          "alignment_status": "human_verified",
+          "reviewed_by": "amkristian91@gmail.com",
+          "canonical_target": "2:286",
+          "source_declared_number": null,
+          "note": "left unchanged per conditional_followup above"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-002-surah36-tier1-approve",
+      "review_item": "TIER 1 — Surah 36 reconciliation",
+      "scope": "translation_segments rows: surah_number=36, source_ordinal IN (35, 83) ONLY — the two specific items that were disputed/corrected in Phase 4 (ordinal 35 -> newly-covered 36:35; ordinal 83 -> previously-unresolved, now 36:83). Explicitly NOT the other 81 Surah 36 segments, which were shown only as continuity context and were not individually re-verified by the reviewer.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the corrected Surah 36 reconciliation. The sequence around 36:35 is continuous, and the French text assigned to 36:35 corresponds to the canonical ayah. The final segment corresponds to 36:83 and is consistent with the closing verse of Ya-Sin. Approved subject to correcting source_declared_number for the final segment to 83 only if that number is directly confirmed in the 1869 source. Do not infer the value solely from the source ordinal or canonical target. This approval applies ONLY to the Surah 36 Tier 1 review item. It does not constitute approval of any Tier 2 compound case, any Tier 3 surah, the full Kazimirski manifest, or production import.",
+      "conditional_followup": {
+        "condition": "Backfill source_declared_number = 83 on the ordinal-83 segment, but ONLY if that number is directly confirmed printed in the 1869 Charpentier scan. The reviewer explicitly said not to infer it from ordinal or canonical target alone.",
+        "status": "NOT APPLIED — not yet met. Phase 4's evidence for this segment's target (36:83) was Pickthall cross-checks at ordinals 30-40 and 81-83 plus full structural reconciliation, not a direct read of a printed \"83\" off the scan. Phase 4's scan view (page 358) was used to confirm the 36:35 gap, not the surah's final page. source_declared_number for this row remains NULL, unchanged, pending direct scan confirmation.",
+        "next_step": "Same as the Surah 2 case (decision phase5-001): locate and view the Wikisource djvu scan page covering the end of Surah 36; if it shows a printed \"83\" at this item, backfill and record as a separate, evidenced amendment; if not, leave NULL indefinitely."
+      },
+      "mapping_before": {
+        "ordinal_35": {
+          "alignment_status": "cross_verified",
+          "reviewed_by": null,
+          "reviewed_at": null
+        },
+        "ordinal_83": {
+          "alignment_status": "cross_verified",
+          "reviewed_by": null,
+          "reviewed_at": null,
+          "source_declared_number": null
+        }
+      },
+      "mapping_after": {
+        "ordinal_35": {
+          "alignment_status": "human_verified",
+          "reviewed_by": "amkristian91@gmail.com",
+          "canonical_target": "36:35"
+        },
+        "ordinal_83": {
+          "alignment_status": "human_verified",
+          "reviewed_by": "amkristian91@gmail.com",
+          "canonical_target": "36:83",
+          "source_declared_number": null,
+          "note": "left unchanged per conditional_followup above"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-003-tier2-compound-3-39-approve",
+      "review_item": "TIER 2 — compound boundary case 3:39",
+      "scope": "translation_segment_ayahs join rows ONLY: (segment ordinal 33, surah 3, ayah 39) and (segment ordinal 34, surah 3, ayah 39) -- the two join rows whose mapping_confidence was 'needs_review'. Explicitly NOT the ordinal-33 -> 3:38 join row (a separate, non-disputed mapping for the same segment, mapping_confidence stays 'auto', untouched), and NOT the segments' own translation_segments.alignment_status (stays 'auto_verified' -- alignment_type='compound' is a structural classification, not something this review changes; the compound-case governance model records human sign-off at the join level via mapping_confidence, per PHASE2-MAPPING-ARCHITECTURE.md's design for exactly this pattern).",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the Kazimirski compound alignment for canonical ayah 3:39. The end of source segment ordinal 33 corresponds to the opening portion of canonical 3:39, where the angels call Zacharie while he is praying in the sanctuary. Source segment ordinal 34 continues with the announcement of Yahia (John), including the elements corresponding to confirmation of the Word of God, leadership, chastity, prophethood, and righteousness. The French content therefore legitimately spans the modern canonical boundary, and the two contributing segments together correspond to canonical 3:39. The compound classification is appropriate. This approval applies ONLY to the Tier 2 compound case 3:39. It does not approve any of the other seven Tier 2 compound cases, any Tier 3 surah, the full manifest, or production import.",
+      "join_rows_updated": [
+        {
+          "join_id": "00e4735f-29ef-45b7-ac66-605888464d1d",
+          "segment_ordinal": 33,
+          "target": "3:39"
+        },
+        {
+          "join_id": "4e1a0bc3-4b89-411b-af0e-ba2caedaf637",
+          "segment_ordinal": 34,
+          "target": "3:39"
+        }
+      ],
+      "mapping_before": {
+        "join_ordinal33_to_3-39": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal34_to_3-39": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal33_to_3-38": {
+          "mapping_confidence": "auto",
+          "note": "out of scope, unchanged"
+        }
+      },
+      "mapping_after": {
+        "join_ordinal33_to_3-39": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal34_to_3-39": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal33_to_3-38": {
+          "mapping_confidence": "auto",
+          "note": "confirmed unchanged post-update"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true,
+      "schema_gap_noted": "translation_segment_ayahs has no reviewed_by/reviewed_at/reviewer_notes columns of its own (only translation_segments does) -- this decision's full evidence lives here in this amendment record rather than on the join row itself. Worth adding those columns to the join table if/when this schema is ever promoted beyond prototype."
+    },
+    {
+      "decision_id": "phase5-004-tier2-compound-3-167-approve",
+      "review_item": "TIER 2 — compound boundary case 3:167",
+      "scope": "translation_segment_ayahs join rows ONLY: (segment ordinal 160, surah 3, ayah 167) and (segment ordinal 161, surah 3, ayah 167) -- the two join rows whose mapping_confidence was 'needs_review'. Explicitly NOT the ordinal-160 -> 3:166 join row (a separate, non-disputed mapping for the same segment, mapping_confidence stays 'auto', untouched), and NOT the segments' own translation_segments.alignment_status/alignment_type (unchanged, same reasoning as decision phase5-003).",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the Kazimirski compound alignment for canonical ayah 3:167. Source segment ordinal 160 contains the portion corresponding to the hypocrites being called to fight or defend, their response, and the statement that on that day they were nearer to disbelief than to faith. Source segment ordinal 161 continues the same canonical ayah with the statement that they say with their lips what is not in their hearts, followed by the statement that God knows what they conceal. The French content therefore legitimately crosses Kazimirski's source segment boundary while corresponding to canonical 3:167. The compound classification and the two contributing mappings are appropriate. This approval applies ONLY to the Tier 2 compound case 3:167. It does not approve any other Tier 2 compound case, any Tier 3 surah, the full Kazimirski manifest, or production import.",
+      "join_rows_updated": [
+        {
+          "join_id": "ec82f65e-5bef-4dc8-9e49-32d5bf9ab9cc",
+          "segment_ordinal": 160,
+          "target": "3:167"
+        },
+        {
+          "join_id": "57d5e726-d71d-4387-85f4-927cd73ea8fc",
+          "segment_ordinal": 161,
+          "target": "3:167"
+        }
+      ],
+      "mapping_before": {
+        "join_ordinal160_to_3-167": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal161_to_3-167": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal160_to_3-166": {
+          "mapping_confidence": "auto",
+          "note": "out of scope, unchanged"
+        }
+      },
+      "mapping_after": {
+        "join_ordinal160_to_3-167": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal161_to_3-167": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal160_to_3-166": {
+          "mapping_confidence": "auto",
+          "note": "confirmed unchanged post-update"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-005-tier2-compound-11-39-approve",
+      "review_item": "TIER 2 — compound boundary case 11:39",
+      "scope": "translation_segment_ayahs join rows ONLY: (segment ordinal 40, surah 11, ayah 39) and (segment ordinal 41, surah 11, ayah 39) -- the two join rows whose mapping_confidence was 'needs_review'. Explicitly NOT the ordinal-40 -> 11:38 join row (a separate, non-disputed mapping for the same segment, mapping_confidence stays 'auto', untouched), and NOT the segments' own translation_segments.alignment_status/alignment_type (unchanged, same reasoning as decisions phase5-003/004).",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the Kazimirski compound alignment for canonical ayah 11:39. Source segment ordinal 40 enters canonical 11:39 with the concluding phrase \"et vous apprendrez\" (\"and you will learn/know\"), after material belonging to the preceding context. Source segment ordinal 41 completes that thought with the punishment that brings disgrace and the punishment that remains permanently, corresponding to the remainder of canonical 11:39. The French content therefore legitimately crosses the Kazimirski source-segment boundary while together corresponding to canonical 11:39. The compound classification and contributing mappings are appropriate. This approval applies ONLY to the Tier 2 compound case 11:39. It does not approve any other Tier 2 compound case, any Tier 3 surah, the full Kazimirski manifest, or production import.",
+      "join_rows_updated": [
+        {
+          "join_id": "483a8cdd-d4e7-408b-b154-3e7f97e84ec3",
+          "segment_ordinal": 40,
+          "target": "11:39"
+        },
+        {
+          "join_id": "c0557eba-32de-4c65-9e53-3dd56bc8ea9d",
+          "segment_ordinal": 41,
+          "target": "11:39"
+        }
+      ],
+      "mapping_before": {
+        "join_ordinal40_to_11-39": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal41_to_11-39": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal40_to_11-38": {
+          "mapping_confidence": "auto",
+          "note": "out of scope, unchanged"
+        }
+      },
+      "mapping_after": {
+        "join_ordinal40_to_11-39": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal41_to_11-39": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal40_to_11-38": {
+          "mapping_confidence": "auto",
+          "note": "confirmed unchanged post-update"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-006-tier2-compound-14-44-approve",
+      "review_item": "TIER 2 — compound boundary case 14:44",
+      "scope": "translation_segment_ayahs join rows ONLY: (segment ordinal 44, surah 14, ayah 44), (segment ordinal 45, surah 14, ayah 44), (segment ordinal 46, surah 14, ayah 44) -- the three join rows whose mapping_confidence was 'needs_review'. Explicitly NOT the ordinal-44 -> 14:43 join row (a separate, non-disputed mapping for the same segment, mapping_confidence stays 'auto', untouched), and NOT the segments' own translation_segments.alignment_status/alignment_type (unchanged, same reasoning as decisions phase5-003/004/005).",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the Kazimirski compound alignment for canonical ayah 14:44. Source segment ordinal 44 enters canonical 14:44 with \"Avertis donc les hommes du jour des châtiments\", corresponding to the opening warning concerning the day when punishment comes, after material belonging to the preceding canonical context. Source segment ordinal 45 continues 14:44 with the wrongdoers' request that their Lord grant them a delay until a near term. Source segment ordinal 46 continues and completes the canonical ayah with their promise to answer God's call and follow the messengers, followed by the response concerning what they had previously sworn. The three source segments therefore legitimately contribute to canonical 14:44 in the expected semantic order. The compound classification and contributing mappings are appropriate. This approval applies ONLY to the Tier 2 compound case 14:44. It does not approve any other Tier 2 compound case, any Tier 3 surah, the full Kazimirski manifest, or production import.",
+      "join_rows_updated": [
+        {
+          "join_id": "3795b469-8c3d-49e1-be5c-89fed79a0814",
+          "segment_ordinal": 44,
+          "target": "14:44"
+        },
+        {
+          "join_id": "a1a7c821-44eb-4291-9686-31fb96b353dd",
+          "segment_ordinal": 45,
+          "target": "14:44"
+        },
+        {
+          "join_id": "f0c4a2ab-f580-4f80-a330-6fa5973cd3a0",
+          "segment_ordinal": 46,
+          "target": "14:44"
+        }
+      ],
+      "mapping_before": {
+        "join_ordinal44_to_14-44": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal45_to_14-44": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal46_to_14-44": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal44_to_14-43": {
+          "mapping_confidence": "auto",
+          "note": "out of scope, unchanged"
+        }
+      },
+      "mapping_after": {
+        "join_ordinal44_to_14-44": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal45_to_14-44": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal46_to_14-44": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal44_to_14-43": {
+          "mapping_confidence": "auto",
+          "note": "confirmed unchanged post-update"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-007-tier2-compound-47-21-approve",
+      "review_item": "TIER 2 — compound boundary case 47:21",
+      "scope": "translation_segment_ayahs join rows ONLY: (segment ordinal 22, surah 47, ayah 21) and (segment ordinal 23, surah 47, ayah 21) -- the two join rows whose mapping_confidence was 'needs_review'. Explicitly NOT the ordinal-22 -> 47:20 join row (a separate, non-disputed mapping for the same segment, mapping_confidence stays 'auto', untouched), and NOT the segments' own translation_segments.alignment_status/alignment_type.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the Kazimirski compound alignment for canonical ayah 47:21. Source segment ordinal 22 enters canonical 47:21 with \"Cependant l'obéissance et un langage convenable leur siéraient mieux\", corresponding to the opening idea of obedience and proper speech, after material belonging to the preceding canonical context. Source segment ordinal 23 continues and completes the same canonical ayah with the statement that when the matter is resolved, keeping faith with God / being truthful toward God would be better for them. The French content therefore legitimately crosses the Kazimirski source-segment boundary while together corresponding to canonical 47:21. The compound classification and contributing mappings are appropriate. This approval applies ONLY to the Tier 2 compound case 47:21. It does not approve any other Tier 2 compound case, any Tier 3 surah, the full Kazimirski manifest, or production import.",
+      "join_rows_updated": [
+        {
+          "join_id": "e5409b23-95a8-4f82-9d49-970434120173",
+          "segment_ordinal": 22,
+          "target": "47:21"
+        },
+        {
+          "join_id": "c974d890-addb-49e0-bbc0-4d78c7b4c456",
+          "segment_ordinal": 23,
+          "target": "47:21"
+        }
+      ],
+      "mapping_before": {
+        "join_ordinal22_to_47-21": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal23_to_47-21": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal22_to_47-20": {
+          "mapping_confidence": "auto",
+          "note": "out of scope, unchanged"
+        }
+      },
+      "mapping_after": {
+        "join_ordinal22_to_47-21": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal23_to_47-21": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal22_to_47-20": {
+          "mapping_confidence": "auto",
+          "note": "confirmed unchanged post-update"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-008-tier2-compound-65-3-approve",
+      "review_item": "TIER 2 — compound boundary case 65:3",
+      "scope": "translation_segment_ayahs join rows ONLY: (segment ordinal 2, surah 65, ayah 3) and (segment ordinal 3, surah 65, ayah 3) -- the two join rows whose mapping_confidence was 'needs_review'. Explicitly NOT the ordinal-2 -> 65:2 join row (a separate, non-disputed mapping for the same segment, mapping_confidence stays 'auto', untouched), and NOT the segments' own translation_segments.alignment_status/alignment_type.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the Kazimirski compound alignment for canonical ayah 65:3. Source segment ordinal 2 crosses into canonical 65:3 with the statement that God provides for the person who fears Him from sources that person did not expect, after material belonging to the preceding canonical context. Source segment ordinal 3 continues with the statement that God is sufficient for the person who puts trust in Him, that God brings His decrees to completion, and that God has assigned a measure to all things. The two source segments therefore legitimately contribute to canonical 65:3 in the expected semantic order. The compound classification and contributing mappings are appropriate. This approval applies ONLY to the Tier 2 compound case 65:3. It does not approve 65:10, 106:4, any Tier 3 surah, the full Kazimirski manifest, or production import.",
+      "join_rows_updated": [
+        {
+          "join_id": "4d525a7c-7061-4e5f-a196-1ccb418979bc",
+          "segment_ordinal": 2,
+          "target": "65:3"
+        },
+        {
+          "join_id": "75ee4025-65b5-4bf1-a1b2-432337eaba47",
+          "segment_ordinal": 3,
+          "target": "65:3"
+        }
+      ],
+      "mapping_before": {
+        "join_ordinal2_to_65-3": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal3_to_65-3": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal2_to_65-2": {
+          "mapping_confidence": "auto",
+          "note": "out of scope, unchanged"
+        }
+      },
+      "mapping_after": {
+        "join_ordinal2_to_65-3": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal3_to_65-3": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal2_to_65-2": {
+          "mapping_confidence": "auto",
+          "note": "confirmed unchanged post-update"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-009-tier2-compound-65-10-approve",
+      "review_item": "TIER 2 — compound boundary case 65:10",
+      "scope": "translation_segment_ayahs join rows ONLY: (segment ordinal 10, surah 65, ayah 10) and (segment ordinal 11, surah 65, ayah 10) -- the two join rows whose mapping_confidence was 'needs_review'. Segment ordinal 11 additionally has a SECOND, forward join to 65:11 (mapping_confidence='auto') -- that row is explicitly NOT part of this review and stays untouched. Segments' own translation_segments.alignment_status/alignment_type also unchanged.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the Kazimirski compound alignment for canonical ayah 65:10. Source segment ordinal 10 corresponds to the opening portion of canonical 65:10: God preparing severe punishment, followed by the command to fear God addressed to people of understanding. Source segment ordinal 11 begins with the remaining portion concerning those who believe and God sending an avertissement/reminder, before continuing into material belonging to the following canonical context. Kazimirski's rendering and segmentation therefore cross the modern canonical boundary, but the two contributing segments together account for canonical 65:10 in the expected semantic order. The compound classification and contributing mappings are appropriate. This approval concerns alignment and segmentation; it does not imply modernization or editorial approval of Kazimirski's translation choices. This approval applies ONLY to the Tier 2 compound case 65:10. It does not approve 106:4, any Tier 3 surah, the full Kazimirski manifest, or production import.",
+      "join_rows_updated": [
+        {
+          "join_id": "24837ecb-0ac3-43ae-bb45-5caeb5969c08",
+          "segment_ordinal": 10,
+          "target": "65:10"
+        },
+        {
+          "join_id": "60241b11-1146-4578-ac5d-83bcf17bae8e",
+          "segment_ordinal": 11,
+          "target": "65:10"
+        }
+      ],
+      "mapping_before": {
+        "join_ordinal10_to_65-10": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal11_to_65-10": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal11_to_65-11": {
+          "mapping_confidence": "auto",
+          "note": "out of scope, unchanged -- segment 11's separate forward join into the following ayah"
+        }
+      },
+      "mapping_after": {
+        "join_ordinal10_to_65-10": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal11_to_65-10": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal11_to_65-11": {
+          "mapping_confidence": "auto",
+          "note": "confirmed unchanged post-update"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-010-tier2-compound-106-4-approve",
+      "review_item": "TIER 2 — compound boundary case 106:4",
+      "scope": "translation_segment_ayahs join rows ONLY: (segment ordinal 3, surah 106, ayah 4) and (segment ordinal 4, surah 106, ayah 4) -- the two join rows whose mapping_confidence was 'needs_review'. Explicitly NOT the ordinal-3 -> 106:3 join row (a separate, already cross_verified mapping for the same segment -- this surah was Phase 1's own hand-worked example -- unchanged), and NOT the segments' own translation_segments.alignment_status/alignment_type.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the Kazimirski compound alignment for canonical ayah 106:4. Source segment ordinal 3 crosses into canonical 106:4 with \"le Dieu qui les a nourris et préservés de la famine\", corresponding to the first portion of the canonical ayah concerning being fed/protected from hunger, after material belonging to the preceding canonical context. Source segment ordinal 4 continues and completes canonical 106:4 with \"Et qui les a délivrés des alarmes\", corresponding to being given security/deliverance from fear. The two source segments therefore legitimately contribute to canonical 106:4 in the expected semantic order. The compound classification and contributing mappings are appropriate. This approval concerns alignment and segmentation only; it does not imply modernization or editorial approval of Kazimirski's translation choices. This approval applies ONLY to the Tier 2 compound case 106:4. It does not approve any Tier 3 surah, the full Kazimirski manifest, or production import.",
+      "join_rows_updated": [
+        {
+          "join_id": "514cd7ff-31f7-42e0-a8d1-39caed78f000",
+          "segment_ordinal": 3,
+          "target": "106:4"
+        },
+        {
+          "join_id": "a211b654-2405-4679-952f-6c28a63b8f53",
+          "segment_ordinal": 4,
+          "target": "106:4"
+        }
+      ],
+      "mapping_before": {
+        "join_ordinal3_to_106-4": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal4_to_106-4": {
+          "mapping_confidence": "needs_review"
+        },
+        "join_ordinal3_to_106-3": {
+          "mapping_confidence": "cross_verified",
+          "note": "out of scope, unchanged"
+        }
+      },
+      "mapping_after": {
+        "join_ordinal3_to_106-4": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal4_to_106-4": {
+          "mapping_confidence": "human_verified"
+        },
+        "join_ordinal3_to_106-3": {
+          "mapping_confidence": "cross_verified",
+          "note": "confirmed unchanged post-update"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-011-tier3-t3-s21-approve",
+      "review_item": "TIER 3 — T3-S21 (Surah 21), frozen sample methodology phase5-tier3-human-sample-v1",
+      "scope": "All 3 frozen segments for Surah 21 (source_ordinal 28, 29, 67) and all 4 of their translation_segment_ayahs join rows (28->21:28, 29->21:28, 67->21:66, 67->21:67). Unlike the Tier 2 compound cases, none of these 3 segments carry any out-of-scope join to a different, unreviewed ayah, so both translation_segments.alignment_status AND translation_segment_ayahs.mapping_confidence were updated for the full set -- confirmed via a precondition query before the update that each segment's join count matched exactly what the frozen sample expected (1, 1, and 2 respectively).",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed all three frozen Tier 3 source segments for Surah 21 under methodology phase5-tier3-human-sample-v1. CASE A - canonical 21:28: source ordinals 28 and 29 together correspond coherently and sequentially to canonical 21:28. Ordinal 28 contains the portion stating that God knows what is before and behind them and that they cannot intercede. Ordinal 29 continues the same canonical ayah with the exception for whom permission is granted and the statement concerning their fear before Him. The many_to_one alignment of ordinals 28 and 29 to canonical 21:28 is therefore appropriate. CASE B - canonical 21:66-21:67: source ordinal 67 legitimately spans both canonical 21:66 and 21:67. Its opening sentence corresponds to 21:66, concerning worship of what can neither benefit nor harm. Its continuation corresponds to 21:67, containing the rebuke against them and what they worship besides God, followed by the question asking whether they understand. The one_to_many alignment of source ordinal 67 to canonical 21:66 and 21:67 is therefore appropriate. I found no mechanical alignment defect in the frozen T3-S21 sample. This approval applies ONLY to decision unit T3-S21. It does not approve T3-S22 or any other Tier 3 surah, the full Kazimirski manifest, production import, production migration, or deployment.",
+      "segments_updated": [
+        {
+          "segment_id": "7b9f5554-c3f0-4dca-a6fa-79f519abf378",
+          "source_ordinal": 28
+        },
+        {
+          "segment_id": "56c95992-5ab7-4ebe-a8a4-cedefa9364ac",
+          "source_ordinal": 29
+        },
+        {
+          "segment_id": "8aae97a5-0224-485d-bc9b-208d5c0620d9",
+          "source_ordinal": 67
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "3a0ceae2-7997-486a-88e5-99c62c9647d7",
+          "segment_ordinal": 28,
+          "target": "21:28"
+        },
+        {
+          "join_id": "bea86b27-e455-456a-a2d0-fccb2a88de8d",
+          "segment_ordinal": 29,
+          "target": "21:28"
+        },
+        {
+          "join_id": "6b811f75-97bd-4b62-b875-5406983eea2c",
+          "segment_ordinal": 67,
+          "target": "21:66"
+        },
+        {
+          "join_id": "82f4e74c-40ad-43f3-babd-29ff7a71a380",
+          "segment_ordinal": 67,
+          "target": "21:67"
+        }
+      ],
+      "mapping_before": {
+        "segments": {
+          "ordinal_28": "auto_verified",
+          "ordinal_29": "auto_verified",
+          "ordinal_67": "auto_verified"
+        },
+        "joins": {
+          "ordinal28_to_21-28": "auto",
+          "ordinal29_to_21-28": "auto",
+          "ordinal67_to_21-66": "auto",
+          "ordinal67_to_21-67": "auto"
+        }
+      },
+      "mapping_after": {
+        "segments": {
+          "ordinal_28": "human_verified",
+          "ordinal_29": "human_verified",
+          "ordinal_67": "human_verified"
+        },
+        "joins": {
+          "ordinal28_to_21-28": "human_verified",
+          "ordinal29_to_21-28": "human_verified",
+          "ordinal67_to_21-66": "human_verified",
+          "ordinal67_to_21-67": "human_verified"
+        }
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-012-tier3-t3-s22-approve",
+      "review_item": "TIER 3 — T3-S22 (Surah 22), frozen sample methodology phase5-tier3-human-sample-v1",
+      "scope": "All 8 frozen segments for Surah 22 (source_ordinal 18, 19, 21, 25, 26, 43, 77, 78) and all 11 of their translation_segment_ayahs join rows. Precondition re-verified fresh (not reused from the prior presentation turn) immediately before this update: each segment's live join count matched the frozen sample exactly (1,1,2,1,1,3,1,1 = 11 total) -- zero out-of-scope sibling joins found, so both translation_segments.alignment_status AND translation_segment_ayahs.mapping_confidence were updated for the full set.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed all 8 frozen Tier 3 source segments for Surah 22 under methodology phase5-tier3-human-sample-v1. CASE A - canonical 22:18: source ordinals 18 and 19 together correspond coherently and sequentially to canonical 22:18. Ordinal 18 contains the material concerning the prostration/worship of what is in the heavens and earth, the sun, moon, stars, mountains, trees, animals and many people, followed by the statement concerning those for whom punishment is established. Ordinal 19 completes the canonical ayah with the statement concerning the one whom God humiliates having no one to honor him and that God does what He wills. The many_to_one alignment is appropriate. CASE B - canonical 22:20-22:21: source ordinal 21 legitimately spans canonical 22:20 and 22:21. The statement concerning the insides and skins being consumed corresponds to 22:20. The continuation concerning iron clubs corresponds to 22:21. The one_to_many alignment is appropriate. CASE C - canonical 22:25: source ordinals 25 and 26 together correspond coherently to canonical 22:25. Ordinal 25 contains the material concerning disbelief, hindering others from God's path and the Sacred Mosque, and its availability to residents and outsiders. Ordinal 26 completes the canonical ayah with the material concerning wrongful profanation and painful punishment. The many_to_one alignment is appropriate. CASE D - canonical 22:42-22:44: source ordinal 43 legitimately spans all three canonical ayahs. Its French text preserves the canonical progression: Noah, Ad and Thamud -> 22:42; Abraham and Lot -> 22:43; Midian, Moses, respite and subsequent punishment -> 22:44. All three canonical targets are substantively represented in the single Kazimirski source segment. The one_to_many alignment to 22:42, 22:43 and 22:44 is appropriate. CASE E - canonical 22:78: source ordinals 77 and 78 together correspond coherently and sequentially to canonical 22:78. Ordinal 77 begins the canonical ayah with striving for God, being chosen, the absence of hardship in religion, the religion of Abraham, and the naming as Muslims. Ordinal 78 continues the same canonical ayah with the prior naming, the Messenger/witness material, prayer, almsgiving, holding firmly to God, and God as protector. The many_to_one alignment is appropriate. I found no mechanical alignment defect in the frozen T3-S22 sample. This approval concerns alignment only. It does not authorize alteration or modernization of Kazimirski's historical French wording. This approval applies ONLY to decision unit T3-S22. It does not approve any other Tier 3 surah, the full Kazimirski manifest, production migration, production import, or deployment.",
+      "segments_updated": [
+        {
+          "segment_id": "40755f92-1116-4614-b21a-6ce7e59b2075",
+          "source_ordinal": 18
+        },
+        {
+          "segment_id": "aa5ad7da-9c20-410c-ac03-3000785c2381",
+          "source_ordinal": 19
+        },
+        {
+          "segment_id": "989e5e1e-9d9f-4f2f-a269-3a409e6a7006",
+          "source_ordinal": 21
+        },
+        {
+          "segment_id": "8f7fe413-14a0-4907-8032-c9f3236d3d8a",
+          "source_ordinal": 25
+        },
+        {
+          "segment_id": "554e62df-2982-4998-82a8-58def93531ef",
+          "source_ordinal": 26
+        },
+        {
+          "segment_id": "690018d5-f50a-4cf9-81c5-8956c4deaaed",
+          "source_ordinal": 43
+        },
+        {
+          "segment_id": "730eab81-25bd-4545-b0af-e80b50b490ec",
+          "source_ordinal": 77
+        },
+        {
+          "segment_id": "40a63e8e-624d-4376-a6bf-6c6ac262c56d",
+          "source_ordinal": 78
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "d943adb0-6318-430a-9f57-44907385e7c1",
+          "segment_ordinal": 18,
+          "target": "22:18"
+        },
+        {
+          "join_id": "c007d4c7-3d13-4d22-90d0-a6ac36086c8f",
+          "segment_ordinal": 19,
+          "target": "22:18"
+        },
+        {
+          "join_id": "6da5c674-bc13-4eda-a6b2-caf141374da3",
+          "segment_ordinal": 21,
+          "target": "22:20"
+        },
+        {
+          "join_id": "6b1621c3-c177-4093-83fb-74b833cd947f",
+          "segment_ordinal": 21,
+          "target": "22:21"
+        },
+        {
+          "join_id": "7075689e-2ade-41dd-9251-46d967f871c1",
+          "segment_ordinal": 25,
+          "target": "22:25"
+        },
+        {
+          "join_id": "2333a331-e3b3-4d61-9065-693682724409",
+          "segment_ordinal": 26,
+          "target": "22:25"
+        },
+        {
+          "join_id": "8fa0cbfe-f96f-42ef-b6ba-c29c8d2dfd18",
+          "segment_ordinal": 43,
+          "target": "22:42"
+        },
+        {
+          "join_id": "2c46c1bd-2f7a-4a41-bd05-dca8cd8f5ef4",
+          "segment_ordinal": 43,
+          "target": "22:43"
+        },
+        {
+          "join_id": "30569d71-24be-4399-8dc9-601950604447",
+          "segment_ordinal": 43,
+          "target": "22:44"
+        },
+        {
+          "join_id": "12b3f1f2-443b-47c2-ad2e-95f9f1d0098c",
+          "segment_ordinal": 77,
+          "target": "22:78"
+        },
+        {
+          "join_id": "d529f349-aa1d-4b4a-820b-22f8833e3e2b",
+          "segment_ordinal": 78,
+          "target": "22:78"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-013-tier3-t3-s53-approve",
+      "review_item": "TIER 3 — T3-S53 (Surah 53), frozen sample methodology phase5-tier3-human-sample-v1",
+      "scope": "All 3 frozen segments for Surah 53 (source_ordinal 26, 27, 58) and all 4 of their translation_segment_ayahs join rows. Precondition freshly re-verified immediately before this update: live join counts matched the frozen sample exactly (1,1,2 = 4 total) -- zero out-of-scope sibling joins, so both translation_segments.alignment_status AND translation_segment_ayahs.mapping_confidence were updated for the full set.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed all 3 frozen Tier 3 source segments for Surah 53 under methodology phase5-tier3-human-sample-v1. CASE A - canonical 53:26: source ordinals 26 and 27 together correspond coherently and sequentially to canonical 53:26. Ordinal 26 contains the opening material concerning the many angels in the heavens whose intercession is of no avail. Ordinal 27 begins with the exception clause \"Sauf...\" and continues the same canonical ayah with God's permission for intercession and His choosing/approval. The boundary between the two source segments occurs within the same canonical ayah and corresponds naturally to the Arabic exception structure beginning with illa. The many_to_one alignment of ordinals 26 and 27 to canonical 53:26 is appropriate. CASE B - canonical 53:57-53:58: source ordinal 58 legitimately spans both canonical 53:57 and 53:58. \"L'heure qui doit venir approche\" corresponds to canonical 53:57, the approaching event/hour drawing near. \"et point de remede contre elle, excepte en Dieu\" corresponds to canonical 53:58, expressing that none besides God can remove or resolve it. The one_to_many alignment of source ordinal 58 to canonical 53:57 and 53:58 is appropriate. I found no mechanical alignment defect in the frozen T3-S53 sample. Historical or archaic French wording is not itself an alignment defect; not modernized or corrected as part of this approval. This approval applies ONLY to decision unit T3-S53. It does not approve any other Tier 3 surah, the complete Kazimirski manifest, production migration, production import, or deployment.",
+      "segments_updated": [
+        {
+          "segment_id": "dd97ad3b-9280-4629-91a4-6a1e72cefeec",
+          "source_ordinal": 26
+        },
+        {
+          "segment_id": "0ae3d0f8-e2c5-47d0-9097-a39dbc5e8338",
+          "source_ordinal": 27
+        },
+        {
+          "segment_id": "92476db5-8853-4b28-abcd-3fa2a22e5987",
+          "source_ordinal": 58
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "6a9d54ab-e50d-4280-af63-baa9be19dc27",
+          "segment_ordinal": 26,
+          "target": "53:26"
+        },
+        {
+          "join_id": "95cf6ee1-561b-4a65-8d0b-c59b4d5b758d",
+          "segment_ordinal": 27,
+          "target": "53:26"
+        },
+        {
+          "join_id": "37776eca-4538-4e09-88f9-449c0ab0027d",
+          "segment_ordinal": 58,
+          "target": "53:57"
+        },
+        {
+          "join_id": "79fd42f9-0243-465a-a2ed-87c911486e29",
+          "segment_ordinal": 58,
+          "target": "53:58"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-014-tier3-t3-s58-approve",
+      "review_item": "TIER 3 — T3-S58 (Surah 58), frozen sample methodology phase5-tier3-human-sample-v1",
+      "scope": "All 3 frozen segments for Surah 58 (source_ordinal 2, 3, 21) and all 4 of their translation_segment_ayahs join rows. Precondition freshly re-verified immediately before this update: frozen sample still exactly 3 segments; ordinal 2 carries only 58:2; ordinal 3 carries only 58:2; ordinal 21 carries only 58:20 and 58:21; no out-of-scope sibling join; T3-S58 not previously recorded. All conditions passed.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed all 3 frozen Tier 3 source segments for Surah 58 under methodology phase5-tier3-human-sample-v1. CASE A - canonical 58:2: source ordinals 2 and 3 together correspond coherently and sequentially to canonical 58:2. Ordinal 2 contains the material concerning the zihar declaration, the clarification that the wives are not their mothers, the identification of their actual mothers, and the characterization of the declaration as blameworthy speech and falsehood. This corresponds to canonical 58:2 through the Arabic clause wa-zuran. Ordinal 3 contains the concluding forgiveness/indulgence statement corresponding to the final canonical clause wa-inna Allaha la-afuwwun ghafur. Kazimirski's sentence boundary between the two source segments does not constitute a canonical ayah boundary. The many_to_one alignment of ordinals 2 and 3 to canonical 58:2 is appropriate. CASE B - canonical 58:20-58:21: source ordinal 21 legitimately spans canonical 58:20 and 58:21. \"Ceux qui luttent contre Dieu et le prophete seront livres au mepris\" corresponds to canonical 58:20. \"Dieu a ecrit d'avance cet arret : J'aurai le dessus et mes envoyes aussi. Dieu est fort et puissant.\" corresponds to canonical 58:21. The second portion substantively represents the decree, the victory of God and His messengers, and the concluding divine attributes. The one_to_many alignment of ordinal 21 to canonical 58:20 and 58:21 is appropriate. I found no mechanical alignment defect in the frozen T3-S58 sample. Historical French wording is preserved as source evidence and is not being modernized or altered by this approval. This approval applies ONLY to decision unit T3-S58. It does not approve any other Tier 3 surah, the complete Kazimirski manifest, production migration, production import, or deployment.",
+      "segments_updated": [
+        {
+          "segment_id": "82524666-ccfd-4b68-b348-ca6a9da51cd0",
+          "source_ordinal": 2
+        },
+        {
+          "segment_id": "20b704c8-9ef0-4a3b-afc9-813e25e83e2f",
+          "source_ordinal": 3
+        },
+        {
+          "segment_id": "bdab7613-5375-4696-a2e4-96ce37704d3b",
+          "source_ordinal": 21
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "fb3b6c9d-714b-47da-bf74-b829927c7ddb",
+          "segment_ordinal": 2,
+          "target": "58:2"
+        },
+        {
+          "join_id": "8a5dfee5-8419-4977-9ece-b1937c9057fe",
+          "segment_ordinal": 3,
+          "target": "58:2"
+        },
+        {
+          "join_id": "63c2ea29-1f30-48ba-bf82-f6791d6f4cc2",
+          "segment_ordinal": 21,
+          "target": "58:20"
+        },
+        {
+          "join_id": "bf813994-ad8f-4fcb-960c-ce02d85a1525",
+          "segment_ordinal": 21,
+          "target": "58:21"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-015-tier3-t3-s72-approve",
+      "review_item": "TIER 3 — T3-S72 (Surah 72), frozen sample methodology phase5-tier3-human-sample-v1",
+      "scope": "All 3 frozen segments for Surah 72 (source_ordinal 22, 23, 26) and all 4 of their translation_segment_ayahs join rows. Precondition freshly re-verified immediately before this update: frozen sample still exactly 3 segments; ordinal 22 carries only 72:22; ordinal 23 carries only 72:22; ordinal 26 carries only 72:25 and 72:26; no out-of-scope sibling join; T3-S72 not previously recorded. All conditions passed.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed all 3 frozen Tier 3 source segments for Surah 72 under methodology phase5-tier3-human-sample-v1. CASE A - canonical 72:22: source ordinals 22 and 23 together correspond coherently and sequentially to canonical 72:22. Ordinal 22 (\"Personne ne saurait me proteger contre Dieu.\") corresponds to the opening canonical material (lan yujirani mina Allahi ahad). Ordinal 23 (\"En dehors de Dieu je ne trouverai point de refuge.\") corresponds to (wa-lan ajida min dunihi multahada). Kazimirski renders the single canonical ayah as two French sentences, but both segments remain within the semantic boundaries of 72:22. The many_to_one alignment is appropriate. CASE B - canonical 72:25-72:26: source ordinal 26 legitimately spans canonical 72:25 and 72:26. The first French sentence concerning uncertainty over whether the promised event/punishment is near or has been assigned a distant term corresponds to canonical 72:25. The following sentence \"Dieu seul connait les choses cachees et il ne les devoile a personne\" substantively corresponds to canonical 72:26 -- \"Dieu seul connait les choses cachees\" corresponds to alimu al-ghayb, and \"il ne les devoile a personne\" corresponds to fa-la yuzhiru ala ghaybihi ahada. Therefore canonical 72:26 is explicitly represented in the source segment rather than inferred merely from context. The one_to_many alignment is appropriate. I found no mechanical alignment defect in the frozen T3-S72 sample. Historical spelling, punctuation, or wording is not being corrected or modernized by this approval. This approval applies ONLY to decision unit T3-S72. It does not approve T3-S77 or another Tier 3 decision, the complete Kazimirski manifest, production migration, production import, or deployment.",
+      "segments_updated": [
+        {
+          "segment_id": "40220ff5-9883-4880-92be-afd70cfc173a",
+          "source_ordinal": 22
+        },
+        {
+          "segment_id": "cccc44cb-21a8-4e2b-bb6b-ab14aecd1c09",
+          "source_ordinal": 23
+        },
+        {
+          "segment_id": "7628a5b7-08cb-4811-87d6-693476f52755",
+          "source_ordinal": 26
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "c01490c1-9ce0-48e1-bd8a-93fc78af30fb",
+          "segment_ordinal": 22,
+          "target": "72:22"
+        },
+        {
+          "join_id": "e5bb9343-d81f-4fe2-9716-a969c3992fd6",
+          "segment_ordinal": 23,
+          "target": "72:22"
+        },
+        {
+          "join_id": "b7da4bb2-c659-4cba-b186-e5404c90957b",
+          "segment_ordinal": 26,
+          "target": "72:25"
+        },
+        {
+          "join_id": "69d300a3-a24e-4a6d-bd65-7abad1381777",
+          "segment_ordinal": 26,
+          "target": "72:26"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-016-tier3-t3-s77-approve",
+      "review_item": "TIER 3 — T3-S77 (Surah 77), frozen sample methodology phase5-tier3-human-sample-v1 -- DETERMINISTIC REPLACEMENT SAMPLE (replacement_first/replacement_middle/replacement_last), not reconstructed original Phase 4 evidence.",
+      "scope": "All 3 frozen segments for Surah 77 (source_ordinal 1, 25, 50) and all 3 of their translation_segment_ayahs join rows. Precondition freshly re-verified immediately before this update: frozen sample still exactly 3 segments with sampling_reason values replacement_first/replacement_middle/replacement_last; ordinal 1 carries only 77:1; ordinal 25 carries only 77:25; ordinal 50 carries only 77:50; no out-of-scope sibling join; T3-S77 not previously recorded. All conditions passed. A separate targeted read-only boundary check (prior turn) inspected neighboring ordinal 26 (-> 77:26) as supporting evidence for the ordinal-25 mapping's boundary correctness -- ordinal 26 is explicitly NOT part of the frozen T3-S77 sample and was NOT modified by this decision; its pre-existing auto_verified/auto status was confirmed unchanged as an explicit postcondition of this update.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the frozen deterministic replacement evidence for T3-S77 under methodology phase5-tier3-human-sample-v1. This decision unit uses replacement evidence, not reconstructed original Phase 4 evidence. replacement_first (ordinal 1 -> 77:1): \"J'en jure par ceux qui sont ENVOYES l'un apres l'autre\" corresponds substantively to wa-al-mursalati urfan. No neighboring-ayah leakage or substantive omission identified. replacement_middle (ordinal 25 -> 77:25): \"N'avons-nous pas constitue la terre pour renfermer\" corresponds to a-lam najali al-arda kifata. A targeted read-only boundary check was performed because the French sentence is syntactically open after \"renfermer\" -- that check confirmed ordinal 26 (\"Les vivants et les morts ?\") maps directly and exclusively to canonical 77:26; read consecutively, ordinals 25 and 26 form one coherent French sentence spanning the canonical boundary, with the containment sense of kifatan represented by Kazimirski's verbal expression \"pour renfermer\" while the living/dead content begins exclusively in ordinal 26. The direct mapping of ordinal 25 to 77:25 is therefore mechanically appropriate. Ordinal 26 carries only 77:26 and has no sibling joins. replacement_last (ordinal 50 -> 77:50): \"En quel autre livre croiront-ils ensuite ?\" corresponds substantively to fa-bi-ayyi hadithin ba'dahu yu'minun; the rendering of hadith as \"livre\" is a translation-choice difference, not a canonical-boundary defect. No neighboring-ayah leakage identified. Systematic drift check: ordinal 1->77:1, 25->77:25, 50->77:50 -- no systematic ordinal drift present. I found no mechanical alignment defect in the frozen T3-S77 replacement sample. This approval applies ONLY to T3-S77. It does not approve T3-S80, any other pending Tier 3 decision, the complete Kazimirski manifest, production migration, production import, or deployment.",
+      "segments_updated": [
+        {
+          "segment_id": "05f2f13f-b299-4eac-a867-3a1753bbc853",
+          "source_ordinal": 1
+        },
+        {
+          "segment_id": "35a4c1e7-18af-4314-a2c9-3ca3838465dd",
+          "source_ordinal": 25
+        },
+        {
+          "segment_id": "54041fa1-4446-4252-b30b-f52543ff5a18",
+          "source_ordinal": 50
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "4528fa41-bc7c-414c-bea0-283cf00416bc",
+          "segment_ordinal": 1,
+          "target": "77:1"
+        },
+        {
+          "join_id": "155e8fc1-605e-4965-b44e-b3790c44704d",
+          "segment_ordinal": 25,
+          "target": "77:25"
+        },
+        {
+          "join_id": "d3b22753-bea9-4e97-b71b-e29d20dfb8c0",
+          "segment_ordinal": 50,
+          "target": "77:50"
+        }
+      ],
+      "explicitly_not_updated": {
+        "ordinal_26_to_77-26": "confirmed unchanged post-update (alignment_status still auto_verified, mapping_confidence still auto) -- ordinal 26 was inspected only as neighboring boundary evidence for ordinal 25's mapping and is not part of the frozen T3-S77 sample"
+      },
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-017-tier3-t3-s87-approve",
+      "review_item": "TIER 3 — T3-S87 (Surah 87), frozen sample methodology phase5-tier3-human-sample-v1 -- DETERMINISTIC REPLACEMENT SAMPLE (replacement_first/replacement_middle/replacement_last), not reconstructed original Phase 4 evidence. Part of the accelerated 7-surah batch (T3-S87, T3-S91, T3-S100, T3-S102, T3-S103, T3-S105, T3-S107), recorded as 7 independent decisions with their own decision IDs, not one batch decision.",
+      "scope": "All 3 frozen segments for Surah 87 (source_ordinal 1, 10, 19) and all 3 of their translation_segment_ayahs join rows. Fresh pre-write atomic gate re-verified immediately before this update across all 7 surahs in the batch: frozen structure correct (3 segments, one each of replacement_first/replacement_middle/replacement_last, all direct), live DB matched frozen exactly, each segment carried exactly one join, no prior recording. All conditions passed for all 7 surahs before any write was issued.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the frozen deterministic replacement evidence for T3-S87 under methodology phase5-tier3-human-sample-v1 (accelerated 7-surah batch). replacement_first (ordinal 1 -> 87:1): \"Celebre le nom de ton Seigneur le TRES-HAUT\" corresponds to sabbihi isma rabbika al-a'la. replacement_middle (ordinal 10 -> 87:10): \"Quiconque craint Dieu y reflechira.\" corresponds to sa-yadhdhakkaru man yakhsha. replacement_last (ordinal 19 -> 87:19): \"Dans les livres d'Abraham et de Moise.\" is syntactically a continuation fragment (no verb of its own); a read-only neighbor check on ordinal 18 (\"Cela se trouve dans les livres anciens,\", target 87:18, NOT part of this frozen sample and NOT modified) confirmed the two segments together form one coherent sentence, and ordinal 19 still maps exclusively and completely to 87:19. No mechanical alignment defect found. This approval applies ONLY to T3-S87.",
+      "segments_updated": [
+        {
+          "segment_id": "cb79ff48-6e4d-480e-a6fb-a4aa6c01bf6b",
+          "source_ordinal": 1
+        },
+        {
+          "segment_id": "eccaaa9d-e945-40b5-8074-c9f3fb0889bc",
+          "source_ordinal": 10
+        },
+        {
+          "segment_id": "f130dc88-f857-4594-a088-242a3627677a",
+          "source_ordinal": 19
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "7f919a37-51c8-4452-a5ab-b2fa3ff9bccf",
+          "segment_ordinal": 1,
+          "target": "87:1"
+        },
+        {
+          "join_id": "f893fd68-850e-4055-9e65-f5a28083a1c4",
+          "segment_ordinal": 10,
+          "target": "87:10"
+        },
+        {
+          "join_id": "a2ad3db4-e953-42f5-960f-8e356b7f5e02",
+          "segment_ordinal": 19,
+          "target": "87:19"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true,
+      "explicitly_not_updated": {
+        "neighbor_evidence": "S87 ordinal 18 (target 87:18) inspected as read-only supporting boundary evidence for ordinal 19's mapping -- explicitly NOT part of the frozen T3-S87 sample, NOT modified, NOT counted as reviewed."
+      }
+    },
+    {
+      "decision_id": "phase5-018-tier3-t3-s91-approve",
+      "review_item": "TIER 3 — T3-S91 (Surah 91), frozen sample methodology phase5-tier3-human-sample-v1 -- DETERMINISTIC REPLACEMENT SAMPLE (replacement_first/replacement_middle/replacement_last), not reconstructed original Phase 4 evidence. Part of the accelerated 7-surah batch (T3-S87, T3-S91, T3-S100, T3-S102, T3-S103, T3-S105, T3-S107), recorded as 7 independent decisions with their own decision IDs, not one batch decision.",
+      "scope": "All 3 frozen segments for Surah 91 (source_ordinal 1, 8, 15) and all 3 of their translation_segment_ayahs join rows. Fresh pre-write atomic gate re-verified immediately before this update across all 7 surahs in the batch: frozen structure correct (3 segments, one each of replacement_first/replacement_middle/replacement_last, all direct), live DB matched frozen exactly, each segment carried exactly one join, no prior recording. All conditions passed for all 7 surahs before any write was issued.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the frozen deterministic replacement evidence for T3-S91 under methodology phase5-tier3-human-sample-v1 (accelerated 7-surah batch). replacement_first (ordinal 1 -> 91:1): \"J'en jure par le SOLEIL et sa clarte,\" corresponds to wa-al-shamsi wa-duhaha; the trailing comma is normal continuing-oath-chain style for this surah, each clause independently complete. replacement_middle (ordinal 8 -> 91:8): \"Et qui lui a inspire sa mechancete et sa piete ;\" corresponds to fa-alhamaha fujuraha wa-taqwaha. replacement_last (ordinal 15 -> 91:15): \"Et il n'en redoute point les suites.\" corresponds to wa-la yakhafu 'uqbaha. No mechanical alignment defect found. This approval applies ONLY to T3-S91.",
+      "segments_updated": [
+        {
+          "segment_id": "5615c263-4d60-4c3c-aaaa-caf3a91042c8",
+          "source_ordinal": 1
+        },
+        {
+          "segment_id": "28290bee-8145-4be6-89e6-ab203857656a",
+          "source_ordinal": 8
+        },
+        {
+          "segment_id": "2c54b042-87a8-4dfb-a7e3-4bf2f86d9feb",
+          "source_ordinal": 15
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "6784a6e0-8d8d-4143-950f-ae84d252026b",
+          "segment_ordinal": 1,
+          "target": "91:1"
+        },
+        {
+          "join_id": "88f3103f-38e9-4875-b33e-9417a9fdc07e",
+          "segment_ordinal": 8,
+          "target": "91:8"
+        },
+        {
+          "join_id": "b6dbf5ca-fd50-420b-88ea-d92eeb14ad25",
+          "segment_ordinal": 15,
+          "target": "91:15"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-019-tier3-t3-s100-approve",
+      "review_item": "TIER 3 — T3-S100 (Surah 100), frozen sample methodology phase5-tier3-human-sample-v1 -- DETERMINISTIC REPLACEMENT SAMPLE (replacement_first/replacement_middle/replacement_last), not reconstructed original Phase 4 evidence. Part of the accelerated 7-surah batch (T3-S87, T3-S91, T3-S100, T3-S102, T3-S103, T3-S105, T3-S107), recorded as 7 independent decisions with their own decision IDs, not one batch decision.",
+      "scope": "All 3 frozen segments for Surah 100 (source_ordinal 1, 6, 11) and all 3 of their translation_segment_ayahs join rows. Fresh pre-write atomic gate re-verified immediately before this update across all 7 surahs in the batch: frozen structure correct (3 segments, one each of replacement_first/replacement_middle/replacement_last, all direct), live DB matched frozen exactly, each segment carried exactly one join, no prior recording. All conditions passed for all 7 surahs before any write was issued.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the frozen deterministic replacement evidence for T3-S100 under methodology phase5-tier3-human-sample-v1 (accelerated 7-surah batch). replacement_first (ordinal 1 -> 100:1): \"J'en jure par les COURSIERS haletants,\" corresponds to wa-al-'adiyati dabhan. replacement_middle (ordinal 6 -> 100:6): \"En verite, l'homme est ingrat envers son Seigneur.\" corresponds to inna al-insana li-rabbihi la-kanud. replacement_last (ordinal 11 -> 100:11): \"Que Dieu sera instruit alors de ses actions ?\" is rendered as a rhetorical question with no subject clause of its own, continuing ordinal 10's \"Lorsque...\" (When...) conditional; a read-only neighbor check on ordinal 10 (\"Lorsque les secrets du coeur paraitront au grand jour,\", target 100:10, NOT part of this frozen sample and NOT modified) confirmed the two segments together form one coherent conditional sentence mirroring the real Quran's own 100:9-11 structure, and ordinal 11 still maps exclusively to 100:11. No mechanical alignment defect found. This approval applies ONLY to T3-S100.",
+      "segments_updated": [
+        {
+          "segment_id": "7c846c0b-0389-4812-90ad-410e813c1769",
+          "source_ordinal": 1
+        },
+        {
+          "segment_id": "7d30cad0-6182-463a-8225-a983b524752e",
+          "source_ordinal": 6
+        },
+        {
+          "segment_id": "f9316e4d-16d0-46c7-9c1e-b9890d319cb4",
+          "source_ordinal": 11
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "12308727-c995-41d4-aab7-b5eb3102dcb6",
+          "segment_ordinal": 1,
+          "target": "100:1"
+        },
+        {
+          "join_id": "732ac70d-fcbb-4cfd-ad84-6c772dbd5502",
+          "segment_ordinal": 6,
+          "target": "100:6"
+        },
+        {
+          "join_id": "7ed9c1e6-4d60-4274-b5ee-7412f4ee091e",
+          "segment_ordinal": 11,
+          "target": "100:11"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true,
+      "explicitly_not_updated": {
+        "neighbor_evidence": "S100 ordinal 10 (target 100:10) inspected as read-only supporting boundary evidence for ordinal 11's mapping -- explicitly NOT part of the frozen T3-S100 sample, NOT modified, NOT counted as reviewed."
+      }
+    },
+    {
+      "decision_id": "phase5-020-tier3-t3-s102-approve",
+      "review_item": "TIER 3 — T3-S102 (Surah 102), frozen sample methodology phase5-tier3-human-sample-v1 -- DETERMINISTIC REPLACEMENT SAMPLE (replacement_first/replacement_middle/replacement_last), not reconstructed original Phase 4 evidence. Part of the accelerated 7-surah batch (T3-S87, T3-S91, T3-S100, T3-S102, T3-S103, T3-S105, T3-S107), recorded as 7 independent decisions with their own decision IDs, not one batch decision.",
+      "scope": "All 3 frozen segments for Surah 102 (source_ordinal 1, 4, 8) and all 3 of their translation_segment_ayahs join rows. Fresh pre-write atomic gate re-verified immediately before this update across all 7 surahs in the batch: frozen structure correct (3 segments, one each of replacement_first/replacement_middle/replacement_last, all direct), live DB matched frozen exactly, each segment carried exactly one join, no prior recording. All conditions passed for all 7 surahs before any write was issued.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the frozen deterministic replacement evidence for T3-S102 under methodology phase5-tier3-human-sample-v1 (accelerated 7-surah batch). replacement_first (ordinal 1 -> 102:1): \"Le desir d'augmenter vos richesses vous preoccupe\" corresponds to alhakumu al-takathur. replacement_middle (ordinal 4 -> 102:4): \"Encore une fois, vous apprendrez ce qui en est.\" corresponds to thumma kalla sawfa ta'lamun. replacement_last (ordinal 8 -> 102:8): \"Alors voila serez interroges au sujet des plaisirs de ce monde.\" corresponds to thumma la-tus'alunna yawma'idhin 'ani al-na'im; archaic phrasing, not a boundary defect. No mechanical alignment defect found. This approval applies ONLY to T3-S102.",
+      "segments_updated": [
+        {
+          "segment_id": "0c3fba65-eb58-4815-9e82-0c4482facbf9",
+          "source_ordinal": 1
+        },
+        {
+          "segment_id": "25eecd65-c631-463b-bc60-d35395008f24",
+          "source_ordinal": 4
+        },
+        {
+          "segment_id": "dabc5f8f-0529-46ed-88ba-26e9d64d53c6",
+          "source_ordinal": 8
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "5fc4c23a-b9d4-4080-a557-ff6290c2c050",
+          "segment_ordinal": 1,
+          "target": "102:1"
+        },
+        {
+          "join_id": "df51bd47-b2d3-442a-87f5-9543603e2b9f",
+          "segment_ordinal": 4,
+          "target": "102:4"
+        },
+        {
+          "join_id": "06676467-67e3-4884-9bd3-b4df6af64676",
+          "segment_ordinal": 8,
+          "target": "102:8"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-021-tier3-t3-s103-approve",
+      "review_item": "TIER 3 — T3-S103 (Surah 103), frozen sample methodology phase5-tier3-human-sample-v1 -- DETERMINISTIC REPLACEMENT SAMPLE (replacement_first/replacement_middle/replacement_last), not reconstructed original Phase 4 evidence. Part of the accelerated 7-surah batch (T3-S87, T3-S91, T3-S100, T3-S102, T3-S103, T3-S105, T3-S107), recorded as 7 independent decisions with their own decision IDs, not one batch decision.",
+      "scope": "All 3 frozen segments for Surah 103 (source_ordinal 1, 2, 3) and all 3 of their translation_segment_ayahs join rows. Fresh pre-write atomic gate re-verified immediately before this update across all 7 surahs in the batch: frozen structure correct (3 segments, one each of replacement_first/replacement_middle/replacement_last, all direct), live DB matched frozen exactly, each segment carried exactly one join, no prior recording. All conditions passed for all 7 surahs before any write was issued.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the frozen deterministic replacement evidence for T3-S103 under methodology phase5-tier3-human-sample-v1 (accelerated 7-surah batch). This surah has only 3 ayahs total, so this sample is the entire surah. replacement_first (ordinal 1 -> 103:1): \"J'en jure par l'heure de l'APRES-MIDI.\" corresponds to wa-al-'asr. replacement_middle (ordinal 2 -> 103:2): \"L'homme travaille a sa perte.\" corresponds to inna al-insana la-fi khusr. replacement_last (ordinal 3 -> 103:3): the four components (believe, righteous deeds, enjoin truth, enjoin patience) are all present, corresponding to illa alladhina amanu wa-'amilu al-salihati wa-tawasaw bi-al-haqqi wa-tawasaw bi-al-sabr. No mechanical alignment defect found. This approval applies ONLY to T3-S103.",
+      "segments_updated": [
+        {
+          "segment_id": "3fe6a511-49f7-4486-bed3-5f73b687d56a",
+          "source_ordinal": 1
+        },
+        {
+          "segment_id": "5c374484-97a2-4130-adfb-4b8343cc19bc",
+          "source_ordinal": 2
+        },
+        {
+          "segment_id": "691f18bd-031b-4a7c-8104-f1ae149616e4",
+          "source_ordinal": 3
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "2bce06f2-8dea-40fb-8510-e4a0d91a8cc8",
+          "segment_ordinal": 1,
+          "target": "103:1"
+        },
+        {
+          "join_id": "b06c4c52-64c6-4ea2-bddc-f98f97edb462",
+          "segment_ordinal": 2,
+          "target": "103:2"
+        },
+        {
+          "join_id": "c106924f-171f-458c-a123-50bd4cdd2e87",
+          "segment_ordinal": 3,
+          "target": "103:3"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-022-tier3-t3-s105-approve",
+      "review_item": "TIER 3 — T3-S105 (Surah 105), frozen sample methodology phase5-tier3-human-sample-v1 -- DETERMINISTIC REPLACEMENT SAMPLE (replacement_first/replacement_middle/replacement_last), not reconstructed original Phase 4 evidence. Part of the accelerated 7-surah batch (T3-S87, T3-S91, T3-S100, T3-S102, T3-S103, T3-S105, T3-S107), recorded as 7 independent decisions with their own decision IDs, not one batch decision.",
+      "scope": "All 3 frozen segments for Surah 105 (source_ordinal 1, 3, 5) and all 3 of their translation_segment_ayahs join rows. Fresh pre-write atomic gate re-verified immediately before this update across all 7 surahs in the batch: frozen structure correct (3 segments, one each of replacement_first/replacement_middle/replacement_last, all direct), live DB matched frozen exactly, each segment carried exactly one join, no prior recording. All conditions passed for all 7 surahs before any write was issued.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the frozen deterministic replacement evidence for T3-S105 under methodology phase5-tier3-human-sample-v1 (accelerated 7-surah batch). This surah has only 5 ayahs total. replacement_first (ordinal 1 -> 105:1): \"As-tu vu comment le Seigneur a traite les hommes a L'ELEPHANT ?\" corresponds to a-lam tara kayfa fa'ala rabbuka bi-ashabi al-fil. replacement_middle (ordinal 3 -> 105:3): \"N'a-t-il pas envoye contre eux les oiseaux ababils,\" corresponds to wa-arsala 'alayhim tayran ababil; the trailing comma mirrors the Arabic's own multi-ayah relative-clause dependency into 105:4, not a misalignment -- ordinal 3 contains the entirety of 105:3's own content. replacement_last (ordinal 5 -> 105:5): \"Il en a fait comme de la balle dont la grain a ete mange.\" corresponds to fa-ja'alahum ka-'asfin ma'kul. No mechanical alignment defect found. This approval applies ONLY to T3-S105.",
+      "segments_updated": [
+        {
+          "segment_id": "5ffec345-75a2-43c3-8df5-f0f478b5740d",
+          "source_ordinal": 1
+        },
+        {
+          "segment_id": "83955dad-1162-48eb-bf8b-5088eb560a89",
+          "source_ordinal": 3
+        },
+        {
+          "segment_id": "89e0ab65-f293-4841-8279-e5dc392c0ad0",
+          "source_ordinal": 5
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "99f93875-25b3-4703-88c9-64f07ba740e3",
+          "segment_ordinal": 1,
+          "target": "105:1"
+        },
+        {
+          "join_id": "aa5ed9bb-4adb-40f2-ad72-65cc2092f330",
+          "segment_ordinal": 3,
+          "target": "105:3"
+        },
+        {
+          "join_id": "6af0d89d-7878-403c-ad18-bee11ea01396",
+          "segment_ordinal": 5,
+          "target": "105:5"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-023-tier3-t3-s107-approve",
+      "review_item": "TIER 3 — T3-S107 (Surah 107), frozen sample methodology phase5-tier3-human-sample-v1 -- DETERMINISTIC REPLACEMENT SAMPLE (replacement_first/replacement_middle/replacement_last), not reconstructed original Phase 4 evidence. Part of the accelerated 7-surah batch (T3-S87, T3-S91, T3-S100, T3-S102, T3-S103, T3-S105, T3-S107), recorded as 7 independent decisions with their own decision IDs, not one batch decision.",
+      "scope": "All 3 frozen segments for Surah 107 (source_ordinal 1, 4, 7) and all 3 of their translation_segment_ayahs join rows. Fresh pre-write atomic gate re-verified immediately before this update across all 7 surahs in the batch: frozen structure correct (3 segments, one each of replacement_first/replacement_middle/replacement_last, all direct), live DB matched frozen exactly, each segment carried exactly one join, no prior recording. All conditions passed for all 7 surahs before any write was issued.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the frozen deterministic replacement evidence for T3-S107 under methodology phase5-tier3-human-sample-v1 (accelerated 7-surah batch). This surah has only 7 ayahs total. replacement_first (ordinal 1 -> 107:1): \"Que penses-tu de celui qui traite cette religion de mensonger ?\" corresponds to a-ra'ayta alladhi yukadhdhibu bi-al-din. replacement_middle (ordinal 4 -> 107:4): \"Malheur a ceux qui font la priere,\" corresponds to fa-waylun li-al-musallin; the trailing comma mirrors the Arabic's own multi-ayah relative-clause dependency into 107:5, not a misalignment. replacement_last (ordinal 7 -> 107:7): \"Et refusent d'acquitter L'AUMONE necessaire a ceux qui en ont besoin !\" corresponds to wa-yamna'una al-ma'un. No mechanical alignment defect found. This approval applies ONLY to T3-S107.",
+      "segments_updated": [
+        {
+          "segment_id": "19c58cd6-e13f-4493-807d-625263df3d7c",
+          "source_ordinal": 1
+        },
+        {
+          "segment_id": "a4cc2042-2467-4989-b93e-3994a24611e5",
+          "source_ordinal": 4
+        },
+        {
+          "segment_id": "62bc0d4a-2475-423e-b51c-e982fa4f5701",
+          "source_ordinal": 7
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "13887f04-afca-4233-be5d-8147c814e2a0",
+          "segment_ordinal": 1,
+          "target": "107:1"
+        },
+        {
+          "join_id": "d7075bcc-e903-44b6-978d-94b57fe9e8b8",
+          "segment_ordinal": 4,
+          "target": "107:4"
+        },
+        {
+          "join_id": "4f60a567-ca86-40a2-94da-52b2e672f357",
+          "segment_ordinal": 7,
+          "target": "107:7"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-024-tier3-t3-s80-approve",
+      "review_item": "TIER 3 — T3-S80 (Surah 80), frozen sample methodology phase5-tier3-human-sample-v1 -- ORIGINAL FLAGGED SPLIT/MERGE evidence (not a deterministic replacement sample).",
+      "scope": "All 3 frozen segments for Surah 80 (source_ordinal 15, 18, 19) and all 4 of their translation_segment_ayahs join rows. Fresh pre-write gate re-verified immediately before this update: frozen structure correct (1 one_to_many + 2 many_to_one, sampling_reason original_flagged_split_merge throughout), live DB matched frozen exactly on segment_id/source_declared_number/text_sha256/alignment_type/canonical targets, join counts matched exactly (2, 1, 1 = 4 total), no out-of-scope sibling joins, not previously recorded. All conditions passed.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the frozen original flagged split/merge evidence for T3-S80. Ordinal 15 (one_to_many -> 80:15+80:16): \"Trace par les mains des ecrivains honores et justes.\" is one continuous descriptive clause matching the Arabic noun (scribes, 80:15) plus adjectival continuation (honored, righteous, 80:16). Ordinals 18+19 (many_to_one -> 80:19, read in source order): \"D'une goutte de sperme.\" + \"Il l'a cree et l'a faconne d'apres certaines proportions.\" -- the fragment-then-completion pattern is the expected shape of a many-to-one merge; together they form one complete sentence matching min nutfatin khalaqahu fa-qaddarahu, with no content belonging to a neighboring ayah. No mechanical alignment defect found. This approval applies ONLY to T3-S80. It does not approve T3-S89, the complete Kazimirski manifest, production migration, production import, or deployment.",
+      "segments_updated": [
+        {
+          "segment_id": "9d54d3e9-3d4c-4cea-96f6-60e2cd5733d2",
+          "source_ordinal": 15
+        },
+        {
+          "segment_id": "5d5f62fb-d4af-423d-aa15-78ac7ce06010",
+          "source_ordinal": 18
+        },
+        {
+          "segment_id": "a0860b8c-defb-4db2-9e3a-9fea1a97142b",
+          "source_ordinal": 19
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "d5308d6c-b011-4276-8967-3e9bfe0dcea2",
+          "segment_ordinal": 15,
+          "target": "80:15"
+        },
+        {
+          "join_id": "7fa19f66-6e06-4543-9eef-24f09d731745",
+          "segment_ordinal": 15,
+          "target": "80:16"
+        },
+        {
+          "join_id": "6be121b9-6e85-4232-a5f5-c782e3837625",
+          "segment_ordinal": 18,
+          "target": "80:19"
+        },
+        {
+          "join_id": "40790a5b-95d6-45bc-b35a-bfa17a0659e3",
+          "segment_ordinal": 19,
+          "target": "80:19"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    },
+    {
+      "decision_id": "phase5-025-tier3-t3-s89-approve",
+      "review_item": "TIER 3 — T3-S89 (Surah 89), frozen sample methodology phase5-tier3-human-sample-v1 -- ORIGINAL FLAGGED SPLIT/MERGE evidence (not a deterministic replacement sample). FINAL Tier 3 decision unit -- Tier 3 reaches 15/15 and overall Phase 5 reaches 25/25 upon this decision's recording.",
+      "scope": "All 6 frozen segments for Surah 89 (source_ordinal 1, 14, 15, 16, 17, 25) and all 8 of their translation_segment_ayahs join rows. Fresh pre-write gate re-verified immediately before this update: frozen structure correct (2 one_to_many + 4 many_to_one, sampling_reason original_flagged_split_merge throughout), live DB matched frozen exactly on segment_id/source_declared_number/text_sha256/alignment_type/canonical targets, join counts matched exactly (2,1,1,1,1,2 = 8 total), no out-of-scope sibling joins, not previously recorded. All conditions passed.",
+      "reviewer": "amkristian91@gmail.com",
+      "review_date": "2026-09-01",
+      "decision": "APPROVE",
+      "reviewer_notes": "I reviewed the frozen original flagged split/merge evidence for T3-S89. A. Ordinal 1 (one_to_many -> 89:1+89:2): \"J'en jure par LE POINT DU JOUR et les dix nuits,\" mirrors the Arabic's own two-part oath structure (wa-al-fajri + wa-layalin 'ashr) exactly. B. Ordinals 14+15 (many_to_one -> 89:15): the conditional \"Quand...\" clause (14) and its result clause with direct quotation (15) together form one complete sentence, matching the real idha...fa structure of 89:15. C. Ordinals 16+17 (many_to_one -> 89:16): mirrors the same conditional-plus-quotation pattern as 89:15, correctly parallel to the Arabic's wa-amma...fa construction. D. Ordinal 25 (one_to_many -> 89:24+89:25): the two-sentence French division falls exactly at the same point the Arabic divides into two ayahs (the regret exclamation, then the separate statement about the Day's punishment). No mechanical alignment defect found in any of the four mapping structures. This approval applies ONLY to T3-S89. It does not approve the complete Kazimirski manifest, production migration, production import, or deployment.",
+      "segments_updated": [
+        {
+          "segment_id": "ab0fccb4-68d5-4563-922b-6bd48261fc7a",
+          "source_ordinal": 1
+        },
+        {
+          "segment_id": "5b315119-3820-41fd-8c54-f87b09a984d8",
+          "source_ordinal": 14
+        },
+        {
+          "segment_id": "54f7d03b-69d0-4d7d-870f-33b932ac1b8e",
+          "source_ordinal": 15
+        },
+        {
+          "segment_id": "b0fc84f5-cec6-48ac-9117-b21c8dbdc283",
+          "source_ordinal": 16
+        },
+        {
+          "segment_id": "f795e111-0380-4757-8a6b-4127c92aac73",
+          "source_ordinal": 17
+        },
+        {
+          "segment_id": "b7862189-3280-44fc-9b0f-b75f6864c0bb",
+          "source_ordinal": 25
+        }
+      ],
+      "join_rows_updated": [
+        {
+          "join_id": "9574f869-4d09-45bd-aeed-d6c1ebdf42e5",
+          "segment_ordinal": 1,
+          "target": "89:1"
+        },
+        {
+          "join_id": "457abab9-d289-4788-b9b9-46496d818b45",
+          "segment_ordinal": 1,
+          "target": "89:2"
+        },
+        {
+          "join_id": "8a8ddbc9-0488-4d44-8360-be90ce9aae1f",
+          "segment_ordinal": 14,
+          "target": "89:15"
+        },
+        {
+          "join_id": "1ca7cd27-f5b9-4a66-a88b-1fb35877d6cd",
+          "segment_ordinal": 15,
+          "target": "89:15"
+        },
+        {
+          "join_id": "c5b7e1f8-a887-4adf-b073-eaa662608ae1",
+          "segment_ordinal": 16,
+          "target": "89:16"
+        },
+        {
+          "join_id": "d00db9a8-59fb-4558-8c3a-135e4374b2c8",
+          "segment_ordinal": 17,
+          "target": "89:16"
+        },
+        {
+          "join_id": "f50f75e3-75fe-4ecd-8f0c-37ad1f2517d8",
+          "segment_ordinal": 25,
+          "target": "89:24"
+        },
+        {
+          "join_id": "901487c6-c32f-4875-ade9-d8eca582cdaa",
+          "segment_ordinal": 25,
+          "target": "89:25"
+        }
+      ],
+      "text_changed": false,
+      "source_hash_before": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "source_hash_after": "12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26",
+      "aggregate_hash_unchanged": true
+    }
+  ],
+  "not_yet_reviewed": {
+    "tier2_compound_cases_remaining": [],
+    "tier2_status": "COMPLETE -- all 8 compound cases human-reviewed and APPROVED",
+    "tier3_surahs_remaining": [],
+    "tier3_status": "COMPLETE -- all 15 Tier 3 surahs human-reviewed and APPROVED"
+  },
+  "human_verified_count_after_this_decision": 57,
+  "human_verified_join_rows_count": 80,
+  "tier3_progress": "15/15 (ALL Tier 3 surahs APPROVED: T3-S21, T3-S22, T3-S53, T3-S58, T3-S72, T3-S77, T3-S87, T3-S91, T3-S100, T3-S102, T3-S103, T3-S105, T3-S107, T3-S80, T3-S89)",
+  "overall_decision_progress": "25/25",
+  "production_import_status": "PHASE 5 HUMAN REVIEW DECISIONS COMPLETE (25/25). Production import remains NOT authorized -- decision completion is necessary but not itself the final Phase 5 release gate; a final Phase 5 integrity/sign-off audit must run before any production consideration."
+}

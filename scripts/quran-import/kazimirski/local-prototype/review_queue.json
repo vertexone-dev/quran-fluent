@@ -1,0 +1,1007 @@
+{
+  "generated_from": "REAL imported local database (translation_segments/translation_segment_ayahs), not the manifest file",
+  "source_id": "c5c7f4af-31fc-4668-b491-32ce3c8849a7",
+  "tier1_unresolved": [
+    {
+      "tier": 1,
+      "surah_number": 2,
+      "segments": [
+        {
+          "segment_id": "cd44f53f-7595-4790-b720-e9376c3fb722",
+          "source_ordinal": 287,
+          "text": "Dieu n’imposera à aucune âme un fardeau qui soit au-dessus de ses forces. Ce qu’elle aura fait sera allégué pour elle ou contre elle. Seigneur, ne nous punis pas des fautes commises par oubli ou par erreur. Seigneur, ne nous impose pas le fardeau que tu avais imposé à ceux qui ont vécu avant nous. Seigneur, ne nous charge pas de ce que nous ne pouvons supporter. Efface nos péchés, pardonne-les-nous, aie pitié de nous ; tu es notre Seigneur. Donne-nous la victoire sur les infidèles."
+        }
+      ],
+      "canonical_targets": [],
+      "canonical_arabic_reference": null,
+      "alignment_classification": "unresolved",
+      "alignment_status": "unresolved",
+      "evidence": "One more physical <li> (287) than Kazimirski's own declared count for this surah (PHASE1-ALIGNMENT-AUDIT.md §4.2). Word-count-drift localization attempted, reported inconclusive. Canonical target genuinely unknown -- never guessed.",
+      "reason_review_needed": "UNRESOLVED: this segment's canonical āyah target has not been determined. Requires direct sentence-by-sentence reading of Kazimirski's French against a verse reference to locate where in the surah this extra segment's content actually belongs.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 1,
+      "surah_number": 36,
+      "segments": [
+        {
+          "segment_id": "14ec6399-d25a-48b4-b7f4-8a204395607e",
+          "source_ordinal": 84,
+          "text": "Gloire à celui qui dans ses mains tient la souveraineté sur toutes choses. Vous retournerez tous à lui."
+        }
+      ],
+      "canonical_targets": [],
+      "canonical_arabic_reference": null,
+      "alignment_classification": "unresolved",
+      "alignment_status": "unresolved",
+      "evidence": "One more physical <li> (84) than Kazimirski's own declared count for this surah (PHASE1-ALIGNMENT-AUDIT.md §4.2). Word-count-drift localization attempted, reported inconclusive. Canonical target genuinely unknown -- never guessed.",
+      "reason_review_needed": "UNRESOLVED: this segment's canonical āyah target has not been determined. Requires direct sentence-by-sentence reading of Kazimirski's French against a verse reference to locate where in the surah this extra segment's content actually belongs.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    }
+  ],
+  "tier2_compound_boundaries": [
+    {
+      "tier": 2,
+      "surah_number": 3,
+      "ayah_number": 39,
+      "segments": [
+        {
+          "segment_id": "0e620ed2-31b4-4ce8-b3eb-840092781bdd",
+          "source_ordinal": 33,
+          "text": "Et ici Zacharie se mit à prier Dieu. Seigneur, accorde-moi une postérité bénie ; tu aimes à exaucer les prières des suppliants. Ses anges l’appelèrent pendant qu’il priait dans le sanctuaire.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        },
+        {
+          "segment_id": "723c9389-fd22-4659-97d9-ef820066ce75",
+          "source_ordinal": 34,
+          "text": "Dieu t’annonce la naissance de Yahia (saint Jean), qui confirmera la vérité du Verbe de Dieu ; il sera grand, chaste, un prophète du nombre des justes.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        }
+      ],
+      "canonical_targets": [
+        {
+          "surah_number": 3,
+          "ayah_number": 39
+        }
+      ],
+      "canonical_arabic_reference": "فَنَادَتْهُ ٱلْمَلَـٰٓئِكَةُ وَهُوَ قَآئِمٌ يُصَلِّى فِى ٱلْمِحْرَابِ أَنَّ ٱللَّهَ يُبَشِّرُكَ بِيَحْيَىٰ مُصَدِّقًۢا بِكَلِمَةٍ مِّنَ ٱللَّهِ وَسَيِّدًا وَحَصُورًا وَنَبِيًّا مِّنَ ٱلصَّـٰلِحِينَ",
+      "alignment_classification": "compound",
+      "evidence": "3:39 is one of the 8 compound boundary āyahs identified in PHASE1-ALIGNMENT-AUDIT.md §4.6 -- simultaneously a split target and a merge target, so the clean one-classification-per-āyah model breaks down.",
+      "reason_review_needed": "COMPOUND BOUNDARY: this āyah receives content from more than one Kazimirski segment via overlapping split/merge patterns. The exact partition of meaning between the contributing segments is not mechanically decidable and needs an editorial decision by a French-literate reviewer comparing against the canonical Arabic.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 2,
+      "surah_number": 3,
+      "ayah_number": 167,
+      "segments": [
+        {
+          "segment_id": "de5e074e-4fdb-4baf-b5f5-c26a0f7d77e1",
+          "source_ordinal": 160,
+          "text": "Le revers que vous avez éprouvé le jour où les deux armées se sont rencontrées, eut lieu par la volonté de Dieu, afin qu’il distinguât les fidèles des hypocrites. Quand on leur cria : Avancez, combattez dans le sentier de Dieu, repoussez l’ennemi, ils répondirent : Si nous savions combattre, nous vous suivrions. Ce jour-là ils étaient plus près de l’infidélité que de la foi.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        },
+        {
+          "segment_id": "0add67d2-83e1-48a9-85be-9fe55398e42c",
+          "source_ordinal": 161,
+          "text": "Ils prononçaient de leurs lèvres ce qui n’était point dans leurs cœurs ; mais Dieu connaît ce qu’ils cachent.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        }
+      ],
+      "canonical_targets": [
+        {
+          "surah_number": 3,
+          "ayah_number": 167
+        }
+      ],
+      "canonical_arabic_reference": "وَلِيَعْلَمَ ٱلَّذِينَ نَافَقُوا۟ ۚ وَقِيلَ لَهُمْ تَعَالَوْا۟ قَـٰتِلُوا۟ فِى سَبِيلِ ٱللَّهِ أَوِ ٱدْفَعُوا۟ ۖ قَالُوا۟ لَوْ نَعْلَمُ قِتَالًا لَّٱتَّبَعْنَـٰكُمْ ۗ هُمْ لِلْكُفْرِ يَوْمَئِذٍ أَقْرَبُ مِنْهُمْ لِلْإِيمَـٰنِ ۚ يَقُولُونَ بِأَفْوَٰهِهِم مَّا لَيْسَ فِى قُلُوبِهِمْ ۗ وَٱللَّهُ أَعْلَمُ بِمَا يَكْتُمُونَ",
+      "alignment_classification": "compound",
+      "evidence": "3:167 is one of the 8 compound boundary āyahs identified in PHASE1-ALIGNMENT-AUDIT.md §4.6 -- simultaneously a split target and a merge target, so the clean one-classification-per-āyah model breaks down.",
+      "reason_review_needed": "COMPOUND BOUNDARY: this āyah receives content from more than one Kazimirski segment via overlapping split/merge patterns. The exact partition of meaning between the contributing segments is not mechanically decidable and needs an editorial decision by a French-literate reviewer comparing against the canonical Arabic.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 2,
+      "surah_number": 11,
+      "ayah_number": 39,
+      "segments": [
+        {
+          "segment_id": "475bf916-c374-45e9-a18e-08e32a23a60e",
+          "source_ordinal": 40,
+          "text": "Et il construisit un vaisseau, et chaque fois que les chefs de son peuple passaient auprès de lui ils le raillaient. — ne me raillez pas, dit Noé, je vous raillerai à mon tour comme vous me raillez, et vous apprendrez",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        },
+        {
+          "segment_id": "96bad888-441a-4a54-9fee-e184f5753502",
+          "source_ordinal": 41,
+          "text": "Sur qui tombera le châtiment qui le couvrira d’opprobre. Ce châtiment restera perpétuellement sur sa tête.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        }
+      ],
+      "canonical_targets": [
+        {
+          "surah_number": 11,
+          "ayah_number": 39
+        }
+      ],
+      "canonical_arabic_reference": "فَسَوْفَ تَعْلَمُونَ مَن يَأْتِيهِ عَذَابٌ يُخْزِيهِ وَيَحِلُّ عَلَيْهِ عَذَابٌ مُّقِيمٌ",
+      "alignment_classification": "compound",
+      "evidence": "11:39 is one of the 8 compound boundary āyahs identified in PHASE1-ALIGNMENT-AUDIT.md §4.6 -- simultaneously a split target and a merge target, so the clean one-classification-per-āyah model breaks down.",
+      "reason_review_needed": "COMPOUND BOUNDARY: this āyah receives content from more than one Kazimirski segment via overlapping split/merge patterns. The exact partition of meaning between the contributing segments is not mechanically decidable and needs an editorial decision by a French-literate reviewer comparing against the canonical Arabic.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 2,
+      "surah_number": 14,
+      "ayah_number": 44,
+      "segments": [
+        {
+          "segment_id": "eddf1e68-38d8-4772-80df-6594ce920cd1",
+          "source_ordinal": 44,
+          "text": "Courant en toute hâte, la tête levée, leurs regards seront immobiles et leurs cœurs vides. Avertis donc les hommes du jour des châtiments.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        },
+        {
+          "segment_id": "6ed6ff13-ff90-40ea-9ab6-141cef845da4",
+          "source_ordinal": 45,
+          "text": "Seigneur ! s’écrieront les impies, accorde-nous encore un délai, jusqu’à quelque terme rapproché.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        },
+        {
+          "segment_id": "da77ada0-52c0-4c74-9076-7633c9f28f28",
+          "source_ordinal": 46,
+          "text": "Nous écouterons ton appel à la foi, nous obéirons à tes apôtres. On leur répondra : Ne juriez-vous pas que vous ne changeriez jamais ?",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        }
+      ],
+      "canonical_targets": [
+        {
+          "surah_number": 14,
+          "ayah_number": 44
+        }
+      ],
+      "canonical_arabic_reference": "وَأَنذِرِ ٱلنَّاسَ يَوْمَ يَأْتِيهِمُ ٱلْعَذَابُ فَيَقُولُ ٱلَّذِينَ ظَلَمُوا۟ رَبَّنَآ أَخِّرْنَآ إِلَىٰٓ أَجَلٍ قَرِيبٍ نُّجِبْ دَعْوَتَكَ وَنَتَّبِعِ ٱلرُّسُلَ ۗ أَوَلَمْ تَكُونُوٓا۟ أَقْسَمْتُم مِّن قَبْلُ مَا لَكُم مِّن زَوَالٍ",
+      "alignment_classification": "compound",
+      "evidence": "14:44 is one of the 8 compound boundary āyahs identified in PHASE1-ALIGNMENT-AUDIT.md §4.6 -- simultaneously a split target and a merge target, so the clean one-classification-per-āyah model breaks down.",
+      "reason_review_needed": "COMPOUND BOUNDARY: this āyah receives content from more than one Kazimirski segment via overlapping split/merge patterns. The exact partition of meaning between the contributing segments is not mechanically decidable and needs an editorial decision by a French-literate reviewer comparing against the canonical Arabic.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 2,
+      "surah_number": 47,
+      "ayah_number": 21,
+      "segments": [
+        {
+          "segment_id": "34f5d217-0b6a-48fb-979a-46781a1e9467",
+          "source_ordinal": 22,
+          "text": "Les vrais croyants disent : Ah ! si au moins une sourate descendait d’en haut qui ordonnât la guerre contre les infidèles ! — Mais qu’une sourate péremptoire descende d’en haut, et qu’il y soit parlé de la guerre, tu verras les hommes dont le cœur est atteint d’une infirmité te regarder comme regarde un homme que la vue de la mort fait tomber en défaillance. Cependant l’obéissance et un langage convenable leur siéraient mieux.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        },
+        {
+          "segment_id": "4cd707e0-932d-4fa4-b88d-5279af661c61",
+          "source_ordinal": 23,
+          "text": "S’ils tenaient leurs engagements envers Dieu quand l’affaire (la guerre) est résolue, cela leur serait plus avantageux.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        }
+      ],
+      "canonical_targets": [
+        {
+          "surah_number": 47,
+          "ayah_number": 21
+        }
+      ],
+      "canonical_arabic_reference": "طَاعَةٌ وَقَوْلٌ مَّعْرُوفٌ ۚ فَإِذَا عَزَمَ ٱلْأَمْرُ فَلَوْ صَدَقُوا۟ ٱللَّهَ لَكَانَ خَيْرًا لَّهُمْ",
+      "alignment_classification": "compound",
+      "evidence": "47:21 is one of the 8 compound boundary āyahs identified in PHASE1-ALIGNMENT-AUDIT.md §4.6 -- simultaneously a split target and a merge target, so the clean one-classification-per-āyah model breaks down.",
+      "reason_review_needed": "COMPOUND BOUNDARY: this āyah receives content from more than one Kazimirski segment via overlapping split/merge patterns. The exact partition of meaning between the contributing segments is not mechanically decidable and needs an editorial decision by a French-literate reviewer comparing against the canonical Arabic.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 2,
+      "surah_number": 65,
+      "ayah_number": 3,
+      "segments": [
+        {
+          "segment_id": "7ce4a007-a0ac-4ec5-9e89-03b1bdbc972f",
+          "source_ordinal": 2,
+          "text": "Lorsqu’elles auront attendu le terme prescrit, vous pouvez, les retenir avec bienveillance ou vous en séparer avec bienveillance. Appelez des témoins équitables, choisis parmi vous ; que le témoignage soit fait devant Dieu. Voilà ce qui est prescrit à ceux qui croient en lui ainsi qu’au jour du jugement. Dieu procurera à celui qui le craint une issue favorable, et le nourrira de dons qu’il ne s’imaginait pas.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        },
+        {
+          "segment_id": "ee284f8f-8196-4bf3-9768-ddd4a9fed4a1",
+          "source_ordinal": 3,
+          "text": "Dieu suffira à celui qui met sa confiance en lui. Dieu mène ses arrêts à bonne fin. Dieu a assigné un terme à toutes choses.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        }
+      ],
+      "canonical_targets": [
+        {
+          "surah_number": 65,
+          "ayah_number": 3
+        }
+      ],
+      "canonical_arabic_reference": "وَيَرْزُقْهُ مِنْ حَيْثُ لَا يَحْتَسِبُ ۚ وَمَن يَتَوَكَّلْ عَلَى ٱللَّهِ فَهُوَ حَسْبُهُۥٓ ۚ إِنَّ ٱللَّهَ بَـٰلِغُ أَمْرِهِۦ ۚ قَدْ جَعَلَ ٱللَّهُ لِكُلِّ شَىْءٍ قَدْرًا",
+      "alignment_classification": "compound",
+      "evidence": "65:3 is one of the 8 compound boundary āyahs identified in PHASE1-ALIGNMENT-AUDIT.md §4.6 -- simultaneously a split target and a merge target, so the clean one-classification-per-āyah model breaks down.",
+      "reason_review_needed": "COMPOUND BOUNDARY: this āyah receives content from more than one Kazimirski segment via overlapping split/merge patterns. The exact partition of meaning between the contributing segments is not mechanically decidable and needs an editorial decision by a French-literate reviewer comparing against the canonical Arabic.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 2,
+      "surah_number": 65,
+      "ayah_number": 10,
+      "segments": [
+        {
+          "segment_id": "16b64f43-82e8-46f2-ad92-a9d1d9737da2",
+          "source_ordinal": 10,
+          "text": "Dieu leur réserve des châtiments cruels. Craignez le Seigneur, ô hommes doués de sens !",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        },
+        {
+          "segment_id": "7fd90a68-2dac-42a7-8851-7d8e55c0727f",
+          "source_ordinal": 11,
+          "text": "A ceux qui croient, Dieu a envoyé un avertissement, un prophète qui leur récite les enseignements évidents pour faire sortir les croyants et les justes des ténèbres à la lumière. Dieu introduira les croyants et les justes dans les jardins baignés de courants d’eau ; ils y demeureront éternellement. Quelle belle part Dieu réserve au juste !",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        }
+      ],
+      "canonical_targets": [
+        {
+          "surah_number": 65,
+          "ayah_number": 10
+        }
+      ],
+      "canonical_arabic_reference": "أَعَدَّ ٱللَّهُ لَهُمْ عَذَابًا شَدِيدًا ۖ فَٱتَّقُوا۟ ٱللَّهَ يَـٰٓأُو۟لِى ٱلْأَلْبَـٰبِ ٱلَّذِينَ ءَامَنُوا۟ ۚ قَدْ أَنزَلَ ٱللَّهُ إِلَيْكُمْ ذِكْرًا",
+      "alignment_classification": "compound",
+      "evidence": "65:10 is one of the 8 compound boundary āyahs identified in PHASE1-ALIGNMENT-AUDIT.md §4.6 -- simultaneously a split target and a merge target, so the clean one-classification-per-āyah model breaks down.",
+      "reason_review_needed": "COMPOUND BOUNDARY: this āyah receives content from more than one Kazimirski segment via overlapping split/merge patterns. The exact partition of meaning between the contributing segments is not mechanically decidable and needs an editorial decision by a French-literate reviewer comparing against the canonical Arabic.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 2,
+      "surah_number": 106,
+      "ayah_number": 4,
+      "segments": [
+        {
+          "segment_id": "b8afe2bd-9529-4c64-9b8c-6f660055bb2e",
+          "source_ordinal": 3,
+          "text": "Qu’ils servent le Dieu de ce temple, le Dieu qui les a nourris et préservés de la famine,",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        },
+        {
+          "segment_id": "5faa7684-f879-40fb-a767-f9f163ffbf73",
+          "source_ordinal": 4,
+          "text": "Et qui les a délivrés des alarmes.",
+          "alignment_type": "compound",
+          "mapping_confidence": "needs_review"
+        }
+      ],
+      "canonical_targets": [
+        {
+          "surah_number": 106,
+          "ayah_number": 4
+        }
+      ],
+      "canonical_arabic_reference": "ٱلَّذِىٓ أَطْعَمَهُم مِّن جُوعٍ وَءَامَنَهُم مِّنْ خَوْفٍۭ",
+      "alignment_classification": "compound",
+      "evidence": "106:4 is one of the 8 compound boundary āyahs identified in PHASE1-ALIGNMENT-AUDIT.md §4.6 -- simultaneously a split target and a merge target, so the clean one-classification-per-āyah model breaks down.",
+      "reason_review_needed": "COMPOUND BOUNDARY: this āyah receives content from more than one Kazimirski segment via overlapping split/merge patterns. The exact partition of meaning between the contributing segments is not mechanically decidable and needs an editorial decision by a French-literate reviewer comparing against the canonical Arabic.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    }
+  ],
+  "tier3_stratified_sample": [
+    {
+      "tier": 3,
+      "surah_number": 21,
+      "ayah_count": 112,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [
+        {
+          "segment_id": "7b9f5554-c3f0-4dca-a6fa-79f519abf378",
+          "source_ordinal": 28,
+          "text": "Il sait tout ce qui est devant eux et derrière eux ; ils ne peuvent intercéder,",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 21,
+              "ayah_number": 28,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "56c95992-5ab7-4ebe-a8a4-cedefa9364ac",
+          "source_ordinal": 29,
+          "text": "Excepté pour celui pour lequel il lui plaît, et ils tremblent de frayeur devant lui.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 21,
+              "ayah_number": 28,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "8aae97a5-0224-485d-bc9b-208d5c0620d9",
+          "source_ordinal": 67,
+          "text": "Adorerez-vous, à côté de Dieu, ce qui ne peut ni vous être utile à rien, ni vous nuire ? Honte sur vous et sur ce que vous adorez à côté de Dieu ! Ne le comprendrez-vous pas ?",
+          "alignment_type": "one_to_many",
+          "canonical_targets": [
+            {
+              "surah_number": 21,
+              "ayah_number": 66,
+              "mapping_confidence": "auto"
+            },
+            {
+              "surah_number": 21,
+              "ayah_number": 67,
+              "mapping_confidence": "auto"
+            }
+          ]
+        }
+      ],
+      "canonical_arabic_reference_by_ayah": {
+        "21:28": "يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يَشْفَعُونَ إِلَّا لِمَنِ ٱرْتَضَىٰ وَهُم مِّنْ خَشْيَتِهِۦ مُشْفِقُونَ",
+        "21:66": "قَالَ أَفَتَعْبُدُونَ مِن دُونِ ٱللَّهِ مَا لَا يَنفَعُكُمْ شَيْـًٔا وَلَا يَضُرُّكُمْ",
+        "21:67": "أُفٍّ لَّكُمْ وَلِمَا تَعْبُدُونَ مِن دُونِ ٱللَّهِ ۖ أَفَلَا تَعْقِلُونَ"
+      },
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 22,
+      "ayah_count": 78,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [
+        {
+          "segment_id": "40755f92-1116-4614-b21a-6ce7e59b2075",
+          "source_ordinal": 18,
+          "text": "Ne vois-tu pas que tout ce qui est dans les cieux et sur fa terre adore le Seigneur, le soleil, la lune, les étoiles, les montagnes, les arbres, les animaux et une grande partie des hommes ? Le supplice est déjà résolu pour une grande partie.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 22,
+              "ayah_number": 18,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "aa5ad7da-9c20-410c-ac03-3000785c2381",
+          "source_ordinal": 19,
+          "text": "Et celui que Dieu rendra méprisable, qui l’honorera ? Dieu fait ce qu’il lui plaît.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 22,
+              "ayah_number": 18,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "989e5e1e-9d9f-4f2f-a269-3a409e6a7006",
+          "source_ordinal": 21,
+          "text": "Leurs entrailles et leur peau en seront consumées ; ils seront frappés de gourdins de fer.",
+          "alignment_type": "one_to_many",
+          "canonical_targets": [
+            {
+              "surah_number": 22,
+              "ayah_number": 20,
+              "mapping_confidence": "auto"
+            },
+            {
+              "surah_number": 22,
+              "ayah_number": 21,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "8f7fe413-14a0-4907-8032-c9f3236d3d8a",
+          "source_ordinal": 25,
+          "text": "Les infidèles sont ceux qui éloignent les autres du chemin de Dieu et de l’oratoire sacré que nous avons établi pour tous les hommes ; ceux qui y résident comme les externes ont un droit égal à le visiter.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 22,
+              "ayah_number": 25,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "554e62df-2982-4998-82a8-58def93531ef",
+          "source_ordinal": 26,
+          "text": "Et ceux qui voudraient le profaner par méchanceté éprouveront un châtiment douloureux.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 22,
+              "ayah_number": 25,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "690018d5-f50a-4cf9-81c5-8956c4deaaed",
+          "source_ordinal": 43,
+          "text": "S’ils t’accusent d’imposture, ô Mohammed ! songe donc qu’avant eux les peuples de Noé, d’Ad, de Thémoud, d’Abraham, de Loth, les Madianites, en accusaient leurs prophètes. Moïse aussi a été traité de menteur. J’ai accordé un long délai aux incrédules, puis je les ai atteints de mon châtiment. Qu’il a été terrible !",
+          "alignment_type": "one_to_many",
+          "canonical_targets": [
+            {
+              "surah_number": 22,
+              "ayah_number": 42,
+              "mapping_confidence": "auto"
+            },
+            {
+              "surah_number": 22,
+              "ayah_number": 43,
+              "mapping_confidence": "auto"
+            },
+            {
+              "surah_number": 22,
+              "ayah_number": 44,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "730eab81-25bd-4545-b0af-e80b50b490ec",
+          "source_ordinal": 77,
+          "text": "Combattez pour la cause de Dieu comme il convient de le faire ; il vous a élus. Il ne vous a rien commandé de difficile dans votre religion, dans la religion de votre père Abraham ; il vous a nommés musulmans (qui s’abandonnent à Dieu).",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 22,
+              "ayah_number": 78,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "40a63e8e-624d-4376-a6bf-6c6ac262c56d",
+          "source_ordinal": 78,
+          "text": "Il vous a nommés ainsi bien avant nous et dans ce livre aussi, afin que votre prophète soit témoin contre vous et que vous soyez témoins contre le reste des hommes. Observez donc la prière, faites l’aumône, attachez-vous fermement à Dieu, il est votre patron ; et quel patron et quel protecteur !",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 22,
+              "ayah_number": 78,
+              "mapping_confidence": "auto"
+            }
+          ]
+        }
+      ],
+      "canonical_arabic_reference_by_ayah": {
+        "22:18": "أَلَمْ تَرَ أَنَّ ٱللَّهَ يَسْجُدُ لَهُۥ مَن فِى ٱلسَّمَـٰوَٰتِ وَمَن فِى ٱلْأَرْضِ وَٱلشَّمْسُ وَٱلْقَمَرُ وَٱلنُّجُومُ وَٱلْجِبَالُ وَٱلشَّجَرُ وَٱلدَّوَآبُّ وَكَثِيرٌ مِّنَ ٱلنَّاسِ ۖ وَكَثِيرٌ حَقَّ عَلَيْهِ ٱلْعَذَابُ ۗ وَمَن يُهِنِ ٱللَّهُ فَمَا لَهُۥ مِن مُّكْرِمٍ ۚ إِنَّ ٱللَّهَ يَفْعَلُ مَا يَشَآءُ ۩",
+        "22:20": "يُصْهَرُ بِهِۦ مَا فِى بُطُونِهِمْ وَٱلْجُلُودُ",
+        "22:21": "وَلَهُم مَّقَـٰمِعُ مِنْ حَدِيدٍ",
+        "22:25": "إِنَّ ٱلَّذِينَ كَفَرُوا۟ وَيَصُدُّونَ عَن سَبِيلِ ٱللَّهِ وَٱلْمَسْجِدِ ٱلْحَرَامِ ٱلَّذِى جَعَلْنَـٰهُ لِلنَّاسِ سَوَآءً ٱلْعَـٰكِفُ فِيهِ وَٱلْبَادِ ۚ وَمَن يُرِدْ فِيهِ بِإِلْحَادٍۭ بِظُلْمٍ نُّذِقْهُ مِنْ عَذَابٍ أَلِيمٍ",
+        "22:42": "وَإِن يُكَذِّبُوكَ فَقَدْ كَذَّبَتْ قَبْلَهُمْ قَوْمُ نُوحٍ وَعَادٌ وَثَمُودُ",
+        "22:43": "وَقَوْمُ إِبْرَٰهِيمَ وَقَوْمُ لُوطٍ",
+        "22:44": "وَأَصْحَـٰبُ مَدْيَنَ ۖ وَكُذِّبَ مُوسَىٰ فَأَمْلَيْتُ لِلْكَـٰفِرِينَ ثُمَّ أَخَذْتُهُمْ ۖ فَكَيْفَ كَانَ نَكِيرِ",
+        "22:78": "وَجَـٰهِدُوا۟ فِى ٱللَّهِ حَقَّ جِهَادِهِۦ ۚ هُوَ ٱجْتَبَىٰكُمْ وَمَا جَعَلَ عَلَيْكُمْ فِى ٱلدِّينِ مِنْ حَرَجٍ ۚ مِّلَّةَ أَبِيكُمْ إِبْرَٰهِيمَ ۚ هُوَ سَمَّىٰكُمُ ٱلْمُسْلِمِينَ مِن قَبْلُ وَفِى هَـٰذَا لِيَكُونَ ٱلرَّسُولُ شَهِيدًا عَلَيْكُمْ وَتَكُونُوا۟ شُهَدَآءَ عَلَى ٱلنَّاسِ ۚ فَأَقِيمُوا۟ ٱلصَّلَوٰةَ وَءَاتُوا۟ ٱلزَّكَوٰةَ وَٱعْتَصِمُوا۟ بِٱللَّهِ هُوَ مَوْلَىٰكُمْ ۖ فَنِعْمَ ٱلْمَوْلَىٰ وَنِعْمَ ٱلنَّصِيرُ"
+      },
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 53,
+      "ayah_count": 62,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [
+        {
+          "segment_id": "dd97ad3b-9280-4629-91a4-6a1e72cefeec",
+          "source_ordinal": 26,
+          "text": "Que d’anges dans les deux dont l’intercession ne servira de rien,",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 53,
+              "ayah_number": 26,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "0ae3d0f8-e2c5-47d0-9097-a39dbc5e8338",
+          "source_ordinal": 27,
+          "text": "Sauf, si Dieu permet d’intercéder, à celui qu’il voudra, à celui qu’il lui plaira.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 53,
+              "ayah_number": 26,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "92476db5-8853-4b28-abcd-3fa2a22e5987",
+          "source_ordinal": 58,
+          "text": "L’heure qui doit venir approche, et point de remède contre elle, excepté en Dieu.",
+          "alignment_type": "one_to_many",
+          "canonical_targets": [
+            {
+              "surah_number": 53,
+              "ayah_number": 57,
+              "mapping_confidence": "auto"
+            },
+            {
+              "surah_number": 53,
+              "ayah_number": 58,
+              "mapping_confidence": "auto"
+            }
+          ]
+        }
+      ],
+      "canonical_arabic_reference_by_ayah": {
+        "53:26": "وَكَم مِّن مَّلَكٍ فِى ٱلسَّمَـٰوَٰتِ لَا تُغْنِى شَفَـٰعَتُهُمْ شَيْـًٔا إِلَّا مِنۢ بَعْدِ أَن يَأْذَنَ ٱللَّهُ لِمَن يَشَآءُ وَيَرْضَىٰٓ",
+        "53:57": "أَزِفَتِ ٱلْـَٔازِفَةُ",
+        "53:58": "لَيْسَ لَهَا مِن دُونِ ٱللَّهِ كَاشِفَةٌ"
+      },
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 58,
+      "ayah_count": 22,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [
+        {
+          "segment_id": "82524666-ccfd-4b68-b348-ca6a9da51cd0",
+          "source_ordinal": 2,
+          "text": "Ceux d’entre vous qui répudient leurs femmes en disant qu’ils les regarderont comme leurs mères (elles ne sont pas leurs mères ; leurs mères sont celles qui les ont enfantés), profèrent une parole blâmable et une fausseté.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 58,
+              "ayah_number": 2,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "20b704c8-9ef0-4a3b-afc9-813e25e83e2f",
+          "source_ordinal": 3,
+          "text": "Certes, Dieu est porté au pardon et à l’indulgence,",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 58,
+              "ayah_number": 2,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "bdab7613-5375-4696-a2e4-96ce37704d3b",
+          "source_ordinal": 21,
+          "text": "Ceux qui luttent contre Dieu et le prophète seront livrés au mépris. Dieu a écrit d’avance cet arrêt : J’aurai le dessus et mes envoyés aussi. Dieu est fort et puissant.",
+          "alignment_type": "one_to_many",
+          "canonical_targets": [
+            {
+              "surah_number": 58,
+              "ayah_number": 20,
+              "mapping_confidence": "auto"
+            },
+            {
+              "surah_number": 58,
+              "ayah_number": 21,
+              "mapping_confidence": "auto"
+            }
+          ]
+        }
+      ],
+      "canonical_arabic_reference_by_ayah": {
+        "58:2": "ٱلَّذِينَ يُظَـٰهِرُونَ مِنكُم مِّن نِّسَآئِهِم مَّا هُنَّ أُمَّهَـٰتِهِمْ ۖ إِنْ أُمَّهَـٰتُهُمْ إِلَّا ٱلَّـٰٓـِٔى وَلَدْنَهُمْ ۚ وَإِنَّهُمْ لَيَقُولُونَ مُنكَرًا مِّنَ ٱلْقَوْلِ وَزُورًا ۚ وَإِنَّ ٱللَّهَ لَعَفُوٌّ غَفُورٌ",
+        "58:20": "إِنَّ ٱلَّذِينَ يُحَآدُّونَ ٱللَّهَ وَرَسُولَهُۥٓ أُو۟لَـٰٓئِكَ فِى ٱلْأَذَلِّينَ",
+        "58:21": "كَتَبَ ٱللَّهُ لَأَغْلِبَنَّ أَنَا۠ وَرُسُلِىٓ ۚ إِنَّ ٱللَّهَ قَوِىٌّ عَزِيزٌ"
+      },
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 72,
+      "ayah_count": 28,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [
+        {
+          "segment_id": "40220ff5-9883-4880-92be-afd70cfc173a",
+          "source_ordinal": 22,
+          "text": "Dis-leur : Personne ne saurait me protéger contre Dieu.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 72,
+              "ayah_number": 22,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "cccc44cb-21a8-4e2b-bb6b-ab14aecd1c09",
+          "source_ordinal": 23,
+          "text": "En dehors de Dieu je ne trouverai point de refuge.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 72,
+              "ayah_number": 22,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "7628a5b7-08cb-4811-87d6-693476f52755",
+          "source_ordinal": 26,
+          "text": "Dis-leur : J’ignore si les peines dont vous êtes menacés sont proches, ou bien si Dieu leur a assigné un terme éloigné. Dieu seul connait les choses cachées et il ne les dévoile à personne,",
+          "alignment_type": "one_to_many",
+          "canonical_targets": [
+            {
+              "surah_number": 72,
+              "ayah_number": 25,
+              "mapping_confidence": "auto"
+            },
+            {
+              "surah_number": 72,
+              "ayah_number": 26,
+              "mapping_confidence": "auto"
+            }
+          ]
+        }
+      ],
+      "canonical_arabic_reference_by_ayah": {
+        "72:22": "قُلْ إِنِّى لَن يُجِيرَنِى مِنَ ٱللَّهِ أَحَدٌ وَلَنْ أَجِدَ مِن دُونِهِۦ مُلْتَحَدًا",
+        "72:25": "قُلْ إِنْ أَدْرِىٓ أَقَرِيبٌ مَّا تُوعَدُونَ أَمْ يَجْعَلُ لَهُۥ رَبِّىٓ أَمَدًا",
+        "72:26": "عَـٰلِمُ ٱلْغَيْبِ فَلَا يُظْهِرُ عَلَىٰ غَيْبِهِۦٓ أَحَدًا"
+      },
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 77,
+      "ayah_count": 50,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [],
+      "canonical_arabic_reference_by_ayah": {},
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value. This surah has ZERO split/merge segments -- every item is a plain direct/offset (A/B) mapping; included here for stratified-sample completeness, not because any specific item looks doubtful.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 80,
+      "ayah_count": 42,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [
+        {
+          "segment_id": "9d54d3e9-3d4c-4cea-96f6-60e2cd5733d2",
+          "source_ordinal": 15,
+          "text": "Tracé par les mains des écrivains honorés et justes.",
+          "alignment_type": "one_to_many",
+          "canonical_targets": [
+            {
+              "surah_number": 80,
+              "ayah_number": 15,
+              "mapping_confidence": "auto"
+            },
+            {
+              "surah_number": 80,
+              "ayah_number": 16,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "5d5f62fb-d4af-423d-aa15-78ac7ce06010",
+          "source_ordinal": 18,
+          "text": "D’une goutte de sperme.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 80,
+              "ayah_number": 19,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "a0860b8c-defb-4db2-9e3a-9fea1a97142b",
+          "source_ordinal": 19,
+          "text": "Il l’a créé et l’a façonné d’après certaines proportions.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 80,
+              "ayah_number": 19,
+              "mapping_confidence": "auto"
+            }
+          ]
+        }
+      ],
+      "canonical_arabic_reference_by_ayah": {
+        "80:15": "بِأَيْدِى سَفَرَةٍ",
+        "80:16": "كِرَامٍۭ بَرَرَةٍ",
+        "80:19": "مِن نُّطْفَةٍ خَلَقَهُۥ فَقَدَّرَهُۥ"
+      },
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 87,
+      "ayah_count": 19,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [],
+      "canonical_arabic_reference_by_ayah": {},
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value. This surah has ZERO split/merge segments -- every item is a plain direct/offset (A/B) mapping; included here for stratified-sample completeness, not because any specific item looks doubtful.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 89,
+      "ayah_count": 30,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [
+        {
+          "segment_id": "ab0fccb4-68d5-4563-922b-6bd48261fc7a",
+          "source_ordinal": 1,
+          "text": "J’en jure par LE POINT DU JOUR et les dix nuits,",
+          "alignment_type": "one_to_many",
+          "canonical_targets": [
+            {
+              "surah_number": 89,
+              "ayah_number": 1,
+              "mapping_confidence": "auto"
+            },
+            {
+              "surah_number": 89,
+              "ayah_number": 2,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "5b315119-3820-41fd-8c54-f87b09a984d8",
+          "source_ordinal": 14,
+          "text": "Quand, pour éprouver l’homme, Dieu le comble de bienfaits,",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 89,
+              "ayah_number": 15,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "54f7d03b-69d0-4d7d-870f-33b932ac1b8e",
+          "source_ordinal": 15,
+          "text": "L’homme dit : Le Seigneur m’a témoigné des égards.",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 89,
+              "ayah_number": 15,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "b0fc84f5-cec6-48ac-9117-b21c8dbdc283",
+          "source_ordinal": 16,
+          "text": "Mais que Dieu, pour l’éprouver, lui mesure ses dons,",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 89,
+              "ayah_number": 16,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "f795e111-0380-4757-8a6b-4127c92aac73",
+          "source_ordinal": 17,
+          "text": "L’homme s’écrie : Le Seigneur m’a fait un affront !",
+          "alignment_type": "many_to_one",
+          "canonical_targets": [
+            {
+              "surah_number": 89,
+              "ayah_number": 16,
+              "mapping_confidence": "auto"
+            }
+          ]
+        },
+        {
+          "segment_id": "b7862189-3280-44fc-9b0f-b75f6864c0bb",
+          "source_ordinal": 25,
+          "text": "Il s’écrira : Plût à Dieu que j’eusse fait le bien durant ma vie ! Ce jour-là, nul ne saurait punir comme Dieu.",
+          "alignment_type": "one_to_many",
+          "canonical_targets": [
+            {
+              "surah_number": 89,
+              "ayah_number": 24,
+              "mapping_confidence": "auto"
+            },
+            {
+              "surah_number": 89,
+              "ayah_number": 25,
+              "mapping_confidence": "auto"
+            }
+          ]
+        }
+      ],
+      "canonical_arabic_reference_by_ayah": {
+        "89:1": "وَٱلْفَجْرِ",
+        "89:2": "وَلَيَالٍ عَشْرٍ",
+        "89:15": "فَأَمَّا ٱلْإِنسَـٰنُ إِذَا مَا ٱبْتَلَىٰهُ رَبُّهُۥ فَأَكْرَمَهُۥ وَنَعَّمَهُۥ فَيَقُولُ رَبِّىٓ أَكْرَمَنِ",
+        "89:16": "وَأَمَّآ إِذَا مَا ٱبْتَلَىٰهُ فَقَدَرَ عَلَيْهِ رِزْقَهُۥ فَيَقُولُ رَبِّىٓ أَهَـٰنَنِ",
+        "89:24": "يَقُولُ يَـٰلَيْتَنِى قَدَّمْتُ لِحَيَاتِى",
+        "89:25": "فَيَوْمَئِذٍ لَّا يُعَذِّبُ عَذَابَهُۥٓ أَحَدٌ"
+      },
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 91,
+      "ayah_count": 15,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [],
+      "canonical_arabic_reference_by_ayah": {},
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value. This surah has ZERO split/merge segments -- every item is a plain direct/offset (A/B) mapping; included here for stratified-sample completeness, not because any specific item looks doubtful.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 100,
+      "ayah_count": 11,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [],
+      "canonical_arabic_reference_by_ayah": {},
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value. This surah has ZERO split/merge segments -- every item is a plain direct/offset (A/B) mapping; included here for stratified-sample completeness, not because any specific item looks doubtful.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 102,
+      "ayah_count": 8,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [],
+      "canonical_arabic_reference_by_ayah": {},
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value. This surah has ZERO split/merge segments -- every item is a plain direct/offset (A/B) mapping; included here for stratified-sample completeness, not because any specific item looks doubtful.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 103,
+      "ayah_count": 3,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [],
+      "canonical_arabic_reference_by_ayah": {},
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value. This surah has ZERO split/merge segments -- every item is a plain direct/offset (A/B) mapping; included here for stratified-sample completeness, not because any specific item looks doubtful.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 105,
+      "ayah_count": 5,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [],
+      "canonical_arabic_reference_by_ayah": {},
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value. This surah has ZERO split/merge segments -- every item is a plain direct/offset (A/B) mapping; included here for stratified-sample completeness, not because any specific item looks doubtful.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    },
+    {
+      "tier": 3,
+      "surah_number": 107,
+      "ayah_count": 7,
+      "already_touched_by_tier2": false,
+      "flagged_segments": [],
+      "canonical_arabic_reference_by_ayah": {},
+      "alignment_classification": "concordance-cross-validated only (no direct French read this session)",
+      "evidence": "PHASE1-ALIGNMENT-AUDIT.md §0.3: this surah's classification rests on the 3-way concordance cross-validation (Kazimirski's own header count vs. Flügel; Flügel-column Cairo count vs. canonical; PDF's own summary stats), not on an individual French-text read against a canonical French Quran reference.",
+      "reason_review_needed": "STRATIFIED SAMPLE: part of a >=15-20% sample of the ~74 concordance-only surahs (PHASE1-ALIGNMENT-AUDIT.md §0.3/§7), selected by ayah-count tercile (short/medium/long) to give the reviewer representative coverage rather than an arbitrary first-N. Only this surah's split/merge (one_to_many/many_to_one/compound) segments are listed -- its plain direct/offset items carry no elevated review value. This surah has ZERO split/merge segments -- every item is a plain direct/offset (A/B) mapping; included here for stratified-sample completeness, not because any specific item looks doubtful.",
+      "reviewer_decision": null,
+      "reviewer_notes": null
+    }
+  ],
+  "tier3_sampling_metadata": {
+    "concordance_only_pool_size": 76,
+    "sample_size": 15,
+    "sample_fraction": 0.1974,
+    "sampled_surahs": [
+      21,
+      22,
+      53,
+      58,
+      72,
+      77,
+      80,
+      87,
+      89,
+      91,
+      100,
+      102,
+      103,
+      105,
+      107
+    ],
+    "note": "All 29 muqattaʿat surahs already have a directly-French-verified item 1 (PHASE1-ALIGNMENT-AUDIT.md §4.4) and are therefore NOT in the concordance-only pool -- none needed muqattaʿat-priority promotion into this sample."
+  }
+}

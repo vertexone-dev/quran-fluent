@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Locale } from "@/lib/i18n";
+import { fetchKazimirskiRenderForSurah, resolveApprovedFrenchSource } from "@/lib/kazimirski";
 import {
   fetchTranslationsForSurah,
   resolveVerifiedEnglishSource,
@@ -141,12 +142,23 @@ export function ayahTranslation(
 export type ResolvedAyah = Ayah & {
   /** The text to display for the active locale, or null if nothing is
    * available in that locale yet (render an explicit "unavailable" state,
-   * never a blank or the literal word "null"). */
+   * never a blank or the literal word "null"). Also null for a French
+   * one_to_many continuation ayah — see translationContinuesFromAyah,
+   * which is the correct reason to render nothing here, distinct from
+   * genuine unavailability. */
   resolvedTranslation: string | null;
-  /** Set only when resolvedTranslation came from a verified normalized
-   * source (public.translations) — drives the in-UI attribution. Null for
-   * legacy-column text and for "unavailable". */
+  /** Set only when resolvedTranslation came from a governed normalized
+   * source (public.translations, or the Kazimirski segment model) — drives
+   * the in-UI attribution. Null for legacy-column text and for
+   * "unavailable". */
   translationSource: TranslationSource | null;
+  /** Kazimirski one_to_many only: set when this ayah's French text was
+   * already rendered in full on an earlier ayah (the ayah_number given
+   * here) because one 1869 segment spans multiple canonical ayahs. The
+   * Reader must not repeat the text or claim "unavailable" for this ayah —
+   * render a distinct "see ayah N above" note instead. Always null for
+   * English and for every other French alignment shape. */
+  translationContinuesFromAyah: number | null;
 };
 
 /**
@@ -156,9 +168,13 @@ export type ResolvedAyah = Ayah & {
  *
  * Fallback chain (never crosses languages):
  *   English: verified normalized Pickthall -> legacy ayahs.translation_en -> unavailable
- *   French:  legacy ayahs.translation_fr -> unavailable (French governed
- *            translations don't exist yet — this must never show English
- *            text under a French UI)
+ *   French:  governed Kazimirski (1869) segment model -> unavailable. The
+ *            legacy ayahs.translation_fr column is deliberately never read
+ *            for French anymore — it only ever held the now fully-disputed
+ *            fr.hamidullah-crf text (58 of its rows were already nulled by
+ *            the disputed-source remediation; the remainder is the same
+ *            disputed source and must not be served either). This must
+ *            never show English text under a French UI.
  */
 export async function fetchAyahsWithTranslations(
   surahNumber: number,
@@ -168,11 +184,28 @@ export async function fetchAyahsWithTranslations(
   const ayahs = await fetchAyahs(surahNumber, signal);
 
   if (locale !== "en") {
-    return ayahs.map((ayah) => ({
-      ...ayah,
-      resolvedTranslation: ayahTranslation(ayah, locale),
-      translationSource: null,
-    }));
+    const source = await resolveApprovedFrenchSource();
+    const rendered = source
+      ? await fetchKazimirskiRenderForSurah(surahNumber, source.id, signal)
+      : new Map<number, { text: string | null; continuesFromAyah: number | null }>();
+
+    return ayahs.map((ayah) => {
+      const render = rendered.get(ayah.ayah_number);
+      if (!render) {
+        return {
+          ...ayah,
+          resolvedTranslation: null,
+          translationSource: null,
+          translationContinuesFromAyah: null,
+        };
+      }
+      return {
+        ...ayah,
+        resolvedTranslation: render.text,
+        translationSource: render.text !== null ? source : null,
+        translationContinuesFromAyah: render.continuesFromAyah,
+      };
+    });
   }
 
   const source = await resolveVerifiedEnglishSource();
@@ -183,7 +216,17 @@ export async function fetchAyahsWithTranslations(
   return ayahs.map((ayah) => {
     const normalizedText = normalized.get(ayah.ayah_number);
     return normalizedText
-      ? { ...ayah, resolvedTranslation: normalizedText, translationSource: source }
-      : { ...ayah, resolvedTranslation: ayahTranslation(ayah, locale), translationSource: null };
+      ? {
+          ...ayah,
+          resolvedTranslation: normalizedText,
+          translationSource: source,
+          translationContinuesFromAyah: null,
+        }
+      : {
+          ...ayah,
+          resolvedTranslation: ayahTranslation(ayah, locale),
+          translationSource: null,
+          translationContinuesFromAyah: null,
+        };
   });
 }

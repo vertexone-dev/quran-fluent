@@ -44,3 +44,7 @@ dist-ssr
 
 # Supabase local temp files
 /supabase/.temp/
+
+# Python bytecode caches (scripts/quran-import tooling)
+__pycache__/
+*.pyc

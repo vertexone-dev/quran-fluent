@@ -1,0 +1,914 @@
+[
+ {
+  "surah": 1,
+  "declared": 7,
+  "li_count": 7,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 7
+ },
+ {
+  "surah": 2,
+  "declared": 286,
+  "li_count": 287,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 286
+ },
+ {
+  "surah": 3,
+  "declared": 200,
+  "li_count": 200,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 200
+ },
+ {
+  "surah": 4,
+  "declared": 175,
+  "li_count": 175,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 176
+ },
+ {
+  "surah": 5,
+  "declared": 120,
+  "li_count": 120,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 120
+ },
+ {
+  "surah": 6,
+  "declared": 165,
+  "li_count": 165,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 165
+ },
+ {
+  "surah": 7,
+  "declared": 205,
+  "li_count": 205,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 206
+ },
+ {
+  "surah": 8,
+  "declared": 76,
+  "li_count": 76,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 75
+ },
+ {
+  "surah": 9,
+  "declared": 130,
+  "li_count": 130,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 129
+ },
+ {
+  "surah": 10,
+  "declared": 109,
+  "li_count": 109,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 109
+ },
+ {
+  "surah": 11,
+  "declared": 123,
+  "li_count": 123,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 123
+ },
+ {
+  "surah": 12,
+  "declared": 111,
+  "li_count": 111,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 111
+ },
+ {
+  "surah": 13,
+  "declared": 43,
+  "li_count": 43,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 43
+ },
+ {
+  "surah": 14,
+  "declared": 52,
+  "li_count": 52,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 52
+ },
+ {
+  "surah": 15,
+  "declared": 99,
+  "li_count": 99,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 99
+ },
+ {
+  "surah": 16,
+  "declared": 128,
+  "li_count": 128,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 128
+ },
+ {
+  "surah": 17,
+  "declared": 111,
+  "li_count": 111,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 111
+ },
+ {
+  "surah": 18,
+  "declared": 110,
+  "li_count": 110,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 110
+ },
+ {
+  "surah": 19,
+  "declared": 98,
+  "li_count": 98,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 98
+ },
+ {
+  "surah": 20,
+  "declared": 135,
+  "li_count": 135,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 135
+ },
+ {
+  "surah": 21,
+  "declared": 112,
+  "li_count": 112,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 112
+ },
+ {
+  "surah": 22,
+  "declared": 78,
+  "li_count": 78,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 78
+ },
+ {
+  "surah": 23,
+  "declared": 118,
+  "li_count": 118,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 118
+ },
+ {
+  "surah": 24,
+  "declared": 64,
+  "li_count": 64,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 64
+ },
+ {
+  "surah": 25,
+  "declared": 77,
+  "li_count": 77,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 77
+ },
+ {
+  "surah": 26,
+  "declared": 228,
+  "li_count": 228,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 227
+ },
+ {
+  "surah": 27,
+  "declared": 95,
+  "li_count": 95,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 93
+ },
+ {
+  "surah": 28,
+  "declared": 88,
+  "li_count": 88,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 88
+ },
+ {
+  "surah": 29,
+  "declared": 69,
+  "li_count": 69,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 69
+ },
+ {
+  "surah": 30,
+  "declared": 60,
+  "li_count": 60,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 60
+ },
+ {
+  "surah": 31,
+  "declared": 34,
+  "li_count": 34,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 34
+ },
+ {
+  "surah": 32,
+  "declared": 30,
+  "li_count": 30,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 30
+ },
+ {
+  "surah": 33,
+  "declared": 73,
+  "li_count": 73,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 73
+ },
+ {
+  "surah": 34,
+  "declared": 54,
+  "li_count": 54,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 54
+ },
+ {
+  "surah": 35,
+  "declared": 45,
+  "li_count": 45,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 45
+ },
+ {
+  "surah": 36,
+  "declared": 83,
+  "li_count": 84,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 83
+ },
+ {
+  "surah": 37,
+  "declared": 182,
+  "li_count": 182,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 182
+ },
+ {
+  "surah": 38,
+  "declared": 88,
+  "li_count": 88,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 88
+ },
+ {
+  "surah": 39,
+  "declared": 75,
+  "li_count": 75,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 75
+ },
+ {
+  "surah": 40,
+  "declared": 85,
+  "li_count": 85,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 85
+ },
+ {
+  "surah": 41,
+  "declared": 54,
+  "li_count": 54,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 54
+ },
+ {
+  "surah": 42,
+  "declared": 53,
+  "li_count": 53,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 53
+ },
+ {
+  "surah": 43,
+  "declared": 89,
+  "li_count": 89,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 89
+ },
+ {
+  "surah": 44,
+  "declared": 59,
+  "li_count": 59,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 59
+ },
+ {
+  "surah": 45,
+  "declared": 36,
+  "li_count": 36,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 37
+ },
+ {
+  "surah": 46,
+  "declared": 35,
+  "li_count": 35,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 35
+ },
+ {
+  "surah": 47,
+  "declared": 40,
+  "li_count": 40,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 38
+ },
+ {
+  "surah": 48,
+  "declared": 29,
+  "li_count": 29,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 29
+ },
+ {
+  "surah": 49,
+  "declared": 18,
+  "li_count": 18,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 18
+ },
+ {
+  "surah": 50,
+  "declared": 45,
+  "li_count": 45,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 45
+ },
+ {
+  "surah": 51,
+  "declared": 60,
+  "li_count": 60,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 60
+ },
+ {
+  "surah": 52,
+  "declared": 49,
+  "li_count": 49,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 49
+ },
+ {
+  "surah": 53,
+  "declared": 62,
+  "li_count": 62,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 62
+ },
+ {
+  "surah": 54,
+  "declared": 55,
+  "li_count": 55,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 55
+ },
+ {
+  "surah": 55,
+  "declared": 78,
+  "li_count": 78,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 78
+ },
+ {
+  "surah": 56,
+  "declared": 96,
+  "li_count": 96,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 96
+ },
+ {
+  "surah": 57,
+  "declared": 29,
+  "li_count": 29,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 29
+ },
+ {
+  "surah": 58,
+  "declared": 22,
+  "li_count": 22,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 22
+ },
+ {
+  "surah": 59,
+  "declared": 24,
+  "li_count": 24,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 24
+ },
+ {
+  "surah": 60,
+  "declared": 13,
+  "li_count": 13,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 13
+ },
+ {
+  "surah": 61,
+  "declared": 14,
+  "li_count": 14,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 14
+ },
+ {
+  "surah": 62,
+  "declared": 11,
+  "li_count": 11,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 11
+ },
+ {
+  "surah": 63,
+  "declared": 11,
+  "li_count": 11,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 11
+ },
+ {
+  "surah": 64,
+  "declared": 18,
+  "li_count": 18,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 18
+ },
+ {
+  "surah": 65,
+  "declared": 12,
+  "li_count": 12,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 12
+ },
+ {
+  "surah": 66,
+  "declared": 12,
+  "li_count": 12,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 12
+ },
+ {
+  "surah": 67,
+  "declared": 30,
+  "li_count": 30,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 30
+ },
+ {
+  "surah": 68,
+  "declared": 52,
+  "li_count": 52,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 52
+ },
+ {
+  "surah": 69,
+  "declared": 52,
+  "li_count": 52,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 52
+ },
+ {
+  "surah": 70,
+  "declared": 44,
+  "li_count": 44,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 44
+ },
+ {
+  "surah": 71,
+  "declared": 29,
+  "li_count": 29,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 28
+ },
+ {
+  "surah": 72,
+  "declared": 28,
+  "li_count": 28,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 28
+ },
+ {
+  "surah": 73,
+  "declared": 20,
+  "li_count": 20,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 20
+ },
+ {
+  "surah": 74,
+  "declared": 55,
+  "li_count": 55,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 56
+ },
+ {
+  "surah": 75,
+  "declared": 40,
+  "li_count": 40,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 40
+ },
+ {
+  "surah": 76,
+  "declared": 31,
+  "li_count": 31,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 31
+ },
+ {
+  "surah": 77,
+  "declared": 50,
+  "li_count": 50,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 50
+ },
+ {
+  "surah": 78,
+  "declared": 41,
+  "li_count": 41,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 40
+ },
+ {
+  "surah": 79,
+  "declared": 46,
+  "li_count": 46,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 46
+ },
+ {
+  "surah": 80,
+  "declared": 42,
+  "li_count": 42,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 42
+ },
+ {
+  "surah": 81,
+  "declared": 29,
+  "li_count": 29,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 29
+ },
+ {
+  "surah": 82,
+  "declared": 19,
+  "li_count": 19,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 19
+ },
+ {
+  "surah": 83,
+  "declared": 36,
+  "li_count": 36,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 36
+ },
+ {
+  "surah": 84,
+  "declared": 25,
+  "li_count": 25,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 25
+ },
+ {
+  "surah": 85,
+  "declared": 22,
+  "li_count": 22,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 22
+ },
+ {
+  "surah": 86,
+  "declared": 17,
+  "li_count": 17,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 17
+ },
+ {
+  "surah": 87,
+  "declared": 19,
+  "li_count": 19,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 19
+ },
+ {
+  "surah": 88,
+  "declared": 26,
+  "li_count": 26,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 26
+ },
+ {
+  "surah": 89,
+  "declared": 30,
+  "li_count": 30,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 30
+ },
+ {
+  "surah": 90,
+  "declared": 20,
+  "li_count": 20,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 20
+ },
+ {
+  "surah": 91,
+  "declared": 15,
+  "li_count": 15,
+  "ol_open": 1,
+  "ol_close": 0,
+  "canonical": 15
+ },
+ {
+  "surah": 92,
+  "declared": 21,
+  "li_count": 21,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 21
+ },
+ {
+  "surah": 93,
+  "declared": 11,
+  "li_count": 11,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 11
+ },
+ {
+  "surah": 94,
+  "declared": 8,
+  "li_count": 8,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 8
+ },
+ {
+  "surah": 95,
+  "declared": 8,
+  "li_count": 8,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 8
+ },
+ {
+  "surah": 96,
+  "declared": 19,
+  "li_count": 19,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 19
+ },
+ {
+  "surah": 97,
+  "declared": 5,
+  "li_count": 5,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 5
+ },
+ {
+  "surah": 98,
+  "declared": 8,
+  "li_count": 8,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 8
+ },
+ {
+  "surah": 99,
+  "declared": 8,
+  "li_count": 8,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 8
+ },
+ {
+  "surah": 100,
+  "declared": 11,
+  "li_count": 11,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 11
+ },
+ {
+  "surah": 101,
+  "declared": 8,
+  "li_count": 8,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 11
+ },
+ {
+  "surah": 102,
+  "declared": 8,
+  "li_count": 8,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 8
+ },
+ {
+  "surah": 103,
+  "declared": 3,
+  "li_count": 3,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 3
+ },
+ {
+  "surah": 104,
+  "declared": 9,
+  "li_count": 9,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 9
+ },
+ {
+  "surah": 105,
+  "declared": 5,
+  "li_count": 5,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 5
+ },
+ {
+  "surah": 106,
+  "declared": 4,
+  "li_count": 4,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 4
+ },
+ {
+  "surah": 107,
+  "declared": 7,
+  "li_count": 7,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 7
+ },
+ {
+  "surah": 108,
+  "declared": 3,
+  "li_count": 3,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 3
+ },
+ {
+  "surah": 109,
+  "declared": 6,
+  "li_count": 6,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 6
+ },
+ {
+  "surah": 110,
+  "declared": 3,
+  "li_count": 3,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 3
+ },
+ {
+  "surah": 111,
+  "declared": 5,
+  "li_count": 5,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 5
+ },
+ {
+  "surah": 112,
+  "declared": 4,
+  "li_count": 4,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 4
+ },
+ {
+  "surah": 113,
+  "declared": 5,
+  "li_count": 5,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 5
+ },
+ {
+  "surah": 114,
+  "declared": 6,
+  "li_count": 6,
+  "ol_open": 1,
+  "ol_close": 1,
+  "canonical": 6
+ }
+]

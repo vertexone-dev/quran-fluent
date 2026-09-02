@@ -1290,6 +1290,129 @@ export type Database = {
           },
         ];
       };
+      translation_segment_ayahs: {
+        Row: {
+          ayah_number: number;
+          created_at: string;
+          id: string;
+          mapping_confidence: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          reviewer_notes: string | null;
+          segment_id: string;
+          surah_number: number;
+        };
+        Insert: {
+          ayah_number: number;
+          created_at?: string;
+          id?: string;
+          mapping_confidence?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          reviewer_notes?: string | null;
+          segment_id: string;
+          surah_number: number;
+        };
+        Update: {
+          ayah_number?: number;
+          created_at?: string;
+          id?: string;
+          mapping_confidence?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          reviewer_notes?: string | null;
+          segment_id?: string;
+          surah_number?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "translation_segment_ayahs_segment_id_fkey";
+            columns: ["segment_id"];
+            isOneToOne: false;
+            referencedRelation: "translation_segments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "translation_segment_ayahs_surah_number_ayah_number_fkey";
+            columns: ["surah_number", "ayah_number"];
+            isOneToOne: false;
+            referencedRelation: "ayahs";
+            referencedColumns: ["surah_number", "ayah_number"];
+          },
+        ];
+      };
+      translation_segments: {
+        Row: {
+          alignment_status: string;
+          alignment_type: string;
+          created_at: string;
+          extraction_source_ref: string;
+          id: string;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
+          reviewer_notes: string | null;
+          segment_type: string;
+          source_declared_number: number | null;
+          source_id: string;
+          source_ordinal: number;
+          surah_number: number;
+          text: string;
+          text_sha256: string;
+          updated_at: string;
+        };
+        Insert: {
+          alignment_status?: string;
+          alignment_type?: string;
+          created_at?: string;
+          extraction_source_ref: string;
+          id?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          reviewer_notes?: string | null;
+          segment_type?: string;
+          source_declared_number?: number | null;
+          source_id: string;
+          source_ordinal: number;
+          surah_number: number;
+          text: string;
+          text_sha256: string;
+          updated_at?: string;
+        };
+        Update: {
+          alignment_status?: string;
+          alignment_type?: string;
+          created_at?: string;
+          extraction_source_ref?: string;
+          id?: string;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
+          reviewer_notes?: string | null;
+          segment_type?: string;
+          source_declared_number?: number | null;
+          source_id?: string;
+          source_ordinal?: number;
+          surah_number?: number;
+          text?: string;
+          text_sha256?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "translation_segments_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "content_sources";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "translation_segments_surah_number_fkey";
+            columns: ["surah_number"];
+            isOneToOne: false;
+            referencedRelation: "surahs";
+            referencedColumns: ["number"];
+          },
+        ];
+      };
       translations: {
         Row: {
           ayah_number: number;
