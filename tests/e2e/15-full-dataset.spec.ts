@@ -3,11 +3,16 @@ import { test, expect } from "@playwright/test";
 import { createTestUserClient } from "./utils/db";
 
 /**
- * Validates the app against the real, live 114-surah / 6,236-ayah import —
- * no route mocking, no 7-surah bootstrap assumption. Read-only checks use
- * a handful of non-bootstrap Surahs (2, 18, 55); write checks use Al-Fil
- * (105), a short new Surah untouched by every other spec, cleaned up
- * before/after so reruns start from a known state.
+ * Validates the app against the real, live 114-surah / 6,236-ayah import,
+ * no 7-surah bootstrap assumption. Read-only checks use a handful of
+ * non-bootstrap Surahs (2, 18, 55); write checks use Al-Fil (105), a short
+ * new Surah untouched by every other spec, cleaned up before/after so
+ * reruns start from a known state. Two tests route-intercept the governed
+ * Kazimirski French model for one specific Surah each, to simulate the "no
+ * translation in the active locale" case now that French has certified
+ * 6236/6236 real coverage in production and no such gap exists anywhere
+ * for real — every other assertion in this file still reads real, live,
+ * unmocked data.
  */
 test.describe("full 114-surah dataset", () => {
   test("Surah picker lists all 114 Surahs, not just the original 7-surah bootstrap set", async ({
@@ -94,33 +99,56 @@ test.describe("full 114-surah dataset", () => {
     await expect(page.getByText(/exact reproduction of the 1930 first edition/)).toBeVisible();
   });
 
-  test("French still uses its legacy fallback and never leaks the English Pickthall translation", async ({
+  test("French shows the real governed Kazimirski translation on both bootstrap and non-bootstrap Surahs, and never leaks the English Pickthall translation", async ({
     page,
   }) => {
+    // As of the Kazimirski French Reader integration, French has certified
+    // 6236/6236 canonical coverage in production -- there is no longer any
+    // real Surah (bootstrap or not) where French falls back to
+    // "unavailable". This test now proves the positive claim against real,
+    // live, unmocked production data (the Kazimirski segment model
+    // resolves correctly for ANY Surah, not just the two hand-picked ones
+    // 50-kazimirski-french-reader.spec.ts mocks), which is a stronger,
+    // more valuable check than the mocked one.
     const { client, userId } = await createTestUserClient();
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
 
     try {
-      // Surah 1 (bootstrap) previously had a real legacy translation_fr,
-      // but that was the disputed fr.hamidullah-crf source, nulled by the
-      // 20260911110000_... remediation. It now has no governed French any
-      // more than Surah 2 does -- all 7 āyahs show the same explicit
-      // unavailable fallback, never the old disputed text and never a
-      // silent fall-back to English.
+      const kazSource = await client
+        .from("content_sources")
+        .select("id")
+        .eq("edition_identifier", "kazimirski-1869-segments-v1")
+        .single();
+      const surah1Ayah1 = await client
+        .from("translation_segment_ayahs")
+        .select("segment:translation_segments!inner(text)")
+        .eq("surah_number", 1)
+        .eq("ayah_number", 1)
+        .eq("translation_segments.source_id", kazSource.data!.id)
+        .single();
+      const surah2Ayah1 = await client
+        .from("translation_segment_ayahs")
+        .select("segment:translation_segments!inner(text)")
+        .eq("surah_number", 2)
+        .eq("ayah_number", 1)
+        .eq("translation_segments.source_id", kazSource.data!.id)
+        .single();
+      const surah1Text = (surah1Ayah1.data!.segment as unknown as { text: string }).text;
+      const surah2Text = (surah2Ayah1.data!.segment as unknown as { text: string }).text;
+
       await page.goto("/quran?surah=1");
       await expect(page.locator("html")).toHaveAttribute("lang", "fr");
       await expect(page.getByText("Master of the Day of Judgment,")).not.toBeVisible();
+      await expect(page.getByText(surah1Text)).toBeVisible();
       await expect(
         page.getByText("Traduction française pas encore disponible pour ce verset."),
-      ).toHaveCount(7);
+      ).toHaveCount(0);
 
-      // Surah 2 (non-bootstrap) has no governed French yet — must show the
-      // explicit French "unavailable" fallback, real live data, no mocking —
-      // and never fall back to showing the English Pickthall text instead.
+      // Surah 2 (non-bootstrap): the same governed Kazimirski model
+      // resolves it too, real live data, no mocking -- and never falls
+      // back to showing the English Pickthall text instead.
       await page.goto("/quran?surah=2");
-      await expect(
-        page.getByText("Traduction française pas encore disponible pour ce verset.").first(),
-      ).toBeVisible();
+      await expect(page.getByText(surah2Text).first()).toBeVisible();
       await expect(page.getByText("Alif. Lam. Mim.")).not.toBeVisible();
 
       const bodyText = await page.locator("main").innerText();
@@ -132,15 +160,26 @@ test.describe("full 114-surah dataset", () => {
     }
   });
 
-  test("bookmarks, notes and memorization all work on a real Ayah; French review scheduling gracefully skips (no governed French yet)", async ({
+  test("bookmarks, notes and memorization all work on a real Ayah; French review scheduling gracefully skips when no translation is available", async ({
     page,
   }) => {
     // Al-Fil (105) now has a governed Pickthall translation like every
     // other Surah, so it's no longer "Arabic-only" for English — this test
-    // switches to French for the memorization/review-scheduling portion,
-    // since French genuinely has no governed translation for any
-    // non-bootstrap Surah yet, and that's the real "no translation in the
-    // active locale" case this test exists to cover.
+    // switches to French for the memorization/review-scheduling portion.
+    // French now has certified 6236/6236 coverage in production (via the
+    // Kazimirski segment model), so this route-intercepts translation_
+    // segment_ayahs for surah 105 to simulate the "no translation in the
+    // active locale" case this test actually exists to cover -- the
+    // graceful-skip behavior itself is real, unmocked application code;
+    // only the underlying data gap (which no longer exists for real) is
+    // simulated.
+    await page.route("**/rest/v1/translation_segment_ayahs*", async (route) => {
+      if (!route.request().url().includes("surah_number=eq.105")) {
+        await route.continue();
+        return;
+      }
+      await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+    });
     const { client, userId } = await createTestUserClient();
     await client.from("bookmarks").delete().eq("user_id", userId).eq("surah_number", 105);
     await client.from("notes").delete().eq("user_id", userId).eq("surah_number", 105);
