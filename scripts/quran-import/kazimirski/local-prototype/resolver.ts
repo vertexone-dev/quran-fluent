@@ -43,7 +43,11 @@ export type KazimirskiSegmentRef = {
 };
 
 export type KazimirskiAyahResolution =
-  | { state: "resolved_single"; alignmentType: "direct" | "offset" | "source_anomaly"; segment: KazimirskiSegmentRef }
+  | {
+      state: "resolved_single";
+      alignmentType: "direct" | "offset" | "source_anomaly";
+      segment: KazimirskiSegmentRef;
+    }
   | {
       state: "one_to_many";
       segment: KazimirskiSegmentRef;
@@ -168,7 +172,11 @@ export async function fetchKazimirskiSegmentsForSurah(
           segment: segGroup.seg,
           ayahRange: { minAyah: min, maxAyah: max },
         });
-      } else if (seg.alignment_type === "direct" || seg.alignment_type === "offset" || seg.alignment_type === "source_anomaly") {
+      } else if (
+        seg.alignment_type === "direct" ||
+        seg.alignment_type === "offset" ||
+        seg.alignment_type === "source_anomaly"
+      ) {
         result.set(ayahNumber, {
           state: "resolved_single",
           alignmentType: seg.alignment_type as "direct" | "offset" | "source_anomaly",

@@ -129,7 +129,14 @@ describe("Kazimirski resolver prototype (local data)", () => {
 
     it("all 8 compound boundary ayahs resolve without throwing, generically", async () => {
       const compoundAyahs: Array<[number, number]> = [
-        [3, 39], [3, 167], [11, 39], [14, 44], [47, 21], [65, 3], [65, 10], [106, 4],
+        [3, 39],
+        [3, 167],
+        [11, 39],
+        [14, 44],
+        [47, 21],
+        [65, 3],
+        [65, 10],
+        [106, 4],
       ];
       const bySurah = new Map<number, KazimirskiResolutionByAyah>();
       for (const [surah, ayah] of compoundAyahs) {
