@@ -20,6 +20,7 @@ export function AyahCard({ ayah, surahLabel, highlighted, actions }: AyahCardPro
   const { d } = useI18n();
   const r = d.quran.reader;
   const translation = ayah.resolvedTranslation;
+  const continuesFrom = ayah.translationContinuesFromAyah;
   return (
     <Card
       id={`ayah-${ayah.surah_number}-${ayah.ayah_number}`}
@@ -40,7 +41,9 @@ export function AyahCard({ ayah, surahLabel, highlighted, actions }: AyahCardPro
             translation ? "text-muted-foreground" : "italic text-muted-foreground/70",
           )}
         >
-          {translation ?? r.translationUnavailable}
+          {continuesFrom !== null
+            ? r.translationContinuesFrom.replace("{number}", String(continuesFrom))
+            : (translation ?? r.translationUnavailable)}
         </p>
         {ayah.translationSource && (
           <Popover>

@@ -10,16 +10,29 @@ import { createTestUserClient } from "./utils/db";
  * failing writes.
  *
  * No real translation-less Ayah exists for English any more — governed
- * Pickthall (Phase 2B) now covers all 6,236 Ayat. Route interception
- * simulates the "nothing available" case for one real bootstrap Ayah
- * (Al-Kawthar 108:1, otherwise untouched by every other spec) on BOTH
- * fetch paths the app now reads — legacy /rest/v1/ayahs (translation_en/fr)
- * and normalized /rest/v1/translations (the governed Pickthall row) — for
- * the duration of each test. The underlying rows are real, so writes that
- * reference this Ayah (bookmarks, notes, review_items) hit real foreign
- * keys and really persist; only what the UI *displays* is faked.
+ * Pickthall (Phase 2B) now covers all 6,236 Ayat. Since the Kazimirski
+ * French Reader integration, the same is true for French (6236/6236
+ * certified coverage) — so this also intercepts /rest/v1/content_sources
+ * and /rest/v1/translation_segment_ayahs to simulate "no French coverage"
+ * for Al-Kawthar (surah 108), which otherwise no longer exists anywhere in
+ * real production data. Route interception simulates the "nothing
+ * available" case for one real bootstrap Ayah (Al-Kawthar 108:1, otherwise
+ * untouched by every other spec) on every fetch path the app now reads —
+ * legacy /rest/v1/ayahs (translation_en/fr), normalized /rest/v1/
+ * translations (the governed Pickthall row), and the governed Kazimirski
+ * segment model — for the duration of each test. The underlying rows are
+ * real, so writes that reference this Ayah (bookmarks, notes,
+ * review_items) hit real foreign keys and really persist; only what the UI
+ * *displays* is faked.
  */
 async function interceptAyah108WithNullTranslations(page: Page) {
+  await page.route("**/rest/v1/translation_segment_ayahs*", async (route) => {
+    if (!route.request().url().includes("surah_number=eq.108")) {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({ status: 200, contentType: "application/json", body: "[]" });
+  });
   await page.route("**/rest/v1/ayahs*", async (route) => {
     try {
       const response = await route.fetch();

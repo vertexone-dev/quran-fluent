@@ -1,0 +1,90 @@
+{
+  "phase": 4,
+  "status": "AI-agent primary-source investigation. NOT human-reviewed. NOT approved for production import.",
+  "generated_at": "2026-09-01T00:00:00Z",
+  "session_scope": [
+    "Investigate the 2 empty Wikisource <li> positions behind canonical ayahs 2:8 and 36:35",
+    "Investigate the 2 unresolved real-text source segments (Surah 2 ordinal 287, Surah 36 ordinal 84)",
+    "Full Surah 2 and Surah 36 boundary reconciliation",
+    "Tier 2 review of the 8 compound boundary ayahs",
+    "Tier 3 stratified review of 15 concordance-only surahs",
+    "Manifest amendment / regeneration"
+  ],
+  "reviewer": null,
+  "review_date": null,
+  "reviewer_note": "No human reviewer participated in this phase. All findings below are AI-agent primary-source analysis (page-scan + Pickthall cross-check + structural reconciliation), not human_verified. reviewed_by/reviewed_at are intentionally left null in every DB row and manifest entry touched by this amendment.",
+
+  "root_cause_finding": {
+    "summary": "The 2 phenomena originally described as separate ('2 empty Wikisource positions behind 2:8/36:35' and '2 unresolved real-text segments at S2 ordinal 287 / S36 ordinal 84') are symptoms of ONE single upstream extraction bug, not independent anomalies and not a coincidence inferred merely because both counts were 2.",
+    "mechanism": "texte_entier_raw.html contains exactly 2 genuinely empty <li class=\"mw-empty-elt\"> elements inside a surah's <ol> (Surah 2, physically right after real item 6; Surah 36, physically right after real item 34) -- confirmed by direct grep/parse of the frozen HTML, not a prior summary. Phase 3's extractor (kazimirski_html_extract.py, function extract_li_items) split on every <li> tag and appended ALL of them, including these 2 empty ones, to its per-surah items list, then enumerated that list 1..N to assign source_ordinal. This gave the empty <li> a real position slot (Surah 2 slot 7; Surah 36 slot 35), so every REAL item after it was numbered exactly one too high for the rest of the surah. generate_manifest.py then looked up each item's canonical target by indexing into segment_classification_full.csv's declared_num sequence using this now-off-by-one source_ordinal, producing a systematic +1 target mismatch for every segment after the gap in both surahs. Phase 1's original CSV-population process had independently fallen into the identical trap (its own french_text column is also off-by-one for Surah 2 items 7-286 and Surah 36 items 35-83), which is why the mis-map was not caught by the existing fresh-vs-CSV sanity cross-check in generate_manifest.py -- both sides agreed on the same wrong answer.",
+    "critical_clarification": "The empty <li> elements do NOT correspond to any missing verse. Every canonical ayah in both surahs already has real, complete Kazimirski French text present in the frozen source. Task 1's original framing ('is text recoverable from the 1869 scan') turned out to have a different true answer than expected: no text needed recovery from any external scan -- the text was always present in texte_entier_raw.html, just joined to the wrong ayah number.",
+    "primary_source_evidence": [
+      "Direct grep of texte_entier_raw.html confirms exactly 3 occurrences of the string 'mw-empty-elt' in the whole 2,137,011-byte document: 1 unrelated <p class=\"mw-empty-elt\"> before Surah 1's heading (front matter, not inside any surah's <ol>), and 2 real <li class=\"mw-empty-elt\"> elements, one in Surah 2's <ol> (offset ~151115, immediately after the item ending '...le châtiment cruel les attend.'), one in Surah 36's <ol> (offset ~1059003, immediately after the item ending '...nous y avons fait jaillir des sources,').",
+      "Actual 1869 Charpentier page-scan image retrieved directly (Wikisource djvu page images for Le_Koran_(traduction_de_Kazimirski).djvu pages 3 and 358, same provenance chain as Google Books ID 3XSe413MJyQC per PHASE1-ALIGNMENT-AUDIT.md). Page 3 shows Kazimirski's own printed verse numbers running continuously 6, 7, 8, 9, 10, 11... with NO gap and no missing content at the point corresponding to the empty <li>; verse '7' on the printed page reads 'Il est des hommes qui disent : Nous croyons en Dieu et au jour dernier ; et cependant ils ne sont pas du nombre des croyants.' -- present, complete, and correctly typeset.",
+      "Independent cross-check against the local governed Pickthall English translation (content_sources.id=6d6c4315-e426-4671-840b-0d25b31a683e, same canonical Cairo numbering as `ayahs`) at more than 15 points spanning each surah from its start to its final ayah (2:7-2:12, 2:154-2:155, 2:203-2:204, 2:282-2:286 for Surah 2; 36:32-36:41, 36:81-36:83 for Surah 36), all confirming the corrected mapping and refuting the DB's pre-Phase-4 mapping at every one of those points.",
+      "Exhaustive structural reconciliation: applying the correction (re-index by excluding the empty <li> from the physical position count, then re-look-up each item's canonical target via segment_classification_full.csv's already-Flügel/Cairo-difflib-derived classification) to all 286 Surah 2 segments and all 83 Surah 36 segments produces EXACT, gapless, non-overlapping coverage of canonical 2:1-2:286 and 36:1-36:83, with split/merge event counts (Surah 2: 9 one_to_many, 18 many_to_one items forming 9 two-way merges; Surah 36: 1 one_to_many, 2 many_to_one items forming 1 two-way merge) matching PHASE1-ALIGNMENT-AUDIT.md's own independently-computed A/B/C/D matrix counts for these two surahs exactly (Surah 2: A=22,B=237,C=9,D=18; Surah 36: A=52,B=28,C=1,D=2)."
+    ]
+  },
+
+  "changes": [
+    {
+      "change_id": "phase4-001-surah2-ordinal-shift-and-rejoin",
+      "scope": "translation_segments and translation_segment_ayahs, surah_number=2, all 286 real-text segments (source_ordinal 8-287 renumbered to 7-286; source_ordinal 1-6 unchanged)",
+      "old_state": {
+        "description": "source_ordinal/source_declared_number 8-287 (gap at 7, where the empty <li> sat). Every translation_segment_ayahs target for these 271 of 286 segments was off by +1 relative to the segment's true canonical ayah. Canonical ayah 2:8 had zero join rows (uncovered). Segment at source_ordinal 287 had alignment_type='unresolved', alignment_status='unresolved', zero join rows.",
+        "canonical_coverage_surah2": "285/286",
+        "unresolved_segments_surah2": 1
+      },
+      "new_state": {
+        "description": "source_ordinal/source_declared_number renumbered 1-286, gapless. Every segment's translation_segment_ayahs target re-derived from segment_classification_full.csv's declared_num->canonical_ayah_range mapping (already independently Flügel/Cairo-difflib-verified in Phase 1, unaffected by the HTML-position bug) using the corrected ordinal. alignment_type set per the CSV's own A/B/C/D classification (direct/offset/one_to_many/many_to_one). alignment_status set to 'cross_verified' with reviewer_notes documenting the AI-agent (not human) verification chain.",
+        "canonical_coverage_surah2": "286/286",
+        "unresolved_segments_surah2": 0
+      },
+      "reason": "Root-cause fix: the empty <li> at physical position 7 was consuming an ordinal slot it should never have occupied, cascading a +1 mis-map through the rest of the surah. See root_cause_finding above.",
+      "primary_source_evidence": "See root_cause_finding.primary_source_evidence; specifically for Surah 2: page 3 scan, Pickthall cross-check at ordinals 6,8,9,10,11,12 (start), 150 (mid), 282-287 (end), and the full 286-segment structural reconciliation.",
+      "reviewer": null,
+      "review_date": null,
+      "hash_before": "text_sha256 values were NEVER read or modified by this change (translation_segments.text is immutable and untouched throughout). hash_before refers to the manifest-level state: total_canonical_ayahs_covered=6234, aggregate_ordered_hash=12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26, generator_version=phase3-manifest-v1, excluded_empty_source_segments count=2.",
+      "hash_after": "total_canonical_ayahs_covered=6236, aggregate_ordered_hash=12015b8f007a41adc36776172d3161d25c0f01a78bdc6a2418fcc6937ee9fc26 (UNCHANGED -- proves no translation text was added, removed, or altered by this amendment; only ordinal labels and canonical join targets changed), generator_version=phase4-manifest-v2, excluded_empty_source_segments count=0."
+    },
+    {
+      "change_id": "phase4-002-surah36-ordinal-shift-and-rejoin",
+      "scope": "translation_segments and translation_segment_ayahs, surah_number=36, all 83 real-text segments (source_ordinal 36-84 renumbered to 35-83; source_ordinal 1-34 unchanged)",
+      "old_state": {
+        "description": "source_ordinal/source_declared_number 36-84 (gap at 35, where the empty <li> sat). 49 of 83 segments had a translation_segment_ayahs target off by +1. Canonical ayah 36:35 had zero join rows (uncovered). Segment at source_ordinal 84 had alignment_type='unresolved', alignment_status='unresolved', zero join rows.",
+        "canonical_coverage_surah36": "82/83",
+        "unresolved_segments_surah36": 1
+      },
+      "new_state": {
+        "description": "source_ordinal/source_declared_number renumbered 1-83, gapless. Targets re-derived from segment_classification_full.csv the same way as Surah 2. alignment_status='cross_verified' with Phase 4 reviewer_notes.",
+        "canonical_coverage_surah36": "83/83",
+        "unresolved_segments_surah36": 0
+      },
+      "reason": "Same root cause as change phase4-001, applied to Surah 36's empty <li> at physical position 35.",
+      "primary_source_evidence": "Page 358 scan (Wikisource djvu page image for Le_Koran_(traduction_de_Kazimirski).djvu/358), Pickthall cross-check at ordinals 30-40 (mid) and 81-83 (end), full 83-segment structural reconciliation.",
+      "reviewer": null,
+      "review_date": null,
+      "hash_before": "See phase4-001 (same manifest-level before/after; this and phase4-001 were applied together and share one aggregate hash).",
+      "hash_after": "See phase4-001."
+    },
+    {
+      "change_id": "phase4-003-generator-fix",
+      "scope": "scripts/quran-import/kazimirski/kazimirski_html_extract.py (extract_li_items), scripts/quran-import/kazimirski/generate_manifest.py",
+      "old_state": "extract_li_items() appended every <li> element's cleaned text to its items list, including genuinely empty ones, giving them a permanent ordinal slot. generate_manifest.py's EXTRA-1 handling treated the resulting trailing item in Surah 2/36 as a genuine extra unresolved physical segment (source_ordinal 287/84), and its fresh-vs-CSV sanity cross-check assumed CSV text was reliable for classification purposes past the gap.",
+      "new_state": "extract_li_items() now skips any <li> whose cleaned text is empty/whitespace-only when building the items list, so it never consumes a position slot (no text was added, removed, or altered by this change -- it only affects which physical position each REAL item's already-existing text is assigned to). generate_manifest.py's EXTRA-1 handling now asserts the gap is closed (fresh_list length == declared count) rather than emitting an unresolved segment; the sanity cross-check has a narrowly-scoped, documented exception for the known Phase-1-CSV text-cache shift range in Surah 2 (items >=7) and Surah 36 (items >=35), where canonical_ayah_range (not text) is trusted from the CSV. CROSS_VERIFIED_ITEMS was updated to mark all of Surah 2 and Surah 36 as Phase-4-verified ('ALL').",
+      "reason": "Fixes the bug at its source so future manifest regenerations are correct without needing this patch re-applied by hand, and produces a manifest whose aggregate_ordered_hash and per-segment text_sha256 values are byte-identical to before (verified: aggregate_ordered_hash unchanged, all 6239 non-preamble segments' text_sha256 match the pre-existing DB rows exactly).",
+      "primary_source_evidence": "Code-level: traced generate_manifest.py's source_ordinal assignment (source_ordinal = idx + 1, indexing fresh_list[source_ordinal - 1]) and confirmed fresh_list length was 287/84 before the fix (one more than the 286/83 declared items) and exactly 286/83 after.",
+      "reviewer": null,
+      "review_date": null,
+      "hash_before": "N/A (code change, not a data hash)",
+      "hash_after": "N/A (code change, not a data hash)"
+    }
+  ],
+
+  "not_changed": {
+    "description": "The 8 compound boundary ayahs (3:39, 3:167, 11:39, 14:44, 47:21, 65:3, 65:10, 106:4) were reviewed this session and found CORRECT as-is -- no join-row changes applied. Each was verified by reading the contributing segments' French text, their immediate neighbors, and the corresponding Pickthall English, confirming the split+merge partition matches the real content boundary with no gap or invented text. Marked PRIMARY_SOURCE_VERIFIED (AI agent), not human_verified; mapping_confidence on their join rows remains 'needs_review' as designed (still requires an actual French-literate human reviewer for the editorial sign-off Phase 2 specifies -- this session's finding is that the mechanical mapping is correct, not that the human review step can be skipped).",
+    "tier3_sample": "The 15 Tier 3 stratified-sample surahs (21, 22, 53, 58, 72, 77, 80, 87, 89, 91, 100, 102, 103, 105, 107) were spot-checked (42 individual segment/ayah comparisons against Pickthall, concentrated on every one-to-many/many-to-one boundary in the 7 non-trivial surahs plus first/middle/last items of the 8 pure-direct surahs). No discrepancy found; no systematic error in the concordance-derived classification detected. No changes applied."
+  },
+
+  "canonical_arabic_and_pickthall_impact": "None. No write of any kind was made to ayahs.arabic_text or to any Pickthall-sourced translations row. Pickthall rows (source_id=6d6c4315-e426-4671-840b-0d25b31a683e) were read-only, used exclusively as an independent cross-check reference. Confirmed by reviewing every SQL statement executed this session: all UPDATE/DELETE/INSERT statements target only translation_segments (source_ordinal, source_declared_number, alignment_type, alignment_status, reviewer_notes columns) and translation_segment_ayahs (full delete+reinsert for surah_number IN (2,36) only)."
+}

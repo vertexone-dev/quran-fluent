@@ -100,6 +100,7 @@ export default defineConfig({
         "47-memorization-audio.spec.ts",
         "48-lesson-position-race.spec.ts",
         "49-french-translation-remediation.spec.ts",
+        "50-kazimirski-french-reader.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],

@@ -38,7 +38,7 @@ export const quran: typeof EnQuran = {
     translationsIntro:
       "Chaque langue lit le Coran à travers sa propre traduction vérifiée, affichée avec le nom du traducteur. Aucune traduction n'est générée automatiquement.",
     translationEn: "Anglais — Marmaduke Pickthall (Project Gutenberg eBook #16955)",
-    translationFr: "Français — Muhammad Hamidullah",
+    translationFr: "Français — Albin de Kazimirski Biberstein, Le Koran (1869)",
     searchNote:
       "La recherche acceptera des mots courants dans votre langue d'interface — miséricorde, patience, prière, paradis, jeûne — et les reliera au vocabulaire coranique vérifié, sans se limiter à une correspondance exacte de texte.",
   },
@@ -61,11 +61,13 @@ export const quran: typeof EnQuran = {
       retry: "Réessayer",
     },
     translationUnavailable: "Traduction française pas encore disponible pour ce verset.",
+    translationContinuesFrom:
+      "↳ Voir le verset {number} ci-dessus — un même verset historique couvre les deux.",
     attribution: {
       label: "Traducteur : {translator}",
       detailsAriaLabel: "Détails de la source de traduction",
       details:
-        "Marmaduke Pickthall — édition numérique Project Gutenberg eBook #16955. Domaine public aux États-Unis. Non présentée comme une reproduction exacte de la première édition de 1930.",
+        "Albin de Kazimirski Biberstein — Le Koran, Charpentier, édition de 1869 (traduction publiée pour la première fois en 1840). Domaine public. Traduction historique : orthographe, ponctuation et choix de vocabulaire de 1869 préservés sans modernisation. La correspondance entre le découpage des versets de Kazimirski et la numérotation canonique actuelle a fait l'objet d'une revue humaine dédiée ; une revue distincte portant sur la qualité de la traduction elle-même reste ouverte.",
     },
   },
   audio: {
