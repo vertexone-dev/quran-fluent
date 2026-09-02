@@ -2,6 +2,15 @@ name: Production Validation
 
 on:
   workflow_dispatch: {}
+  # Allows this workflow to be invoked as a post-deployment validation step
+  # from the production deployment workflow (.github/workflows/production-
+  # deploy.yml) via `uses: ./.github/workflows/production-validation.yml` +
+  # `secrets: inherit`. No inputs/secrets are declared here on purpose --
+  # `secrets: inherit` passes the caller's secrets through under their
+  # existing names, so every `secrets.*` reference below keeps working
+  # unchanged for both trigger types. Manual `workflow_dispatch` behavior is
+  # completely unchanged by this addition.
+  workflow_call: {}
 
 jobs:
   production-validation:
@@ -38,9 +47,12 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run targeted E2E (specs 17-35, 37-41) against production
+        # No --reporter override: falls back to playwright.config.ts's own
+        # CI default (html + list), matching ci.yml's convention -- this is
+        # what makes an HTML report exist to upload as an artifact below.
+        # Which specs run, and their pass/fail semantics, are unchanged.
         run: >
           npx playwright test
-          --reporter=list
           tests/e2e/17-lesson-player.spec.ts
           tests/e2e/18-level1-pilot.spec.ts
           tests/e2e/19-level1-module2.spec.ts
@@ -65,3 +77,19 @@ jobs:
           tests/e2e/39-level3-release-journey.spec.ts
           tests/e2e/40-level4-batch1-pronouns-and-agreement.spec.ts
           tests/e2e/41-level4-batch2-grammar-capstone.spec.ts
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-validation-playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload test results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-validation-test-results
+          path: test-results/
+          retention-days: 7

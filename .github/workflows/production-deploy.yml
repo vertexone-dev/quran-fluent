@@ -1,0 +1,249 @@
+name: Production Deployment
+
+# Deploys the quranroots Cloudflare Worker from a commit on `main` that has
+# already passed "QuranRoots CI" (.github/workflows/ci.yml), using the
+# repository's own established process (npm ci -> npm run build -> npx
+# nitro deploy --prebuilt). Gated behind the protected `production` GitHub
+# Environment, so required-reviewer approval (once configured -- see
+# DEPLOYMENT.md) applies before any deploy step runs, regardless of which
+# trigger fired.
+#
+# Two ways this runs, both resolving to the exact same guarded deploy job:
+#   1. Automatically, after "QuranRoots CI" completes successfully on main
+#      (i.e. a PR was merged and its CI passed) -- via workflow_run.
+#   2. Manually, via workflow_dispatch, for a re-deploy of a specific
+#      already-CI-validated commit (defaults to the current tip of main).
+#
+# Neither path can be satisfied by a pull-request-only CI run: workflow_run's
+# `branches: [main]` filter matches the branch the *triggering* workflow ran
+# on, not this workflow's own ref -- a PR's CI run happens on the PR's head
+# branch, never on `main` itself, so it can never fire this trigger. The
+# manual path independently re-verifies both "is this commit really on main"
+# and "did QuranRoots CI actually succeed for this exact SHA" before
+# anything else runs.
+
+on:
+  workflow_run:
+    workflows: ["QuranRoots CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: "Exact commit SHA on main to deploy (must have a successful QuranRoots CI run for this exact commit). Leave blank to deploy the current tip of main."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  # Serializes production deployments -- a second trigger while one is
+  # still running (or awaiting environment approval) queues rather than
+  # cancels the in-flight one.
+  group: production-deployment
+  cancel-in-progress: false
+
+jobs:
+  resolve-commit:
+    name: Resolve and validate target commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # For workflow_run: only proceed if the triggering "QuranRoots CI" run
+    # itself concluded successfully -- a failed or cancelled CI run must
+    # never reach the deploy job. For workflow_dispatch: always proceed to
+    # this job, which independently re-verifies CI success for the resolved
+    # SHA below (a human dispatching a deploy still can't bypass "CI passed
+    # for this exact commit").
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      sha: ${{ steps.resolve.outputs.sha }}
+    steps:
+      - name: Resolve target commit and verify CI status
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          INPUT_SHA: ${{ github.event.inputs.commit_sha }}
+          WORKFLOW_RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            # The job-level `if:` above already guarantees this run's
+            # conclusion was success, and head_sha is exactly the commit
+            # that run validated -- nothing further to check.
+            SHA="$WORKFLOW_RUN_SHA"
+            echo "Resolved via workflow_run: QuranRoots CI succeeded for $SHA"
+          else
+            SHA="$INPUT_SHA"
+            if [ -z "$SHA" ]; then
+              SHA="$(gh api "repos/$REPO/commits/main" --jq '.sha')"
+              echo "No commit_sha input given; resolved to current tip of main: $SHA"
+            fi
+
+            # Refuse unless this commit is actually reachable from main
+            # (i.e. it is main's tip or an ancestor of it) -- never deploy a
+            # commit that only exists on some other branch.
+            COMPARE_STATUS="$(gh api "repos/$REPO/compare/main...$SHA" --jq '.status' || echo "error")"
+            if [ "$COMPARE_STATUS" != "identical" ] && [ "$COMPARE_STATUS" != "behind" ]; then
+              echo "::error::Commit $SHA is not main or an ancestor of main (compare status: $COMPARE_STATUS). Refusing to deploy."
+              exit 1
+            fi
+
+            # Refuse unless QuranRoots CI has a successful run recorded for
+            # this exact SHA.
+            CI_CONCLUSION="$(gh api "repos/$REPO/actions/workflows/ci.yml/runs?head_sha=$SHA&per_page=1" --jq '.workflow_runs[0].conclusion // "none"')"
+            if [ "$CI_CONCLUSION" != "success" ]; then
+              echo "::error::No successful QuranRoots CI run found for commit $SHA (latest conclusion: $CI_CONCLUSION). Refusing to deploy."
+              exit 1
+            fi
+            echo "Verified: QuranRoots CI succeeded for $SHA"
+          fi
+
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: Build and deploy to production
+    needs: resolve-commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Protected environment: once required reviewers are configured on the
+    # `production` environment (see DEPLOYMENT.md), every run of this job --
+    # regardless of trigger -- pauses here for approval before any step
+    # executes. Environment secrets (CLOUDFLARE_API_TOKEN) are only exposed
+    # to a job that references this environment.
+    environment:
+      name: production
+      url: https://quranroots.vertexone.workers.dev
+    permissions:
+      contents: read
+      deployments: write
+    outputs:
+      version_id: ${{ steps.deploy.outputs.version_id }}
+      deployed_at: ${{ steps.deploy.outputs.deployed_at }}
+    steps:
+      - name: Checkout exact validated commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.resolve-commit.outputs.sha }}
+
+      - name: Confirm checked-out commit matches the validated SHA
+        run: |
+          set -euo pipefail
+          ACTUAL="$(git rev-parse HEAD)"
+          EXPECTED="${{ needs.resolve-commit.outputs.sha }}"
+          if [ "$ACTUAL" != "$EXPECTED" ]; then
+            echo "::error::Checked-out commit $ACTUAL does not match validated commit $EXPECTED"
+            exit 1
+          fi
+          echo "Confirmed: deploying exactly $ACTUAL"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Production build
+        env:
+          # Build-time only: inlined into the client bundle by Vite. Not
+          # sensitive (VITE_SUPABASE_PUBLISHABLE_KEY is Supabase's publicly-
+          # exposable anon key, protected by RLS, not by secrecy) -- kept as
+          # repository secrets here only to match this repo's existing
+          # convention in ci.yml/production-validation.yml, unchanged by
+          # this workflow. See DEPLOYMENT.md for the full classification.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: npm run build
+
+      - name: Deploy via the established Nitro/Wrangler process
+        id: deploy
+        env:
+          # Cloudflare's own documented non-interactive Wrangler auth
+          # variables (https://developers.cloudflare.com/workers/wrangler/profiles/).
+          # Environment secret/variable -- only readable by a run that has
+          # cleared the `production` environment's approval gate.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          npx nitro deploy --prebuilt | tee deploy_output.log
+
+          # Best-effort extraction of Cloudflare's own reported version ID
+          # from the deploy command's stdout, for the job summary -- never
+          # required for success/failure, and the log itself contains no
+          # secret values (wrangler does not print token/credential values).
+          VERSION_ID="$(grep -oE 'Current Version ID: [a-f0-9-]+' deploy_output.log | awk '{print $4}' || true)"
+          if [ -z "$VERSION_ID" ]; then
+            VERSION_ID="unknown (not found in deploy output)"
+          fi
+          echo "version_id=$VERSION_ID" >> "$GITHUB_OUTPUT"
+          echo "deployed_at=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> "$GITHUB_OUTPUT"
+
+      - name: Upload deploy log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-deploy-log
+          path: deploy_output.log
+          retention-days: 30
+
+      - name: Verify deployed Worker responds successfully
+        run: |
+          set -euo pipefail
+          STATUS="$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 https://quranroots.vertexone.workers.dev)"
+          echo "Production URL responded with HTTP $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "::error::https://quranroots.vertexone.workers.dev returned HTTP $STATUS after deploy"
+            exit 1
+          fi
+
+      - name: Deployment job summary
+        if: always()
+        run: |
+          {
+            echo "## Production Deployment"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Result | ${{ job.status }} |"
+            echo "| Commit | \`${{ needs.resolve-commit.outputs.sha }}\` |"
+            echo "| Triggered by | ${{ github.event_name }} |"
+            echo "| Production URL | https://quranroots.vertexone.workers.dev |"
+            echo "| Cloudflare Version ID | \`${{ steps.deploy.outputs.version_id }}\` |"
+            echo "| Deployed at (UTC) | ${{ steps.deploy.outputs.deployed_at }} |"
+            echo "| Workflow run | [$GITHUB_RUN_ID](${{ github.server_url }}/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  validate:
+    name: Post-deployment validation
+    needs: [resolve-commit, deploy]
+    uses: ./.github/workflows/production-validation.yml
+    secrets: inherit
+
+  summary:
+    name: Pipeline summary
+    needs: [resolve-commit, deploy, validate]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Final pipeline summary
+        run: |
+          {
+            echo "## Production Deployment Pipeline Result"
+            echo ""
+            echo "| Field | Value |"
+            echo "|---|---|"
+            echo "| Commit | \`${{ needs.resolve-commit.outputs.sha }}\` |"
+            echo "| Deploy job | ${{ needs.deploy.result }} |"
+            echo "| Post-deployment validation | ${{ needs.validate.result }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
