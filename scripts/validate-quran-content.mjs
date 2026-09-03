@@ -14,8 +14,15 @@
 // Usage: node scripts/validate-quran-content.mjs
 // (or: npm run validate:quran-content)
 //
-// Requires SUPABASE_URL + SUPABASE_PUBLISHABLE_KEY (or the VITE_-prefixed
-// equivalents, for convenience when run locally against .env.test).
+// Requires a *complete, same-namespace* credential pair: either
+// SUPABASE_URL + SUPABASE_PUBLISHABLE_KEY, or VITE_SUPABASE_URL +
+// VITE_SUPABASE_PUBLISHABLE_KEY. Never mixes a URL from one namespace with a
+// key from the other -- each candidate pair below is checked atomically, so
+// a URL and key from different projects/rotations can never be combined
+// into an invalid pair. Which namespace actually gets used is determined by
+// the calling workflow step's own env: block (see ci.yml /
+// production-validation.yml), not by this script -- it only refuses to
+// guess across namespaces.
 
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
@@ -25,19 +32,34 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
 
-const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY =
-  process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+function resolveCredentialPair() {
+  const candidates = [
+    {
+      source: "SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY",
+      url: process.env.SUPABASE_URL,
+      key: process.env.SUPABASE_PUBLISHABLE_KEY,
+    },
+    {
+      source: "VITE_SUPABASE_URL/VITE_SUPABASE_PUBLISHABLE_KEY",
+      url: process.env.VITE_SUPABASE_URL,
+      key: process.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    },
+  ];
+  return candidates.find((c) => c.url && c.key) ?? null;
+}
 
-if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+const credentials = resolveCredentialPair();
+if (!credentials) {
   console.error(
-    "Missing SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY (or VITE_-prefixed equivalents). " +
-      "Set them in the environment, or in .env.test for a local run.",
+    "No complete Supabase credential pair found. Need both halves of either " +
+      "SUPABASE_URL + SUPABASE_PUBLISHABLE_KEY, or VITE_SUPABASE_URL + VITE_SUPABASE_PUBLISHABLE_KEY, " +
+      "set together in the same namespace -- set them in the environment, or in .env.test for a local run.",
   );
   process.exit(1);
 }
+console.log(`Using Supabase credential pair from: ${credentials.source}`);
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+const supabase = createClient(credentials.url, credentials.key, {
   auth: { persistSession: false },
 });
 

@@ -48,6 +48,16 @@ jobs:
         run: npm run test:unit
 
       - name: Quran content integrity validation
+        # Explicitly sourced from the VITE_ pair, not the job-wide bare
+        # SUPABASE_URL/SUPABASE_PUBLISHABLE_KEY above: src/integrations/
+        # supabase/client.ts itself prefers VITE_SUPABASE_* first, and
+        # DEPLOYMENT.md documents the bare pair as Cloudflare Worker runtime
+        # config, not a value this GitHub Actions workflow's secret of the
+        # same name is guaranteed to keep in sync with. Step-scoped so the
+        # job-wide env (and therefore build/E2E) is untouched.
+        env:
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         run: npm run validate:quran-content
 
       - name: Build
