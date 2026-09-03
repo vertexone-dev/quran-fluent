@@ -44,6 +44,12 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Unit tests
+        run: npm run test:unit
+
+      - name: Quran content integrity validation
+        run: npm run validate:quran-content
+
       - name: Build
         run: npm run build
 
