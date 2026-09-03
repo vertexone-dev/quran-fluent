@@ -46,6 +46,17 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
+      - name: Quran content integrity validation (strict — Kazimirski corpus required)
+        # Explicitly sourced from the VITE_ pair -- see the matching comment
+        # in ci.yml. Step-scoped so the job-wide env (and therefore the E2E
+        # suites below, which intentionally use both pairs for their own
+        # purposes) is untouched.
+        env:
+          REQUIRE_KAZIMIRSKI_SOURCE: "true"
+          SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: npm run validate:quran-content
+
       - name: Run targeted E2E (specs 17-35, 37-41) against production
         # No --reporter override: falls back to playwright.config.ts's own
         # CI default (html + list), matching ci.yml's convention -- this is
@@ -92,4 +103,24 @@ jobs:
         with:
           name: production-validation-test-results
           path: test-results/
+          retention-days: 7
+
+      # Separate step (not folded into the run above) so a failure here is
+      # attributed clearly and visibly to the Quran content release gate,
+      # not buried inside the 25-spec learning-path run. `if: always()`
+      # means it still runs -- and can still fail the job -- even if the
+      # learning-path suite above already failed; Phase 8B.4 requires a
+      # smoke-test failure to fail the workflow visibly, not be skipped.
+      - name: Run production Quran Reader smoke suite (spec 51)
+        if: always()
+        env:
+          PLAYWRIGHT_HTML_REPORT: playwright-report-quran-smoke
+        run: npx playwright test tests/e2e/51-production-quran-smoke.spec.ts
+
+      - name: Upload Quran smoke suite report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-validation-quran-smoke-report
+          path: playwright-report-quran-smoke/
           retention-days: 7

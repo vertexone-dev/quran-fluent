@@ -101,6 +101,7 @@ export default defineConfig({
         "48-lesson-position-race.spec.ts",
         "49-french-translation-remediation.spec.ts",
         "50-kazimirski-french-reader.spec.ts",
+        "51-production-quran-smoke.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
