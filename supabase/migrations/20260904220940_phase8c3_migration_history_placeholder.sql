@@ -1,0 +1,85 @@
+-- Phase 8C.3 — migration-history reconciliation PLACEHOLDER. Intentionally a
+-- true no-op: this file executes no SQL statement and changes nothing.
+--
+-- WHY THIS FILE EXISTS
+-- =============================================================================
+-- Phase 8C.2's migration (supabase/migrations/20260913100000_7872f932-….sql)
+-- was applied to production through the Supabase MCP connector's
+-- `apply_migration` tool rather than through `supabase db push --linked`. That
+-- connector auto-assigns a migration-history version from the current
+-- timestamp at apply time -- it does not reuse the applied file's own
+-- filename-derived version. As a result, production's
+-- `supabase_migrations.schema_migrations` history table now has a row for
+-- version `20260904220940` (name
+-- `phase8c2_deprecate_legacy_kazimirski_20260913100000_7872f932`) with NO
+-- corresponding local file, while the real local file
+-- `20260913100000_7872f932-….sql` has NO corresponding row in that history
+-- table. The two are the SAME logical migration, recorded under two
+-- different identities -- see PHASE8C3-MIGRATION-HISTORY-RECONCILIATION.md
+-- for the full investigation, the options considered, and the disposable-
+-- environment proof behind this decision.
+--
+-- THIS FILE'S JOB
+-- =============================================================================
+-- Give that orphan remote version `20260904220940` a matching LOCAL file, so
+-- that `supabase migration list` / `supabase db push --linked` stop flagging
+-- it as "found in remote database but missing from local migrations
+-- directory" -- purely a bookkeeping/ergonomics fix. `db push` compares
+-- versions only (not file content), so this file's content is irrelevant to
+-- that comparison; it is deliberately empty so it is ALSO safe regardless of
+-- where in a fresh replay it happens to run.
+--
+-- WHAT THIS FILE DOES NOT DO
+-- =============================================================================
+--   * It does not modify production's migration-history table. Adding a repo
+--     file has zero effect on any already-applied database until someone
+--     runs a migration command against it -- which this file, by itself,
+--     does not do and this PR does not authorize.
+--   * It does not touch content_sources, ayahs, translations,
+--     translation_segments, translation_segment_ayahs, lessons, or any other
+--     table. It contains no CREATE/INSERT/UPDATE/DELETE/ALTER statement --
+--     no statement of any kind. An all-comment .sql file is a valid, no-op
+--     script (proven in scripts/db-migration-tests/phase8c3-history-
+--     reconciliation.test.sh, Test 1 and Test 2, against a disposable
+--     Postgres container).
+--   * It does not run `supabase migration repair` against production, and it
+--     does not require that command to ever be run -- see
+--     PHASE8C3-MIGRATION-HISTORY-RECONCILIATION.md for the fully-optional,
+--     NOT-EXECUTED cleanup commands if a fully pristine 1:1 history is ever
+--     wanted instead.
+--
+-- FRESH-DATABASE REPLAY BEHAVIOR (local dev reset, a new preview branch, CI)
+-- =============================================================================
+-- This file's version (20260904220940) sorts between 20260904100000 and
+-- 20260905100000 in the existing migration sequence -- i.e. it runs before
+-- 20260912100000 (which registers the kazimirski-1869-segments-v1 successor
+-- row) and long before 20260913100000 (the real deprecation migration, which
+-- REQUIRES that successor to already exist -- see its own precondition 2).
+-- Because this file does nothing, running it at that earlier point is always
+-- safe: there is no precondition to violate, no state to corrupt, and no
+-- ordering dependency to break. (This is exactly why the Phase 8C.2 migration
+-- itself was never renamed to this version instead -- doing that WOULD move
+-- real logic ahead of its dependency and break every fresh replay; see
+-- PHASE8C3-MIGRATION-HISTORY-RECONCILIATION.md "Option 4 (rejected)".)
+--
+-- EXISTING-PRODUCTION BEHAVIOR (a future `supabase db push --linked`)
+-- =============================================================================
+-- Production's history already has a row for 20260904220940 (the orphan
+-- described above), so `db push` will see this file's version as already
+-- applied and skip it without running anything -- matching the documented
+-- `db push` behavior of comparing versions only, never file content
+-- (https://supabase.com/docs/reference/cli/supabase-db-push). Production does
+-- NOT yet have a row for 20260913100000, so a future `db push` will apply
+-- that file for the first time in production's history table -- its own
+-- preconditions will find the legacy row already `deprecated` with the
+-- successor marker already present, take the documented safe no-op branch,
+-- and record itself as applied. No production data changes as a result. This
+-- exact scenario is proven end-to-end, against a disposable Postgres
+-- container, in scripts/db-migration-tests/phase8c3-history-reconciliation.test.sh
+-- (Test 2).
+--
+-- This PR does not run `supabase db push` against production. Applying it is
+-- a separate, later, ordinary migration deployment -- no special
+-- authorization beyond the project's normal migration-deployment procedure is
+-- needed, because by design it can only ever no-op against the current
+-- production state.

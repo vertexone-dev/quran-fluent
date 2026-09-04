@@ -28,6 +28,12 @@ import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  checkLegacyKazimirskiGovernance,
+  computeArabicAggregateSha256,
+  EXPECTED_ARABIC_AGGREGATE_SHA256,
+  ARABIC_EDITION,
+} from "./lib/content-source-governance.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, "..", ".env.test") });
@@ -198,8 +204,42 @@ async function main() {
 
   const contentSources = await fetchAll(
     "content_sources",
-    "id,edition_identifier,verification_status",
+    "id,content_type,language,edition_identifier,legacy_interim,verification_status,translator,notes",
   );
+
+  // Arabic aggregate-hash + uthmani-status checks run UNCONDITIONALLY (every
+  // environment, not gated by REQUIRE_KAZIMIRSKI_SOURCE): confirmed by direct
+  // comparison that the local/CI dev database's canonical Arabic corpus is
+  // byte-identical to production's (both committed via supabase/migrations/,
+  // unlike the out-of-band Kazimirski corpus), so this check is safe to
+  // enforce everywhere, not just where the Kazimirski corpus happens to be
+  // present. This is a drift tripwire ONLY: a match proves ayahs.arabic_text
+  // is byte-identical to the state it was pinned in; it does NOT prove
+  // textual authenticity against any authoritative external reference — that
+  // remains Phase 8D's open item (PHASE8C-CONTENT-SOURCE-GOVERNANCE.md §6).
+  const arabicAggregateHash = computeArabicAggregateSha256(ayahs);
+  check(
+    "Arabic corpus aggregate hash matches the pinned baseline (drift tripwire, not an authenticity proof)",
+    arabicAggregateHash === EXPECTED_ARABIC_AGGREGATE_SHA256,
+    arabicAggregateHash === EXPECTED_ARABIC_AGGREGATE_SHA256
+      ? undefined
+      : `expected ${EXPECTED_ARABIC_AGGREGATE_SHA256}, got ${arabicAggregateHash}`,
+  );
+  info(
+    "Arabic aggregate hash detects byte-level drift in ayahs.arabic_text only. It does not verify " +
+      "textual authenticity against Tanzil, an authoritative external reference, or any other independent " +
+      "source -- that cross-verification is Phase 8D's open item, not this check's.",
+  );
+
+  const uthmaniSource = contentSources.find((c) => c.edition_identifier === ARABIC_EDITION);
+  check(
+    `canonical Arabic source ("${ARABIC_EDITION}") remains verification_status=candidate`,
+    uthmaniSource?.verification_status === "candidate",
+    uthmaniSource
+      ? `status=${uthmaniSource.verification_status}`
+      : `"${ARABIC_EDITION}" content_sources row not found`,
+  );
+
   const pickthallSource = contentSources.find((c) => c.edition_identifier === PICKTHALL_EDITION);
   check("exactly one Pickthall content_sources row exists", !!pickthallSource, "not found");
   const kazRows = contentSources.filter((c) => c.edition_identifier === KAZIMIRSKI_EDITION);
@@ -256,6 +296,19 @@ async function main() {
   }
 
   if (kazSource) {
+    // Phase 8C.3 permanent governance assertions (legacy-source lifecycle +
+    // active-source selection safety). Gated the same way as every other
+    // check in this block: they only run where the certified Kazimirski
+    // corpus is present at all (production today), matching the existing
+    // convention -- local/CI dev's database never receives this corpus via
+    // supabase/migrations/, so these checks would be structurally
+    // unsatisfiable there (the legacy row is never touched outside
+    // production), not a real defect. Confirmed no CI risk by direct
+    // comparison against the local dev database during authoring.
+    for (const result of checkLegacyKazimirskiGovernance(contentSources)) {
+      check(result.name, result.ok, result.detail);
+    }
+
     const segments = await fetchAll(
       "translation_segments",
       "id,surah_number,source_ordinal,alignment_type,alignment_status",
