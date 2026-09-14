@@ -23,6 +23,19 @@ this document).
 > and its disposable-database test harness are prepared for PR review. **Nothing
 > has been applied to any database.** Canonical Arabic (`uthmani`) remains
 > `candidate`; its cross-verification is deferred to Phase 8D.
+>
+> **Update — Phase 8C.2 migration applied to production, then Phase 8C.3
+> prepared:** the migration above was subsequently applied to production
+> (read-only prechecks, atomic application, read-only postchecks, strict
+> validator 27/27 before and after — full record in the Phase 8C.2 application
+> report). Its production migration-history entry was recorded under an
+> auto-assigned version rather than the file's own filename version; the
+> investigation, the reconciliation approach selected (and proven safe in a
+> disposable environment), and 9 new permanent validator assertions
+> (including a pinned Arabic aggregate-hash drift tripwire) are recorded in
+> **`PHASE8C3-MIGRATION-HISTORY-RECONCILIATION.md`**. Canonical Arabic
+> (`uthmani`) remains `candidate` throughout; Phase 8D (independent Arabic
+> cross-verification) has not started.
 
 ---
 
