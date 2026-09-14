@@ -318,7 +318,7 @@ async function fetchStepEntryPoints(
 /** Shared by saveLearningPath (write) and fetchLearningPath (read-time
  * resync) — the one place that turns a live findCurriculumEntryPoint
  * result into a step's displayed status/progress/lesson_id. */
-function resolveStepFields(entryPoint: CurriculumEntryPoint): {
+export function resolveStepFields(entryPoint: CurriculumEntryPoint): {
   status: LearningPathStep["status"];
   progress: number;
   lesson_id: string;

@@ -87,6 +87,7 @@ export default defineConfig({
         "33-level2-batch2-core-vocabulary-2-and-short-phrases.spec.ts",
         "34-level2-batch3-vocabulary-capstone.spec.ts",
         "35-level2-release-journey.spec.ts",
+        "36-level2-release-audit-journey.spec.ts",
         "37-level3-batch1-arabic-roots-intro-and-word-patterns.spec.ts",
         "38-level3-batch2-roots-capstone.spec.ts",
         "39-level3-release-journey.spec.ts",
