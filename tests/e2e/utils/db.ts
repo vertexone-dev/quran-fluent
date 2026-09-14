@@ -99,7 +99,16 @@ async function restoreBrowserSession(): Promise<TestUserClient> {
   return { client, userId: data.user.id, email, password };
 }
 
-/** Wipes every mutable row owned by the test account so specs start from a known state. */
+/** Wipes every mutable row owned by the test account so specs start from a known state.
+ *
+ * bookmarks/notes/memorization_progress are included here too (previously
+ * omitted -- each of the specs that touches them, e.g. 10-bookmarks,
+ * 11-notes, 12-memorization, 14-translation-fallback, 15-full-dataset,
+ * already deletes its own rows defensively before running, which is why
+ * this gap never surfaced as a visible failure, but it left the one
+ * *centralized* reset incomplete relative to every other user-scoped
+ * table, and a spec added later with no per-spec self-cleanup would have
+ * silently inherited stale rows from whatever ran before it). */
 export async function resetTestUserData(client: SupabaseClient, userId: string) {
   const deletions = [
     "study_sessions",
@@ -111,6 +120,9 @@ export async function resetTestUserData(client: SupabaseClient, userId: string) 
     "user_vocabulary",
     "user_exercise_attempts",
     "user_lesson_progress",
+    "bookmarks",
+    "notes",
+    "memorization_progress",
   ];
   for (const table of deletions) {
     const { error } = await client.from(table).delete().eq("user_id", userId);
