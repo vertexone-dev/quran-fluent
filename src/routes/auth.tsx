@@ -112,7 +112,7 @@ function AuthPage() {
         setEmailSent("reset");
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(error instanceof Error ? error.message : t("common.errors.generic"));
     } finally {
       setBusy(false);
     }
