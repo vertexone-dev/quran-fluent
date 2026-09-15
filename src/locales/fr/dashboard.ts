@@ -2,6 +2,7 @@ import type { dashboard as EnDashboard } from "../en/dashboard";
 
 export const dashboard: typeof EnDashboard = {
   greeting: "As-salāmu ʿalaykum, {name}",
+  documentTitle: "Tableau de bord — QuranRoots",
   friend: "cher apprenant",
   subtitle: "Poursuivez votre apprentissage du Coran aujourd'hui.",
   streak: "Série de {count} jours",
@@ -28,6 +29,20 @@ export const dashboard: typeof EnDashboard = {
     },
     path: { title: "Prochaine étape", cta: "Continuer", none: "Passer le test de niveau" },
     goal: { title: "Objectif du jour", cta: "Continuer" },
+  },
+  // Étiquettes de présentation uniquement pour les valeurs brutes de
+  // weak_areas.area écrites par SECTION_WEAK_AREAS dans src/lib/study.ts --
+  // voir WEAK_AREA_LABEL_KEYS pour la correspondance valeur brute → clé.
+  // Jamais utilisées pour modifier ou faire correspondre les données
+  // stockées, seulement pour les afficher.
+  weakAreas: {
+    letterRecognition: "Reconnaissance des lettres",
+    letterForms: "Formes des lettres",
+    harakat: "Harakat",
+    readingWords: "Lecture de mots",
+    vocabulary: "Vocabulaire coranique",
+    comprehension: "Compréhension des versets",
+    grammar: "Fondations grammaticales",
   },
   understandingTitle: "Score de compréhension du Coran",
 

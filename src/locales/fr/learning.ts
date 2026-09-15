@@ -8,6 +8,7 @@ export const learning: typeof EnLearning = {
     ctaNote:
       "Les niveaux 1 à 5 sont disponibles dès maintenant, avec de vraies leçons, exercices et audio — créez votre compte pour obtenir votre niveau, votre objectif et votre parcours, puis commencez votre première leçon aujourd'hui.",
     goToDashboard: "Aller au tableau de bord",
+    comingSoonLabel: "Bientôt disponible",
     levels: [
       {
         level: "Niveau 1",
@@ -63,6 +64,7 @@ export const learning: typeof EnLearning = {
       {
         level: "Niveau 6",
         title: "Compréhension du Coran",
+        comingSoon: true,
         topics: [
           "Versets complets",
           "Lecture mot à mot",

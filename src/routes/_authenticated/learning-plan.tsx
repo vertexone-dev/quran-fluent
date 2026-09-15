@@ -10,6 +10,8 @@ import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { fetchLearnerSnapshot } from "@/lib/learner";
 import { fetchLearningPath } from "@/lib/placement";
+import { translationLabel } from "@/lib/translation-labels";
+import { reciterLabel } from "@/lib/audio";
 
 export const Route = createFileRoute("/_authenticated/learning-plan")({
   head: () => ({
@@ -28,7 +30,7 @@ export const Route = createFileRoute("/_authenticated/learning-plan")({
 
 function LearningPlan() {
   const { user } = useAuth();
-  const { t, d } = useI18n();
+  const { t, d, locale } = useI18n();
   const plan = d.learning.plan;
   const pathCopy = d.learning.path;
   const { data, isLoading } = useQuery({
@@ -70,8 +72,18 @@ function LearningPlan() {
       label: plan.interfaceLanguage,
       value: data?.profile?.interface_language === "fr" ? "Français" : "English",
     },
-    { label: plan.preferredTranslation, value: data?.preferences?.preferred_translation ?? "—" },
-    { label: plan.preferredReciter, value: data?.preferences?.preferred_reciter ?? "—" },
+    {
+      label: plan.preferredTranslation,
+      value: data?.preferences?.preferred_translation
+        ? translationLabel(data.preferences.preferred_translation, locale)
+        : "—",
+    },
+    {
+      label: plan.preferredReciter,
+      value: data?.preferences?.preferred_reciter
+        ? reciterLabel(data.preferences.preferred_reciter, locale)
+        : "—",
+    },
   ];
 
   return (

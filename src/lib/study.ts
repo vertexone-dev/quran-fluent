@@ -63,6 +63,23 @@ const SECTION_WEAK_AREAS: Record<PlacementSection, { area: string; itemType: Rev
   grammar: { area: "Grammar foundations", itemType: "concept" },
 };
 
+// Presentation-only: maps each raw English weak_areas.area value written
+// above to the matching key under dashboard.weakAreas in the locale
+// dictionaries, so a page can show a localized label without ever touching
+// the stored value -- weak_areas.area itself, and the PlacementSection
+// identifiers that produce it, are unchanged. A value with no entry here
+// (never expected, since this covers every SECTION_WEAK_AREAS.area) falls
+// back to being displayed as-is rather than disappearing.
+export const WEAK_AREA_LABEL_KEYS: Record<string, string> = {
+  "Letter recognition": "letterRecognition",
+  "Letter forms": "letterForms",
+  Harakat: "harakat",
+  "Reading words": "readingWords",
+  "Qur'anic vocabulary": "vocabulary",
+  "Ayah comprehension": "comprehension",
+  "Grammar foundations": "grammar",
+};
+
 /** A tiny verified starter set used until full lesson content is available. */
 const STARTER_CONTENT: Record<string, { front: string; back: string; context?: string }[]> = {
   alphabet: [

@@ -103,6 +103,7 @@ export default defineConfig({
         "49-french-translation-remediation.spec.ts",
         "50-kazimirski-french-reader.spec.ts",
         "51-production-quran-smoke.spec.ts",
+        "52-production-polish.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],

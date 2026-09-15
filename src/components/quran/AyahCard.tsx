@@ -50,7 +50,11 @@ export function AyahCard({ ayah, surahLabel, highlighted, actions }: AyahCardPro
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground"
+                // min-h-6 (24px) is the accessible-tap-target floor for
+                // this small, tightly-spaced inline note; the surrounding
+                // layout doesn't have room for the ~44px target other,
+                // less cramped controls (e.g. the footer links) use.
+                className="mt-1 inline-flex min-h-6 items-center gap-1 py-1 text-xs text-muted-foreground/60 hover:text-muted-foreground"
               >
                 <Info className="size-3" aria-hidden />
                 {r.attribution.label.replace("{translator}", ayah.translationSource.translator)}

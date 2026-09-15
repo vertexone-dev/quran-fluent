@@ -13,7 +13,10 @@ import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider, useI18n } from "@/lib/i18n";
+import { useDocumentTitle } from "@/lib/use-document-title";
 import { Toaster } from "@/components/ui/sonner";
+import { SiteHeader } from "@/components/layout/SiteHeader";
+import { SiteFooter } from "@/components/layout/SiteFooter";
 
 // Both render inside <I18nProvider> (it wraps <Outlet/>, and TanStack
 // Router's notFound/error boundaries for a route render within that
@@ -25,23 +28,32 @@ import { Toaster } from "@/components/ui/sonner";
 // extra fallback handling needed here.
 function NotFoundComponent() {
   const { t } = useI18n();
+  useDocumentTitle(`${t("common.errors.notFoundTitle")} — QuranRoots`);
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">
-          {t("common.errors.notFoundTitle")}
-        </h2>
-        <p className="mt-2 text-sm text-muted-foreground">{t("common.errors.notFoundBody")}</p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            {t("common.errors.goHome")}
-          </Link>
+    <div className="flex min-h-screen flex-col">
+      {/* Real site branding/header on the 404 page, same as every other
+          public route -- this is purely presentational (SiteHeader renders
+          inside the same providers RootComponent already mounts) and has
+          no effect on the real HTTP 404 status this page is served with. */}
+      <SiteHeader />
+      <div className="flex flex-1 items-center justify-center bg-background px-4">
+        <div className="max-w-md text-center">
+          <h1 className="text-7xl font-bold text-foreground">404</h1>
+          <h2 className="mt-4 text-xl font-semibold text-foreground">
+            {t("common.errors.notFoundTitle")}
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t("common.errors.notFoundBody")}</p>
+          <div className="mt-6">
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              {t("common.errors.goHome")}
+            </Link>
+          </div>
         </div>
       </div>
+      <SiteFooter />
     </div>
   );
 }

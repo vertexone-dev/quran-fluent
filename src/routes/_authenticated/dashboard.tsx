@@ -23,10 +23,11 @@ import { useI18n } from "@/lib/i18n";
 import { findLevel1EntryPoint } from "@/lib/curriculum";
 import { fetchLearnerSnapshot } from "@/lib/learner";
 import { fetchLearningPath, nextStep } from "@/lib/placement";
-import { countDueReviews, getDailyStats, getWeakAreas } from "@/lib/study";
+import { countDueReviews, getDailyStats, getWeakAreas, WEAK_AREA_LABEL_KEYS } from "@/lib/study";
 import { fetchBookmarks } from "@/lib/bookmarks";
 import { fetchNotes } from "@/lib/notes";
 import { countDueMemorizationReviews, fetchMemorizationProgress } from "@/lib/memorization";
+import { useDocumentTitle } from "@/lib/use-document-title";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -42,6 +43,16 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   }),
   component: Dashboard,
 });
+
+// Presentation-only: translates a raw weak_areas.area value (always in
+// English -- see SECTION_WEAK_AREAS in src/lib/study.ts) into the active
+// locale via dashboard.weakAreas, without touching the stored row. Falls
+// back to the raw value for anything not in WEAK_AREA_LABEL_KEYS (never
+// expected, but safer than silently hiding the area from the learner).
+function translateWeakArea(area: string, t: (key: string) => string): string {
+  const key = WEAK_AREA_LABEL_KEYS[area];
+  return key ? t(`dashboard.weakAreas.${key}`) : area;
+}
 
 /**
  * Understanding dimensions stay at zero until lesson, vocabulary and
@@ -61,6 +72,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const { t, d, locale } = useI18n();
   const copy = d.dashboard;
+  useDocumentTitle(copy.documentTitle);
 
   const { data, isLoading } = useQuery({
     queryKey: ["learner", user?.id],
@@ -306,7 +318,9 @@ function Dashboard() {
               <Brain className="size-5 text-primary" aria-hidden />
               <h3 className="mt-3 font-display text-base font-semibold">{copy.today.weak.title}</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                {weakAreas && weakAreas.length > 0 ? weakAreas[0]?.area : copy.today.weak.none}
+                {weakAreas && weakAreas.length > 0 && weakAreas[0]
+                  ? translateWeakArea(weakAreas[0].area, t)
+                  : copy.today.weak.none}
               </p>
 
               <Badge variant="outline" className="mt-3">

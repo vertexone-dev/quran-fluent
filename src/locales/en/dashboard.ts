@@ -1,5 +1,6 @@
 export const dashboard = {
   greeting: "Assalamu Alaikum, {name}",
+  documentTitle: "Dashboard — QuranRoots",
   friend: "friend",
   subtitle: "Continue your journey with the Qur'an today.",
   streak: "{count} day streak",
@@ -22,6 +23,19 @@ export const dashboard = {
     weak: { title: "Weak area", cta: "Focus", none: "No weak areas yet" },
     path: { title: "Next step", cta: "Continue", none: "Take the placement test" },
     goal: { title: "Daily goal", cta: "Keep going" },
+  },
+  // Presentation-only labels for the raw weak_areas.area values written by
+  // src/lib/study.ts's SECTION_WEAK_AREAS -- see WEAK_AREA_LABEL_KEYS there
+  // for the raw-value-to-key mapping. Never used to change or match stored
+  // data, only to display it.
+  weakAreas: {
+    letterRecognition: "Letter recognition",
+    letterForms: "Letter forms",
+    harakat: "Harakat",
+    readingWords: "Reading words",
+    vocabulary: "Qur'anic vocabulary",
+    comprehension: "Ayah comprehension",
+    grammar: "Grammar foundations",
   },
   understandingTitle: "Qur'an Understanding Score",
 
