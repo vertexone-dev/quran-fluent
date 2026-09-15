@@ -45,7 +45,7 @@ export const quran: typeof EnQuran = {
   reader: {
     title: "Lire",
     intro:
-      "Une sélection de sourates courtes et couramment mémorisées à lire, mettre en favoris, annoter et mémoriser. Le Mushaf complet arrivera dans une phase ultérieure.",
+      "Le Mushaf complet — 114 sourates, 6 236 versets — à lire, mettre en favoris, annoter et mémoriser.",
     selectSurah: "Choisir une sourate",
     ayahLabel: "Verset {number}",
     actions: {

@@ -6,7 +6,7 @@ export const learning: typeof EnLearning = {
     intro:
       "Chaque leçon suit le même rythme : Apprendre → Exemple → Écouter → S'entraîner → Quiz → Réviser.",
     ctaNote:
-      "Les leçons arrivent en phase 2. Créez votre compte dès maintenant : votre niveau, votre objectif et votre parcours seront prêts dès l'ouverture.",
+      "Les niveaux 1 à 5 sont disponibles dès maintenant, avec de vraies leçons, exercices et audio — créez votre compte pour obtenir votre niveau, votre objectif et votre parcours, puis commencez votre première leçon aujourd'hui.",
     goToDashboard: "Aller au tableau de bord",
     levels: [
       {
