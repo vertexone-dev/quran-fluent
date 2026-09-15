@@ -21,7 +21,7 @@ import { ProgressRing } from "@/components/common/ProgressRing";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { findLevel1EntryPoint } from "@/lib/curriculum";
-import { fetchLearnerSnapshot } from "@/lib/learner";
+import { fetchLearnerSnapshot, resolveGreetingName } from "@/lib/learner";
 import { fetchLearningPath, nextStep } from "@/lib/placement";
 import { countDueReviews, getDailyStats, getWeakAreas, WEAK_AREA_LABEL_KEYS } from "@/lib/study";
 import { fetchBookmarks } from "@/lib/bookmarks";
@@ -149,7 +149,10 @@ function Dashboard() {
     if (data && onboardingDone === false) navigate({ to: "/onboarding", replace: true });
   }, [data, onboardingDone, navigate]);
 
-  const firstName = data?.profile?.first_name ?? data?.profile?.display_name ?? copy.friend;
+  const firstName = resolveGreetingName(
+    data?.profile?.first_name ?? data?.profile?.display_name,
+    copy.friend,
+  );
   const dailyGoal = data?.preferences?.daily_goal_minutes ?? 10;
   const level = data?.preferences?.arabic_level;
   const goal = data?.preferences?.primary_goal;
