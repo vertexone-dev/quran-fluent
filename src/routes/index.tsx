@@ -54,7 +54,7 @@ function Home() {
             aria-hidden
             className="pattern-geometric pointer-events-none absolute inset-0 opacity-40"
           />
-          <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28">
+          <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-20 sm:py-28 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="max-w-2xl">
               <Badge variant="secondary" className="gap-1">
                 <Sparkles className="size-3.5" aria-hidden /> {home.hero.badge}
@@ -76,6 +76,30 @@ function Home() {
                 </Button>
               </div>
               <p className="mt-6 max-w-md text-sm text-muted-foreground">{home.hero.note}</p>
+            </div>
+
+            {/* Arch motif from the Phase 9 visual reference, built as a
+                real shape (not a background image) and filled with the
+                same real, already-displayed Bismillah text quran.tsx's own
+                "Typography preview" card uses -- never a stock photo or
+                invented content standing in for the Qur'an. Hidden below
+                lg: the text column alone carries the hero on narrower
+                screens, matching this section's existing mobile-first
+                behavior. */}
+            <div className="hidden justify-center lg:flex">
+              <div className="border-border/70 bg-card shadow-elevated w-full max-w-sm rounded-t-full rounded-b-2xl border">
+                <div className="flex aspect-[3/4] flex-col items-center justify-center gap-6 px-10 text-center">
+                  <p
+                    className="text-quran text-4xl leading-loose text-foreground"
+                    lang="ar"
+                    dir="rtl"
+                  >
+                    بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
+                  </p>
+                  <div aria-hidden className="bg-gold h-px w-16" />
+                  <p className="text-muted-foreground text-sm">{home.hero.arabicCaption}</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>

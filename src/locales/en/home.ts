@@ -5,6 +5,7 @@ export const home = {
     titleLine2: "Understand the Qur'an.",
     subtitle: "Build your Qur'anic Arabic skills one word, one verse, and one lesson at a time.",
     note: "Qur'anic text and translations come from verified sources only.",
+    arabicCaption: "Al-Fātiḥah 1:1 — the opening verse of the Qur'an.",
   },
   how: {
     title: "How it works",
