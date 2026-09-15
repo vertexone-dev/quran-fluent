@@ -357,8 +357,11 @@ function MemorizeSession({
                   <p className="text-sm text-muted-foreground">
                     {current.resolvedTranslation ?? d.quran.reader.translationUnavailable}
                   </p>
+                  {/* Full-opacity muted-foreground, not /60: an even
+                      lower-contrast version of the same AA shortfall
+                      fixed in AyahCard.tsx's attribution button. */}
                   {current.translationSource && (
-                    <p className="mt-1 text-xs text-muted-foreground/60">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {d.quran.reader.attribution.label.replace(
                         "{translator}",
                         current.translationSource.translator,
