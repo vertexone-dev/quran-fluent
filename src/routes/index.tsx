@@ -172,28 +172,14 @@ function Home() {
           </div>
         </section>
 
-        <section className="bg-secondary/60 py-16" aria-labelledby="testimonials">
-          <div className="mx-auto max-w-6xl px-4">
-            <h2 id="testimonials" className="font-display text-2xl font-bold sm:text-3xl">
-              {home.testimonials.title}
-            </h2>
-            <p className="mt-2 text-sm text-muted-foreground">{home.testimonials.note}</p>
-            <div className="mt-8 grid gap-4 md:grid-cols-3">
-              {[1, 2, 3].map((n) => (
-                <Card key={n} className="h-full">
-                  <CardContent className="pt-6">
-                    <div className="h-3 w-24 rounded bg-muted" />
-                    <div className="mt-4 space-y-2">
-                      <div className="h-3 w-full rounded bg-muted" />
-                      <div className="h-3 w-11/12 rounded bg-muted" />
-                      <div className="h-3 w-8/12 rounded bg-muted" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* Testimonials section intentionally hidden (Production Polish,
+            Stage 4A): the home page was shipping a visible placeholder --
+            "Placeholder — real learner stories will be added before
+            launch." -- as public-facing content. Hidden entirely rather
+            than replaced with invented reviews/names/ratings/quotations;
+            home.testimonials stays in the locale files (English + French)
+            for when real, approved testimonials exist to restore this
+            section with. */}
 
         <section className="mx-auto max-w-4xl px-4 py-20 text-center">
           <h2 className="font-display text-3xl font-bold">{home.cta.title}</h2>

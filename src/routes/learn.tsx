@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { useDocumentTitle } from "@/lib/use-document-title";
 
 export const Route = createFileRoute("/learn")({
   head: () => ({
@@ -33,6 +34,7 @@ function Learn() {
   const { user } = useAuth();
   const { t, d } = useI18n();
   const course = d.learning.course;
+  useDocumentTitle(`${course.title} — QuranRoots`);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -43,9 +45,19 @@ function Learn() {
 
         <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {course.levels.map((level) => (
-            <Card key={level.level} className="h-full shadow-soft">
+            <Card
+              key={level.level}
+              className={`h-full shadow-soft ${level.comingSoon ? "border-dashed" : ""}`}
+            >
               <CardContent className="pt-6">
-                <Badge variant="secondary">{level.level}</Badge>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="secondary">{level.level}</Badge>
+                  {level.comingSoon ? (
+                    <Badge variant="outline" className="text-muted-foreground">
+                      {course.comingSoonLabel}
+                    </Badge>
+                  ) : null}
+                </div>
                 <h2 className="mt-3 font-display text-lg font-semibold">{level.title}</h2>
                 <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                   {level.topics.map((topic) => (

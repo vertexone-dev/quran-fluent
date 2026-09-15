@@ -86,59 +86,31 @@ export const home: typeof EnHome = {
   features: {
     title: "Fonctionnalités et feuille de route",
     intro:
-      "QuranRoots est construit par étapes assumées, afin que chaque détail religieux et linguistique repose sur des données vérifiées.",
+      "QuranRoots livre d'abord de vraies fonctionnalités opérationnelles. Voici ce qui est disponible aujourd'hui, et ce qui reste à construire.",
     groups: [
       {
-        phase: "Phase 1 — disponible",
+        phase: "Disponible maintenant",
         items: [
-          "Système de design de marque, thèmes clair et sombre",
-          "Interface et navigation entièrement responsives",
+          "Système de design de marque, thèmes clair et sombre, et interface entièrement responsive",
           "Comptes, vérification de l'e-mail et connexion Google",
           "Intégration de l'apprenant : niveau, objectif, temps quotidien, langue",
           "Interface complète en français et en anglais",
-          "Fondations du tableau de bord personnalisé",
-        ],
-      },
-      {
-        phase: "Phase 2 — apprentissage",
-        items: [
-          "Cours d'arabe en six niveaux",
-          "Lecteur de leçons",
-          "Entraîneur de vocabulaire",
-          "Quiz",
-          "Suivi de la progression",
-        ],
-      },
-      {
-        phase: "Phase 3 — Coran",
-        items: [
-          "Service de données coraniques vérifiées",
-          "Navigation par sourate, verset et juz'",
-          "Traduction et translittération",
+          "Tableau de bord personnalisé avec suivi des compétences en vocabulaire, grammaire, compréhension, tajwid et mémorisation",
+          "Niveaux 1 à 5 du cours d'arabe en six niveaux : vraies leçons, lecteur de leçons, entraîneur de vocabulaire, quiz et suivi de la progression",
+          "Fondations de racines et de grammaire intégrées au programme",
+          "Le Coran complet : les 114 sourates et 6 236 versets",
+          "Traduction et translittération mot à mot",
           "Audio de récitation",
-          "Favoris, notes et mode mot à mot",
+          "Favoris, notes et mode d'étude mot à mot",
+          "Mode Hifz (mémorisation) avec planification des révisions",
         ],
       },
       {
-        phase: "Phase 4 — mémorisation",
+        phase: "À venir",
         items: [
-          "Mode Hifz",
-          "Contrôles de répétition",
-          "Masquage progressif",
-          "Planification des révisions",
-        ],
-      },
-      {
-        phase: "Phase 5 — avancé",
-        items: ["Explorateur de racines", "Grammaire", "Tajwid", "Score de compréhension du Coran"],
-      },
-      {
-        phase: "Phase 6 — tuteur IA",
-        items: [
-          "Aide contextuelle au vocabulaire en français et en anglais",
-          "Explications grammaticales",
-          "Quiz personnalisés",
-          "Réponses sourcées uniquement — jamais de texte coranique ni d'avis religieux générés",
+          "Niveau 6 : compréhension coranique",
+          "Tuteur IA contextuel en français et en anglais, avec explications grammaticales et quiz personnalisés — réponses sourcées uniquement, jamais de texte coranique ni d'avis religieux générés",
+          "Abonnement premium",
         ],
       },
     ],

@@ -6,6 +6,7 @@ export const learning = {
     ctaNote:
       "Levels 1 through 5 are live now, with real lessons, exercises and audio — create your account to get your level, goal and plan, then start your first lesson today.",
     goToDashboard: "Go to dashboard",
+    comingSoonLabel: "Coming soon",
     levels: [
       {
         level: "Level 1",
@@ -61,6 +62,7 @@ export const learning = {
       {
         level: "Level 6",
         title: "Qur'an comprehension",
+        comingSoon: true,
         topics: [
           "Complete Ayat",
           "Word-by-word reading",

@@ -84,54 +84,31 @@ export const home = {
   features: {
     title: "Features and roadmap",
     intro:
-      "QuranRoots is built in deliberate phases so that every religious and linguistic detail rests on verified data.",
+      "QuranRoots ships real, working functionality first. Here's what's live today, and what's still being built.",
     groups: [
       {
-        phase: "Phase 1 — available now",
+        phase: "Live now",
         items: [
-          "Brand design system with light and dark themes",
-          "Responsive application shell and navigation",
+          "Brand design system with light and dark themes, and a responsive application shell",
           "Accounts, email verification and Google sign-in",
           "Learner onboarding: level, goal, daily target, language",
           "Full English and French interface",
-          "Personalized dashboard foundation",
-        ],
-      },
-      {
-        phase: "Phase 2 — learning",
-        items: [
-          "Six-level Arabic course",
-          "Lesson player",
-          "Vocabulary trainer",
-          "Quizzes",
-          "Progress tracking",
-        ],
-      },
-      {
-        phase: "Phase 3 — Qur'an",
-        items: [
-          "Verified Qur'an data service",
-          "Surah, Ayah and Juz browsing",
-          "Translation and transliteration",
+          "Personalized dashboard with skill tracking across vocabulary, grammar, comprehension, tajweed and memorization",
+          "Levels 1–5 of the six-level Arabic course: real lessons, a lesson player, vocabulary trainer, quizzes and progress tracking",
+          "Root and grammar foundations built into the curriculum",
+          "The complete Qur'an: all 114 Surahs and 6,236 Ayahs",
+          "Translation and word-by-word transliteration",
           "Recitation audio",
-          "Bookmarks, notes and word-by-word mode",
+          "Bookmarks, notes and word-by-word study mode",
+          "Hifz (memorization) mode with review scheduling",
         ],
       },
       {
-        phase: "Phase 4 — memorization",
-        items: ["Hifz mode", "Repetition controls", "Progressive hiding", "Review scheduling"],
-      },
-      {
-        phase: "Phase 5 — advanced",
-        items: ["Root explorer", "Grammar", "Tajweed", "Qur'an Understanding Score"],
-      },
-      {
-        phase: "Phase 6 — AI tutor",
+        phase: "Coming later",
         items: [
-          "Contextual vocabulary help in English and French",
-          "Grammar explanations",
-          "Personalized quizzes",
-          "Sourced answers only — never generated Qur'anic text or rulings",
+          "Level 6: Qur'anic comprehension",
+          "Contextual AI tutoring in English and French, with grammar explanations and personalized quizzes — sourced answers only, never generated Qur'anic text or rulings",
+          "Premium subscription",
         ],
       },
     ],
