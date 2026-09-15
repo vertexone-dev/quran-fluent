@@ -152,3 +152,20 @@ jobs:
           name: production-validation-full-dataset-report
           path: playwright-report-full-dataset/
           retention-days: 7
+
+      # Confirmed defect: X-Content-Type-Options, X-Frame-Options,
+      # Referrer-Policy and Permissions-Policy were present on /assets/*
+      # but absent from /, /quran, /learn and HTML 404 responses -- fixed
+      # by src/server.ts's withSecurityHeaders (commit a61f566). This step
+      # is that fix's live proof: it asserts the exact required header
+      # values on real responses from the deployed Worker itself, not just
+      # in code review. Separate step, same `if: always()` reasoning as
+      # specs 15/51 above -- a header regression is attributed clearly to
+      # this gate and still fails the job even if an earlier step already
+      # failed. No PLAYWRIGHT_BASE_URL/Playwright dependency: this is a
+      # plain Node script (global fetch, Node 22) that never sends a
+      # credential and only ever prints route names, header names and the
+      # header/status values themselves.
+      - name: Run production security header validation
+        if: always()
+        run: node scripts/validate-production-headers.mjs
