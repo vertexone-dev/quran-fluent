@@ -127,6 +127,43 @@ test.describe("localization (EN/FR)", () => {
      */
   });
 
+  test("the 404 page and the footer tagline are translated, not hard-coded English", async ({
+    page,
+  }) => {
+    // Regression test: __root.tsx's NotFoundComponent/ErrorComponent and
+    // Logo's tagline/alt text used to hard-code their English copy even
+    // though src/locales/{en,fr}/common.ts already had proper
+    // `errors.*`/`brand.tagline`/`brand.logoAlt` translations sitting
+    // unused — a French learner hitting a bad link or seeing the footer
+    // saw English regardless of their chosen locale.
+    await page.goto("/dashboard");
+    await page
+      .getByRole("group", { name: "Change language" })
+      .first()
+      .getByRole("button", { name: /FR/ })
+      .click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+
+    // The locale choice is also written to localStorage (see src/lib/i18n.tsx
+    // setLocale), so it carries over when navigating to a page the
+    // authenticated layout doesn't render a footer on (/dashboard has none —
+    // SiteFooter is public-pages-only) or to a route with no layout of its
+    // own at all (the 404 page).
+    await page.goto("/");
+    // exact: true -- the footer's own copyright line separately includes
+    // this same tagline as a substring, so a non-exact match is ambiguous.
+    await expect(
+      page.getByText("Remontez à la langue. Découvrez le sens.", { exact: true }),
+    ).toBeVisible();
+
+    await page.goto("/this-route-does-not-exist");
+    await expect(page.getByRole("heading", { name: "Page introuvable" })).toBeVisible();
+    await expect(
+      page.getByText("La page que vous cherchez n'existe pas ou a été déplacée."),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Retour à l'accueil" })).toBeVisible();
+  });
+
   test("UI direction stays LTR while embedded Arabic content is marked RTL", async ({ page }) => {
     await page.goto("/quran");
 
