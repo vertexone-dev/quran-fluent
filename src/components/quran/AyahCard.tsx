@@ -28,8 +28,12 @@ export function AyahCard({ ayah, surahLabel, highlighted, actions }: AyahCardPro
     >
       <CardContent className="pt-6">
         <Badge variant="outline">{surahLabel}</Badge>
+        {/* Arabic is the primary reason to be on this page -- given more
+            visual weight (larger, more breathing room) than the
+            translation/attribution below it, instead of all three
+            competing at similar sizes. */}
         <p
-          className="text-quran mt-4 text-right text-2xl leading-loose text-foreground"
+          className="text-quran mt-5 text-right text-3xl leading-loose text-foreground sm:text-4xl"
           dir="rtl"
           lang="ar"
         >
@@ -37,8 +41,13 @@ export function AyahCard({ ayah, surahLabel, highlighted, actions }: AyahCardPro
         </p>
         <p
           className={cn(
-            "mt-3 text-sm",
-            translation ? "text-muted-foreground" : "italic text-muted-foreground/70",
+            "mt-4 text-base leading-relaxed",
+            // text-muted-foreground/70 measured at ~3.9:1 against the card
+            // background -- under WCAG AA's 4.5:1 floor for this non-large
+            // text. Full-opacity muted-foreground (already used for the
+            // translated case just above) clears it at 6.7:1+ and still
+            // reads as secondary/quieter than the Arabic text above it.
+            translation ? "text-muted-foreground" : "italic text-muted-foreground",
           )}
         >
           {continuesFrom !== null
@@ -53,8 +62,15 @@ export function AyahCard({ ayah, surahLabel, highlighted, actions }: AyahCardPro
                 // min-h-6 (24px) is the accessible-tap-target floor for
                 // this small, tightly-spaced inline note; the surrounding
                 // layout doesn't have room for the ~44px target other,
-                // less cramped controls (e.g. the footer links) use.
-                className="mt-1 inline-flex min-h-6 items-center gap-1 py-1 text-xs text-muted-foreground/60 hover:text-muted-foreground"
+                // less cramped controls (e.g. the footer links) use. The
+                // rounded/border treatment gives it a clear "control"
+                // affordance instead of reading as plain body text.
+                // text-muted-foreground/85 (not /70, measured): at this
+                // text-xs size /70 only reaches ~3.9:1 against the card
+                // background, under WCAG AA's 4.5:1 floor for normal text;
+                // /85 clears it (~4.7-5.2:1 in light/dark, verified via a
+                // canvas-based contrast check against the real tokens).
+                className="mt-3 inline-flex min-h-6 items-center gap-1 rounded-full border border-transparent px-2 py-1 text-xs text-muted-foreground/85 transition-colors hover:border-border hover:bg-muted hover:text-muted-foreground"
               >
                 <Info className="size-3" aria-hidden />
                 {r.attribution.label.replace("{translator}", ayah.translationSource.translator)}
