@@ -7,7 +7,7 @@ export const home: typeof EnHome = {
     titleLine2: "Comprenez le Coran.",
     subtitle: "Progressez en arabe coranique, un mot, un verset et une leçon à la fois.",
     note: "Le texte coranique et les traductions proviennent exclusivement de sources vérifiées.",
-    arabicCaption: "Al-Fātiḥah 1:1 — le verset d'ouverture du Coran.",
+    imageAlt: "Un Coran posé sur un lutrin en bois dans une arcade ensoleillée.",
   },
   how: {
     title: "Comment ça marche",

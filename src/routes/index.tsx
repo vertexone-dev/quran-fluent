@@ -79,26 +79,54 @@ function Home() {
             </div>
 
             {/* Arch motif from the Phase 9 visual reference, built as a
-                real shape (not a background image) and filled with the
-                same real, already-displayed Bismillah text quran.tsx's own
-                "Typography preview" card uses -- never a stock photo or
-                invented content standing in for the Qur'an. Hidden below
-                lg: the text column alone carries the hero on narrower
-                screens, matching this section's existing mobile-first
-                behavior. */}
+                real shape (not a CSS background-image) via rounded-t-full
+                on a bordered, overflow-hidden card. Filled with the
+                approved quranroots-hero-premium photo (a Qur'an on a
+                stand, no legible/altered verse text, no fabricated
+                quotation or attribution -- see this phase's PR body for
+                the full asset-inventory review). bg-secondary behind the
+                <img> keeps the arch reading as an intentional shape even
+                if the image fails to load. Hidden below lg: the text
+                column alone carries the hero on narrower screens,
+                matching this section's existing mobile-first behavior. */}
             <div className="hidden justify-center lg:flex">
-              <div className="border-border/70 bg-card shadow-elevated w-full max-w-sm rounded-t-full rounded-b-2xl border">
-                <div className="flex aspect-[3/4] flex-col items-center justify-center gap-6 px-10 text-center">
-                  <p
-                    className="text-quran text-4xl leading-loose text-foreground"
-                    lang="ar"
-                    dir="rtl"
-                  >
-                    بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ
-                  </p>
-                  <div aria-hidden className="bg-gold h-px w-16" />
-                  <p className="text-muted-foreground text-sm">{home.hero.arabicCaption}</p>
-                </div>
+              <div className="border-border/70 bg-secondary shadow-elevated w-full max-w-sm overflow-hidden rounded-t-full rounded-b-2xl border">
+                <picture>
+                  {/* sizes tells the browser how wide this renders at
+                      lg:+ (384px, this panel's max-w-sm) so it never
+                      fetches a larger candidate than needed there. Below
+                      lg: the panel is CSS `hidden`, not unmounted --
+                      `loading="eager"` (required below) still fetches
+                      *something* even while hidden, so the "0px" branch
+                      exists to steer that fetch to the smallest ~40KB
+                      candidate rather than the ~136KB full-size one, not
+                      to skip the request entirely (browsers don't skip
+                      eager fetches for display:none content). */}
+                  <source
+                    type="image/webp"
+                    srcSet={
+                      "/quranroots-hero-premium-480w.webp 480w, " +
+                      "/quranroots-hero-premium-768w.webp 768w, " +
+                      "/quranroots-hero-premium-1122w.webp 1122w"
+                    }
+                    sizes="(min-width: 1024px) 384px, 0px"
+                  />
+                  {/* Primary above-the-fold hero image: eager, high
+                      priority, never lazy-loaded. Explicit width/height
+                      (the source photo's real 1122x1402 ratio) reserves
+                      the box before the image arrives, so nothing shifts
+                      when it loads. */}
+                  <img
+                    src="/quranroots-hero-premium.png"
+                    width={1122}
+                    height={1402}
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                    alt={home.hero.imageAlt}
+                    className="aspect-1122/1402 w-full object-cover"
+                  />
+                </picture>
               </div>
             </div>
           </div>
