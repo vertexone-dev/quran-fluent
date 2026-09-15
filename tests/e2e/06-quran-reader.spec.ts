@@ -27,6 +27,25 @@ test.describe("Qur'an page (typography preview + data architecture)", () => {
     ).toBeVisible();
   });
 
+  test("public copy accurately describes the complete, already-live Mushaf and curriculum, not stale pre-launch placeholders", async ({
+    page,
+  }) => {
+    // Regression test: /quran and /learn's own public marketing copy
+    // previously claimed "a curated set of short... Surahs" with "the
+    // complete Mushaf arrives in a later phase", and "Lesson content
+    // arrives in Phase 2" -- both false by the time of this sprint (the
+    // full 114-surah/6,236-ayah Mushaf and 58 real, fully bilingual
+    // lessons across 5 levels are already live in production; see
+    // 15-full-dataset.spec.ts and the content-integrity validator).
+    await page.goto("/quran");
+    await expect(page.getByText(/complete Mushaf.*114 Surahs.*6,236 Ayahs/)).toBeVisible();
+    await expect(page.getByText(/complete Mushaf arrives in a later phase/)).toHaveCount(0);
+
+    await page.goto("/learn");
+    await expect(page.getByText(/Levels 1 through 5 are live now/)).toBeVisible();
+    await expect(page.getByText(/Lesson content arrives in Phase 2/)).toHaveCount(0);
+  });
+
   test("is reachable without signing in", async ({ browser }) => {
     const context = await browser.newContext(); // no storage state
     const page = await context.newPage();

@@ -36,7 +36,7 @@ export const quran = {
   reader: {
     title: "Read",
     intro:
-      "A curated set of short, commonly memorized Surahs to read, bookmark, note and memorize. The complete Mushaf arrives in a later phase.",
+      "The complete Mushaf — all 114 Surahs, 6,236 Ayahs — to read, bookmark, note and memorize.",
     selectSurah: "Select a Surah",
     ayahLabel: "Ayah {number}",
     actions: {

@@ -124,3 +124,31 @@ jobs:
           name: production-validation-quran-smoke-report
           path: playwright-report-quran-smoke/
           retention-days: 7
+
+      # 15-full-dataset.spec.ts was never part of any automated pipeline
+      # against real production data before this step: it isn't in the
+      # specs 17-41 learning-path list above (it predates/is unrelated to
+      # curriculum progression), and ci.yml only ever runs it against
+      # local/CI-dev, which never has the certified Kazimirski corpus (see
+      # that spec's own test.skip guard). Separate step, same reasoning as
+      # spec 51 above: a failure here is attributed clearly to the
+      # full-dataset/translation-coverage gate, not buried elsewhere.
+      # `if: always()` so it still runs -- and can still fail the job --
+      # even if an earlier step already failed. PLAYWRIGHT_BASE_URL is
+      # already set for the whole job (see this workflow's `env:` block
+      # above), so the French-Kazimirski test's own environment guard does
+      # NOT skip here -- it runs its real assertions against the deployed
+      # Worker's live, governed French translation data.
+      - name: Run production full-dataset validation (spec 15)
+        if: always()
+        env:
+          PLAYWRIGHT_HTML_REPORT: playwright-report-full-dataset
+        run: npx playwright test tests/e2e/15-full-dataset.spec.ts
+
+      - name: Upload full-dataset validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-validation-full-dataset-report
+          path: playwright-report-full-dataset/
+          retention-days: 7

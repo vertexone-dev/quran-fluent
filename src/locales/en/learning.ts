@@ -4,7 +4,7 @@ export const learning = {
     intro:
       "Every lesson follows the same rhythm: Learn → Example → Listen → Practice → Quiz → Review.",
     ctaNote:
-      "Lesson content arrives in Phase 2. Create your account now so your level, goal and plan are ready the moment lessons open.",
+      "Levels 1 through 5 are live now, with real lessons, exercises and audio — create your account to get your level, goal and plan, then start your first lesson today.",
     goToDashboard: "Go to dashboard",
     levels: [
       {
