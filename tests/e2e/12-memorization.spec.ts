@@ -3,6 +3,31 @@ import { test, expect } from "@playwright/test";
 import { createTestUserClient } from "./utils/db";
 
 test.describe("memorization", () => {
+  // Both tests below navigate to /memorize and, in the first test, to
+  // /dashboard. Root cause of a previously-failing "1 Ayat memorized" check
+  // (confirmed via a Playwright trace screenshot, not guessed): with
+  // onboarding_completed left false, /dashboard's own client-side effect
+  // redirects straight to /onboarding before the memorization card ever
+  // renders -- a stale-state/navigation-timing symptom, not a data-write or
+  // query-caching bug (the write itself was already independently proven
+  // durable by this test's own DB poll before the dashboard assertion).
+  // global-setup.ts resets onboarding_completed to false once per whole
+  // run; only 01-onboarding.spec.ts's own test flips it back to true, so
+  // this spec implicitly depended on running after that one in the same
+  // invocation -- true in the full suite, but silently false (and
+  // reproducibly failing) whenever this file runs on its own, e.g. via
+  // `playwright test tests/e2e/12-memorization.spec.ts`. Setting it
+  // explicitly here removes that hidden cross-file ordering dependency,
+  // matching the same defensive pattern already used by
+  // 36-level2-release-audit-journey.spec.ts.
+  test.beforeEach(async () => {
+    const { client, userId } = await createTestUserClient();
+    await client
+      .from("learning_preferences")
+      .update({ onboarding_completed: true })
+      .eq("user_id", userId);
+  });
+
   test("starting, memorizing and reviewing an Ayah persists and updates the dashboard", async ({
     page,
   }) => {

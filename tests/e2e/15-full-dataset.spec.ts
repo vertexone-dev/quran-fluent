@@ -110,28 +110,65 @@ test.describe("full 114-surah dataset", () => {
     // resolves correctly for ANY Surah, not just the two hand-picked ones
     // 50-kazimirski-french-reader.spec.ts mocks), which is a stronger,
     // more valuable check than the mocked one.
+    //
+    // The certified corpus (content_sources.edition_identifier =
+    // kazimirski-1869-segments-v1) is production-only, applied out-of-band
+    // -- local/CI-dev databases never receive it (see PHASE8B-AUTOMATED-
+    // INTEGRITY.md §2, and scripts/validate-quran-content.mjs's own
+    // REQUIRE_KAZIMIRSKI_SOURCE handling of the identical fact). This test
+    // therefore only makes sense, deterministically, against a real
+    // deployment target -- the same convention already established by
+    // 51-production-quran-smoke.spec.ts's `test.skip(!process.env.
+    // PLAYWRIGHT_BASE_URL, ...)`. It is NOT a substitute for the separate,
+    // unconditional "strict content-integrity" gate in
+    // production-validation.yml, which still fails the whole pipeline if
+    // this source is ever actually missing in production -- this test only
+    // stops trying to read data that was never expected to exist wherever
+    // PLAYWRIGHT_BASE_URL isn't set (i.e. ci.yml's local/CI-dev run).
+    test.skip(
+      !process.env.PLAYWRIGHT_BASE_URL,
+      "kazimirski-1869-segments-v1 is production-only (out-of-band import, never seeded " +
+        "locally/CI) -- this assertion only runs against a real deployment target. See the " +
+        "comment above this test for the full explanation.",
+    );
+
     const { client, userId } = await createTestUserClient();
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
 
     try {
+      // maybeSingle(), not single(): a genuinely missing row is a real,
+      // explicit, actionable failure here (we only reach this line when
+      // PLAYWRIGHT_BASE_URL is set, i.e. we're pointed at a real
+      // deployment where this source is supposed to exist) -- never a
+      // silent null dereference.
       const kazSource = await client
         .from("content_sources")
         .select("id")
         .eq("edition_identifier", "kazimirski-1869-segments-v1")
-        .single();
+        .maybeSingle();
+      if (!kazSource.data) {
+        throw new Error(
+          "content_sources row 'kazimirski-1869-segments-v1' not found even though " +
+            "PLAYWRIGHT_BASE_URL is set -- this test only runs against a real deployment " +
+            "target, where this source is required by the strict content-integrity gate " +
+            "(production-validation.yml). This is a genuine production-integrity failure, " +
+            "not an expected local/CI environment gap.",
+        );
+      }
+      const kazSourceId = kazSource.data.id;
       const surah1Ayah1 = await client
         .from("translation_segment_ayahs")
         .select("segment:translation_segments!inner(text)")
         .eq("surah_number", 1)
         .eq("ayah_number", 1)
-        .eq("translation_segments.source_id", kazSource.data!.id)
+        .eq("translation_segments.source_id", kazSourceId)
         .single();
       const surah2Ayah1 = await client
         .from("translation_segment_ayahs")
         .select("segment:translation_segments!inner(text)")
         .eq("surah_number", 2)
         .eq("ayah_number", 1)
-        .eq("translation_segments.source_id", kazSource.data!.id)
+        .eq("translation_segments.source_id", kazSourceId)
         .single();
       const surah1Text = (surah1Ayah1.data!.segment as unknown as { text: string }).text;
       const surah2Text = (surah2Ayah1.data!.segment as unknown as { text: string }).text;

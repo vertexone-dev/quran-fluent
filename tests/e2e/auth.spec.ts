@@ -102,6 +102,47 @@ test.describe("auth", () => {
     });
   });
 
+  test("AuthProvider never logs a stale/unmounted-component state-update warning across login, navigation and logout", async ({
+    page,
+  }) => {
+    // Regression test for the AuthProvider effect race (src/lib/auth.tsx):
+    // supabase.auth.getSession()'s promise, and an onAuthStateChange event,
+    // could previously resolve for an already-cleaned-up effect instance
+    // (React 18+ Strict Mode mounts every effect, cleans it up, then mounts
+    // it again in development) and still call that stale instance's
+    // setState -- surfacing as this exact console.error. Fixed by gating
+    // both callbacks on an `active` flag set false in the effect's cleanup.
+    // This asserts the warning never fires across a real login -> navigate
+    // -> logout journey, not just that the app still "works".
+    test.setTimeout(45_000);
+    const consoleErrors: string[] = [];
+    page.on("console", (msg) => {
+      if (msg.type() === "error") consoleErrors.push(msg.text());
+    });
+
+    await page.goto("/auth?mode=login");
+    await loginAndExpect(page, process.env.E2E_TEST_EMAIL!, process.env.E2E_TEST_PASSWORD!, () =>
+      expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10_000 }),
+    );
+
+    await page.goto("/quran");
+    await expect(page).toHaveURL(/\/quran/, { timeout: 10_000 });
+
+    const accountMenu = page.getByTestId("account-menu-trigger");
+    await expect(accountMenu).toBeVisible({ timeout: 10_000 });
+    await accountMenu.click();
+    await page.getByTestId("logout-menu-item").click();
+    await expect(page).toHaveURL(/\/auth/, { timeout: 10_000 });
+
+    const staleUpdateWarnings = consoleErrors.filter((text) =>
+      text.includes("Can't perform a React state update on a component that hasn't mounted yet"),
+    );
+    expect(
+      staleUpdateWarnings,
+      `expected no stale-component state-update warnings during login/navigate/logout, found: ${JSON.stringify(staleUpdateWarnings)}`,
+    ).toHaveLength(0);
+  });
+
   test("forgot-password mode accepts a submission without revealing account existence", async ({
     page,
   }) => {
