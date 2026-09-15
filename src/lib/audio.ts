@@ -57,6 +57,20 @@ export const RECITER_NAMES: Record<ReciterKey, string> = {
  * settings page's own default. */
 export const DEFAULT_RECITER: ReciterKey = "mishary_alafasy";
 
+function isReciterKey(value: string): value is ReciterKey {
+  return value in RECITER_NAMES;
+}
+
+/** Presentation-only: a reciter's name (RECITER_NAMES) is a proper noun,
+ * shown identically in every locale -- same as the settings page's own
+ * <Select> already does. Falls back to a generic, locale-aware label for
+ * any stored value not in RECITER_NAMES rather than guessing at a name;
+ * never changes or matches the stored preference itself. */
+export function reciterLabel(value: string, locale: "en" | "fr"): string {
+  if (isReciterKey(value)) return RECITER_NAMES[value];
+  return locale === "fr" ? `Récitateur configuré : ${value}` : `Configured reciter: ${value}`;
+}
+
 /**
  * The single place "is this a real reciter key" is decided. Falls back to
  * DEFAULT_RECITER for anything unrecognized -- missing preference row,

@@ -4,6 +4,7 @@ import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { useI18n } from "@/lib/i18n";
+import { useDocumentTitle } from "@/lib/use-document-title";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -29,6 +30,9 @@ export const Route = createFileRoute("/about")({
 function About() {
   const { d } = useI18n();
   const about = d.home.about;
+  // about.title already includes the brand name ("About QuranRoots" /
+  // "À propos de QuranRoots") -- no " — QuranRoots" suffix needed here.
+  useDocumentTitle(about.title);
 
   return (
     <div className="flex min-h-screen flex-col">

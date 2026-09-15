@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
+import { useDocumentTitle } from "@/lib/use-document-title";
 import {
   fetchWordFrequency,
   saveWordToVocabulary,
@@ -61,6 +62,7 @@ function QuranPage() {
   const page = d.quran.page;
   const vocab = d.quran.vocabulary;
   const wordCopy = d.quran.word;
+  useDocumentTitle(`${page.title} — QuranRoots`);
 
   useEffect(() => {
     if (readerParams.ayah == null) return;
