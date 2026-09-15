@@ -1,6 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Clock, Flame, Target, TrendingUp, Zap } from "lucide-react";
+import {
+  BookOpen,
+  Clock,
+  Compass,
+  Flame,
+  GraduationCap,
+  Target,
+  Timer,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -196,31 +206,28 @@ function ProgressPage() {
         </Card>
       </div>
 
+      {/* Same StatCard the top row uses -- these three were previously a
+          plain label/value pair with no icon, visually inconsistent with
+          the icon-led cards everywhere else on this page. */}
       <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="shadow-soft">
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">{p.level}</div>
-            <div className="mt-1 font-display text-lg font-semibold">
-              {level ? t(`learning.levels.${level}.label`) : "—"}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-soft">
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">{p.goal}</div>
-            <div className="mt-1 font-display text-lg font-semibold">
-              {goal ? t(`learning.goals.${goal}`) : "—"}
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="shadow-soft">
-          <CardContent className="pt-6">
-            <div className="text-sm text-muted-foreground">{p.metrics.studyTime}</div>
-            <div className="mt-1 font-display text-lg font-semibold">
-              {t("progress.minutes", { count: dailyGoal })}
-            </div>
-          </CardContent>
-        </Card>
+        <StatCard
+          icon={GraduationCap}
+          label={p.level}
+          value={level ? t(`learning.levels.${level}.label`) : "—"}
+          accent="text-primary"
+        />
+        <StatCard
+          icon={Compass}
+          label={p.goal}
+          value={goal ? t(`learning.goals.${goal}`) : "—"}
+          accent="text-gold"
+        />
+        <StatCard
+          icon={Timer}
+          label={p.metrics.studyTime}
+          value={t("progress.minutes", { count: dailyGoal })}
+          accent="text-sky-600"
+        />
       </section>
     </main>
   );
