@@ -27,24 +27,29 @@ export function SiteFooter() {
             <h2 className="font-display text-sm font-semibold text-foreground">
               {t("common.footer.platform")}
             </h2>
+            {/* flex + min-h-11 gives each link a ~44px tap target -- the
+                footer has room for it, unlike tighter inline controls
+                elsewhere (see AyahCard.tsx's attribution button). This
+                does make the footer modestly taller than before; that's
+                the accessibility fix, not a side effect to hide. */}
             <ul className="mt-3 space-y-2 text-muted-foreground">
               <li>
-                <Link to="/learn" className="hover:text-foreground">
+                <Link to="/learn" className="flex min-h-11 items-center hover:text-foreground">
                   {t("common.footer.learnArabic")}
                 </Link>
               </li>
               <li>
-                <Link to="/quran" className="hover:text-foreground">
+                <Link to="/quran" className="flex min-h-11 items-center hover:text-foreground">
                   {t("common.footer.quranStudy")}
                 </Link>
               </li>
               <li>
-                <Link to="/features" className="hover:text-foreground">
+                <Link to="/features" className="flex min-h-11 items-center hover:text-foreground">
                   {t("common.nav.features")}
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="hover:text-foreground">
+                <Link to="/about" className="flex min-h-11 items-center hover:text-foreground">
                   {t("common.nav.about")}
                 </Link>
               </li>
