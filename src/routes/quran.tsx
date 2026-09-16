@@ -188,29 +188,48 @@ function QuranPage() {
               return (
                 <Card key={word.id} className="h-full shadow-soft">
                   <CardContent className="pt-6">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="text-right" dir="rtl" lang="ar">
-                        <p className="text-quran text-2xl font-semibold">{word.word}</p>
+                    <div className="flex items-start justify-between gap-3">
+                      {/* text-quran alone (no text-2xl alongside it): Tailwind's
+                          own text-2xl utility was silently overriding
+                          text-quran's line-height (2.2, sized for Amiri's
+                          diacritics) down to ~1.33, leaving the transliteration
+                          directly below crowding right up against them. */}
+                      <div className="min-w-0 text-right" dir="rtl" lang="ar">
+                        <p className="text-quran font-semibold">{word.word}</p>
                         {word.transliteration && (
-                          <p className="text-sm text-muted-foreground">{word.transliteration}</p>
+                          <p className="mt-1 text-sm text-muted-foreground">
+                            {word.transliteration}
+                          </p>
                         )}
                       </div>
                       {word.frequency_rank && (
-                        <Badge variant="outline">
+                        <Badge variant="outline" className="shrink-0">
                           {t("quran.vocabulary.frequencyRank", { rank: word.frequency_rank })}
                         </Badge>
                       )}
                     </div>
 
                     <div className="mt-4 space-y-1 text-sm">
-                      <p>
+                      <p className="wrap-break-word">
                         <span className="text-muted-foreground">{wordCopy.meaning}:</span>{" "}
                         <span className="font-medium">{word.resolvedMeaning}</span>
                       </p>
                       {word.root && (
                         <p>
                           <span className="text-muted-foreground">{wordCopy.root}:</span>{" "}
-                          <span className="font-medium">{word.root}</span>
+                          {/* Isolated RTL/Arabic-font span, not inline plain
+                              text -- otherwise the root sits in the
+                              surrounding LTR label's direction with no
+                              dedicated glyph shaping, reading cramped and
+                              undersized next to it (worse still in French,
+                              whose "Racine:" label runs longer than "Root:"). */}
+                          <span
+                            className="font-arabic ms-1 text-base font-medium"
+                            dir="rtl"
+                            lang="ar"
+                          >
+                            {word.root}
+                          </span>
                         </p>
                       )}
                       {word.category && (

@@ -198,27 +198,44 @@ function Home() {
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                   {home.wordStudy.panelLabel}
                 </p>
-                <p className="font-arabic mt-3 text-4xl text-foreground" lang="ar" dir="rtl">
+                {/* text-left overrides dir="rtl"'s own default right-alignment
+                    -- dir/lang stay for correct Arabic glyph shaping and
+                    joining, but the word itself lines up under the panel
+                    label above it instead of floating to the opposite edge
+                    of the card. */}
+                <p
+                  className="font-arabic mt-3 text-left text-4xl leading-snug text-foreground"
+                  lang="ar"
+                  dir="rtl"
+                >
                   الحمد
                 </p>
-                <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
+                <dl className="mt-4 grid grid-cols-2 gap-x-3 gap-y-4 text-sm">
                   <div>
                     <dt className="text-muted-foreground">{home.wordStudy.meaning}</dt>
-                    <dd className="font-medium">{home.wordStudy.meaningValue}</dd>
+                    <dd className="mt-1 font-medium">{home.wordStudy.meaningValue}</dd>
                   </div>
                   <div>
                     <dt className="text-muted-foreground">{home.wordStudy.transliteration}</dt>
-                    <dd className="font-medium">al-ḥamdu</dd>
+                    <dd className="mt-1 font-medium">al-ḥamdu</dd>
                   </div>
                   <div>
                     <dt className="text-muted-foreground">{home.wordStudy.root}</dt>
-                    <dd className="font-arabic text-lg" lang="ar" dir="rtl">
+                    {/* Same text-left override as the headline word above,
+                        for the same reason: this value must start at the
+                        same left edge as every other value in this grid,
+                        not float to the right because it's RTL script. */}
+                    <dd
+                      className="font-arabic mt-1 text-left text-lg leading-snug"
+                      lang="ar"
+                      dir="rtl"
+                    >
                       ح م د
                     </dd>
                   </div>
                   <div>
                     <dt className="text-muted-foreground">{home.wordStudy.wordType}</dt>
-                    <dd className="font-medium">{home.wordStudy.wordTypeValue}</dd>
+                    <dd className="mt-1 font-medium">{home.wordStudy.wordTypeValue}</dd>
                   </div>
                 </dl>
               </CardContent>

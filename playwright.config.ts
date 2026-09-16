@@ -47,6 +47,7 @@ export default defineConfig({
         "security.spec.ts",
         "16-curriculum-schema.spec.ts",
         "53-auth-route-hydration.spec.ts",
+        "54-arabic-typography.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },
