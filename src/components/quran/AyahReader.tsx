@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, BookmarkCheck, BookOpen, NotebookPen } from "lucide-react";
+import { Bookmark, BookmarkCheck, BookOpen, Check, NotebookPen } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -33,12 +33,33 @@ type AyahReaderProps = {
   highlightAyah?: number | undefined;
 };
 
+// How long the bookmark-confirmation checkmark stays visible before it's
+// cleared -- long enough to register as a deliberate acknowledgment, short
+// enough not to linger once the learner has moved on. The 300ms it takes to
+// pop in (see the "animate-in zoom-in-50" usage below) is the same duration
+// the lesson-completion checkmark and the level-card hover transition use.
+const BOOKMARK_CONFIRM_MS = 1400;
+
 export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahReaderProps) {
   const { d, locale } = useI18n();
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const r = d.quran.reader;
   const [noteTarget, setNoteTarget] = useState<{ surah: number; ayah: number } | null>(null);
+  // "Selected" (a soft highlight on the card the learner just acted on) and
+  // "confirmed" (the bookmark checkmark, shown only once the save actually
+  // succeeds -- never on the optimistic update below) are deliberately
+  // separate: selecting an āyah happens the instant you interact with it,
+  // confirmation only after the network round-trip resolves.
+  const [selectedKey, setSelectedKey] = useState<string | null>(null);
+  const [confirmedKey, setConfirmedKey] = useState<string | null>(null);
+  const confirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current);
+    };
+  }, []);
 
   const { data: surahs } = useQuery({
     queryKey: ["surahs"],
@@ -104,8 +125,20 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
       if (context?.previous) queryClient.setQueryData(bookmarksKey, context.previous);
       toast.error(d.common.errors.generic);
     },
-    onSuccess: (_data, { bookmarked }) => {
+    onSuccess: (_data, { surah, ayah, bookmarked }) => {
       toast.success(bookmarked ? d.bookmarks.removedToast : d.bookmarks.addedToast);
+      // Only the save that just *added* a bookmark gets the checkmark --
+      // `bookmarked` here is the state being toggled away from, so
+      // `!bookmarked` means this call added one. Gated on this onSuccess
+      // callback specifically, never on onMutate's optimistic update
+      // above, so it can only ever appear once the write has actually
+      // landed.
+      if (!bookmarked) {
+        const key = `${surah}:${ayah}`;
+        if (confirmTimeoutRef.current) clearTimeout(confirmTimeoutRef.current);
+        setConfirmedKey(key);
+        confirmTimeoutRef.current = setTimeout(() => setConfirmedKey(null), BOOKMARK_CONFIRM_MS);
+      }
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: bookmarksKey });
@@ -175,31 +208,54 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
                 ayah={ayah}
                 surahLabel={`${surahName(activeSurahRow, locale)} ${ayah.surah_number}:${ayah.ayah_number}`}
                 highlighted={highlightAyah === ayah.ayah_number}
+                selected={selectedKey === key}
                 actions={
                   <>
                     <AyahPlayButton surahNumber={ayah.surah_number} ayahNumber={ayah.ayah_number} />
                     {user && (
                       <>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={isBookmarked ? d.bookmarks.remove : d.bookmarks.add}
-                          title={isBookmarked ? d.bookmarks.remove : d.bookmarks.add}
-                          disabled={toggleBookmark.isPending}
-                          onClick={() =>
-                            toggleBookmark.mutate({
-                              surah: ayah.surah_number,
-                              ayah: ayah.ayah_number,
-                              bookmarked: isBookmarked,
-                            })
-                          }
-                        >
-                          {isBookmarked ? (
-                            <BookmarkCheck className="size-4 text-primary" aria-hidden />
-                          ) : (
-                            <Bookmark className="size-4" aria-hidden />
+                        <div className="relative">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label={isBookmarked ? d.bookmarks.remove : d.bookmarks.add}
+                            title={isBookmarked ? d.bookmarks.remove : d.bookmarks.add}
+                            disabled={toggleBookmark.isPending}
+                            onClick={() => {
+                              setSelectedKey(key);
+                              toggleBookmark.mutate({
+                                surah: ayah.surah_number,
+                                ayah: ayah.ayah_number,
+                                bookmarked: isBookmarked,
+                              });
+                            }}
+                          >
+                            {isBookmarked ? (
+                              <BookmarkCheck className="size-4 text-primary" aria-hidden />
+                            ) : (
+                              <Bookmark className="size-4" aria-hidden />
+                            )}
+                          </Button>
+                          {/* Confirmation badge: absolutely positioned so it
+                              overlays rather than pushes the row -- nothing
+                              here ever shifts layout. Only ever rendered
+                              once toggleBookmark's onSuccess has actually
+                              set confirmedKey (see above), never on the
+                              optimistic isBookmarked flip. Conditionally
+                              mounted (not a class toggled on a
+                              permanently-present node), so the pop-in can
+                              only ever play once per confirmation, not
+                              replay on an unrelated re-render. */}
+                          {confirmedKey === key && (
+                            <span
+                              aria-hidden
+                              data-testid="bookmark-confirmed"
+                              className="animate-in zoom-in-50 fade-in-0 bg-primary text-primary-foreground pointer-events-none absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full duration-300 ease-out"
+                            >
+                              <Check className="size-3" />
+                            </span>
                           )}
-                        </Button>
+                        </div>
                         <Button
                           variant="ghost"
                           size="icon"

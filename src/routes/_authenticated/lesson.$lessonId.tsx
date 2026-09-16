@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, PartyPopper } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, PartyPopper } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,16 @@ export const Route = createFileRoute("/_authenticated/lesson/$lessonId")({
 
 const PLACEHOLDER_SLUG = "schema-validation-placeholder";
 
+// How long the checkmark reveal stays on screen before handing off to the
+// full completion card -- a floor, not a fixed delay: it runs concurrently
+// with the real completion writes below (see goNextOrComplete), so a slow
+// network never gets a shorter reveal, and a fast one never gets a longer
+// wait than this. Long enough to see the checkmark pop in (300ms, the same
+// duration as the other new "emphasis" motion in this app -- the ayah
+// selection highlight and bookmark confirmation) and then the progress bar
+// animate to 100% (also 300ms, see progress.tsx) right behind it.
+const CELEBRATION_REVEAL_MS = 700;
+
 function LessonPlayerRoute() {
   const { lessonId } = Route.useParams();
   const { user } = useAuth();
@@ -62,6 +72,13 @@ function LessonPlayerRoute() {
 
   const [stepIndex, setStepIndex] = useState(0);
   const [completed, setCompleted] = useState(false);
+  // Transitional state between "on the last step" and the full completion
+  // card: shows the checkmark reveal and the progress bar animating to
+  // 100%. Only ever set true once, right before the completion writes
+  // below fire, and never set back to false -- goNextOrComplete moves
+  // straight from here to setCompleted(true), so this can't re-mount and
+  // replay on a later re-render.
+  const [celebrating, setCelebrating] = useState(false);
   const [answeredSteps, setAnsweredSteps] = useState<Set<number>>(new Set());
   const [startedAt, setStartedAt] = useState<string | null>(null);
   const initializedRef = useRef(false);
@@ -149,10 +166,47 @@ function LessonPlayerRoute() {
   const moduleTitle = lesson.module.title;
   const isPlaceholder = lesson.slug === PLACEHOLDER_SLUG;
 
+  if (celebrating && !completed) {
+    return (
+      <main className="mx-auto w-full max-w-2xl px-4 py-10">
+        <p className="text-sm text-muted-foreground">
+          {t("learning.lesson.stepOf", { current: totalSteps, total: totalSteps })}
+        </p>
+        <Progress value={100} aria-label={copy.progressLabel} className="mt-2" />
+        {/* No "Lesson complete!" text here on purpose, even though the
+            checkmark means the same thing -- the real completion card
+            right after this uses that exact copy.completion.title text as
+            the signal (for both screen readers and
+            tests/e2e/17-lesson-player.spec.ts) that the completion write
+            has actually landed. Duplicating it here would make that text
+            appear the instant this transient screen mounts, before
+            upsertLessonProgressCompleted below has necessarily resolved --
+            a real assistive-tech/test race, not just a cosmetic one. The
+            checkmark is decorative (aria-hidden); nothing here needs its
+            own announcement in the ~700ms before the real one follows. */}
+        <div className="mt-16 flex flex-col items-center gap-3 text-center">
+          {/* animate-in/zoom-in/duration-300 is the exact same trio the
+              bookmark confirmation (AyahReader.tsx) and the ayah selection
+              highlight use -- one consistent "something just succeeded"
+              motion instead of a bespoke one for each spot. Mounts once
+              (celebrating only ever flips false->true->on to
+              setCompleted(true), never back), so it can't replay on a
+              later re-render. */}
+          <span
+            aria-hidden
+            className="animate-in zoom-in-50 fade-in-0 flex size-16 items-center justify-center rounded-full bg-primary text-primary-foreground duration-300 ease-out"
+          >
+            <Check className="size-8" />
+          </span>
+        </div>
+      </main>
+    );
+  }
+
   if (completed) {
     return (
       <main className="mx-auto w-full max-w-2xl px-4 py-10">
-        <Card className="shadow-soft">
+        <Card className="animate-in fade-in-0 zoom-in-95 shadow-soft duration-300 ease-out">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 font-display text-2xl">
               <PartyPopper className="size-6 text-gold" aria-hidden />
@@ -212,6 +266,11 @@ function LessonPlayerRoute() {
   async function goNextOrComplete() {
     if (!canAdvance || !user?.id || !startedAt) return;
     if (onLastStep) {
+      setCelebrating(true);
+      // Runs concurrently with the real writes below, not after them --
+      // this only floors how long the reveal stays visible, it never adds
+      // to how long completing a lesson actually takes.
+      const revealHold = new Promise((resolve) => setTimeout(resolve, CELEBRATION_REVEAL_MS));
       // Drain any in-flight/pending position write first -- otherwise a
       // still-settling in-progress write could resolve after this
       // completion upsert and silently revert status back to
@@ -220,6 +279,7 @@ function LessonPlayerRoute() {
       await upsertLessonProgressCompleted(user.id, lessonId, totalSteps, startedAt);
       await seedLessonReviewItems(user.id, lesson!);
       await refetchProgress();
+      await revealHold;
       setCompleted(true);
       return;
     }

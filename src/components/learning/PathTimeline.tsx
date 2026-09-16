@@ -28,14 +28,24 @@ export function PathTimeline({ steps }: { steps: LearningPathStep[] }) {
           <li
             key={step.id ?? step.step_key}
             className={cn(
-              "flex gap-3 rounded-xl border p-4",
+              // transition-colors + duration-200/ease-out here matches the
+              // same pair every dialog/popover in this app already
+              // animates open with (see dialog.tsx/popover.tsx's
+              // duration-200) -- reusing it, rather than picking a new
+              // number, is what keeps this "restrained" instead of
+              // drawing attention to itself.
+              "flex gap-3 rounded-xl border p-4 transition-colors duration-200 ease-out",
               active ? "border-primary bg-primary/5" : "border-border bg-card",
-              step.status === "locked" && "opacity-60",
+              step.status === "locked"
+                ? // Locked steps get no hover affordance at all -- nothing
+                  // here should look interactive when it isn't.
+                  "opacity-60"
+                : "hover:border-primary/50",
             )}
           >
             <span
               className={cn(
-                "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full",
+                "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full transition-colors duration-200 ease-out",
                 step.status === "completed"
                   ? "bg-primary text-primary-foreground"
                   : active
@@ -64,7 +74,18 @@ export function PathTimeline({ steps }: { steps: LearningPathStep[] }) {
                   no lesson_id yet, so it falls through to the same
                   read-only display this timeline always had. */}
               {step.lesson_id && step.status !== "locked" && (
-                <Button size="sm" variant="outline" className="mt-3" asChild>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  // A brief press-scale, scoped to this one button rather
+                  // than shared Button (every button in the app would
+                  // otherwise pick this up) -- confirms the tap without
+                  // adding a new animation vocabulary: transform is the
+                  // only property in flight, and prefers-reduced-motion is
+                  // already handled globally in styles.css.
+                  className="mt-3 transition-transform duration-150 ease-out active:scale-[0.97]"
+                  asChild
+                >
                   <Link to="/lesson/$lessonId" params={{ lessonId: step.lesson_id }}>
                     {step.status === "completed" ? copy.reviewLesson : copy.openLesson}
                   </Link>

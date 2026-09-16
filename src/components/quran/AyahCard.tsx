@@ -12,11 +12,18 @@ type AyahCardProps = {
   ayah: ResolvedAyah;
   surahLabel: string;
   highlighted?: boolean;
+  /** True right after the learner has acted on this āyah (bookmarked it,
+   * opened its note). A soft background tint, not the ring `highlighted`
+   * uses -- the two need to read as different things, since a card can be
+   * both at once (scrolled-to *and* just acted on). Only ever the card's
+   * own background/border, never anything inside it, so the Arabic text
+   * and translation never move. */
+  selected?: boolean;
   actions?: ReactNode;
 };
 
 /** Shared ayah display: reader, bookmarks and notes all render the same card. */
-export function AyahCard({ ayah, surahLabel, highlighted, actions }: AyahCardProps) {
+export function AyahCard({ ayah, surahLabel, highlighted, selected, actions }: AyahCardProps) {
   const { d } = useI18n();
   const r = d.quran.reader;
   const translation = ayah.resolvedTranslation;
@@ -24,7 +31,13 @@ export function AyahCard({ ayah, surahLabel, highlighted, actions }: AyahCardPro
   return (
     <Card
       id={`ayah-${ayah.surah_number}-${ayah.ayah_number}`}
-      className={cn("shadow-soft scroll-mt-24", highlighted && "ring-2 ring-primary")}
+      className={cn(
+        // duration-200/ease-out: the same restrained pair PathTimeline's
+        // level cards use for their own hover/select state.
+        "shadow-soft scroll-mt-24 transition-colors duration-200 ease-out",
+        highlighted && "ring-2 ring-primary",
+        selected && "border-primary/40 bg-primary/5",
+      )}
     >
       <CardContent className="pt-6">
         <Badge variant="outline">{surahLabel}</Badge>
