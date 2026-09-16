@@ -111,6 +111,7 @@ export default defineConfig({
         "51-production-quran-smoke.spec.ts",
         "52-production-polish.spec.ts",
         "55-dashboard-mobile-greeting.spec.ts",
+        "56-premium-motion-interactions.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
