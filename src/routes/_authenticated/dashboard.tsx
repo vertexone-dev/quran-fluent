@@ -171,9 +171,18 @@ function Dashboard() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 py-10">
-      <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:items-center sm:justify-between">
+      {/* flex-col below sm: (not the grid this used to be) -- the greeting
+          ("As-salāmu ʿalaykum, {name}") and the streak badge were forced
+          onto the same row at every width via a 2-column grid, and
+          `truncate` silently ate whatever didn't fit. At 390px that cut
+          the French greeting down to "As-salāmu ʿala…" mid-word. Stacking
+          them below sm: gives the greeting the full row width, so it wraps
+          instead of clipping; sm:flex-row restores the original side-by-side
+          layout once there's room, matching the Continue-learning card's
+          own flex-col/sm:flex-row pattern below. */}
+      <header className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="truncate font-display text-2xl font-bold sm:text-3xl">
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">
             {t("dashboard.greeting", { name: firstName })}
           </h1>
           <p className="mt-1 text-muted-foreground">{copy.subtitle}</p>
