@@ -95,3 +95,14 @@ export async function fetchLearnerSnapshot(userId: string): Promise<LearnerSnaps
     streak: (streak.data as LearnerSnapshot["streak"]) ?? null,
   };
 }
+
+// A profile whose owner never set a real name can carry their email
+// address in profiles.display_name (a Supabase-side default for plain
+// email/password signups with no full_name in auth metadata) -- greeting
+// a learner with their own email back at them reads as broken, not
+// personal, so that case falls back to `fallback` like a genuinely empty
+// name would. Presentation-only: neither profiles.first_name nor
+// display_name is ever written by this.
+export function resolveGreetingName(rawName: string | null | undefined, fallback: string): string {
+  return rawName && !rawName.includes("@") ? rawName : fallback;
+}

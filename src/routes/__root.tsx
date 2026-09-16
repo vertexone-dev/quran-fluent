@@ -8,6 +8,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { Compass } from "lucide-react";
 
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
@@ -38,7 +39,10 @@ function NotFoundComponent() {
       <SiteHeader />
       <div className="flex flex-1 items-center justify-center bg-background px-4">
         <div className="max-w-md text-center">
-          <h1 className="text-7xl font-bold text-foreground">404</h1>
+          <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-secondary text-secondary-foreground">
+            <Compass className="size-6" aria-hidden />
+          </div>
+          <h1 className="mt-6 text-7xl font-bold text-foreground">404</h1>
           <h2 className="mt-4 text-xl font-semibold text-foreground">
             {t("common.errors.notFoundTitle")}
           </h2>
@@ -112,7 +116,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Open+Sans:wght@300;400;500;600;700&family=Amiri:wght@400;700&family=Amiri+Quran&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=Cairo:wght@500;600;700;800&family=Open+Sans:wght@300;400;500;600;700&family=Amiri:wght@400;700&family=Amiri+Quran&display=swap",
       },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
     ],

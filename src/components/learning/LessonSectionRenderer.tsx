@@ -125,7 +125,10 @@ function QuranExampleSection({ section }: { section: LessonSection }) {
                 <p className="mt-2 text-sm text-muted-foreground">
                   {ayahTranslation(data, locale) ?? d.quran.reader.translationUnavailable}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground/70">
+                {/* Full-opacity muted-foreground, not /70: measured at
+                    ~3.9:1 against this card's background at text-xs size,
+                    under WCAG AA's 4.5:1 floor for non-large text. */}
+                <p className="mt-1 text-xs text-muted-foreground">
                   {t("learning.lesson.quranExampleReference", { surah: surah!, ayah: ayah! })}
                 </p>
               </div>

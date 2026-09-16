@@ -5,14 +5,18 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * QuranRoots design system.
- * Brand palette (official):
- *   Deep Olive Green  #4B6339  nature, tradition, depth
- *   Warm Parchment    #F2E9D4  primary surface
- *   Burnished Gold    #B98D32  accent
+ * QuranRoots design system (Phase 9 premium redesign).
+ * Brand palette:
+ *   Deep Emerald      primary surfaces, buttons -- cooler/deeper than the
+ *                     original olive-green, still from the same warm-earth
+ *                     family, never a bright/saturated "app green"
+ *   Warm Ivory        primary background
+ *   Antique Gold      restrained accent -- muted, not a bright/metallic gold
  *   Sky Blue Support  #70A0B1  support
- *   Charcoal          #333333  text / detail
+ *   Charcoal          text / detail
  * All colors are oklch tokens. Never hardcode colors in components.
+ * Every pairing below is checked against real WCAG contrast math (not
+ * eyeballed) -- see the contrast verification in this phase's PR body.
  */
 
 @theme inline {
@@ -62,7 +66,11 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Cairo", "Open Sans", ui-sans-serif, sans-serif;
+  /* Editorial serif for headings (Latin/French UI text only -- never
+     applied to Arabic script, which always renders through --font-quran/
+     --font-arabic below, untouched by this). Cairo stays as the fallback
+     for the rare case Playfair Display hasn't loaded yet. */
+  --font-display: "Playfair Display", "Cairo", "Open Sans", ui-serif, serif;
   --font-quran: "Amiri Quran", "Scheherazade New", serif;
   --font-arabic: "Amiri", "Scheherazade New", serif;
 }
@@ -76,37 +84,49 @@
   --card-foreground: oklch(0.321 0 89.9);
   --popover: oklch(1 0 89.9);
   --popover-foreground: oklch(0.321 0 89.9);
-  --primary: oklch(0.469 0.07 132.8);
+  /* Deep emerald (was a yellower olive-green: L .469 C .07 H 132.8) --
+     cooler/greener hue, a touch more saturated and a touch darker, for
+     the "deep emerald surfaces and buttons" Phase 9 reference. Every
+     occurrence below that shared the old primary value is updated
+     together so nothing drifts out of sync with it. */
+  --primary: oklch(0.42 0.09 155);
   --primary-foreground: oklch(0.974 0.014 88.7);
   --secondary: oklch(0.936 0.029 87.5);
-  --secondary-foreground: oklch(0.34 0.05 132.8);
+  --secondary-foreground: oklch(0.34 0.05 155);
   --muted: oklch(0.936 0.029 87.5);
   --muted-foreground: oklch(0.48 0.026 118);
   --accent: oklch(0.896 0.037 87.8);
-  --accent-foreground: oklch(0.34 0.05 132.8);
-  --gold: oklch(0.669 0.118 82);
-  --gold-foreground: oklch(0.239 0.018 131.4);
+  --accent-foreground: oklch(0.34 0.05 155);
+  /* Restrained antique gold (was L .669 C .118 H 82) -- slightly lower
+     chroma so it reads as muted/antique rather than a bright metallic
+     gold, per the Phase 9 reference. */
+  --gold: oklch(0.5 0.1 75);
+  /* Light text, not the old dark near-black: --gold darkened (L .669 ->
+     .5) so text-gold itself clears WCAG AA against white/card, which
+     means anything sitting ON a gold background now needs light text
+     instead, the same relationship --primary/--primary-foreground use. */
+  --gold-foreground: oklch(0.98 0.02 88);
   --support: oklch(0.678 0.057 222);
-  --support-foreground: oklch(0.239 0.018 131.4);
+  --support-foreground: oklch(0.239 0.018 155);
   --parchment: oklch(0.936 0.029 87.5);
   --destructive: oklch(0.505 0.19 27.3);
   --destructive-foreground: oklch(0.98 0.01 88);
   --border: oklch(0.886 0.026 87.8);
   --input: oklch(0.886 0.026 87.8);
-  --ring: oklch(0.469 0.07 132.8);
-  --chart-1: oklch(0.469 0.07 132.8);
-  --chart-2: oklch(0.669 0.118 82);
+  --ring: oklch(0.42 0.09 155);
+  --chart-1: oklch(0.42 0.09 155);
+  --chart-2: oklch(0.5 0.1 75);
   --chart-3: oklch(0.678 0.057 222);
-  --chart-4: oklch(0.719 0.084 133.7);
-  --chart-5: oklch(0.563 0.039 129.3);
+  --chart-4: oklch(0.719 0.084 155);
+  --chart-5: oklch(0.563 0.039 150);
   --sidebar: oklch(0.936 0.029 87.5);
   --sidebar-foreground: oklch(0.321 0 89.9);
-  --sidebar-primary: oklch(0.469 0.07 132.8);
+  --sidebar-primary: oklch(0.42 0.09 155);
   --sidebar-primary-foreground: oklch(0.974 0.014 88.7);
   --sidebar-accent: oklch(0.896 0.037 87.8);
-  --sidebar-accent-foreground: oklch(0.34 0.05 132.8);
+  --sidebar-accent-foreground: oklch(0.34 0.05 155);
   --sidebar-border: oklch(0.886 0.026 87.8);
-  --sidebar-ring: oklch(0.469 0.07 132.8);
+  --sidebar-ring: oklch(0.42 0.09 155);
 
   --gradient-hero:
     radial-gradient(
@@ -131,43 +151,44 @@
 }
 
 .dark {
-  --background: oklch(0.239 0.018 131.4);
+  --background: oklch(0.239 0.018 155);
   --foreground: oklch(0.949 0.02 88);
-  --card: oklch(0.283 0.024 132);
+  --card: oklch(0.283 0.024 155);
   --card-foreground: oklch(0.949 0.02 88);
-  --popover: oklch(0.283 0.024 132);
+  --popover: oklch(0.283 0.024 155);
   --popover-foreground: oklch(0.949 0.02 88);
-  --primary: oklch(0.719 0.084 133.7);
-  --primary-foreground: oklch(0.213 0.02 131.4);
-  --secondary: oklch(0.325 0.026 132);
+  /* Same deep-emerald hue shift as :root's --primary/--gold above. */
+  --primary: oklch(0.719 0.09 155);
+  --primary-foreground: oklch(0.213 0.02 155);
+  --secondary: oklch(0.325 0.026 155);
   --secondary-foreground: oklch(0.949 0.02 88);
-  --muted: oklch(0.325 0.026 132);
+  --muted: oklch(0.325 0.026 155);
   --muted-foreground: oklch(0.76 0.024 100);
-  --accent: oklch(0.355 0.03 132);
+  --accent: oklch(0.355 0.03 155);
   --accent-foreground: oklch(0.949 0.02 88);
-  --gold: oklch(0.785 0.116 87);
-  --gold-foreground: oklch(0.213 0.02 131.4);
+  --gold: oklch(0.75 0.095 82);
+  --gold-foreground: oklch(0.213 0.02 155);
   --support: oklch(0.73 0.06 222);
-  --support-foreground: oklch(0.213 0.02 131.4);
-  --parchment: oklch(0.325 0.026 132);
+  --support-foreground: oklch(0.213 0.02 155);
+  --parchment: oklch(0.325 0.026 155);
   --destructive: oklch(0.65 0.19 25);
   --destructive-foreground: oklch(0.98 0.01 88);
   --border: oklch(0.949 0.02 88 / 14%);
   --input: oklch(0.949 0.02 88 / 18%);
-  --ring: oklch(0.719 0.084 133.7);
-  --chart-1: oklch(0.719 0.084 133.7);
-  --chart-2: oklch(0.785 0.116 87);
+  --ring: oklch(0.719 0.09 155);
+  --chart-1: oklch(0.719 0.09 155);
+  --chart-2: oklch(0.75 0.095 82);
   --chart-3: oklch(0.73 0.06 222);
-  --chart-4: oklch(0.63 0.07 133);
+  --chart-4: oklch(0.63 0.07 155);
   --chart-5: oklch(0.86 0.03 88);
-  --sidebar: oklch(0.283 0.024 132);
+  --sidebar: oklch(0.283 0.024 155);
   --sidebar-foreground: oklch(0.949 0.02 88);
-  --sidebar-primary: oklch(0.719 0.084 133.7);
-  --sidebar-primary-foreground: oklch(0.213 0.02 131.4);
-  --sidebar-accent: oklch(0.355 0.03 132);
+  --sidebar-primary: oklch(0.719 0.09 155);
+  --sidebar-primary-foreground: oklch(0.213 0.02 155);
+  --sidebar-accent: oklch(0.355 0.03 155);
   --sidebar-accent-foreground: oklch(0.949 0.02 88);
   --sidebar-border: oklch(0.949 0.02 88 / 14%);
-  --sidebar-ring: oklch(0.719 0.084 133.7);
+  --sidebar-ring: oklch(0.719 0.09 155);
 
   --gradient-hero:
     radial-gradient(
@@ -195,7 +216,10 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
+    /* Playfair Display reads better at normal tracking than Cairo's
+       geometric sans did -- the old -0.01em was tuned for Cairo and
+       pinches a serif's serifs/counters at larger sizes. */
+    letter-spacing: normal;
   }
 
   :focus-visible {

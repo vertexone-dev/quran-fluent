@@ -206,6 +206,78 @@ test.describe("production polish", () => {
     }
   });
 
+  test.describe("hero image", () => {
+    test("renders, loads successfully, and has localized alt text (English)", async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto("/");
+      const heroImg = page.locator('img[src="/quranroots-hero-premium.png"]');
+      await expect(heroImg).toBeVisible();
+      await expect(heroImg).toHaveAttribute(
+        "alt",
+        "A Qur'an on a wooden stand in a sunlit archway.",
+      );
+      // Explicit width/height (not just CSS) so the layout box is reserved
+      // before the image arrives -- prevents layout shift.
+      await expect(heroImg).toHaveAttribute("width", "1122");
+      await expect(heroImg).toHaveAttribute("height", "1402");
+      // Above-the-fold hero: never lazy-loaded.
+      await expect(heroImg).not.toHaveAttribute("loading", "lazy");
+      const naturalWidth = await heroImg.evaluate((el: HTMLImageElement) => el.naturalWidth);
+      expect(naturalWidth).toBeGreaterThan(0);
+    });
+
+    test("has localized alt text (French)", async ({ page }) => {
+      const { client, userId } = await createTestUserClient();
+      await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
+      try {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.goto("/");
+        const heroImg = page.locator('img[src="/quranroots-hero-premium.png"]');
+        await expect(heroImg).toHaveAttribute(
+          "alt",
+          "Un Coran posé sur un lutrin en bois dans une arcade ensoleillée.",
+        );
+      } finally {
+        await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+      }
+    });
+
+    test("is hidden and only ever fetched at its smallest size below lg: (never the full-size asset)", async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 768, height: 1024 });
+      const heroRequests: string[] = [];
+      page.on("request", (req) => {
+        if (req.url().includes("quranroots-hero-premium")) heroRequests.push(req.url());
+      });
+      await page.goto("/", { waitUntil: "networkidle" });
+      // The <img> stays in the DOM (its parent is CSS `hidden` below lg:,
+      // not removed/unmounted) and must not be visible at this width.
+      await expect(page.locator('img[src="/quranroots-hero-premium.png"]')).toBeHidden();
+      // `loading="eager"` (required for the real desktop hero -- see the
+      // "not lazy" test above) means the browser still fetches *something*
+      // here even though it's hidden; `sizes` correctly steers it to the
+      // smallest ~40KB candidate rather than the ~136KB full-size one, so
+      // this is never a large/unnecessary download.
+      for (const url of heroRequests) {
+        expect(url).not.toMatch(/-(768|1122)w\.webp$/);
+        expect(url).not.toMatch(/quranroots-hero-premium\.png$/);
+      }
+    });
+
+    test("the rest of the hero remains readable if the image fails to load", async ({ page }) => {
+      await page.route("**/quranroots-hero-premium*", (route) => route.abort());
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto("/");
+      // Headline, subtitle and both CTAs are unaffected by the image failure.
+      // "Start Learning" also appears in the header nav and footer CTA --
+      // .first() scopes to the hero's own copy.
+      await expect(page.getByRole("heading", { name: /Learn Arabic/i })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Start Learning" }).first()).toBeVisible();
+      await expect(page.getByRole("link", { name: "Explore the Qur'an" })).toBeVisible();
+    });
+  });
+
   test.describe("mobile tap targets", () => {
     for (const viewport of [
       { name: "390x844", width: 390, height: 844 },

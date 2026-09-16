@@ -54,7 +54,7 @@ function Home() {
             aria-hidden
             className="pattern-geometric pointer-events-none absolute inset-0 opacity-40"
           />
-          <div className="relative mx-auto max-w-6xl px-4 py-20 sm:py-28">
+          <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-20 sm:py-28 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="max-w-2xl">
               <Badge variant="secondary" className="gap-1">
                 <Sparkles className="size-3.5" aria-hidden /> {home.hero.badge}
@@ -76,6 +76,58 @@ function Home() {
                 </Button>
               </div>
               <p className="mt-6 max-w-md text-sm text-muted-foreground">{home.hero.note}</p>
+            </div>
+
+            {/* Arch motif from the Phase 9 visual reference, built as a
+                real shape (not a CSS background-image) via rounded-t-full
+                on a bordered, overflow-hidden card. Filled with the
+                approved quranroots-hero-premium photo (a Qur'an on a
+                stand, no legible/altered verse text, no fabricated
+                quotation or attribution -- see this phase's PR body for
+                the full asset-inventory review). bg-secondary behind the
+                <img> keeps the arch reading as an intentional shape even
+                if the image fails to load. Hidden below lg: the text
+                column alone carries the hero on narrower screens,
+                matching this section's existing mobile-first behavior. */}
+            <div className="hidden justify-center lg:flex">
+              <div className="border-border/70 bg-secondary shadow-elevated w-full max-w-sm overflow-hidden rounded-t-full rounded-b-2xl border">
+                <picture>
+                  {/* sizes tells the browser how wide this renders at
+                      lg:+ (384px, this panel's max-w-sm) so it never
+                      fetches a larger candidate than needed there. Below
+                      lg: the panel is CSS `hidden`, not unmounted --
+                      `loading="eager"` (required below) still fetches
+                      *something* even while hidden, so the "0px" branch
+                      exists to steer that fetch to the smallest ~40KB
+                      candidate rather than the ~136KB full-size one, not
+                      to skip the request entirely (browsers don't skip
+                      eager fetches for display:none content). */}
+                  <source
+                    type="image/webp"
+                    srcSet={
+                      "/quranroots-hero-premium-480w.webp 480w, " +
+                      "/quranroots-hero-premium-768w.webp 768w, " +
+                      "/quranroots-hero-premium-1122w.webp 1122w"
+                    }
+                    sizes="(min-width: 1024px) 384px, 0px"
+                  />
+                  {/* Primary above-the-fold hero image: eager, high
+                      priority, never lazy-loaded. Explicit width/height
+                      (the source photo's real 1122x1402 ratio) reserves
+                      the box before the image arrives, so nothing shifts
+                      when it loads. */}
+                  <img
+                    src="/quranroots-hero-premium.png"
+                    width={1122}
+                    height={1402}
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                    alt={home.hero.imageAlt}
+                    className="aspect-1122/1402 w-full object-cover"
+                  />
+                </picture>
+              </div>
             </div>
           </div>
         </section>
