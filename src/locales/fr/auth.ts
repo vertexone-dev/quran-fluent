@@ -1,6 +1,11 @@
 import type { auth as EnAuth } from "../en/auth";
 
 export const auth: typeof EnAuth = {
+  documentTitle: {
+    login: "Se connecter",
+    signup: "Créer un compte",
+    forgot: "Réinitialiser le mot de passe",
+  },
   login: {
     title: "Bon retour parmi nous",
     desc: "Poursuivez votre cheminement avec le Coran.",

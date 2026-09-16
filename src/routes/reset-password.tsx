@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
+import { useDocumentTitle } from "@/lib/use-document-title";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -31,6 +32,10 @@ function ResetPassword() {
   const navigate = useNavigate();
   const { t, d } = useI18n();
   const a = d.auth;
+  // a.reset.title already matches the desired document title exactly in
+  // both locales ("Choose a new password" / "Choisissez un nouveau mot
+  // de passe") -- no separate documentTitle key needed here.
+  useDocumentTitle(`${a.reset.title} — QuranRoots`);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();

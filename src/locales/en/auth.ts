@@ -1,4 +1,13 @@
 export const auth = {
+  // Browser-tab titles, deliberately distinct from the on-page title
+  // above (a warm "Welcome back"/"Create your account" heading reads
+  // fine on the page but not as a tab title) -- keyed by the same
+  // /auth?mode= values validateSearch accepts.
+  documentTitle: {
+    login: "Sign in",
+    signup: "Sign up",
+    forgot: "Reset password",
+  },
   login: {
     title: "Welcome back",
     desc: "Continue your journey with the Qur'an.",

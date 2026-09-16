@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -82,6 +83,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [locale, setLocaleState] = useState<Locale>("en");
   const [hydrated, setHydrated] = useState(false);
+  // Bumped by setLocale (a manual choice) and checked by the profile-locale
+  // fetch below before it applies its result -- so a slow/delayed fetch that
+  // resolves after a manual switch can never clobber it. A plain `cancelled`
+  // flag isn't enough: that only guards against unmount/dep-change, not
+  // against a newer manual choice landing while the fetch begun with the
+  // older one is still in flight.
+  const localeGenerationRef = useRef(0);
 
   // Client-side initial resolution: stored choice → browser hint → English.
   useEffect(() => {
@@ -95,6 +103,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
+    const generationAtFetchStart = localeGenerationRef.current;
     void (async () => {
       const { data } = await supabase
         .from("profiles")
@@ -102,6 +111,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         .eq("id", user.id)
         .maybeSingle();
       if (cancelled) return;
+      // A manual setLocale() call bumped the generation while this fetch was
+      // in flight -- that newer choice must win, so discard this stale result.
+      if (localeGenerationRef.current !== generationAtFetchStart) return;
       const saved = data?.interface_language;
       if (isLocale(saved)) {
         setLocaleState(saved);
@@ -125,6 +137,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const setLocale = useCallback(
     (next: Locale) => {
+      localeGenerationRef.current += 1;
       setLocaleState(next);
       window.localStorage.setItem(STORAGE_KEY, next);
       if (user?.id) {

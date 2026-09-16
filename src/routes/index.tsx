@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
+import { useDocumentTitle } from "@/lib/use-document-title";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -43,6 +44,7 @@ const pillarIcons = [GraduationCap, BookOpenText, Brain, Languages, Headphones, 
 function Home() {
   const { t, d } = useI18n();
   const home = d.home;
+  useDocumentTitle(home.hero.documentTitle);
 
   return (
     <div className="flex min-h-screen flex-col">

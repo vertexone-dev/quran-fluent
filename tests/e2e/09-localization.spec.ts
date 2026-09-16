@@ -127,6 +127,104 @@ test.describe("localization (EN/FR)", () => {
      */
   });
 
+  test("switching language updates the document (browser-tab) title immediately, with no reload", async ({
+    page,
+  }) => {
+    // No waitUntil: "networkidle" here -- I18nProvider's generation-counter
+    // guard (src/lib/i18n.tsx) now makes a manual switch immune to the
+    // signed-in profile-locale fetch it fires on mount, regardless of
+    // whether that fetch is still in flight when the click below happens.
+    // See "a delayed profile-locale response can never override a manual
+    // switch" below for a deterministic, network-controlled proof of that
+    // guarantee.
+    //
+    // The homepage is a regular ssr:true route, unlike /dashboard, so its
+    // language switcher exists in the server-rendered HTML before React
+    // attaches any event handlers to it -- a click that lands before
+    // hydration completes is a real click on an inert button and is simply
+    // lost. Waiting for TanStack Start's own hydration-complete signal
+    // (not a guessed delay) before interacting avoids that.
+    await page.goto("/");
+    await page.waitForFunction(() => {
+      const tsr = (window as unknown as { $_TSR?: { hydrated?: boolean } }).$_TSR;
+      return !tsr || tsr.hydrated === true;
+    });
+    await expect(page).toHaveTitle("QuranRoots — Learn Arabic. Understand the Qur'an.");
+
+    const switcher = page.getByRole("group", { name: "Change language" }).first();
+    await switcher.getByRole("button", { name: /FR/ }).click();
+
+    // Wait for the switch itself to land (same stable signal the sibling
+    // test above uses) before checking the title, so this never races the
+    // locale-switch UI update.
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+
+    // useDocumentTitle's effect re-runs as soon as the locale-dependent
+    // title string changes -- no page.reload() anywhere in this test.
+    await expect(page).toHaveTitle("QuranRoots — Apprenez l'arabe. Comprenez le Coran.");
+
+    // Client-side navigation to another previously-fixed route keeps the
+    // title correctly localized without a reload either.
+    await page.getByRole("link", { name: "Fonctionnalités" }).first().click();
+    await expect(page).toHaveTitle("Fonctionnalités — QuranRoots");
+  });
+
+  test("a delayed profile-locale response can never override a manual switch made after it started", async ({
+    page,
+  }) => {
+    // Regression test for the I18nProvider race (src/lib/i18n.tsx): on
+    // mount, I18nProvider fires an async fetch of the signed-in user's
+    // saved profile locale and, before the fix, unconditionally applied
+    // whatever it returned -- even if a manual setLocale() call had
+    // already happened after the fetch started. The fix adds a
+    // generation counter that setLocale() bumps and the fetch's result
+    // handler checks before applying, so a stale response is discarded
+    // instead of clobbering the newer manual choice.
+    //
+    // This test forces that exact ordering deterministically: the
+    // profile-locale GET is held open (not delayed by a guessed
+    // timeout) until *after* the manual switch below has already landed,
+    // and it deliberately resolves to "en" -- the opposite of the "fr"
+    // switched to manually -- so the pre-fix bug would flip the locale
+    // back to English as soon as it's released.
+    const { client, userId } = await createTestUserClient();
+    await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+
+    let releaseProfileFetch = () => {};
+    const profileFetchHeld = new Promise<void>((resolve) => {
+      releaseProfileFetch = resolve;
+    });
+
+    await page.route("**/rest/v1/profiles*interface_language*", async (route) => {
+      if (route.request().method() !== "GET") {
+        await route.continue();
+        return;
+      }
+      await profileFetchHeld;
+      await route.continue();
+    });
+
+    const responsePromise = page.waitForResponse((res) =>
+      /\/rest\/v1\/profiles\?select=interface_language/.test(res.url()),
+    );
+
+    await page.goto("/dashboard");
+
+    const switcher = page.getByRole("group", { name: "Change language" }).first();
+    await switcher.getByRole("button", { name: /FR/ }).click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+
+    // Only now let the held-back fetch (still resolving to the stale "en"
+    // profile value) reach the network.
+    releaseProfileFetch();
+    const response = await responsePromise;
+    expect(response.ok()).toBeTruthy();
+
+    // The manual choice must survive the stale response landing after it.
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+    await expect(page.getByRole("group", { name: "Changer de langue" }).first()).toBeVisible();
+  });
+
   test("the 404 page and the footer tagline are translated, not hard-coded English", async ({
     page,
   }) => {
