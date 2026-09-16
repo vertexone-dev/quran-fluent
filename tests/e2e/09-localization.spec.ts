@@ -127,6 +127,38 @@ test.describe("localization (EN/FR)", () => {
      */
   });
 
+  test("switching language updates the document (browser-tab) title immediately, with no reload", async ({
+    page,
+  }) => {
+    // waitUntil: "networkidle" (not the default "load") matters here:
+    // I18nProvider fires an async fetch of the signed-in user's saved
+    // profile locale on mount and applies whatever it returns, racing any
+    // click that happens before that settles -- on a fast, lightly-loaded
+    // page like this one that fetch can still be in flight right after
+    // "load". Waiting for it to settle first avoids a real, pre-existing
+    // race in I18nProvider (out of scope for this fix) rather than
+    // masking it with a guess-and-hope delay.
+    await page.goto("/", { waitUntil: "networkidle" });
+    await expect(page).toHaveTitle("QuranRoots — Learn Arabic. Understand the Qur'an.");
+
+    const switcher = page.getByRole("group", { name: "Change language" }).first();
+    await switcher.getByRole("button", { name: /FR/ }).click();
+
+    // Wait for the switch itself to land (same stable signal the sibling
+    // test above uses) before checking the title, so this never races the
+    // locale-switch UI update.
+    await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+
+    // useDocumentTitle's effect re-runs as soon as the locale-dependent
+    // title string changes -- no page.reload() anywhere in this test.
+    await expect(page).toHaveTitle("QuranRoots — Apprenez l'arabe. Comprenez le Coran.");
+
+    // Client-side navigation to another previously-fixed route keeps the
+    // title correctly localized without a reload either.
+    await page.getByRole("link", { name: "Fonctionnalités" }).first().click();
+    await expect(page).toHaveTitle("Fonctionnalités — QuranRoots");
+  });
+
   test("the 404 page and the footer tagline are translated, not hard-coded English", async ({
     page,
   }) => {

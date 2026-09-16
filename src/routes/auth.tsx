@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { useDocumentTitle } from "@/lib/use-document-title";
 
 /**
  * Client-side validation. Supabase enforces its own rules server-side; these
@@ -54,6 +55,7 @@ function AuthPage() {
   const { t, d } = useI18n();
   const a = d.auth;
   const copy = a[mode];
+  useDocumentTitle(`${a.documentTitle[mode]} — QuranRoots`);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

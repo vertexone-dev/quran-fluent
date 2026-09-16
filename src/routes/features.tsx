@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
+import { useDocumentTitle } from "@/lib/use-document-title";
 
 export const Route = createFileRoute("/features")({
   head: () => ({
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/features")({
 function Features() {
   const { d } = useI18n();
   const features = d.home.features;
+  useDocumentTitle(`${features.documentTitle} — QuranRoots`);
 
   return (
     <div className="flex min-h-screen flex-col">

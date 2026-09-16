@@ -6,6 +6,7 @@ export const home = {
     subtitle: "Build your Qur'anic Arabic skills one word, one verse, and one lesson at a time.",
     note: "Qur'anic text and translations come from verified sources only.",
     imageAlt: "A Qur'an on a wooden stand in a sunlit archway.",
+    documentTitle: "QuranRoots — Learn Arabic. Understand the Qur'an.",
   },
   how: {
     title: "How it works",
@@ -84,6 +85,7 @@ export const home = {
   },
   features: {
     title: "Features and roadmap",
+    documentTitle: "Features",
     intro:
       "QuranRoots ships real, working functionality first. Here's what's live today, and what's still being built.",
     groups: [

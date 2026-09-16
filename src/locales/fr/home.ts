@@ -8,6 +8,7 @@ export const home: typeof EnHome = {
     subtitle: "Progressez en arabe coranique, un mot, un verset et une leçon à la fois.",
     note: "Le texte coranique et les traductions proviennent exclusivement de sources vérifiées.",
     imageAlt: "Un Coran posé sur un lutrin en bois dans une arcade ensoleillée.",
+    documentTitle: "QuranRoots — Apprenez l'arabe. Comprenez le Coran.",
   },
   how: {
     title: "Comment ça marche",
@@ -86,6 +87,7 @@ export const home: typeof EnHome = {
   },
   features: {
     title: "Fonctionnalités et feuille de route",
+    documentTitle: "Fonctionnalités",
     intro:
       "QuranRoots livre d'abord de vraies fonctionnalités opérationnelles. Voici ce qui est disponible aujourd'hui, et ce qui reste à construire.",
     groups: [
