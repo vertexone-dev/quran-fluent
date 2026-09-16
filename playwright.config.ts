@@ -110,6 +110,7 @@ export default defineConfig({
         "50-kazimirski-french-reader.spec.ts",
         "51-production-quran-smoke.spec.ts",
         "52-production-polish.spec.ts",
+        "55-dashboard-mobile-greeting.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
