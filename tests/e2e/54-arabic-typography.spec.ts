@@ -69,11 +69,11 @@ test.describe("Arabic typography and alignment", () => {
     page,
   }) => {
     await page.goto("/quran");
-    const firstCard = page
-      .locator("#vocabulary")
-      .locator("xpath=ancestor::section[1]")
-      .locator(":scope > div.mt-6.grid > *")
-      .first();
+    // Anchored on the grid's own data-testid rather than a class/depth path
+    // from #vocabulary -- mobile-density pass 2 moved this grid inside the
+    // Vocabulary tab's panel, changing its ancestor structure without
+    // changing anything this test actually cares about.
+    const firstCard = page.getByTestId("vocabulary-grid").locator(":scope > *").first();
     await expect(firstCard).toBeVisible();
 
     const metrics = await firstCard.evaluate((card) => {
@@ -105,9 +105,9 @@ test.describe("Arabic typography and alignment", () => {
     page,
   }) => {
     await page.goto("/quran");
-    const section = page.locator("#vocabulary").locator("xpath=ancestor::section[1]");
-    const cardWithRoot = section
-      .locator(":scope > div.mt-6.grid > *")
+    const cardWithRoot = page
+      .getByTestId("vocabulary-grid")
+      .locator(":scope > *")
       .filter({ hasText: "Root:" })
       .first();
     await expect(cardWithRoot).toBeVisible();

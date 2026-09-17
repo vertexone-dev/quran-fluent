@@ -9,6 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useDocumentTitle } from "@/lib/use-document-title";
@@ -53,6 +54,15 @@ export const Route = createFileRoute("/quran")({
 
 const CATEGORIES = [null, "noun", "verb", "particle", "phrase"] as const;
 
+// Mobile-density pass 2: the vocabulary browser can return up to 50 cards
+// (see the fetchWordFrequency limit below), and stacking all of them in a
+// single mobile column was the single largest contributor to this page's
+// scroll length. Six is deliberately a common multiple of every column
+// count this grid uses (1 on mobile, 2 on sm:, 3 on lg:), so the initial,
+// collapsed view is always whole rows -- never a partial row -- at any
+// width.
+const INITIAL_WORD_COUNT = 6;
+
 function QuranPage() {
   const { d, t, locale } = useI18n();
   const { user } = useAuth();
@@ -72,11 +82,20 @@ function QuranPage() {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>(null);
+  const [showAllWords, setShowAllWords] = useState(false);
 
   const { data: words } = useQuery({
     queryKey: ["word-frequency", category, search, locale],
     queryFn: ({ signal }) => fetchWordFrequency({ limit: 50, category, search, locale, signal }),
   });
+
+  // A search or category filter already bounds the result set to whatever
+  // the learner explicitly asked for -- collapsing it further behind "show
+  // more" would hide the very results they filtered for. The collapse only
+  // applies to the default, unfiltered browse-everything view.
+  const isFiltered = search.trim() !== "" || category !== null;
+  const visibleWords =
+    showAllWords || isFiltered ? (words ?? []) : (words ?? []).slice(0, INITIAL_WORD_COUNT);
 
   const { data: userVocab } = useQuery({
     queryKey: ["user-vocabulary", user?.id],
@@ -125,9 +144,9 @@ function QuranPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
+      <main className="section-py-normal mx-auto w-full max-w-5xl flex-1 px-4">
         <h1 className="font-display text-3xl font-bold sm:text-4xl">{page.title}</h1>
-        <p className="mt-3 max-w-2xl text-muted-foreground">{page.intro}</p>
+        <p className="mt-2 max-w-2xl text-muted-foreground">{page.intro}</p>
 
         <Card className="mt-6 shadow-elevated">
           <CardContent className="p-6 sm:p-8">
@@ -147,164 +166,212 @@ function QuranPage() {
           />
         </div>
 
-        <section className="mt-8" aria-labelledby="vocabulary">
-          <h2 id="vocabulary" className="font-display text-2xl font-bold">
-            {vocab.title}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{vocab.intro}</p>
+        {/* Mobile-density pass 2: vocabulary/data-sources/translations used
+            to be three sections stacked one after another -- on mobile,
+            mostly below the fold, this was the single biggest contributor
+            to /quran's scroll length (up to 50 vocabulary cards alone, plus
+            two more full card grids after them). None of the three is
+            primary reading content (that's the AyahReader above, untouched
+            here), so they become tabs: exactly one panel renders at a time
+            instead of all three stacking. Vocabulary stays the default,
+            open tab -- it's the section every existing test and the
+            previous design already treated as immediately visible. */}
+        <section className="section-py-compact" aria-label={page.moreTitle}>
+          <Tabs defaultValue="vocabulary">
+            <TabsList className="grid h-auto w-full grid-cols-3 gap-1 sm:inline-flex sm:w-auto">
+              <TabsTrigger value="vocabulary" className="min-h-11">
+                {page.tabs.vocabulary}
+              </TabsTrigger>
+              <TabsTrigger value="sources" className="min-h-11">
+                {page.tabs.dataHandling}
+              </TabsTrigger>
+              <TabsTrigger value="translations" className="min-h-11">
+                {page.tabs.translations}
+              </TabsTrigger>
+            </TabsList>
 
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="relative max-w-sm flex-1">
-              <Search
-                className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
-                aria-hidden
-              />
-              <Input
-                placeholder={vocab.searchPlaceholder}
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((c) => (
-                <Button
-                  key={c ?? "all"}
-                  variant={category === c ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setCategory(c)}
-                >
-                  {c ? wordCopy[c] : vocab.filterAll}
-                </Button>
-              ))}
-            </div>
-          </div>
+            <TabsContent value="vocabulary" className="mt-6">
+              <h2 id="vocabulary" className="font-display text-2xl font-bold">
+                {vocab.title}
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{vocab.intro}</p>
 
-          {!user && <p className="mt-4 text-sm text-muted-foreground">{vocab.signInToSave}</p>}
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="relative max-w-sm flex-1">
+                  <Search
+                    className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                    aria-hidden
+                  />
+                  <Input
+                    placeholder={vocab.searchPlaceholder}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES.map((c) => (
+                    <Button
+                      key={c ?? "all"}
+                      variant={category === c ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCategory(c)}
+                    >
+                      {c ? wordCopy[c] : vocab.filterAll}
+                    </Button>
+                  ))}
+                </div>
+              </div>
 
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {(words ?? []).map((word) => {
-              const isSaved = savedWordIds.has(word.id);
-              return (
-                <Card key={word.id} className="h-full shadow-soft">
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      {/* text-quran alone (no text-2xl alongside it): Tailwind's
-                          own text-2xl utility was silently overriding
-                          text-quran's line-height (2.2, sized for Amiri's
-                          diacritics) down to ~1.33, leaving the transliteration
-                          directly below crowding right up against them. */}
-                      <div className="min-w-0 text-right" dir="rtl" lang="ar">
-                        <p className="text-quran font-semibold">{word.word}</p>
-                        {word.transliteration && (
-                          <p className="mt-1 text-sm text-muted-foreground">
-                            {word.transliteration}
+              {!user && <p className="mt-4 text-sm text-muted-foreground">{vocab.signInToSave}</p>}
+
+              <div
+                data-testid="vocabulary-grid"
+                className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+              >
+                {visibleWords.map((word) => {
+                  const isSaved = savedWordIds.has(word.id);
+                  return (
+                    <Card key={word.id} className="h-full shadow-soft">
+                      <CardContent className="card-p-compact">
+                        <div className="flex items-start justify-between gap-3">
+                          {/* text-quran alone (no text-2xl alongside it): Tailwind's
+                              own text-2xl utility was silently overriding
+                              text-quran's line-height (2.2, sized for Amiri's
+                              diacritics) down to ~1.33, leaving the transliteration
+                              directly below crowding right up against them. */}
+                          <div className="min-w-0 text-right" dir="rtl" lang="ar">
+                            <p className="text-quran font-semibold">{word.word}</p>
+                            {word.transliteration && (
+                              <p className="mt-1 text-sm text-muted-foreground">
+                                {word.transliteration}
+                              </p>
+                            )}
+                          </div>
+                          {word.frequency_rank && (
+                            <Badge variant="outline" className="shrink-0">
+                              {t("quran.vocabulary.frequencyRank", { rank: word.frequency_rank })}
+                            </Badge>
+                          )}
+                        </div>
+
+                        <div className="mt-4 space-y-1 text-sm">
+                          <p className="wrap-break-word">
+                            <span className="text-muted-foreground">{wordCopy.meaning}:</span>{" "}
+                            <span className="font-medium">{word.resolvedMeaning}</span>
+                          </p>
+                          {word.root && (
+                            <p>
+                              <span className="text-muted-foreground">{wordCopy.root}:</span>{" "}
+                              {/* Isolated RTL/Arabic-font span, not inline plain
+                                  text -- otherwise the root sits in the
+                                  surrounding LTR label's direction with no
+                                  dedicated glyph shaping, reading cramped and
+                                  undersized next to it (worse still in French,
+                                  whose "Racine:" label runs longer than "Root:"). */}
+                              <span
+                                className="font-arabic ms-1 text-base font-medium"
+                                dir="rtl"
+                                lang="ar"
+                              >
+                                {word.root}
+                              </span>
+                            </p>
+                          )}
+                          {word.category && (
+                            <p>
+                              <span className="text-muted-foreground">{wordCopy.type}:</span>{" "}
+                              <span className="font-medium">{wordCopy[word.category]}</span>
+                            </p>
+                          )}
+                        </div>
+
+                        {word.example_ayah && (
+                          <div className="mt-4 rounded-lg bg-muted/50 p-3">
+                            <p className="text-quran text-right text-sm" dir="rtl" lang="ar">
+                              {word.example_ayah}
+                            </p>
+                            {word.example_reference && (
+                              <p className="mt-1 text-xs text-muted-foreground">
+                                {word.example_reference}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {word.occurrences && (
+                          <p className="mt-3 text-xs text-muted-foreground">
+                            {t("quran.vocabulary.occurrences", { count: word.occurrences })}
                           </p>
                         )}
-                      </div>
-                      {word.frequency_rank && (
-                        <Badge variant="outline" className="shrink-0">
-                          {t("quran.vocabulary.frequencyRank", { rank: word.frequency_rank })}
-                        </Badge>
-                      )}
-                    </div>
 
-                    <div className="mt-4 space-y-1 text-sm">
-                      <p className="wrap-break-word">
-                        <span className="text-muted-foreground">{wordCopy.meaning}:</span>{" "}
-                        <span className="font-medium">{word.resolvedMeaning}</span>
-                      </p>
-                      {word.root && (
-                        <p>
-                          <span className="text-muted-foreground">{wordCopy.root}:</span>{" "}
-                          {/* Isolated RTL/Arabic-font span, not inline plain
-                              text -- otherwise the root sits in the
-                              surrounding LTR label's direction with no
-                              dedicated glyph shaping, reading cramped and
-                              undersized next to it (worse still in French,
-                              whose "Racine:" label runs longer than "Root:"). */}
-                          <span
-                            className="font-arabic ms-1 text-base font-medium"
-                            dir="rtl"
-                            lang="ar"
+                        {user && (
+                          <Button
+                            variant={isSaved ? "outline" : "secondary"}
+                            size="sm"
+                            className="mt-4 w-full"
+                            onClick={() => handleToggle(word)}
+                            disabled={saveMutation.isPending || seedMutation.isPending}
                           >
-                            {word.root}
-                          </span>
-                        </p>
-                      )}
-                      {word.category && (
-                        <p>
-                          <span className="text-muted-foreground">{wordCopy.type}:</span>{" "}
-                          <span className="font-medium">{wordCopy[word.category]}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    {word.example_ayah && (
-                      <div className="mt-4 rounded-lg bg-muted/50 p-3">
-                        <p className="text-quran text-right text-sm" dir="rtl" lang="ar">
-                          {word.example_ayah}
-                        </p>
-                        {word.example_reference && (
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            {word.example_reference}
-                          </p>
+                            {isSaved ? vocab.saved : vocab.save}
+                          </Button>
                         )}
-                      </div>
-                    )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
 
-                    {word.occurrences && (
-                      <p className="mt-3 text-xs text-muted-foreground">
-                        {t("quran.vocabulary.occurrences", { count: word.occurrences })}
-                      </p>
-                    )}
+              {words && words.length === 0 && (
+                <p className="mt-6 text-sm text-muted-foreground">{vocab.empty}</p>
+              )}
 
-                    {user && (
-                      <Button
-                        variant={isSaved ? "outline" : "secondary"}
-                        size="sm"
-                        className="mt-4 w-full"
-                        onClick={() => handleToggle(word)}
-                        disabled={saveMutation.isPending || seedMutation.isPending}
-                      >
-                        {isSaved ? vocab.saved : vocab.save}
-                      </Button>
-                    )}
+              {!isFiltered && (words?.length ?? 0) > INITIAL_WORD_COUNT && (
+                <div className="mt-4 flex justify-center">
+                  <Button variant="outline" onClick={() => setShowAllWords((s) => !s)}>
+                    {showAllWords ? vocab.showLess : vocab.showMore}
+                  </Button>
+                </div>
+              )}
+
+              <p className="mt-6 max-w-2xl text-sm text-muted-foreground">{page.searchNote}</p>
+            </TabsContent>
+
+            <TabsContent value="sources" className="mt-6">
+              <h2 className="font-display text-2xl font-bold">{page.dataTitle}</h2>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{page.dataIntro}</p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {page.layers.map((layer) => (
+                  <Card key={layer.name} className="h-full shadow-soft">
+                    <CardContent className="card-p-compact">
+                      <h3 className="font-display text-base font-semibold">{layer.name}</h3>
+                      <p className="mt-2 text-sm text-muted-foreground">{layer.detail}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="translations" className="mt-6">
+              <h2 className="font-display text-2xl font-bold">{page.translationsTitle}</h2>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                {page.translationsIntro}
+              </p>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <Card className="shadow-soft">
+                  <CardContent className="card-p-compact text-sm font-medium">
+                    {page.translationEn}
                   </CardContent>
                 </Card>
-              );
-            })}
-          </div>
-
-          {words && words.length === 0 && (
-            <p className="mt-6 text-sm text-muted-foreground">{vocab.empty}</p>
-          )}
+                <Card className="shadow-soft">
+                  <CardContent className="card-p-compact text-sm font-medium">
+                    {page.translationFr}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
         </section>
-
-        <h2 className="mt-8 font-display text-2xl font-bold">{page.dataTitle}</h2>
-        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{page.dataIntro}</p>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {page.layers.map((layer) => (
-            <Card key={layer.name} className="h-full shadow-soft">
-              <CardContent className="p-4">
-                <h3 className="font-display text-base font-semibold">{layer.name}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{layer.detail}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        <h2 className="mt-8 font-display text-2xl font-bold">{page.translationsTitle}</h2>
-        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{page.translationsIntro}</p>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <Card className="shadow-soft">
-            <CardContent className="p-4 text-sm font-medium">{page.translationEn}</CardContent>
-          </Card>
-          <Card className="shadow-soft">
-            <CardContent className="p-4 text-sm font-medium">{page.translationFr}</CardContent>
-          </Card>
-        </div>
-        <p className="mt-6 max-w-2xl text-sm text-muted-foreground">{page.searchNote}</p>
       </main>
       <SiteFooter />
     </div>
