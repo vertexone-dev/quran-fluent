@@ -244,6 +244,58 @@
   box-shadow: var(--shadow-elevated);
 }
 
+/* Responsive section-padding rhythm, reused across public pages' <main>
+   and top-level <section> wrappers instead of one-off py-* values picked
+   per file (the state before this: py-10/12/14/16/20 all in use for
+   conceptually the same "space between sections" role). Three named
+   tiers, mobile-first:
+   - compact: dense/repeated/reference material (stat-card rows, a tab
+     panel's own content) that shouldn't compete with primary content for
+     breathing room.
+   - normal: the default page/section rhythm -- most <main> wrappers and
+     homepage content sections.
+   - hero: the homepage's opening section only; nothing else should reach
+     for this tier. */
+@utility section-py-compact {
+  padding-block: 1.25rem;
+  @media (width >= 40rem) {
+    padding-block: 2rem;
+  }
+  @media (width >= 64rem) {
+    padding-block: 2rem;
+  }
+}
+
+@utility section-py-normal {
+  padding-block: 2rem;
+  @media (width >= 40rem) {
+    padding-block: 2.5rem;
+  }
+  @media (width >= 64rem) {
+    padding-block: 3rem;
+  }
+}
+
+@utility section-py-hero {
+  padding-block: 3rem;
+  @media (width >= 40rem) {
+    padding-block: 4rem;
+  }
+  @media (width >= 64rem) {
+    padding-block: 5rem;
+  }
+}
+
+/* Compact card padding (16px) for dense, repeated card grids -- shadcn's
+   CardContent default (p-6, 24px) stays exactly right for a page's
+   primary/singular cards; a usage inside a many-card grid opts into this
+   instead, rather than the grid's own gap and the shared component's
+   default padding compounding into the tallest padding on the page for
+   its least dense content. */
+@utility card-p-compact {
+  padding: 1rem;
+}
+
 /* Subtle Islamic-inspired geometric texture */
 @utility pattern-geometric {
   background-image:
