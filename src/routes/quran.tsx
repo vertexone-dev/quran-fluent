@@ -125,11 +125,11 @@ function QuranPage() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-14">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-10">
         <h1 className="font-display text-3xl font-bold sm:text-4xl">{page.title}</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">{page.intro}</p>
 
-        <Card className="mt-8 shadow-elevated">
+        <Card className="mt-6 shadow-elevated">
           <CardContent className="p-6 sm:p-8">
             <Badge variant="secondary">{page.typographyBadge}</Badge>
             <p className="text-quran mt-4 text-right text-foreground" lang="ar" dir="rtl">
@@ -139,7 +139,7 @@ function QuranPage() {
           </CardContent>
         </Card>
 
-        <div className="mt-12">
+        <div className="mt-8">
           <AyahReader
             surahNumber={readerParams.surah}
             onSurahChange={(surah) => void navigate({ search: { surah }, replace: true })}
@@ -147,7 +147,7 @@ function QuranPage() {
           />
         </div>
 
-        <section className="mt-12" aria-labelledby="vocabulary">
+        <section className="mt-8" aria-labelledby="vocabulary">
           <h2 id="vocabulary" className="font-display text-2xl font-bold">
             {vocab.title}
           </h2>
@@ -182,12 +182,12 @@ function QuranPage() {
 
           {!user && <p className="mt-4 text-sm text-muted-foreground">{vocab.signInToSave}</p>}
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {(words ?? []).map((word) => {
               const isSaved = savedWordIds.has(word.id);
               return (
                 <Card key={word.id} className="h-full shadow-soft">
-                  <CardContent className="pt-6">
+                  <CardContent className="p-4">
                     <div className="flex items-start justify-between gap-3">
                       {/* text-quran alone (no text-2xl alongside it): Tailwind's
                           own text-2xl utility was silently overriding
@@ -281,12 +281,12 @@ function QuranPage() {
           )}
         </section>
 
-        <h2 className="mt-12 font-display text-2xl font-bold">{page.dataTitle}</h2>
+        <h2 className="mt-8 font-display text-2xl font-bold">{page.dataTitle}</h2>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{page.dataIntro}</p>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {page.layers.map((layer) => (
             <Card key={layer.name} className="h-full shadow-soft">
-              <CardContent className="pt-6">
+              <CardContent className="p-4">
                 <h3 className="font-display text-base font-semibold">{layer.name}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{layer.detail}</p>
               </CardContent>
@@ -294,14 +294,14 @@ function QuranPage() {
           ))}
         </div>
 
-        <h2 className="mt-12 font-display text-2xl font-bold">{page.translationsTitle}</h2>
+        <h2 className="mt-8 font-display text-2xl font-bold">{page.translationsTitle}</h2>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{page.translationsIntro}</p>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div className="mt-6 grid gap-3 sm:grid-cols-2">
           <Card className="shadow-soft">
-            <CardContent className="pt-6 text-sm font-medium">{page.translationEn}</CardContent>
+            <CardContent className="p-4 text-sm font-medium">{page.translationEn}</CardContent>
           </Card>
           <Card className="shadow-soft">
-            <CardContent className="pt-6 text-sm font-medium">{page.translationFr}</CardContent>
+            <CardContent className="p-4 text-sm font-medium">{page.translationFr}</CardContent>
           </Card>
         </div>
         <p className="mt-6 max-w-2xl text-sm text-muted-foreground">{page.searchNote}</p>

@@ -46,11 +46,11 @@ function Learn() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-14">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
         <h1 className="font-display text-3xl font-bold sm:text-4xl">{course.title}</h1>
         <p className="mt-3 max-w-2xl text-muted-foreground">{course.intro}</p>
 
-        <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {course.levels.map((level, index) => {
             const LevelIcon = LEVEL_ICONS[index % LEVEL_ICONS.length]!;
             return (
@@ -58,7 +58,7 @@ function Learn() {
                 key={level.level}
                 className={`h-full shadow-soft ${level.comingSoon ? "border-dashed" : ""}`}
               >
-                <CardContent className="pt-6">
+                <CardContent className="p-4">
                   <div
                     className={`flex size-10 items-center justify-center rounded-lg ${
                       level.comingSoon
@@ -91,7 +91,7 @@ function Learn() {
           })}
         </div>
 
-        <Card className="mt-10 border-dashed">
+        <Card className="mt-8 border-dashed">
           <CardContent className="flex flex-col items-start gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground">{course.ctaNote}</p>
             <Button asChild>
