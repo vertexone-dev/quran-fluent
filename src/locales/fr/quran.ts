@@ -8,6 +8,12 @@ export const quran: typeof EnQuran = {
     typographyBadge: "Aperçu typographique",
     typographyNote:
       "Al-Fatiha 1:1 — affiché pour prévisualiser la typographie et l'espacement de l'arabe.",
+    moreTitle: "Vocabulaire, sources et traductions",
+    tabs: {
+      vocabulary: "Vocabulaire",
+      dataHandling: "Sources",
+      translations: "Traductions",
+    },
     dataTitle: "Comment les données coraniques sont traitées",
     dataIntro:
       "Chaque couche provient d'une source documentée et est stockée séparément. Des traductions ou interprétations divergentes ne sont jamais fusionnées en silence.",
@@ -104,5 +110,7 @@ export const quran: typeof EnQuran = {
     removeToast: "Mot retiré de la liste de révision.",
     empty: "Aucun mot ne correspond à votre recherche.",
     signInToSave: "Connectez-vous pour enregistrer des mots à réviser.",
+    showMore: "Afficher plus de mots",
+    showLess: "Afficher moins de mots",
   },
 };

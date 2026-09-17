@@ -14,11 +14,20 @@ test.describe("Qur'an page (typography preview + data architecture)", () => {
     await expect(page.getByText("بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ")).toBeVisible();
     await expect(page.getByText("Typography preview")).toBeVisible();
 
+    // Data layers and translations now live behind their own tabs (mobile-
+    // density pass 2's progressive disclosure for /quran's secondary
+    // sections) instead of always-visible stacked sections below the
+    // reader -- select each tab before asserting on its panel's content.
+    // Layer names are asserted via role: "heading" rather than getByText,
+    // since "Translations" is also the accessible name of its own tab
+    // trigger -- getByText would match both and violate strict mode.
+    await page.getByRole("tab", { name: "Sources" }).click();
     await expect(page.getByRole("heading", { name: "How Qur'an data is handled" })).toBeVisible();
-    await expect(page.getByText("Qur'anic Arabic", { exact: true })).toBeVisible();
-    await expect(page.getByText("Translations", { exact: true })).toBeVisible();
-    await expect(page.getByText("Tafsir", { exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Qur'anic Arabic", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Translations", exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Tafsir", exact: true })).toBeVisible();
 
+    await page.getByRole("tab", { name: "Translations" }).click();
     await expect(
       page.getByText("English — Marmaduke Pickthall (Project Gutenberg eBook #16955)"),
     ).toBeVisible();

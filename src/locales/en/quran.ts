@@ -5,6 +5,20 @@ export const quran = {
       "Browse by Surah, Ayah or Juz, with translation, transliteration, audio and a word study panel for every word.",
     typographyBadge: "Typography preview",
     typographyNote: "Al-Fatiha 1:1 — displayed to preview Arabic typography and spacing.",
+    // Short tab labels for the vocabulary/data/translations tab strip --
+    // deliberately shorter than dataTitle/translationsTitle/vocabulary.title
+    // below, which remain the full in-panel headings once a tab is open.
+    // "Sources" (not the full "How data is handled") so all three labels
+    // fit one row of the tab strip without wrapping at 390px wide.
+    // Landmark label for the section wrapping the tab strip below --
+    // distinct from the tab labels themselves, read by a screen reader
+    // landing on the region before any tab's own content is announced.
+    moreTitle: "Vocabulary, sources and translations",
+    tabs: {
+      vocabulary: "Vocabulary",
+      dataHandling: "Sources",
+      translations: "Translations",
+    },
     dataTitle: "How Qur'an data is handled",
     dataIntro:
       "Each layer is imported from a documented source and stored separately. Conflicting translations or interpretations are never silently merged.",
@@ -94,5 +108,7 @@ export const quran = {
     removeToast: "Word removed from review list.",
     empty: "No words match your search.",
     signInToSave: "Sign in to save words for review.",
+    showMore: "Show more words",
+    showLess: "Show fewer words",
   },
 };

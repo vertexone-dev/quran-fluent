@@ -56,7 +56,7 @@ function Home() {
             aria-hidden
             className="pattern-geometric pointer-events-none absolute inset-0 opacity-40"
           />
-          <div className="relative mx-auto grid max-w-6xl gap-12 px-4 py-20 sm:py-28 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <div className="section-py-hero relative mx-auto grid max-w-6xl gap-12 px-4 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
             <div className="max-w-2xl">
               <Badge variant="secondary" className="gap-1">
                 <Sparkles className="size-3.5" aria-hidden /> {home.hero.badge}
@@ -134,7 +134,10 @@ function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="how-it-works">
+        <section
+          className="section-py-normal mx-auto max-w-6xl px-4"
+          aria-labelledby="how-it-works"
+        >
           <h2 id="how-it-works" className="font-display text-2xl font-bold sm:text-3xl">
             {home.how.title}
           </h2>
@@ -153,7 +156,7 @@ function Home() {
           </ol>
         </section>
 
-        <section className="bg-secondary/60 py-16" aria-labelledby="pillars">
+        <section className="section-py-normal bg-secondary/60" aria-labelledby="pillars">
           <div className="mx-auto max-w-6xl px-4">
             <h2 id="pillars" className="font-display text-2xl font-bold sm:text-3xl">
               {home.pillars.title}
@@ -177,7 +180,7 @@ function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-6xl px-4 py-16" aria-labelledby="word-study">
+        <section className="section-py-normal mx-auto max-w-6xl px-4" aria-labelledby="word-study">
           <div className="grid items-center gap-10 lg:grid-cols-2">
             <div>
               <h2 id="word-study" className="font-display text-2xl font-bold sm:text-3xl">
@@ -252,7 +255,7 @@ function Home() {
             for when real, approved testimonials exist to restore this
             section with. */}
 
-        <section className="mx-auto max-w-4xl px-4 py-20 text-center">
+        <section className="section-py-normal mx-auto max-w-4xl px-4 text-center">
           <h2 className="font-display text-3xl font-bold">{home.cta.title}</h2>
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">{home.cta.body}</p>
           <Button size="lg" className="mt-8" asChild>

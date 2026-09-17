@@ -88,7 +88,7 @@ function ProgressPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-6xl px-4 py-10">
+      <main className="section-py-normal mx-auto w-full max-w-6xl px-4">
         <Skeleton className="h-10 w-48" />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Skeleton className="h-32" />
@@ -101,11 +101,11 @@ function ProgressPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10">
+    <main className="section-py-normal mx-auto w-full max-w-6xl px-4">
       <h1 className="font-display text-3xl font-bold sm:text-4xl">{p.title}</h1>
       <p className="mt-2 max-w-2xl text-muted-foreground">{p.intro}</p>
 
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           icon={Flame}
           label={p.metrics.currentStreak}
@@ -132,7 +132,7 @@ function ProgressPage() {
         />
       </section>
 
-      <div className="mt-8 grid gap-4 lg:grid-cols-3">
+      <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <Card className="shadow-soft lg:col-span-2">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -209,7 +209,7 @@ function ProgressPage() {
       {/* Same StatCard the top row uses -- these three were previously a
           plain label/value pair with no icon, visually inconsistent with
           the icon-led cards everywhere else on this page. */}
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <StatCard
           icon={GraduationCap}
           label={p.level}
@@ -246,7 +246,7 @@ function StatCard({
 }) {
   return (
     <Card className="shadow-soft">
-      <CardContent className="pt-6">
+      <CardContent className="card-p-compact">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-muted-foreground">{label}</p>
