@@ -46,9 +46,9 @@ function Learn() {
   return (
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
+      <main className="section-py-normal mx-auto w-full max-w-6xl flex-1 px-4">
         <h1 className="font-display text-3xl font-bold sm:text-4xl">{course.title}</h1>
-        <p className="mt-3 max-w-2xl text-muted-foreground">{course.intro}</p>
+        <p className="mt-2 max-w-2xl text-muted-foreground">{course.intro}</p>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {course.levels.map((level, index) => {
@@ -58,7 +58,7 @@ function Learn() {
                 key={level.level}
                 className={`h-full shadow-soft ${level.comingSoon ? "border-dashed" : ""}`}
               >
-                <CardContent className="p-4">
+                <CardContent className="card-p-compact">
                   <div
                     className={`flex size-10 items-center justify-center rounded-lg ${
                       level.comingSoon

@@ -88,7 +88,7 @@ function ProgressPage() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-6xl px-4 py-10">
+      <main className="section-py-normal mx-auto w-full max-w-6xl px-4">
         <Skeleton className="h-10 w-48" />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Skeleton className="h-32" />
@@ -101,7 +101,7 @@ function ProgressPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10">
+    <main className="section-py-normal mx-auto w-full max-w-6xl px-4">
       <h1 className="font-display text-3xl font-bold sm:text-4xl">{p.title}</h1>
       <p className="mt-2 max-w-2xl text-muted-foreground">{p.intro}</p>
 
@@ -246,7 +246,7 @@ function StatCard({
 }) {
   return (
     <Card className="shadow-soft">
-      <CardContent className="p-4">
+      <CardContent className="card-p-compact">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-muted-foreground">{label}</p>
