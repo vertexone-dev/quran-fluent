@@ -8,15 +8,23 @@ export function SiteFooter() {
   const { t } = useI18n();
 
   return (
-    <footer className="mt-16 border-t border-border bg-secondary/60">
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <div className="grid gap-8 md:grid-cols-[1.4fr_1fr_1fr] md:gap-10">
+    <footer className="section-py-compact mt-12 border-t border-border bg-secondary/60">
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="grid gap-5 md:grid-cols-[1.4fr_1fr_1fr] md:gap-10">
           <div>
             <Logo tagline />
-            <p className="mt-4 max-w-sm text-sm text-muted-foreground">
+            <p className="mt-3 max-w-sm text-sm text-muted-foreground">
               {t("common.footer.intro")}
             </p>
-            <div className="mt-5">
+            {/* Hidden below md: -- moved to the bottom bar there instead
+                (see below). On a side-by-side grid, a column's height only
+                matters up to whichever column is tallest; this brand
+                column already isn't the tallest at md:+ once its own
+                stacked mobile height stops applying, so keeping the
+                switcher here at md:+ costs nothing, while moving it out on
+                mobile (where height is a straight sum of every block, not
+                a max) is the actual win. */}
+            <div className="mt-5 hidden md:block">
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {t("common.language.label")}
               </p>
@@ -68,9 +76,28 @@ export function SiteFooter() {
             <p className="mt-3 text-muted-foreground">{t("common.footer.integrityBody")}</p>
           </div>
         </div>
-        <p className="mt-6 text-xs text-muted-foreground">
-          © {new Date().getFullYear()} {t("common.footer.rights")}
-        </p>
+        {/* Below md:, copyright and a second LanguageSwitcher instance
+            share one bordered bar -- the brand column's own copy above
+            stops at the intro paragraph there, so this is where the
+            switcher moves to instead, removing an entire label+control
+            block from mobile's stacked column height (the biggest single
+            reduction in this footer's mobile height). At md:+ this
+            collapses back to a plain copyright line with no border,
+            because the switcher is already shown above and a second,
+            visible copy of the same control would be redundant, not an
+            improvement. The two instances are never visible at the same
+            time -- Tailwind's `hidden` is display:none, which removes an
+            element from the accessibility tree entirely, not just from
+            view, so this is exactly one focusable/announced switcher at
+            any given width, the same as before this change. */}
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3 md:mt-6 md:border-0 md:pt-0">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} {t("common.footer.rights")}
+          </p>
+          <div className="md:hidden">
+            <LanguageSwitcher />
+          </div>
+        </div>
       </div>
     </footer>
   );
