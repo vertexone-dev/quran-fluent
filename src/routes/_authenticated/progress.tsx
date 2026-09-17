@@ -246,7 +246,7 @@ function StatCard({
 }) {
   return (
     <Card className="shadow-soft">
-      <CardContent className="card-p-compact">
+      <CardContent className="p-4 pt-6">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-sm text-muted-foreground">{label}</p>

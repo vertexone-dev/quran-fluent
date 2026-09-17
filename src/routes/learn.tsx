@@ -58,7 +58,7 @@ function Learn() {
                 key={level.level}
                 className={`h-full shadow-soft ${level.comingSoon ? "border-dashed" : ""}`}
               >
-                <CardContent className="card-p-compact">
+                <CardContent className="p-4 pt-6">
                   <div
                     className={`flex size-10 items-center justify-center rounded-lg ${
                       level.comingSoon
