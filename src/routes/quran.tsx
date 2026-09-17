@@ -233,7 +233,7 @@ function QuranPage() {
                   const isSaved = savedWordIds.has(word.id);
                   return (
                     <Card key={word.id} className="h-full shadow-soft">
-                      <CardContent className="card-p-compact">
+                      <CardContent className="p-4 pt-6">
                         <div className="flex items-start justify-between gap-3">
                           {/* text-quran alone (no text-2xl alongside it): Tailwind's
                               own text-2xl utility was silently overriding
@@ -343,7 +343,7 @@ function QuranPage() {
               <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {page.layers.map((layer) => (
                   <Card key={layer.name} className="h-full shadow-soft">
-                    <CardContent className="card-p-compact">
+                    <CardContent className="p-4 pt-6">
                       <h3 className="font-display text-base font-semibold">{layer.name}</h3>
                       <p className="mt-2 text-sm text-muted-foreground">{layer.detail}</p>
                     </CardContent>
@@ -359,12 +359,12 @@ function QuranPage() {
               </p>
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <Card className="shadow-soft">
-                  <CardContent className="card-p-compact text-sm font-medium">
+                  <CardContent className="p-4 pt-6 text-sm font-medium">
                     {page.translationEn}
                   </CardContent>
                 </Card>
                 <Card className="shadow-soft">
-                  <CardContent className="card-p-compact text-sm font-medium">
+                  <CardContent className="p-4 pt-6 text-sm font-medium">
                     {page.translationFr}
                   </CardContent>
                 </Card>

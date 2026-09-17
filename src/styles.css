@@ -286,16 +286,6 @@
   }
 }
 
-/* Compact card padding (16px) for dense, repeated card grids -- shadcn's
-   CardContent default (p-6, 24px) stays exactly right for a page's
-   primary/singular cards; a usage inside a many-card grid opts into this
-   instead, rather than the grid's own gap and the shared component's
-   default padding compounding into the tallest padding on the page for
-   its least dense content. */
-@utility card-p-compact {
-  padding: 1rem;
-}
-
 /* Subtle Islamic-inspired geometric texture */
 @utility pattern-geometric {
   background-image:
