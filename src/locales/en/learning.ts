@@ -40,23 +40,33 @@ export const learning = {
         ],
       },
       {
+        // Was mislabeled "Grammar foundations" -- the app's actual Level 4
+        // (core-grammar) sits at this same position in the released
+        // curriculum, but the real Level 3 (roots-and-word-patterns)
+        // belongs here, one card earlier than the real Level 4's grammar
+        // content, matching the order roots are taught before grammar
+        // (src/lib/placement.ts's own PATH_STEPS ordering). Confirmed
+        // against the actual migrations before changing this copy.
         level: "Level 4",
-        title: "Grammar foundations",
-        topics: [
-          "Nouns, verbs, pronouns",
-          "Prepositions and adjectives",
-          "Gender and number",
-          "Basic sentence structure",
-        ],
-      },
-      {
-        level: "Level 5",
         title: "Roots and morphology",
         topics: [
           "Three-letter roots",
           "Derived forms",
           "Root families in the Qur'an",
           "Root explorer",
+        ],
+      },
+      {
+        // Was mislabeled "Roots and morphology" -- see the note on the
+        // Level 4 card above; this position's real released content is
+        // core-grammar.
+        level: "Level 5",
+        title: "Grammar foundations",
+        topics: [
+          "Nouns, verbs, pronouns",
+          "Prepositions and adjectives",
+          "Gender and number",
+          "Basic sentence structure",
         ],
       },
       {
