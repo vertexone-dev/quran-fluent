@@ -325,7 +325,7 @@ test.describe("Level 6 Batch 1 — al-fatiha-surah-study", () => {
     expect(reviewItems?.every((r) => r.item_type === "concept")).toBe(true);
   });
 
-  test("Lesson 2 renders ayat 1:3, 1:4 and 1:6 -- never before shown for their meaning -- and its own matching exercise seeds review items", async ({
+  test("Lesson 2 renders ayat 1:3, 1:4 and 1:6 -- new in the surah's own arc, even though Level 4 already glossed 1:4/1:6's phrases -- and its own matching exercise seeds review items", async ({
     page,
     request,
   }) => {

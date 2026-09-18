@@ -24,10 +24,23 @@
 -- 'ala (Level 5's territory -- referenced only as already-known context).
 -- This batch's new territory is whole-surah, cross-ayah meaning synthesis,
 -- confirmed to have zero precedent anywhere in the existing curriculum
--- (verified by direct inspection before authoring, not assumed) and ayat
--- 1:3/1:4/1:6, whose MEANING has never been addressed by any prior lesson
--- (1:4 and 1:6 previously got one-word orthography-spotting cameos only;
--- 1:3 was never used beyond the Module 8 read-aloud pass).
+-- (verified by direct inspection before authoring, not assumed).
+--
+-- CORRECTED, post-authoring (see LEVEL6-RESEARCH-REVIEW.md addendum): an
+-- earlier draft of this comment (and of Lesson 2's own learner-facing
+-- text) claimed ayat 1:3/1:4/1:6 had "never" had their meaning addressed
+-- by any prior lesson. True for 1:3. False for 1:4 and 1:6: Level 4's
+-- core-grammar migration (20260907100000, lessons "the-straight-path" and
+-- "lord-of-the-worlds") already glossed 1:6 as "the path, the straight
+-- [one]" and 1:4 as "Sovereign of the Day of Recompense" while teaching
+-- noun-adjective agreement and the idafa construction -- not one-word
+-- orthography cameos, real phrase-level meaning glosses. This was missed
+-- because the original duplication check only compared against Level 1
+-- and Level 5, never Levels 2-4. Re-checked: zero re-explanation of
+-- Level 4's actual grammar content (agreement/idafa) either -- what
+-- remains genuinely new, and is what Lesson 2 now claims, is not these
+-- ayat's phrase meaning but how they fit into Al-Fatiha's own overall
+-- arc, which no prior lesson at any level addresses for any ayah.
 --
 -- QUR'AN INTEGRITY: every Arabic string is a (surah_number, ayah_number)
 -- FK reference into the existing ayahs table (enforced by the existing
@@ -152,13 +165,28 @@ BEGIN
     RAISE EXCEPTION 'Expected all 7 ayat of Surah 1 to already be cached in public.ayahs.';
   END IF;
 
-  -- No existing matching exercise may already reference Surah 1 (review-item
-  -- key collision guard -- see the REVIEW ITEMS note above).
+  -- Review-item key collision guard. CORRECTED per the adversarial
+  -- re-check: matching exercises never populate their row-level
+  -- surah_number/ayah_number columns (only lesson_sections do), so
+  -- checking those columns here would be vacuously true regardless of
+  -- the real risk. The actual collision key is
+  -- {review_item_type}:{pair.left} (src/lib/study.ts), built from text
+  -- INSIDE the payload jsonb -- so this checks that directly, against
+  -- every one of this batch's six new keys, across every existing
+  -- matching exercise in the whole curriculum, not just ones tied to
+  -- Surah 1.
   IF EXISTS (
-    SELECT 1 FROM public.lesson_exercises
-    WHERE surah_number = 1 AND exercise_type = 'matching'
+    SELECT 1 FROM public.lesson_exercises e,
+      jsonb_array_elements(e.payload -> 'pairs') AS pair
+    WHERE e.exercise_type = 'matching'
+      AND e.review_item_type = 'concept'
+      AND (pair ->> 'left') IN (
+        'Ayat 1-4', 'Ayat 5-7', 'The turning word',
+        'Ayah 3', 'Ayah 4', 'Ayah 6',
+        'Ayat 1 à 4', 'Ayat 5 à 7', 'Le mot du tournant'
+      )
   ) THEN
-    RAISE EXCEPTION 'Expected zero existing matching exercises referencing Surah 1.';
+    RAISE EXCEPTION 'Expected zero existing matching-exercise pairs using any of this batch''s new review-item keys.';
   END IF;
 END $$;
 
@@ -286,10 +314,19 @@ SELECT id, 'fr', title_fr FROM public.lessons WHERE slug = 'al-fatiha-tracing-me
 
 -- Sections
 
+-- CORRECTED (see LEVEL6-RESEARCH-REVIEW.md, adversarial-check addendum):
+-- an earlier draft of this section claimed all three of ayah 3/4/6 had
+-- "never been studied for their meaning" -- true for 1:3, but false for
+-- 1:4 and 1:6, whose phrase meaning ("Sovereign of the Day of
+-- Recompense"; "the path, the straight one") was already taught in Level
+-- 4's core-grammar lessons (migration 20260907100000, teaching the idafa
+-- construction and noun-adjective agreement). What is genuinely new here
+-- is not the phrase meaning itself, but how these ayat fit into Al-
+-- Fatiha's own arc -- reworded below to claim only that, accurately.
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 0, 'explanation',
-  $t$Three ayat of Al-Fatiha have never been studied for their meaning before now: ayah 3, ayah 4, and ayah 6. You have read their words aloud since Level 1, and briefly spotted a mark or a break in two of them -- now you look at what they actually say.$t$,
-  $t$Trois ayat d'Al-Fatiha n'avaient encore jamais été étudiées pour leur sens : l'ayah 3, l'ayah 4 et l'ayah 6. Vous en lisez les mots à voix haute depuis le niveau 1, et vous y avez brièvement repéré une marque ou une coupure dans deux d'entre elles -- vous regardez maintenant ce qu'elles disent réellement.$t$
+  $t$Ayah 3 has never been studied for its meaning before now. Ayah 4 and ayah 6 had their individual phrases explained already, in Level 4's grammar lessons -- but not how they fit into Al-Fatiha's own arc, from praise to request. That is what you trace here.$t$,
+  $t$L'ayah 3 n'avait encore jamais été étudiée pour son sens. Les ayat 4 et 6 ont déjà eu leurs expressions expliquées, dans les leçons de grammaire du niveau 4 -- mais pas la façon dont elles s'inscrivent dans la trajectoire propre d'Al-Fatiha, de la louange à la demande. C'est ce que vous allez suivre ici.$t$
 FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr, surah_number, ayah_number)
@@ -308,8 +345,8 @@ FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr, surah_number, ayah_number)
 SELECT id, 3, 'quran_example',
-  $t$Ayah 6 -- "Guide us to the straight path" -- is the request the surah has been building toward since ayah 5. It is the one thing being asked for.$t$,
-  $t$L'ayah 6 — « Guide-nous vers le droit chemin » — est la demande vers laquelle la sourate se dirigeait depuis l'ayah 5. C'est la seule chose demandée.$t$,
+  $t$Ayah 6 -- "Guide us to the straight path" -- is the request the surah has been building toward since ayah 5. It is the specific thing being asked for.$t$,
+  $t$L'ayah 6 — « Guide-nous vers le droit chemin » — est la demande vers laquelle la sourate se dirigeait depuis l'ayah 5. C'est la chose précise qui est demandée.$t$,
   1, 6
 FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
@@ -426,11 +463,17 @@ SELECT id, 0, 'multiple_choice',
   'concept'
 FROM public.lessons WHERE slug = 'al-fatiha-synthesis-praise-and-petition';
 
+-- Rewritten from an earlier negatively-phrased version ("...only in
+-- general terms, without contrasting...", correctAnswer: false) to a
+-- positively-phrased equivalent testing the identical knowledge --
+-- negatively-phrased true/false items increase misread risk independent
+-- of subject knowledge. Content/correctness unchanged; see
+-- LEVEL6-RESEARCH-REVIEW.md, row L3-E1.
 INSERT INTO public.lesson_exercises (lesson_id, order_index, exercise_type, prompt_en, prompt_fr, payload, explanation_en, explanation_fr, review_item_type)
 SELECT id, 1, 'true_false',
-  $t$Ayah 7 describes the straight path only in general terms, without contrasting it with anything else.$t$,
-  $t$L'ayah 7 décrit le droit chemin seulement en termes généraux, sans le mettre en contraste avec autre chose.$t$,
-  $t${"correctAnswer": false}$t$::jsonb,
+  $t$Ayah 7 makes the "straight path" of ayah 6 concrete by contrasting it with two other paths.$t$,
+  $t$L'ayah 7 rend concret le « droit chemin » de l'ayah 6 en le mettant en contraste avec deux autres chemins.$t$,
+  $t${"correctAnswer": true}$t$::jsonb,
   $t$Ayah 7 contrasts the favored path with two others: the path of those who have evoked anger, and the path of those who have gone astray.$t$,
   $t$L'ayah 7 met en contraste le chemin des favorisés avec deux autres : le chemin de ceux qui ont encouru la colère, et le chemin de ceux qui se sont égarés.$t$,
   'concept'
@@ -452,7 +495,7 @@ INSERT INTO public.lesson_exercise_translations (exercise_id, locale, prompt, ex
 SELECT e.id, 'fr', e.prompt_fr, e.explanation_fr,
   CASE e.order_index
     WHEN 0 THEN $t${"choices": ["Verset 5", "Verset 6", "Verset 7"], "correctIndex": 1}$t$::jsonb
-    WHEN 1 THEN $t${"correctAnswer": false}$t$::jsonb
+    WHEN 1 THEN $t${"correctAnswer": true}$t$::jsonb
     WHEN 2 THEN $t${"choices": ["B, A, C", "A, B, C", "C, B, A"], "correctIndex": 0}$t$::jsonb
   END
 FROM public.lesson_exercises e
