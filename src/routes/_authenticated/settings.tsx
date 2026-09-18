@@ -55,10 +55,27 @@ function Settings() {
   const { theme, setTheme } = useTheme();
   const { t, locale, setLocale } = useI18n();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ["learner", user?.id],
     queryFn: () => fetchLearnerSnapshot(user!.id),
     enabled: Boolean(user?.id),
+    // Default retry (3 attempts, exponential backoff) left every field
+    // below stuck on its empty default for a long, silent stretch before
+    // ever giving up -- worse, once it did give up, this page had no
+    // isError branch at all (unlike Notes' established pattern below), so
+    // it just rendered the form pre-filled with those defaults instead of
+    // the learner's real saved values. A learner who hit Save at that
+    // point would have overwritten their real preferences with blanks.
+    // One retry surfaces the real error-state branch in a few seconds
+    // instead of leaving the account's data one accidental Save away from
+    // being clobbered. refetchOnReconnect stays off for this one: its
+    // default (true) restarts the retry count from zero on every
+    // reconnect event the browser fires, which compounds badly with any
+    // source of reconnect churn and defeats a short, predictable retry
+    // count -- this query already re-runs from Settings' own Retry button
+    // and from React Query's normal invalidation after Save.
+    retry: 1,
+    refetchOnReconnect: false,
   });
 
   const [firstName, setFirstName] = useState("");
@@ -116,6 +133,25 @@ function Settings() {
     );
   }
 
+  // Never fall through to the form on a failed load: every field below is
+  // seeded from `data` (see the effect above), so rendering the form
+  // anyway would show empty/default values in place of the learner's real
+  // saved preferences, one Save click away from overwriting them.
+  if (isError) {
+    return (
+      <main className="mx-auto w-full max-w-3xl px-4 py-10">
+        <Card className="shadow-soft">
+          <CardContent className="space-y-3 py-10 text-center">
+            <p className="text-muted-foreground">{t("learning.settings.error.title")}</p>
+            <Button variant="secondary" onClick={() => void refetch()}>
+              {t("learning.settings.error.retry")}
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    );
+  }
+
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-10">
       <h1 className="font-display text-3xl font-bold">{t("learning.settings.title")}</h1>
@@ -167,7 +203,16 @@ function Settings() {
                 min={1}
                 max={240}
                 value={dailyGoal}
-                onChange={(event) => setDailyGoal(Number(event.target.value) || 1)}
+                // min/max are only an HTML/spinner hint -- direct keyboard
+                // entry (or the previous `|| 1` fallback, which only ever
+                // caught an empty/non-numeric field) bypassed both, and
+                // whatever came out of here was written straight to
+                // daily_goal_minutes on Save with nothing else in the
+                // path re-checking it. Confirmed by typing "99999" here:
+                // it saved to the database unchanged.
+                onChange={(event) =>
+                  setDailyGoal(Math.min(240, Math.max(1, Number(event.target.value) || 1)))
+                }
               />
             </div>
             <div className="space-y-2">

@@ -137,6 +137,10 @@ export const learning = {
     resetSent: "Password reset email sent",
     saved: "Settings saved",
     saveError: "We couldn't save your settings. Please try again.",
+    error: {
+      title: "Couldn't load your settings.",
+      retry: "Retry",
+    },
   },
   practice: {
     title: "Practice",

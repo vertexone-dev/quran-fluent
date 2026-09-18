@@ -149,6 +149,10 @@ export const learning: typeof EnLearning = {
     resetSent: "E-mail de réinitialisation envoyé",
     saved: "Paramètres enregistrés",
     saveError: "Nous n'avons pas pu enregistrer vos paramètres. Veuillez réessayer.",
+    error: {
+      title: "Impossible de charger vos paramètres.",
+      retry: "Réessayer",
+    },
   },
   practice: {
     title: "S'entraîner",

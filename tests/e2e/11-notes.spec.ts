@@ -63,6 +63,34 @@ test.describe("notes", () => {
     expect(count).toBe(0);
   });
 
+  test("with no notes, the empty state renders instead of a blank list", async ({ page }) => {
+    const { client, userId } = await createTestUserClient();
+    await client.from("notes").delete().eq("user_id", userId);
+
+    await page.goto("/notes");
+    await expect(page.getByText("No notes yet.")).toBeVisible();
+    await expect(
+      page.getByText("Your personal Qur'an study notes will appear here."),
+    ).toBeVisible();
+  });
+
+  // Notes' query carries the same retry:1/refetchOnReconnect:false fix
+  // applied to Settings (see fetchLearnerSnapshot's history) -- this page's
+  // own isError branch already existed before that fix, but had no test
+  // coverage at all. Unlike Settings/profiles, no other component reads
+  // the notes table, so this doesn't carry the same cross-query
+  // contention -- a shorter timeout than 57-settings.spec.ts's equivalent
+  // case is expected to be enough, but stays generous since it's still a
+  // real retry + backoff round-trip, not an instant failure.
+  test("a failed load shows an error state, not an empty list", async ({ page }) => {
+    test.setTimeout(30_000);
+    await page.route("**/rest/v1/notes*", (route) => route.abort("failed"));
+
+    await page.goto("/notes");
+    await expect(page.getByText("Couldn't load your notes.")).toBeVisible({ timeout: 20_000 });
+    await expect(page.getByText("No notes yet.")).toHaveCount(0);
+  });
+
   test("note content is rendered as plain text, never as HTML", async ({ page }) => {
     const { client, userId } = await createTestUserClient();
     await client.from("notes").delete().eq("user_id", userId);

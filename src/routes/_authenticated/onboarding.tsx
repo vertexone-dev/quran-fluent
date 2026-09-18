@@ -164,9 +164,24 @@ function Onboarding() {
                   max={240}
                   value={customMinutes}
                   onChange={(event) => {
-                    setCustomMinutes(event.target.value);
                     const parsed = Number(event.target.value);
-                    if (Number.isFinite(parsed) && parsed > 0) setMinutes(parsed);
+                    // min/max below are only an HTML/spinner hint -- this
+                    // check enforced the floor but never the ceiling, so
+                    // e.g. "99999" here set `minutes` (saved verbatim to
+                    // daily_goal_minutes on continuing) with nothing else
+                    // in the path re-checking it -- and even once `minutes`
+                    // itself was clamped, the field kept echoing back the
+                    // raw "99999" typed, silently saving something other
+                    // than what was on screen. Clamping the displayed
+                    // value too means what's saved is always what's shown.
+                    // Same underlying gap as Settings' own daily-goal field.
+                    if (Number.isFinite(parsed) && parsed > 0) {
+                      const clamped = Math.min(240, parsed);
+                      setCustomMinutes(String(clamped));
+                      setMinutes(clamped);
+                    } else {
+                      setCustomMinutes(event.target.value);
+                    }
                   }}
                   placeholder={copy.customPlaceholder}
                 />

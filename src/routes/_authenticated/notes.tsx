@@ -56,6 +56,15 @@ function Notes() {
     queryKey: ["notes", userId],
     queryFn: () => fetchNotes(userId!),
     enabled: Boolean(userId),
+    // Default retry (3 attempts, exponential backoff) left this page
+    // showing only its loading skeleton, with no indication anything had
+    // gone wrong, for a long stretch before the isError branch below ever
+    // got a chance to render. refetchOnReconnect stays off: its default
+    // (true) restarts the retry count from zero on every reconnect event,
+    // which compounds badly with any source of reconnect churn and
+    // defeats a short, predictable retry count.
+    retry: 1,
+    refetchOnReconnect: false,
   });
   const { data: surahs } = useQuery({
     queryKey: ["surahs"],

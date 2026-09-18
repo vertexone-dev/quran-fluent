@@ -112,6 +112,7 @@ export default defineConfig({
         "52-production-polish.spec.ts",
         "55-dashboard-mobile-greeting.spec.ts",
         "56-premium-motion-interactions.spec.ts",
+        "57-settings.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],

@@ -89,6 +89,20 @@ export async function fetchLearnerSnapshot(userId: string): Promise<LearnerSnaps
     supabase.from("streaks").select("*").eq("user_id", userId).maybeSingle(),
   ]);
 
+  // None of the three results' `.error` was ever checked here -- a failed
+  // request (network failure, or a real RLS/Postgres error) still resolves
+  // with `.data: null`, not a rejected promise, so this always returned a
+  // "successful" all-null snapshot instead of ever throwing. Every caller
+  // that branches on useQuery's `isError` (Settings' own error state,
+  // added alongside this fix) never saw it: react-query only sets isError
+  // when the query *function* throws. Surfacing the real error here is
+  // also why Settings previously fell through to its form with every
+  // field blank instead of the learner's real values on any transient
+  // failure -- a Save from there would have overwritten real preferences.
+  if (profile.error) throw profile.error;
+  if (preferences.error) throw preferences.error;
+  if (streak.error) throw streak.error;
+
   return {
     profile: (profile.data as LearnerSnapshot["profile"]) ?? null,
     preferences: (preferences.data as LearnerSnapshot["preferences"]) ?? null,
