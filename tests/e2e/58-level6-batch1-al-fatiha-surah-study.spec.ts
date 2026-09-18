@@ -43,6 +43,15 @@ async function fetchModuleLessons(request: APIRequestContext, moduleSlug: string
   const modules = (await apiGet(request, `modules?select=id&slug=eq.${moduleSlug}`)) as {
     id: string;
   }[];
+  if (modules.length === 0) {
+    throw new Error(
+      `fetchModuleLessons: module "${moduleSlug}" was not found in the test database. ` +
+        `The Level 6 migration (supabase/migrations/20260918100000_401cbe5f-...sql) is ` +
+        `missing from test database -- it must be applied before this spec runs. This is ` +
+        `not a lesson-player or content bug; it means the test environment's Supabase ` +
+        `instance was never migrated with this batch's content, or was reset since.`,
+    );
+  }
   const moduleId = modules[0]!.id;
   return (await apiGet(
     request,
