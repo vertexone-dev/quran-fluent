@@ -218,13 +218,23 @@ export async function fetchLearningPath(userId: string): Promise<LearningPath | 
 /**
  * Every path step backed by real, live curriculum content, keyed by
  * step_key — currently "alphabet" (Level 1, foundations-of-arabic-script),
- * "vocabulary" (Level 2), "roots" (Level 3), "grammar" (Level 4), and
- * "ayah_comprehension" (Level 5, guided-ayah-comprehension, Batch 1). A
- * step_key absent from this map has no real content behind it yet
- * ("surah_mastery") and is deliberately left alone — do not add a step
+ * "vocabulary" (Level 2), "roots" (Level 3), "grammar" (Level 4),
+ * "ayah_comprehension" (Level 5, guided-ayah-comprehension, Batch 1), and
+ * "surah_mastery" (Level 6, quranic-comprehension, Batch 1 — see
+ * LEVEL6-CONTENT-LEDGER.md). A step_key absent from this map has no real
+ * content behind it yet and is deliberately left alone — do not add a step
  * here speculatively before its level actually has modules, the same
  * discipline that keeps this map from ever silently going stale the way
  * the old hardcoded module list did.
+ *
+ * IMPORTANT: this "surah_mastery" entry is this app's actual go-live switch
+ * for Level 6, independent of the "Coming soon" label on the public /learn
+ * page. Merging it means any learner who completes Level 5 sees a real,
+ * clickable Level 6 lesson in their authenticated learning path — see
+ * LEVEL6-CONTENT-LEDGER.md §5.2 and §7 for the human-review items this is
+ * still waiting on before that should happen in production. It is wired
+ * here only so the gating and lesson-player behavior below can be tested
+ * end-to-end on this branch.
  *
  * `requiresLevelSlug`, when set, gates the step on that OTHER level being
  * fully complete first — per Phase 5's placement-strategy review, Level 2
@@ -254,6 +264,10 @@ const STEP_LEVEL_SLUGS: Partial<
   ayah_comprehension: {
     levelSlug: "guided-ayah-comprehension",
     requiresLevelSlug: "core-grammar",
+  },
+  surah_mastery: {
+    levelSlug: "quranic-comprehension",
+    requiresLevelSlug: "guided-ayah-comprehension",
   },
 };
 
