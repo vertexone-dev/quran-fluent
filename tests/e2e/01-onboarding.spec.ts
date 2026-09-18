@@ -59,4 +59,37 @@ test.describe("onboarding", () => {
       "true",
     );
   });
+
+  // Regression test: the custom-minutes field declared min={1} max={240}
+  // but only ever enforced the floor (`parsed > 0`) -- typing e.g. 9999
+  // set the daily goal to 9999 with nothing else in the path re-checking
+  // it, and onboarding saved that value verbatim on Finish setup. Settings
+  // (src/routes/_authenticated/settings.tsx) had the identical gap on its
+  // own daily-goal field.
+  test("a custom daily-goal minutes value above 240 is clamped, not saved verbatim", async ({
+    page,
+  }) => {
+    await page.goto("/onboarding");
+    await page.getByRole("button", { name: "Complete beginner" }).click();
+    await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByRole("button", { name: "Learn to read the Qur'an" }).click();
+    await page.getByRole("button", { name: "Continue" }).click();
+
+    const customMinutes = page.getByLabel("Custom");
+    await customMinutes.fill("9999");
+    await expect(customMinutes).toHaveValue("240");
+
+    await page.getByRole("button", { name: "Continue" }).click();
+    await page.getByRole("button", { name: "English", exact: true }).click();
+    await page.getByRole("button", { name: "Finish setup" }).click();
+    await expect(page).toHaveURL(/\/placement/, { timeout: 10_000 });
+
+    const { client, userId } = await createTestUserClient();
+    const { data: prefs } = await client
+      .from("learning_preferences")
+      .select("daily_goal_minutes")
+      .eq("user_id", userId)
+      .single();
+    expect(prefs?.daily_goal_minutes).toBe(240);
+  });
 });
