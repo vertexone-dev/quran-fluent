@@ -59,6 +59,13 @@ export default defineConfig({
         "16-curriculum-schema.spec.ts",
         "53-auth-route-hydration.spec.ts",
         "54-arabic-typography.spec.ts",
+        // Genuinely unauthenticated: src/routes/auth.tsx redirects a signed-
+        // in user away from /auth on mount, so checking that page's (and
+        // /reset-password's) title must run with no storageState -- the
+        // "authenticated" project's stored session raced that redirect
+        // against the title assertion (CI runs #114/#115). See this spec's
+        // own header comment for the full root-cause writeup.
+        "59-unauthenticated-page-titles.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },
