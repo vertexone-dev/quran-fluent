@@ -477,7 +477,7 @@ test.describe("Level 6 Batch 1 — al-fatiha-surah-study", () => {
       page.getByRole("heading", { name: "Al-Fatiha : la sourate complète" }),
     ).toBeVisible();
     await expect(
-      page.getByText("Vous avez déjà lu à voix haute les sept ayat d'Al-Fatiha", {
+      page.getByText("Vous avez déjà lu à voix haute les sept versets d'Al-Fatiha", {
         exact: false,
       }),
     ).toBeVisible();

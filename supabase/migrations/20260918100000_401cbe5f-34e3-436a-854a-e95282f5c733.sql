@@ -42,6 +42,35 @@
 -- ayat's phrase meaning but how they fit into Al-Fatiha's own overall
 -- arc, which no prior lesson at any level addresses for any ayah.
 --
+-- CORRECTED, post-authoring, second pass (see LEVEL6-AI-REVIEW-RECONCILIATION.md
+-- for the full record): two independent, adversarial AI reviews (Reviewer A,
+-- Qur'an content; Reviewer B, French language) each read this migration in
+-- full without seeing the other's findings. Their reconciliation applied
+-- only the changes both fell within "direct factual repair / unambiguous
+-- language correction," never a doctrinal or interpretive one: (1) French
+-- prose now says "verset(s)" instead of the untranslated loanword "ayah"/
+-- "ayat" everywhere Levels 1/4/5 and the app's own UI strings already do
+-- (the matching-exercise review-item collision guard above was updated to
+-- match the renamed French pair.left keys); (2) French ayah-1:4 prose now
+-- says "Maître du Jour de la rétribution", matching the wording Level 4's
+-- own prior lesson and the app's governed seed data already use for this
+-- identical Arabic phrase, instead of this migration's own outlier
+-- "Souverain"; (3) "la guidance" (a French vocational/counseling term, not
+-- the register for divine guidance) replaced with "être guidé", matching
+-- how Lesson 2 already phrased the identical idea; (4) a few idiom/
+-- capitalization fixes ("Mise ensemble" -> "Pris dans son ensemble",
+-- "niveau" -> "Niveau", "passe à Lui parler" -> "passe à s'adresser à
+-- Lui"); (5) Lesson 2's English/French multiple-choice prompt about ayah 4
+-- no longer presupposes ayah 4 is "praise" ("the surah's praise of Allah"
+-- -> "the surah's description of Allah" / "la louange d'Allah" -> "la
+-- description d'Allah") -- the tested fact (what ayah 4 adds) is unchanged,
+-- only the prompt's own wording no longer imports the disputed praise/
+-- petition categorization it doesn't need. What was NOT changed: the
+-- praise/petition structural framing itself, the "evoked"/"encouru"
+-- translation-edition wording, and Lesson 3's "concrete" exercise-wording
+-- tension -- all remain open, HUMAN JUDGMENT REQUIRED items per both
+-- reviews and the reconciliation, not resolved here by assumption.
+--
 -- QUR'AN INTEGRITY: every Arabic string is a (surah_number, ayah_number)
 -- FK reference into the existing ayahs table (enforced by the existing
 -- composite FK and CHECK constraint on lesson_sections / lesson_exercises),
@@ -183,7 +212,8 @@ BEGIN
       AND (pair ->> 'left') IN (
         'Ayat 1-4', 'Ayat 5-7', 'The turning word',
         'Ayah 3', 'Ayah 4', 'Ayah 6',
-        'Ayat 1 à 4', 'Ayat 5 à 7', 'Le mot du tournant'
+        'Versets 1 à 4', 'Versets 5 à 7', 'Le mot du tournant',
+        'Verset 3', 'Verset 4', 'Verset 6'
       )
   ) THEN
     RAISE EXCEPTION 'Expected zero existing matching-exercise pairs using any of this batch''s new review-item keys.';
@@ -225,7 +255,7 @@ SELECT id, 'fr', title_fr FROM public.lessons WHERE slug = 'al-fatiha-orientatio
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 0, 'explanation',
   $t$You have already read all seven ayat of Al-Fatiha aloud, and in Level 5 you recognized several of its grammatical particles. Now you study it as what it is: one complete surah, read and understood as a whole rather than as separate practice lines.$t$,
-  $t$Vous avez déjà lu à voix haute les sept ayat d'Al-Fatiha, et au niveau 5 vous en avez reconnu plusieurs particules grammaticales. Vous l'étudiez maintenant telle qu'elle est : une sourate complète, lue et comprise dans son ensemble plutôt que comme des lignes d'exercice séparées.$t$
+  $t$Vous avez déjà lu à voix haute les sept versets d'Al-Fatiha, et au Niveau 5 vous en avez reconnu plusieurs particules grammaticales. Vous l'étudiez maintenant telle qu'elle est : une sourate complète, lue et comprise dans son ensemble plutôt que comme des lignes d'exercice séparées.$t$
 FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr, surah_number, ayah_number)
@@ -238,13 +268,13 @@ FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 2, 'explanation',
   $t$Read together, Al-Fatiha's seven ayat fall into two parts. Ayat 1 to 4 praise Allah, naming who He is. Ayat 5 to 7 turn to a direct request. The turn happens at "You" in ayah 5 -- the first time the surah speaks directly to Allah instead of describing Him.$t$,
-  $t$Lues ensemble, les sept ayat d'Al-Fatiha se divisent en deux parties. Les ayat 1 à 4 louent Allah, en disant qui Il est. Les ayat 5 à 7 se tournent vers une demande directe. Le tournant se produit à « Toi » dans l'ayah 5 — la première fois que la sourate s'adresse directement à Allah au lieu de Le décrire.$t$
+  $t$Lus ensemble, les sept versets d'Al-Fatiha se divisent en deux parties. Les versets 1 à 4 louent Allah, en disant qui Il est. Les versets 5 à 7 se tournent vers une demande directe. Le tournant se produit à « Toi » dans le verset 5 — la première fois que la sourate s'adresse directement à Allah au lieu de Le décrire.$t$
 FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 3, 'summary',
   $t$Two parts, seven ayat: praise (1-4), then request (5-7), turning at ayah 5.$t$,
-  $t$Deux parties, sept ayat : louange (1 à 4), puis demande (5 à 7), le tournant se situant à l'ayah 5.$t$
+  $t$Deux parties, sept versets : louange (1 à 4), puis demande (5 à 7), le tournant se situant au verset 5.$t$
 FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 
 INSERT INTO public.lesson_section_translations (section_id, locale, body)
@@ -262,14 +292,14 @@ SELECT id, 0, 'multiple_choice',
   $t$Quel est le premier verset à s'adresser directement à Allah par « Toi », plutôt que de Le décrire à la troisième personne ?$t$,
   $t${"choices": ["Ayah 2", "Ayah 4", "Ayah 5"], "correctIndex": 2}$t$::jsonb,
   $t$Ayat 1-4 describe Allah in the third person ("Lord of the worlds", "Sovereign of the Day of Recompense"). Ayah 5 shifts to speaking directly to Him.$t$,
-  $t$Les ayat 1 à 4 décrivent Allah à la troisième personne (« Seigneur des mondes », « Souverain du Jour de la Rétribution »). L'ayah 5 passe à Lui parler directement.$t$,
+  $t$Les versets 1 à 4 décrivent Allah à la troisième personne (« Seigneur des mondes », « Maître du Jour de la rétribution »). Le verset 5 passe à s'adresser à Lui directement.$t$,
   'concept'
 FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 
 INSERT INTO public.lesson_exercises (lesson_id, order_index, exercise_type, prompt_en, prompt_fr, payload, explanation_en, explanation_fr, review_item_type)
 SELECT id, 1, 'true_false',
   $t$Ayat 1 to 4 praise and describe Allah; ayat 5 to 7 turn to a direct request.$t$,
-  $t$Les ayat 1 à 4 louent et décrivent Allah ; les ayat 5 à 7 se tournent vers une demande directe.$t$,
+  $t$Les versets 1 à 4 louent et décrivent Allah ; les versets 5 à 7 se tournent vers une demande directe.$t$,
   $t${"correctAnswer": true}$t$::jsonb,
   $t$That is Al-Fatiha's shape: first praise, then petition.$t$,
   $t$C'est la structure d'Al-Fatiha : d'abord la louange, puis la demande.$t$,
@@ -293,7 +323,7 @@ SELECT e.id, 'fr', e.prompt_fr, e.explanation_fr,
   CASE e.order_index
     WHEN 0 THEN $t${"choices": ["Verset 2", "Verset 4", "Verset 5"], "correctIndex": 2}$t$::jsonb
     WHEN 1 THEN $t${"correctAnswer": true}$t$::jsonb
-    WHEN 2 THEN $t${"pairs": [{"left": "Ayat 1 à 4", "right": "Louange : dire qui est Allah"}, {"left": "Ayat 5 à 7", "right": "Demande : s'adresser directement à Allah"}, {"left": "Le mot du tournant", "right": "« Toi », à l'ayah 5"}]}$t$::jsonb
+    WHEN 2 THEN $t${"pairs": [{"left": "Versets 1 à 4", "right": "Louange : dire qui est Allah"}, {"left": "Versets 5 à 7", "right": "Demande : s'adresser directement à Allah"}, {"left": "Le mot du tournant", "right": "« Toi », au verset 5"}]}$t$::jsonb
   END
 FROM public.lesson_exercises e
 JOIN public.lessons l ON l.id = e.lesson_id WHERE l.slug = 'al-fatiha-orientation-and-structure';
@@ -326,34 +356,34 @@ SELECT id, 'fr', title_fr FROM public.lessons WHERE slug = 'al-fatiha-tracing-me
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 0, 'explanation',
   $t$Ayah 3 has never been studied for its meaning before now. Ayah 4 and ayah 6 had their individual phrases explained already, in Level 4's grammar lessons -- but not how they fit into Al-Fatiha's own arc, from praise to request. That is what you trace here.$t$,
-  $t$L'ayah 3 n'avait encore jamais été étudiée pour son sens. Les ayat 4 et 6 ont déjà eu leurs expressions expliquées, dans les leçons de grammaire du niveau 4 -- mais pas la façon dont elles s'inscrivent dans la trajectoire propre d'Al-Fatiha, de la louange à la demande. C'est ce que vous allez suivre ici.$t$
+  $t$Le verset 3 n'avait encore jamais été étudié pour son sens. Les versets 4 et 6 ont déjà eu leurs expressions expliquées, dans les leçons de grammaire du Niveau 4 — mais pas la façon dont ils s'inscrivent dans la trajectoire propre d'Al-Fatiha, de la louange à la demande. C'est ce que vous allez suivre ici.$t$
 FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr, surah_number, ayah_number)
 SELECT id, 1, 'quran_example',
   $t$Ayah 3 repeats the same two names for Allah that closed ayah 1 -- "the Entirely Merciful, the Especially Merciful" -- this time as its own complete ayah.$t$,
-  $t$L'ayah 3 reprend les deux mêmes noms d'Allah qui clôturaient l'ayah 1 — « le Tout Miséricordieux, le Très Miséricordieux » — cette fois comme un verset à part entière.$t$,
+  $t$Le verset 3 reprend les deux mêmes noms d'Allah qui clôturaient le verset 1 — « le Tout Miséricordieux, le Très Miséricordieux » — cette fois comme un verset à part entière.$t$,
   1, 3
 FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr, surah_number, ayah_number)
 SELECT id, 2, 'quran_example',
   $t$Ayah 4 -- "Sovereign of the Day of Recompense" -- adds a new description: Allah's authority specifically on the Day of Judgment. It is still praise, still describing Allah in the third person, like ayat 1 through 3.$t$,
-  $t$L'ayah 4 — « Souverain du Jour de la Rétribution » — ajoute une nouvelle description : l'autorité d'Allah, en particulier au Jour du Jugement. C'est encore de la louange, Allah étant toujours décrit à la troisième personne, comme dans les ayat 1 à 3.$t$,
+  $t$Le verset 4 — « Maître du Jour de la rétribution » — ajoute une nouvelle description : l'autorité d'Allah, en particulier au Jour du Jugement. C'est encore de la louange, Allah étant toujours décrit à la troisième personne, comme dans les versets 1 à 3.$t$,
   1, 4
 FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr, surah_number, ayah_number)
 SELECT id, 3, 'quran_example',
   $t$Ayah 6 -- "Guide us to the straight path" -- is the request the surah has been building toward since ayah 5. It is the specific thing being asked for.$t$,
-  $t$L'ayah 6 — « Guide-nous vers le droit chemin » — est la demande vers laquelle la sourate se dirigeait depuis l'ayah 5. C'est la chose précise qui est demandée.$t$,
+  $t$Le verset 6 — « Guide-nous vers le droit chemin » — est la demande vers laquelle la sourate se dirigeait depuis le verset 5. C'est la chose précise qui est demandée.$t$,
   1, 6
 FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 4, 'summary',
   $t$Ayah 3 repeats Allah's mercy as praise. Ayah 4 adds His authority on the Day of Judgment. Ayah 6 names the request itself: guidance to the straight path.$t$,
-  $t$L'ayah 3 reprend la miséricorde d'Allah comme louange. L'ayah 4 ajoute Son autorité au Jour du Jugement. L'ayah 6 nomme la demande elle-même : être guidé sur le droit chemin.$t$
+  $t$Le verset 3 reprend la miséricorde d'Allah comme louange. Le verset 4 ajoute Son autorité au Jour du Jugement. Le verset 6 nomme la demande elle-même : être guidé sur le droit chemin.$t$
 FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
 INSERT INTO public.lesson_section_translations (section_id, locale, body)
@@ -367,18 +397,18 @@ JOIN public.lessons l ON l.id = s.lesson_id WHERE l.slug = 'al-fatiha-tracing-me
 
 INSERT INTO public.lesson_exercises (lesson_id, order_index, exercise_type, prompt_en, prompt_fr, payload, explanation_en, explanation_fr, review_item_type)
 SELECT id, 0, 'multiple_choice',
-  $t$What does ayah 4 add to the surah's praise of Allah?$t$,
-  $t$Qu'ajoute l'ayah 4 à la louange d'Allah dans la sourate ?$t$,
+  $t$What does ayah 4 add to the surah's description of Allah?$t$,
+  $t$Qu'ajoute le verset 4 à la description d'Allah dans la sourate ?$t$,
   $t${"choices": ["A new name for Allah", "His authority over the Day of Judgment", "A request for guidance"], "correctIndex": 1}$t$::jsonb,
   $t$Ayah 4 names Allah "Sovereign of the Day of Recompense" -- still describing Him, not yet a request.$t$,
-  $t$L'ayah 4 nomme Allah « Souverain du Jour de la Rétribution » — Le décrivant encore, pas encore une demande.$t$,
+  $t$Le verset 4 nomme Allah « Maître du Jour de la rétribution » — Le décrivant encore, pas encore une demande.$t$,
   'concept'
 FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
 INSERT INTO public.lesson_exercises (lesson_id, order_index, exercise_type, prompt_en, prompt_fr, payload, review_item_type)
 SELECT id, 1, 'true_false',
   $t$Ayah 6, "Guide us to the straight path", is the central request the rest of the surah builds toward.$t$,
-  $t$L'ayah 6, la demande d'être guidé sur le droit chemin, est la demande centrale vers laquelle le reste de la sourate se dirige.$t$,
+  $t$Le verset 6, la demande d'être guidé sur le droit chemin, est la demande centrale vers laquelle le reste de la sourate se dirige.$t$,
   $t${"correctAnswer": true}$t$::jsonb,
   'concept'
 FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
@@ -398,9 +428,9 @@ JOIN public.lessons l ON l.id = e.lesson_id WHERE l.slug = 'al-fatiha-tracing-me
 INSERT INTO public.lesson_exercise_translations (exercise_id, locale, prompt, explanation, payload)
 SELECT e.id, 'fr', e.prompt_fr, e.explanation_fr,
   CASE e.order_index
-    WHEN 0 THEN $t${"choices": ["Un nouveau nom pour Allah", "Son autorité sur le Jour du Jugement", "Une demande de guidance"], "correctIndex": 1}$t$::jsonb
+    WHEN 0 THEN $t${"choices": ["Un nouveau nom pour Allah", "Son autorité sur le Jour du Jugement", "Une demande d'être guidé"], "correctIndex": 1}$t$::jsonb
     WHEN 1 THEN $t${"correctAnswer": true}$t$::jsonb
-    WHEN 2 THEN $t${"pairs": [{"left": "Ayah 3", "right": "Reprend la louange de l'ayah 1 comme verset à part entière"}, {"left": "Ayah 4", "right": "L'autorité d'Allah au Jour du Jugement"}, {"left": "Ayah 6", "right": "La demande de guidance"}]}$t$::jsonb
+    WHEN 2 THEN $t${"pairs": [{"left": "Verset 3", "right": "Reprend la louange du verset 1 comme verset à part entière"}, {"left": "Verset 4", "right": "L'autorité d'Allah au Jour du Jugement"}, {"left": "Verset 6", "right": "La demande d'être guidé"}]}$t$::jsonb
   END
 FROM public.lesson_exercises e
 JOIN public.lessons l ON l.id = e.lesson_id WHERE l.slug = 'al-fatiha-tracing-meaning';
@@ -424,26 +454,26 @@ SELECT id, 'fr', title_fr FROM public.lessons WHERE slug = 'al-fatiha-synthesis-
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 0, 'explanation',
   $t$Put together, Al-Fatiha moves in one direction: praise, then request, then a request made concrete. Ayat 1 to 4 say who Allah is. Ayah 5 turns to address Him directly and states why: worship and a need for help. Ayah 6 names the request: guidance. Ayah 7 makes that guidance concrete, by contrast.$t$,
-  $t$Mise ensemble, Al-Fatiha avance dans une seule direction : la louange, puis la demande, puis une demande rendue concrète. Les ayat 1 à 4 disent qui est Allah. L'ayah 5 se tourne pour s'adresser à Lui directement et en dit la raison : l'adoration et le besoin d'aide. L'ayah 6 nomme la demande : la guidance. L'ayah 7 rend cette guidance concrète, par contraste.$t$
+  $t$Pris dans son ensemble, Al-Fatiha avance dans une seule direction : la louange, puis la demande, puis une demande rendue concrète. Les versets 1 à 4 disent qui est Allah. Le verset 5 se tourne pour s'adresser à Lui directement et en donne la raison : l'adoration et le besoin d'aide. Le verset 6 nomme la demande : être guidé. Le verset 7 rend cela concret, par contraste.$t$
 FROM public.lessons WHERE slug = 'al-fatiha-synthesis-praise-and-petition';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr, surah_number, ayah_number)
 SELECT id, 1, 'quran_example',
   $t$The path is described by contrast: the path of those Allah has bestowed favor upon, not the path of those who have evoked anger or gone astray. The request in ayah 6 becomes specific here.$t$,
-  $t$Le chemin est décrit par contraste : le chemin de ceux qu'Allah a comblés de Ses faveurs, non celui de ceux qui ont encouru Sa colère ou qui se sont égarés. La demande de l'ayah 6 devient ici précise.$t$,
+  $t$Le chemin est décrit par contraste : le chemin de ceux qu'Allah a comblés de Ses faveurs, non celui de ceux qui ont encouru Sa colère ou qui se sont égarés. La demande du verset 6 se précise ici.$t$,
   1, 7
 FROM public.lessons WHERE slug = 'al-fatiha-synthesis-praise-and-petition';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 2, 'tip',
   $t$Notice the build: praise (who Allah is) leads to worship and a request for help (why we turn to Him), which leads to guidance (what we ask for), made concrete by the path's contrast (ayah 7).$t$,
-  $t$Remarquez la construction : la louange (qui est Allah) mène à l'adoration et à une demande d'aide (pourquoi nous nous tournons vers Lui), qui mène à la guidance (ce que nous demandons), rendue concrète par le contraste du chemin (ayah 7).$t$
+  $t$Remarquez la construction : la louange (qui est Allah) mène à l'adoration et à une demande d'aide (pourquoi nous nous tournons vers Lui), qui mène à la demande d'être guidé (ce que nous demandons), rendue concrète par le contraste du chemin (verset 7).$t$
 FROM public.lessons WHERE slug = 'al-fatiha-synthesis-praise-and-petition';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 3, 'summary',
   $t$Seven ayat, one direction: praise, then worship and help, then guidance, then the path itself.$t$,
-  $t$Sept ayat, une seule direction : la louange, puis l'adoration et l'aide, puis la guidance, puis le chemin lui-même.$t$
+  $t$Sept versets, une seule direction : la louange, puis l'adoration et l'aide, puis le fait d'être guidé, puis le chemin lui-même.$t$
 FROM public.lessons WHERE slug = 'al-fatiha-synthesis-praise-and-petition';
 
 INSERT INTO public.lesson_section_translations (section_id, locale, body)
@@ -472,17 +502,17 @@ FROM public.lessons WHERE slug = 'al-fatiha-synthesis-praise-and-petition';
 INSERT INTO public.lesson_exercises (lesson_id, order_index, exercise_type, prompt_en, prompt_fr, payload, explanation_en, explanation_fr, review_item_type)
 SELECT id, 1, 'true_false',
   $t$Ayah 7 makes the "straight path" of ayah 6 concrete by contrasting it with two other paths.$t$,
-  $t$L'ayah 7 rend concret le « droit chemin » de l'ayah 6 en le mettant en contraste avec deux autres chemins.$t$,
+  $t$Le verset 7 rend concret le « droit chemin » du verset 6 en le mettant en contraste avec deux autres chemins.$t$,
   $t${"correctAnswer": true}$t$::jsonb,
   $t$Ayah 7 contrasts the favored path with two others: the path of those who have evoked anger, and the path of those who have gone astray.$t$,
-  $t$L'ayah 7 met en contraste le chemin des favorisés avec deux autres : le chemin de ceux qui ont encouru la colère, et le chemin de ceux qui se sont égarés.$t$,
+  $t$Le verset 7 met en contraste le chemin des favorisés avec deux autres : le chemin de ceux qui ont encouru la colère, et le chemin de ceux qui se sont égarés.$t$,
   'concept'
 FROM public.lessons WHERE slug = 'al-fatiha-synthesis-praise-and-petition';
 
 INSERT INTO public.lesson_exercises (lesson_id, order_index, exercise_type, prompt_en, prompt_fr, payload, review_item_type)
 SELECT id, 2, 'multiple_choice',
   $t$Put Al-Fatiha's movement in order: (A) the request for guidance, (B) praise of Allah as Lord of the worlds, (C) the path described by contrast.$t$,
-  $t$Remettez le mouvement d'Al-Fatiha dans l'ordre : (A) la demande de guidance, (B) la louange d'Allah en tant que Seigneur des mondes, (C) le chemin décrit par contraste.$t$,
+  $t$Remettez le mouvement d'Al-Fatiha dans l'ordre : (A) la demande d'être guidé, (B) la louange d'Allah en tant que Seigneur des mondes, (C) le chemin décrit par contraste.$t$,
   $t${"choices": ["B, A, C", "A, B, C", "C, B, A"], "correctIndex": 0}$t$::jsonb,
   'concept'
 FROM public.lessons WHERE slug = 'al-fatiha-synthesis-praise-and-petition';

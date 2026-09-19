@@ -20,6 +20,22 @@ packets (`LEVEL6-REVIEW-PACKET-A-QURAN-CONTENT.md`,
 still require a qualified human reviewer's judgment call. Read
 `LEVEL6-RESEARCH-REVIEW.md` alongside this document, not instead of it.
 
+**Update 2**: two independent, adversarial **AI** reviews (not qualified
+human sign-off — see the caveat repeated in each document) then read those
+two packets and this migration end-to-end: `LEVEL6-AI-REVIEW-A-QURAN-CONTENT.md`
+(Qur'an content) and `LEVEL6-AI-REVIEW-B-FRENCH.md` (French language),
+completed sequentially with B genuinely blind to A's findings. Both
+independently found the same code-level error in §3.1 below (Kazimirski
+never actually renders for lesson `quran_example` sections, in any
+environment, including production — §3.1 is corrected in place below,
+struck through rather than deleted) and the same terminology inconsistency
+in §3.2's worked example (corrected below). `LEVEL6-AI-REVIEW-RECONCILIATION.md`
+records every agreement, conflict, and the specific, narrow set of
+corrections applied directly to the migration as a result — all mechanical/
+terminology fixes, zero doctrinal or interpretive decisions. Read all three
+new documents alongside the ones above; none of them replace the still-
+required qualified human review in §7.
+
 Branch: `feat/level6-surah-mastery-candidate`, based on `main` @ `b5b4f75`.
 
 ---
@@ -169,14 +185,38 @@ This is confirmed by `scripts/validate-quran-content.mjs`'s own Kazimirski
 checks being conditionally skipped everywhere except a hard requirement in
 `production-validation.yml`.
 
-**Consequence for this batch**: every `quran_example` section citing an
-Al-Fatiha ayah will render its live Arabic text and (in production) its
-Kazimirski French translation correctly, but **in any local or CI database
-built from `supabase/migrations/`, the French-locale ayah translation will
-show as unavailable** — exactly the same pre-existing behavior Level 5's
-own Al-Fatiha `quran_example` citations already have today. This batch does
-not introduce this gap and does not attempt to fix it (out of scope — it is
-a data-import/governance question, not a curriculum-authoring one).
+**Consequence for this batch, ORIGINAL (now corrected below)**: ~~every
+`quran_example` section citing an Al-Fatiha ayah will render its live
+Arabic text and (in production) its Kazimirski French translation
+correctly, but in any local or CI database built from
+`supabase/migrations/`, the French-locale ayah translation will show as
+unavailable~~ — **this was never actually true in production either, and
+the two independent AI reviews (`LEVEL6-AI-REVIEW-A-QURAN-CONTENT.md`
+Finding N1, `LEVEL6-AI-REVIEW-B-FRENCH.md` Finding K) both confirmed it by
+reading the rendering code directly rather than trusting this paragraph.**
+`LessonSectionRenderer.tsx`'s `QuranExampleSection` calls `fetchAyah()` /
+`ayahTranslation()` (`src/lib/quran.ts`), which reads the **legacy**
+`ayahs.translation_fr` column directly — it never calls
+`resolveApprovedFrenchSource()` / `fetchKazimirskiRenderForSurah()`
+(`src/lib/kazimirski.ts`); that governed resolver is wired only into
+`fetchAyahsWithTranslations()`, used only by the standalone Qur'an Reader
+and the memorization feature, never by the lesson player. Separately,
+`ayahs.translation_fr` for all seven Al-Fatiha ayat (among 58 rows total)
+is **permanently** nulled by migration `20260911110000` (the disputed-
+Hamidullah remediation), not merely "not yet imported" — confirmed live
+against local Supabase by both reviews independently. **Corrected
+consequence**: every `quran_example` section citing an Al-Fatiha ayah
+shows "translation unavailable" for a French-locale learner in **every**
+environment, including production with Kazimirski fully imported, because
+the lesson player's rendering path never queries Kazimirski data at all for
+these ayat, regardless of whether it has been imported anywhere. This is a
+pre-existing, systemic gap (every level's `quran_example` blocks citing one
+of the 58 nulled ayat are affected, not just Level 6) and this batch does
+not introduce it — but it is a **code defect** (a missing wire-up), not
+only the data-import/governance question this paragraph originally framed
+it as. See §7 item 10 (new) for the recommended handling — fixing the wiring
+is a cross-level engineering change, explicitly out of scope for this
+content batch to fix unilaterally.
 
 ### 3.2 French lesson prose is independently authored, not a translation quotation
 
@@ -189,14 +229,33 @@ from in this schema). Where French prose paraphrases what an ayah says
 (e.g. Lesson 2's rendering of 1:6), that paraphrase is a **deliberately
 literal French rendering of the actual rendered English (Sahih
 International) wording specifically** (e.g. "Guide us" → "Guide-nous", not
-"Montre-nous"; "Sovereign of the Day of Recompense" → "Souverain du Jour de
-la Rétribution", not "Maître du Jour du Jugement") — chosen to keep every
-French sentence traceable back to the one source cited in §3, rather than
-blending in word choices from Pickthall or any other translation tradition.
-It should still be reviewed by a qualified French-speaking reviewer
-alongside the English, for both linguistic accuracy and doctrinal
-neutrality — it carries the same review requirement as the English prose,
-not a lesser one.
+"Montre-nous") — chosen to keep every French sentence traceable back to the
+one source cited in §3, rather than blending in word choices from
+Pickthall or any other translation tradition. It should still be reviewed
+by a qualified French-speaking reviewer alongside the English, for both
+linguistic accuracy and doctrinal neutrality — it carries the same review
+requirement as the English prose, not a lesser one.
+
+**Correction (worked example, from `LEVEL6-AI-REVIEW-A-QURAN-CONTENT.md`
+Finding N2 and `LEVEL6-AI-REVIEW-B-FRENCH.md`, independently agreeing)**:
+this section originally used "Sovereign of the Day of Recompense" →
+"Souverain du Jour de la Rétribution" as its example, explicitly contrasted
+with an avoided alternative, "Maître du Jour du Jugement." That framing was
+wrong on its own terms: "Maître du Jour de la rétribution" (not the
+straw-man "...du Jugement" this section compared against) is not a
+hypothetical rejected alternative — it is the wording **already used twice
+elsewhere in this exact app** for this exact Arabic phrase (*Māliki yawmi
+d-dīn*, ayah 1:4): once in the governed `ayahs` seed data, once in Level
+4's own already-shipped `lord-of-the-worlds` lesson that a learner reaching
+Level 6 has already studied. "Souverain" is a defensible gloss of *Malik*
+on its own (Level 4 itself uses it for a *different* ayah, 114:2), but for
+*this* ayah it was a new, unprecedented third rendering with no stated
+reason to diverge from the app's own existing precedent. **Corrected in
+the migration and in this document**: Level 6's French now reads "Maître
+du Jour de la rétribution," matching Level 4 and the seed data. This was a
+terminology-consistency fix, not a doctrinal one — both words are
+defensible glosses of *Malik* — and was applied as one of the reconciliation's
+safe corrections; see `LEVEL6-AI-REVIEW-RECONCILIATION.md`.
 
 ---
 
@@ -399,14 +458,19 @@ ambiguous:
    attribution to `quran_example` rendering generally, or migrate it to
    read from the same governed source the standalone Reader uses. Not a
    Level 6-specific blocker, but worth prioritizing given its scope.
-5. **Local/CI databases lack the French Kazimirski translation that
-   production has** (§3.1) — an existing, already-understood, already-
-   documented limitation (the import is applied out-of-band, not via
-   `supabase/migrations/`). Level 6 inherits this exactly as Level 5
-   already does; it does not worsen it. **Recommendation**: no Level
-   6-specific action needed. The existing, separate recommendation to
-   eventually bring the Kazimirski import into the standard migration path
-   (for local/CI reproducibility) is outside this batch's scope.
+5. **CORRECTED (see §3.1's own correction and §7 item 10)** — this item
+   originally read "Local/CI databases lack the French Kazimirski
+   translation that production has," treating it as a local/CI-only data
+   gap. Both AI reviews confirmed this was never accurate: the lesson
+   player's `quran_example` rendering path never queries Kazimirski data at
+   all, in any environment, for any of the 58 ayat (Al-Fatiha included)
+   permanently nulled by migration `20260911110000`. Level 6 inherits this
+   pre-existing, systemic code gap exactly as Level 5 already does; it does
+   not worsen it, and fixing it (wiring `QuranExampleSection` to the
+   governed Kazimirski resolver) is a cross-level engineering change, out of
+   scope for this content batch. **Recommendation unchanged in substance**:
+   no Level 6-specific action needed here; track the wiring fix separately
+   (§7 item 10).
 
 ## 6. What is NOT included in this batch
 
@@ -490,3 +554,45 @@ question.
    instead of card 6 standing in for it one slot early (§5.4). A site
    information-architecture decision, not a content-accuracy one — left
    open deliberately.
+10. **New, from the AI review pass — wire `quran_example` rendering to the
+    governed Kazimirski resolver, or explicitly decide not to.** (§3.1,
+    Finding N1/K). This is a code change, not a content edit, and affects
+    every level's `quran_example` blocks that cite one of the 58 ayat
+    migration `20260911110000` permanently nulled — not Level-6-specific.
+    Not a blocker for Level 6's content sign-off, but should be tracked as
+    its own engineering item; until it lands, the existing "translation
+    unavailable" fallback fails safely (never shows English or the disputed
+    Hamidullah text under a French locale) but never succeeds either, in
+    any environment.
+11. **New, from the AI review pass — Lesson 3's French rendering of 1:7
+    (`LEVEL6-AI-REVIEW-B-FRENCH.md` Finding H) uses the same two
+    distinctive collocations ("comblés de... faveurs", "encouru... colère")
+    as the disputed, already-nulled `fr.hamidullah-crf` text stored
+    verbatim elsewhere in this same database.** Not asserted to be copied —
+    these are common, well-attested French renderings of a short, famous
+    verse, and the reviewer's own French-register judgment (independent of
+    this resemblance) was that "encouru la colère de" is the better-fitting
+    collocation of the two candidates either way — but Packet B's own
+    Terminology Question 4 anticipated exactly this scenario and it deserves
+    a direct answer from a qualified reviewer rather than a default "no."
+    **Needs explicit sign-off**: does this specific French wording need
+    distancing from the disputed source, or is the resemblance acceptable
+    as inherent to translating a well-known, formulaic verse?
+12. **New, from the AI review pass — Lesson 3's "which ayah first makes the
+    request concrete" exercise design** (`LEVEL6-AI-REVIEW-A-QURAN-CONTENT.md`
+    Item L3-E0, `LEVEL6-AI-REVIEW-B-FRENCH.md` Item 21). The word
+    "concrete"/"concret(e)" is used for two different ayat four sentences
+    apart in the same lesson (ayah 6 makes the *request* concrete per this
+    exercise; ayah 7 makes the *path* concrete per the tip section and the
+    next exercise), in both languages identically — not a French-introduced
+    issue. The two AI reviews disagreed on how safely this is resolvable:
+    Reviewer A proposed a specific narrow English wording fix (dropping
+    "concrete" from the prompt entirely); Reviewer B judged that fixing it
+    properly requires deciding the intended distinction and then wording
+    both the tip section and the exercise consistently in **both**
+    languages together, and declined to propose its own French rewording on
+    that basis. The reconciliation (`LEVEL6-AI-REVIEW-RECONCILIATION.md`)
+    did not apply either fix, to avoid leaving the two languages
+    inconsistent with each other on the strength of an AI-only judgment
+    call — **left open for a qualified human reviewer to resolve in both
+    languages together.**
