@@ -42,23 +42,26 @@ export const learning: typeof EnLearning = {
         ],
       },
       {
+        // See the matching note in src/locales/en/learning.ts -- this card
+        // and the next one were swapped to match the real released order
+        // (roots before grammar).
         level: "Niveau 4",
-        title: "Bases de grammaire",
-        topics: [
-          "Noms, verbes, pronoms",
-          "Prépositions et adjectifs",
-          "Genre et nombre",
-          "Structure de la phrase",
-        ],
-      },
-      {
-        level: "Niveau 5",
         title: "Racines et morphologie",
         topics: [
           "Racines trilitères",
           "Formes dérivées",
           "Familles de racines dans le Coran",
           "Explorateur de racines",
+        ],
+      },
+      {
+        level: "Niveau 5",
+        title: "Bases de grammaire",
+        topics: [
+          "Noms, verbes, pronoms",
+          "Prépositions et adjectifs",
+          "Genre et nombre",
+          "Structure de la phrase",
         ],
       },
       {

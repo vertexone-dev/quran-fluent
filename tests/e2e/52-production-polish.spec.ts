@@ -150,50 +150,14 @@ test.describe("production polish", () => {
     }
   });
 
-  // Regression coverage for the homepage/features/auth document-title gap:
-  // these three routes never called useDocumentTitle at all (unlike
-  // /learn, /quran, /about, /dashboard and the 404 page above, which
-  // already did) and so kept their static, English-only head() title
-  // regardless of the active locale. /auth covers every mode
-  // validateSearch's searchSchema actually accepts (login/signup/forgot);
-  // /reset-password is a separate route in the same password-reset flow
-  // with the identical gap, covered alongside it.
-  test("homepage, features and every auth mode's document title are localized in English and French", async ({
-    page,
-  }) => {
-    const { client, userId } = await createTestUserClient();
-
-    await page.goto("/");
-    await expect(page).toHaveTitle("QuranRoots — Learn Arabic. Understand the Qur'an.");
-    await page.goto("/features");
-    await expect(page).toHaveTitle("Features — QuranRoots");
-    await page.goto("/auth?mode=login");
-    await expect(page).toHaveTitle("Sign in — QuranRoots");
-    await page.goto("/auth?mode=signup");
-    await expect(page).toHaveTitle("Sign up — QuranRoots");
-    await page.goto("/auth?mode=forgot");
-    await expect(page).toHaveTitle("Reset password — QuranRoots");
-    await page.goto("/reset-password");
-    await expect(page).toHaveTitle("Choose a new password — QuranRoots");
-
-    await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
-    try {
-      await page.goto("/");
-      await expect(page).toHaveTitle("QuranRoots — Apprenez l'arabe. Comprenez le Coran.");
-      await page.goto("/features");
-      await expect(page).toHaveTitle("Fonctionnalités — QuranRoots");
-      await page.goto("/auth?mode=login");
-      await expect(page).toHaveTitle("Se connecter — QuranRoots");
-      await page.goto("/auth?mode=signup");
-      await expect(page).toHaveTitle("Créer un compte — QuranRoots");
-      await page.goto("/auth?mode=forgot");
-      await expect(page).toHaveTitle("Réinitialiser le mot de passe — QuranRoots");
-      await page.goto("/reset-password");
-      await expect(page).toHaveTitle("Choisissez un nouveau mot de passe — QuranRoots");
-    } finally {
-      await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
-    }
-  });
+  // The homepage/features/auth-mode/reset-password document-title
+  // regression test that used to live here moved to
+  // 59-unauthenticated-page-titles.spec.ts, on its own "unauthenticated"
+  // Playwright project: it navigates to /auth, which correctly redirects
+  // an authenticated user to /dashboard, and every test in this file runs
+  // under the "authenticated" project's stored session -- that combination
+  // raced the redirect against the title assertion (CI runs #114/#115).
+  // See that file's own header comment for the full root-cause writeup.
 
   test("dashboard shows a translated weak-area label, not the raw stored English string", async ({
     page,

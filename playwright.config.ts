@@ -26,7 +26,18 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [["html", { open: "never" }], ["list"]] : "list",
+  // "github" is Playwright's own built-in reporter for GitHub Actions: it
+  // writes a failure annotation (file/line/error) for every failed test
+  // and a short totals summary to $GITHUB_STEP_SUMMARY -- both visible on
+  // a public run's Summary/Checks tabs without needing to open raw step
+  // logs, which this repo's GitHub org requires sign-in to view even for
+  // a public repository (confirmed directly: the run-log and artifact-
+  // download API endpoints both return 401/403 unauthenticated). Added
+  // after CI run #114 failed in "Run E2E tests" with no way to see which
+  // test(s) failed or the exact pass/fail totals from outside GitHub's
+  // own UI while signed in. Reporting-only -- changes no test's behavior
+  // or result.
+  reporter: process.env.CI ? [["html", { open: "never" }], ["list"], ["github"]] : "list",
   timeout: 30_000,
   use: {
     baseURL,
@@ -48,6 +59,13 @@ export default defineConfig({
         "16-curriculum-schema.spec.ts",
         "53-auth-route-hydration.spec.ts",
         "54-arabic-typography.spec.ts",
+        // Genuinely unauthenticated: src/routes/auth.tsx redirects a signed-
+        // in user away from /auth on mount, so checking that page's (and
+        // /reset-password's) title must run with no storageState -- the
+        // "authenticated" project's stored session raced that redirect
+        // against the title assertion (CI runs #114/#115). See this spec's
+        // own header comment for the full root-cause writeup.
+        "59-unauthenticated-page-titles.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },
@@ -113,6 +131,7 @@ export default defineConfig({
         "55-dashboard-mobile-greeting.spec.ts",
         "56-premium-motion-interactions.spec.ts",
         "57-settings.spec.ts",
+        "58-level6-batch1-al-fatiha-surah-study.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
