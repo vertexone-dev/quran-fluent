@@ -227,14 +227,25 @@ export async function fetchLearningPath(userId: string): Promise<LearningPath | 
  * discipline that keeps this map from ever silently going stale the way
  * the old hardcoded module list did.
  *
- * IMPORTANT: this "surah_mastery" entry is this app's actual go-live switch
- * for Level 6, independent of the "Coming soon" label on the public /learn
- * page. Merging it means any learner who completes Level 5 sees a real,
- * clickable Level 6 lesson in their authenticated learning path — see
- * LEVEL6-CONTENT-LEDGER.md §5.2 and §7 for the human-review items this is
- * still waiting on before that should happen in production. It is wired
- * here only so the gating and lesson-player behavior below can be tested
- * end-to-end on this branch.
+ * IMPORTANT: a "surah_mastery" entry here is this app's actual go-live
+ * switch for Level 6, independent of the "Coming soon" label on the public
+ * /learn page — adding it means any learner who completes Level 5 sees a
+ * real, clickable Level 6 lesson in their authenticated learning path.
+ *
+ * CONTAINMENT (production incident, PR #31/main commit 5b50be3): that entry
+ * was briefly present and merged to main *before* the qualified human
+ * Qur'an-content and French review LEVEL6-CONTENT-LEDGER.md §7 requires had
+ * happened. The Level 6 migration itself was never applied to production
+ * (confirmed: zero rows under levels.number=6's modules there), so no
+ * unapproved lesson text was ever actually served — but this wiring, left
+ * in place, would activate the moment that migration is applied by any
+ * future routine deploy, with no further code change or review needed. It
+ * is deliberately removed here as defense in depth, independent of the
+ * migration-application question, until §7 sign-off actually happens. Do
+ * not re-add a "surah_mastery" entry without that sign-off — see
+ * LEVEL6-CONTENT-LEDGER.md §5.2 and §7, and the regression coverage in
+ * tests/e2e/58-level6-batch1-al-fatiha-surah-study.spec.ts proving this step
+ * stays locked/unreachable even once Level 5 is complete.
  *
  * `requiresLevelSlug`, when set, gates the step on that OTHER level being
  * fully complete first — per Phase 5's placement-strategy review, Level 2
@@ -265,10 +276,9 @@ const STEP_LEVEL_SLUGS: Partial<
     levelSlug: "guided-ayah-comprehension",
     requiresLevelSlug: "core-grammar",
   },
-  surah_mastery: {
-    levelSlug: "quranic-comprehension",
-    requiresLevelSlug: "guided-ayah-comprehension",
-  },
+  // "surah_mastery" (Level 6) intentionally has no entry here -- see the
+  // CONTAINMENT note above this map. Restore it only once
+  // LEVEL6-CONTENT-LEDGER.md §7's human sign-off is complete.
 };
 
 async function fetchStepEntryPoints(

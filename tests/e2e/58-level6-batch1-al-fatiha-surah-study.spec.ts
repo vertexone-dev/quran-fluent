@@ -12,9 +12,18 @@ import {
  * (al-fatiha-surah-study), the first-ever Level 6 content -- three lessons
  * studying Al-Fatiha as a complete surah. See LEVEL6-CONTENT-LEDGER.md for
  * the full source ledger and open human-review items this content is
- * still waiting on; this spec verifies the migration and the new
- * STEP_LEVEL_SLUGS.surah_mastery wiring behave correctly, not that the
- * content itself is approved.
+ * still waiting on; this spec verifies the migration behaves correctly, not
+ * that the content itself is approved.
+ *
+ * CONTAINMENT (production incident, PR #31/main commit 5b50be3): the
+ * STEP_LEVEL_SLUGS.surah_mastery activation wiring this file's gating test
+ * originally proved was removed from src/lib/placement.ts after PR #31
+ * merged to main before its required human review completed. That gating
+ * test now proves the opposite -- that surah_mastery stays locked and
+ * linkless even once Level 5 is complete -- while every other test in this
+ * file (content, exercises, i18n, accessibility, layout) is unaffected and
+ * continues to exercise this batch's lesson content directly by module/
+ * lesson slug, independent of learning-path reachability.
  *
  * Deliberately does not re-test the generic lesson-completion/resume/
  * review-item-seeding machinery beyond what's needed to confirm this
@@ -160,11 +169,20 @@ test.describe("Level 6 Batch 1 — al-fatiha-surah-study", () => {
     ]);
   });
 
-  // Mirrors 37-level3-batch1's own STEP_LEVEL_SLUGS gating precedent test:
-  // surah_mastery must stay locked with zero link until guided-ayah-
-  // comprehension (Level 5) is fully complete, then resolve to a real,
-  // clickable first lesson.
-  test("surah_mastery is locked before Level 5 completes, and unlocks with a working first-lesson link once Level 5 is complete", async ({
+  // CONTAINMENT (production incident, PR #31/main commit 5b50be3): this
+  // test originally mirrored 37-level3-batch1's own STEP_LEVEL_SLUGS gating
+  // precedent, proving surah_mastery unlocked with a real, clickable
+  // first-lesson link once Level 5 completed. That activation wiring was
+  // removed from src/lib/placement.ts's STEP_LEVEL_SLUGS map (see the
+  // CONTAINMENT comment there) after PR #31 merged to main before its
+  // required qualified human Qur'an-content/French review completed. This
+  // test now proves the containment itself: surah_mastery must stay
+  // locked, with zero link, even once Level 5 is fully complete -- not
+  // just before it, as originally asserted. The underlying Level 6 lesson
+  // content (migration, module, lessons) is untouched and still directly
+  // fetchable by slug, as the other tests in this file continue to prove;
+  // only its reachability through the learning path is withheld.
+  test("surah_mastery stays locked, with zero link, even once Level 5 is complete (Level 6 activation withheld pending human review)", async ({
     page,
     request,
   }) => {
@@ -251,31 +269,22 @@ test.describe("Level 6 Batch 1 — al-fatiha-surah-study", () => {
     await expect(surahRow.getByText("Locked")).toBeVisible();
     await expect(surahRow.getByRole("link")).toHaveCount(0);
 
-    // Now complete Level 5 too -> surah_mastery must unlock with a real
-    // link into this batch's own first lesson.
+    // Now complete Level 5 too -> surah_mastery must stay locked and
+    // linkless regardless (the containment case this test exists to
+    // prove). Before the containment fix, this is exactly the point where
+    // the step used to unlock with a real, clickable first-lesson link.
     await markCompleted(client, userId, level5Lessons);
     await resetPathTo("ayah_comprehension");
 
     await page.goto("/learning-plan");
-    const surahRowUnlocked = page.locator("li", { hasText: "Surah mastery" });
-    await expect(surahRowUnlocked.getByText("Locked")).not.toBeVisible();
-    await expect(surahRowUnlocked.getByText("Up next")).toBeVisible();
-    const href = await surahRowUnlocked.getByRole("link").getAttribute("href");
-    const level6LessonIds = new Set(level6Lessons.map((l) => l.id));
-    expect(
-      level6LessonIds.has(href?.split("/lesson/")[1] ?? ""),
-      "the surah_mastery step must link into a real al-fatiha-surah-study lesson once Level 5 is complete",
-    ).toBe(true);
+    const surahRowAfterLevel5 = page.locator("li", { hasText: "Surah mastery" });
+    await expect(surahRowAfterLevel5.getByText("Locked")).toBeVisible();
+    await expect(surahRowAfterLevel5.getByRole("link")).toHaveCount(0);
 
-    // Cleanup: leave no Level 6 progress behind for later specs.
-    await client
-      .from("user_lesson_progress")
-      .delete()
-      .eq("user_id", userId)
-      .in(
-        "lesson_id",
-        level6Lessons.map((l) => l.id),
-      );
+    // The underlying content itself is untouched -- still directly
+    // fetchable by module slug, confirmed by the other tests in this file.
+    // Only its reachability through the learning path is withheld.
+    expect(level6Lessons.length).toBeGreaterThan(0);
   });
 
   test("Lesson 1 renders the real canonical ayah 1:1 and all three exercises grade correctly, seeding the matching exercise's review items", async ({
