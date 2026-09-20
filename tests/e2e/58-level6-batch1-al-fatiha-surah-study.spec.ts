@@ -376,7 +376,19 @@ test.describe("Level 6 Batch 1 — al-fatiha-surah-study", () => {
     );
     await expect(page.getByText("Sovereign of the Day of Recompense.")).toBeVisible();
     await page.getByRole("button", { name: "Next" }).click();
-    await expect(page.getByText("Guide us to the straight path")).toBeVisible();
+    // Section's own body prose quotes the ayah inline ("Ayah 6 -- 'Guide
+    // us to the straight path' -- is the request...", mounted
+    // immediately) and the section's own translation text is the same
+    // phrase plus a trailing " -" (ayahs.translation_en for 1:6 is "Guide
+    // us to the straight path -", mounted only once the ayah query
+    // resolves) -- a bare substring match is ambiguous between them once
+    // both are present (confirmed: this genuinely races, and CI's slower
+    // timing consistently loses it, unlike a fast local machine, where
+    // the assertion's very first check usually beats the query). Include
+    // the trailing " -" so this can only match the translation text,
+    // exactly how the "Sovereign of the Day of Recompense." check two
+    // lines up already disambiguates via its own trailing period.
+    await expect(page.getByText("Guide us to the straight path -")).toBeVisible();
 
     await completeLesson(page, exercises);
     await expect(page.getByText("Lesson complete!")).toBeVisible();
