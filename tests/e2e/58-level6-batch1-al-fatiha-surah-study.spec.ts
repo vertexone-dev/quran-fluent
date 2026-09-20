@@ -504,6 +504,127 @@ test.describe("Level 6 Batch 1 — al-fatiha-surah-study", () => {
     ).toBeVisible();
   });
 
+  // Regression coverage for the owner-controlled content-reduction pass
+  // (LEVEL6-OWNER-REVIEW-CHECKLIST.md): asserts the specific neutral
+  // wording that replaced every instance extending a "praise" claim to
+  // ayah 4, and the "concrete" exercise-wording fix, actually render --
+  // not just that exercises still grade correctly (answerExercise's
+  // matching-exercise lookup already re-validates that generically by
+  // reading whatever text is live in the DB, which would pass even if a
+  // future edit silently reintroduced the disputed wording). This test
+  // exists specifically to fail if that happens.
+  test("the disputed 'ayah 4 is still praise' claim and the ayah-6/7 'concrete' ambiguity are not present, in English or French", async ({
+    page,
+    request,
+  }) => {
+    // Six lesson navigations (three lessons x two languages), more than
+    // any other test in this file -- the default 30s test timeout is not
+    // enough.
+    test.setTimeout(90_000);
+    const lessons = await fetchModuleLessons(request, "al-fatiha-surah-study");
+    const lesson1 = lessons.find((l) => l.slug === "al-fatiha-orientation-and-structure")!;
+    const lesson2 = lessons.find((l) => l.slug === "al-fatiha-tracing-meaning")!;
+    const capstone = lessons.find((l) => l.slug === "al-fatiha-synthesis-praise-and-petition")!;
+
+    // Earlier tests in this file complete all three of these lessons;
+    // reopening a completed lesson shows the completion screen immediately,
+    // not its content, so this test needs its own clean slate for each.
+    await resetLessonProgress(lesson1.id);
+    await resetLessonProgress(lesson2.id);
+    await resetLessonProgress(capstone.id);
+
+    await page.goto(`/lesson/${lesson1.id}`);
+    const lesson1Exercises = await fetchLessonExercises(request, lesson1.id);
+    await advanceUntilVisibleResilient(
+      page,
+      lesson1Exercises,
+      /Ayat 1 to 4 describe Allah, naming who He is\./,
+      answerExercise,
+    );
+    await expect(page.getByText("Ayat 1 to 4 describe Allah, naming who He is.")).toBeVisible();
+    await expect(page.getByText("Ayat 1 to 4 praise Allah", { exact: false })).not.toBeVisible();
+
+    await resetLessonProgress(lesson2.id);
+    await page.goto(`/lesson/${lesson2.id}`);
+    const lesson2Exercises = await fetchLessonExercises(request, lesson2.id);
+    await advanceUntilVisibleResilient(
+      page,
+      lesson2Exercises,
+      /Like ayat 1 through 3, it describes Allah in the third person\./,
+      answerExercise,
+    );
+    await expect(
+      page.getByText("Like ayat 1 through 3, it describes Allah in the third person."),
+    ).toBeVisible();
+    await expect(page.getByText("It is still praise", { exact: false })).not.toBeVisible();
+
+    await resetLessonProgress(capstone.id);
+    await page.goto(`/lesson/${capstone.id}`);
+    const capstoneExercises = await fetchLessonExercises(request, capstone.id);
+    await advanceUntilVisibleResilient(
+      page,
+      capstoneExercises,
+      /Which ayah first names the specific request/,
+      answerExercise,
+    );
+    await expect(
+      page.getByText(
+        "Which ayah first names the specific request -- what exactly are we asking Allah for?",
+      ),
+    ).toBeVisible();
+    await expect(page.getByText("makes the request concrete", { exact: false })).not.toBeVisible();
+
+    // French: the same three checks, same lessons, French interface.
+    // advanceUntilVisibleResilient/answerExercise only recognize English
+    // button names ("Next"/"Complete lesson"/"Check answer"), so they
+    // cannot drive a French-locale UI -- click "Suivant" directly the
+    // fixed number of times needed to reach each target section, matching
+    // this file's own existing French test's pattern (plain clicks, no
+    // exercise answering needed since every target here is a section that
+    // comes before this lesson's first exercise).
+    async function clickSuivant(times: number) {
+      for (let i = 0; i < times; i++) {
+        await page.getByRole("button", { name: "Suivant" }).click();
+      }
+    }
+
+    const { client, userId } = await createTestUserClient();
+    await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
+    try {
+      await resetLessonProgress(lesson1.id);
+      await page.goto(`/lesson/${lesson1.id}`);
+      await clickSuivant(2); // S0 -> S1 (quran_example 1:1) -> S2 (target)
+      await expect(
+        page.getByText("Les versets 1 à 4 décrivent Allah, en disant qui Il est."),
+      ).toBeVisible();
+      await expect(
+        page.getByText("Les versets 1 à 4 louent Allah", { exact: false }),
+      ).not.toBeVisible();
+
+      await resetLessonProgress(lesson2.id);
+      await page.goto(`/lesson/${lesson2.id}`);
+      await clickSuivant(2); // S0 -> S1 (quran_example 1:3) -> S2 (target, ayah 4)
+      await expect(
+        page.getByText("Comme les versets 1 à 3, il décrit Allah à la troisième personne."),
+      ).toBeVisible();
+      await expect(page.getByText("encore de la louange", { exact: false })).not.toBeVisible();
+
+      await resetLessonProgress(capstone.id);
+      await page.goto(`/lesson/${capstone.id}`);
+      await clickSuivant(4); // S0 -> S1 -> S2 -> S3 -> E0 (target, first exercise)
+      await expect(
+        page.getByText(
+          "Quel verset nomme en premier la demande précise — que demandons-nous exactement à Allah ?",
+        ),
+      ).toBeVisible();
+      await expect(
+        page.getByText("rend la demande concrète pour la première fois", { exact: false }),
+      ).not.toBeVisible();
+    } finally {
+      await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+    }
+  });
+
   test("renders without horizontal overflow at 390x844", async ({ page, request }) => {
     const lessons = await fetchModuleLessons(request, "al-fatiha-surah-study");
     const lesson2 = lessons.find((l) => l.slug === "al-fatiha-tracing-meaning")!;

@@ -36,7 +36,39 @@ terminology fixes, zero doctrinal or interpretive decisions. Read all three
 new documents alongside the ones above; none of them replace the still-
 required qualified human review in §7.
 
+**Update 3 (2026-09-20) — governance path changed: reduced scope,
+owner-controlled release, external review cancelled.** After PR #31
+merged this content to `main` prematurely (before any qualified human
+review) and a follow-up change contained it (removed the activation
+wiring; confirmed the migration was never applied to production — see
+`LEVEL6-OWNER-REVIEW-CHECKLIST.md`'s governance-history section for the
+full incident record), candidate qualified reviewers were researched and
+two were selected, with outreach fully prepared but never sent. **The
+product owner (Moubarak Akamou) then decided not to contact external
+scholars or French reviewers at all**, and requested a transparent,
+owner-controlled, reduced-scope release path instead. That research and
+the cancelled, unsent outreach are preserved for historical transparency
+in `LEVEL6-REVIEWER-OUTREACH-DRAFTS.md`, now marked cancelled.
+
+As a direct result, `LEVEL6-REVIEW-PACKET-A-QURAN-CONTENT.md` and
+`LEVEL6-REVIEW-PACKET-B-FRENCH.md` are **superseded** (marked as such in
+each file) by a single new document, `LEVEL6-OWNER-REVIEW-CHECKLIST.md`,
+which also records the actual content changes this update describes:
+every claim in §7 below that was flagged as disputed, interpretive, or
+requiring a qualified reviewer's judgment call has now been either (a)
+removed and replaced with neutral, objective wording grounded directly in
+the displayed translation text, or (b) explicitly left deferred and
+recorded as such — **never resolved by picking a side of a scholarly
+disagreement, and never represented as qualified review.** §7 below is
+updated in place to reflect which items are now closed this way and which
+remain genuinely open. This is an owner editorial pass, not a substitute
+for qualified human sign-off, which is still required before Level 6 can
+ever be released — see the explicit disclaimer at the top of
+`LEVEL6-OWNER-REVIEW-CHECKLIST.md`.
+
 Branch: `feat/level6-surah-mastery-candidate`, based on `main` @ `b5b4f75`.
+This update's own changes are on `feat/level6-owner-reviewed-reduced-scope`,
+based on `main` @ `0646044`.
 
 ---
 
@@ -502,17 +534,29 @@ None of the following were decided unilaterally. This batch is prepared as
 a reviewable candidate; each item below is a specific, named blocking
 question.
 
-1. **Doctrinal/interpretive review of the praise → petition structural
-   reading.** The "ayat 1–4 praise, ayat 5–7 petition, turning at 'You' in
-   ayah 5" framing (Lesson 1 and Lesson 3) is now grounded in a primary
-   source (Sahih Muslim 395, an authentic hadith dividing the surah's
-   recitation at exactly this point) and a named contemporary scholar
-   (Dr. Nazir Khan, Yaqeen Institute) — see `LEVEL6-RESEARCH-REVIEW.md`
-   Finding F2 — but a second, credible, named source (Darul Iftaa
-   Birmingham) frames ayah 4 as transitional rather than purely praise.
-   This is a real point of scholarly divergence, not resolved here.
-   **Needs explicit sign-off** — see Packet A, Item 1, for the two concrete
-   wording options prepared for the reviewer's choice.
+1. **UPDATED (2026-09-20, Update 3) — the specific disputed claim was
+   removed, not resolved; the underlying question is still open.**
+   Originally: doctrinal/interpretive review of the praise → petition
+   structural reading. The "ayat 1–4 praise, ayat 5–7 petition, turning at
+   'You' in ayah 5" framing (Lesson 1 and Lesson 3) was grounded in a
+   primary source (Sahih Muslim 395) and a named contemporary scholar (Dr.
+   Nazir Khan, Yaqeen Institute) — see `LEVEL6-RESEARCH-REVIEW.md` Finding
+   F2 — but a second, credible, named source (Darul Iftaa Birmingham)
+   frames ayah 4 as transitional rather than purely praise. Every instance
+   that explicitly extended "praise" to include ayah 4 (an "ayat 1 to 4
+   praise..." range claim, or an explicit "ayah 4 is still praise"
+   statement) has now been reworded to the objective, undisputed
+   grammatical fact both sources agree on — ayat 1 through 4 describe
+   Allah in the third person — with no claim made about ayah 4's specific
+   classification. See `LEVEL6-OWNER-REVIEW-CHECKLIST.md` for the full
+   before/after table. **This is an owner editorial reduction, not a
+   qualified human's resolution of the underlying scholarly question,
+   which remains open** — a qualified reviewer could still reasonably ask
+   for the broader "praise to petition" whole-surah framing (module goal,
+   Lesson 3's title, several summaries) to be revisited too; that framing
+   was deliberately left as-is on the grounds that both named sources
+   describe the surah's *overall* movement this same way, but that
+   judgment was made by the product owner, not a qualified reviewer.
 2. **French pedagogical prose review** (§3.2) — accuracy, idiom, and
    neutrality of the independently-authored French paraphrases, separate
    from (and in addition to) the English review in item 1. See
@@ -578,21 +622,18 @@ question.
     **Needs explicit sign-off**: does this specific French wording need
     distancing from the disputed source, or is the resemblance acceptable
     as inherent to translating a well-known, formulaic verse?
-12. **New, from the AI review pass — Lesson 3's "which ayah first makes the
-    request concrete" exercise design** (`LEVEL6-AI-REVIEW-A-QURAN-CONTENT.md`
-    Item L3-E0, `LEVEL6-AI-REVIEW-B-FRENCH.md` Item 21). The word
-    "concrete"/"concret(e)" is used for two different ayat four sentences
-    apart in the same lesson (ayah 6 makes the *request* concrete per this
-    exercise; ayah 7 makes the *path* concrete per the tip section and the
-    next exercise), in both languages identically — not a French-introduced
-    issue. The two AI reviews disagreed on how safely this is resolvable:
-    Reviewer A proposed a specific narrow English wording fix (dropping
-    "concrete" from the prompt entirely); Reviewer B judged that fixing it
-    properly requires deciding the intended distinction and then wording
-    both the tip section and the exercise consistently in **both**
-    languages together, and declined to propose its own French rewording on
-    that basis. The reconciliation (`LEVEL6-AI-REVIEW-RECONCILIATION.md`)
-    did not apply either fix, to avoid leaving the two languages
-    inconsistent with each other on the strength of an AI-only judgment
-    call — **left open for a qualified human reviewer to resolve in both
-    languages together.**
+12. **RESOLVED (2026-09-20, Update 3), as a pure exercise-design fix, not
+    an interpretive one.** Originally: Lesson 3's "which ayah first makes
+    the request concrete" exercise design
+    (`LEVEL6-AI-REVIEW-A-QURAN-CONTENT.md` Item L3-E0,
+    `LEVEL6-AI-REVIEW-B-FRENCH.md` Item 21) used the word "concrete" for
+    two different ayat four sentences apart (ayah 6 for the exercise; ayah
+    7 for the tip section and the next exercise), in both languages
+    identically. Fixed directly, in both languages at once (no external
+    reviewer coordination needed once the product owner decided against
+    external review): the exercise now asks which ayah first "names the
+    specific request," removing the word "concrete" from it entirely.
+    "Concrete"/"concret" now refers exclusively and consistently to ayah 7
+    everywhere else in the lesson. Same choices, same correct answer
+    (ayah/verset 6), same tested knowledge — see
+    `LEVEL6-OWNER-REVIEW-CHECKLIST.md` for the exact before/after wording.
