@@ -11,7 +11,7 @@ advisory and does not constitute human scholarly approval.**
 | English review scope | All English learner-facing strings, exercises, and correct answers in this batch (below) |
 | French review scope | All French learner-facing strings, exercises, and correct answers in this batch (below) |
 | Date | 2026-09-20 |
-| Exact reviewed commit SHA | `<recorded in the commit that introduces this file — see the branch's HEAD; a follow-up commit updates this line with the exact value>` |
+| Exact reviewed commit SHA | `db80b85` (branch `feat/level6-owner-reviewed-reduced-scope`) — the reviewable content (migration, tests) is exactly as committed there; this field was filled in by a small follow-up, documentation-only commit, since a commit cannot reference its own SHA |
 | Explicit approval or requested corrections | *(to be filled in by the owner after reading this document)* |
 
 The owner is not a scholar, theologian, certified translator, or
