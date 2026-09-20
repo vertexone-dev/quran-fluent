@@ -12,7 +12,7 @@ advisory and does not constitute human scholarly approval.**
 | French review scope | All French learner-facing strings, exercises, and correct answers in this batch (below) |
 | Date | 2026-09-20 |
 | Exact reviewed commit SHA | `db80b85` (branch `feat/level6-owner-reviewed-reduced-scope`) — the reviewable content (migration, tests) is exactly as committed there; this field was filled in by a small follow-up, documentation-only commit, since a commit cannot reference its own SHA |
-| Explicit approval or requested corrections | *(to be filled in by the owner after reading this document)* |
+| Decision | **Approved for a reduced-scope, owner-controlled release candidate**, at exact commit `db80b85`, by the product owner. See "Owner decision record" immediately below for the full, precise scope of this approval. |
 
 The owner is not a scholar, theologian, certified translator, or
 independent reviewer, and this document does not describe them as one.
@@ -21,6 +21,55 @@ external qualified review (see "Governance history" below) — not a
 substitute for one. Level 6 remains disabled (no `STEP_LEVEL_SLUGS.
 surah_mastery` activation wiring) and its migration remains unapplied to
 production regardless of what this document records.
+
+---
+
+## Owner decision record (2026-09-20)
+
+**Decision: Approved for a reduced-scope owner-controlled release
+candidate**, at exact content commit `db80b85`, by Moubarak Akamou,
+QuranRoots product owner.
+
+**This is owner editorial approval only. It is not qualified
+Islamic-studies review, independent scholarly approval, or independent
+professional French review.** Repeating the disclaimer this document has
+carried throughout, unchanged: *"Owner editorial review only. No
+qualified Islamic-studies review or independent professional French
+review was obtained. AI analysis was advisory and does not constitute
+human scholarly approval."*
+
+This approval does **not** claim that every interpretive matter in this
+batch was removed. Precisely:
+
+- Claims that would have required an unsupported choice between two
+  disputed scholarly positions were neutralized (reworded to the
+  objective, undisputed grammatical fact both sources agree on) or
+  explicitly deferred — never resolved by picking a side.
+- The source-attributed, whole-surah "praise to petition" framing
+  **remains** in this batch (the module goal, Lesson 3's title, and
+  several summary/tip lines) — both named sources describe the surah's
+  overall movement this same way, so this was judged, by the owner, not
+  to be the disputed part. This is a product-owner judgment call, not a
+  qualified reviewer's resolution of it.
+- **The status of ayah 4 as "praise" or "transitional" remains
+  unresolved.** Only the specific claims that flatly extended "praise" to
+  include ayah 4 were changed; the underlying scholarly question itself
+  was not decided in either direction.
+- **"Evoked" versus "earned" (ayah 1:7) remains unresolved** as a
+  translation-edition question. "Evoked" was kept because it is what
+  `ayahs.translation_en` actually stores and displays to the learner —
+  not a determination of which print edition is correct.
+- **Translator/edition attribution and the Kazimirski-never-renders code
+  gap remain systemic, deferred issues**, affecting every level's
+  `quran_example` blocks, not resolved or closed by this approval.
+
+Deferred matters remain deferred by this decision and must not be
+described, by this document or elsewhere, as resolved.
+
+Approving this content candidate does **not** approve deploying it,
+applying its migration to production, or restoring
+`STEP_LEVEL_SLUGS.surah_mastery`. Those remain separate, later decisions,
+each requiring their own explicit authorization.
 
 ---
 
@@ -216,21 +265,26 @@ exercise was found needing removal entirely.
 
 ---
 
-## Unresolved decisions requiring the owner's explicit input
+## Decisions status (updated 2026-09-20 — see "Owner decision record" above)
 
-1. Whether the reduced wording above is acceptable, or whether the owner
-   wants different neutral phrasing.
-2. Whether to also neutralize the whole-surah-level "praise to petition"
-   gloss (module goal, Lesson 3 title, several summary/tip lines) that
-   this pass left unchanged as broadly source-supported — see "What was
-   deliberately left unchanged" above.
-3. The four items in "Deliberately deferred, not decided" above — none
-   of these were resolved by this pass, and resolving them would require
+1. **Decided**: the reduced wording above is approved as written by the
+   product owner (`db80b85`, 2026-09-20).
+2. **Decided**: the whole-surah-level "praise to petition" gloss (module
+   goal, Lesson 3 title, several summary/tip lines) is approved to remain
+   as broadly source-supported — see "What was deliberately left
+   unchanged" above and the "Owner decision record." This is an owner
+   judgment call, not a qualified reviewer's resolution.
+3. **Still genuinely unresolved** — the four items in "Deliberately
+   deferred, not decided" above (ayah 4's classification; "evoked" vs.
+   "earned"; translator attribution; Kazimirski rendering). None of these
+   were resolved by this approval, and resolving them would require
    either qualified review (still not being sought) or a separate,
-   explicit owner decision to accept a specific tradeoff.
-4. Whether the migration should ever be applied to production, and if so,
-   when, and under what activation plan — entirely separate from and
-   subsequent to this document.
+   explicit owner decision to accept a specific tradeoff. **Not to be
+   described as resolved by this or any later document.**
+4. **Still unresolved, and separate from this approval**: whether the
+   migration should ever be applied to production, and if so, when, and
+   under what activation plan. Approving this content candidate does not
+   decide this.
 
 ---
 
