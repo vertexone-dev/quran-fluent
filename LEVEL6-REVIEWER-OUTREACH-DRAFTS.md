@@ -1,99 +1,80 @@
-# Level 6 reviewer outreach — drafts only
+# Level 6 reviewer outreach — CANCELLED
 
-**Not sent. No recipients identified or authorized.** These are templates
-to use once the user names who should review this and confirms contact is
-authorized. Do not fill in a name, email, or send any of this without that
-explicit authorization.
+**Outreach cancelled by product-owner decision (Moubarak Akamou,
+2026-09-20). No email was sent, no contact form was submitted, no
+reviewer was invited, and no institution or publisher was contacted at
+any point.** The product owner decided not to pursue external qualified
+review at all and requested a transparent, owner-controlled,
+reduced-scope release instead — see `LEVEL6-OWNER-REVIEW-CHECKLIST.md`
+for that path. This document is preserved only as a historical record of
+what was researched and prepared before that decision, per the owner's
+instruction to keep the research for transparency.
 
----
+**This record does not constitute, and must never be represented as,
+qualified scholarly or professional-language approval, endorsement, or
+review of Level 6's content by any named person below.** None of them
+reviewed, approved, or were even made aware of this project.
 
-## Draft message — Qur'an-content reviewer (Packet A)
-
-> Subject: Review needed — Level 6 Al-Fatiha lesson content (not live, draft PR)
->
-> Hi [NAME],
->
-> We've drafted the first Level 6 lesson content for QuranRoots — three
-> short lessons studying Al-Fatiha as a complete surah, building on what
-> learners already know from Levels 1 and 5. Nothing here is live or
-> approved; it's a draft PR waiting on your review before anything ships.
->
-> I've put together a focused packet with the specific English content and
-> the two or three places where your judgment is actually needed (one is a
-> real choice between two defensible scholarly framings of the surah's
-> structure — sourced, not guessed). It should take [ESTIMATE] to review.
->
-> Packet: LEVEL6-REVIEW-PACKET-A-QURAN-CONTENT.md
-> Full research behind it: LEVEL6-RESEARCH-REVIEW.md
-> Draft PR: [PR LINK]
->
-> For each item, a line like "Approved as written," "Change to: ...,"
-> "Needs a cited source," or "Cannot approve: [reason]" is exactly what we
-> need — as terse or as detailed as you like.
->
-> No rush that isn't real — this only ships once you're satisfied.
->
-> Thank you,
-> [SENDER]
+Ready-to-send message text and specific contact routes (email addresses,
+institutional contact-form URLs) that were prepared in an earlier pass
+have been removed from this document — they served no purpose once
+outreach was cancelled, and republishing them here would mean needlessly
+continuing to publish real people's contact information for a purpose
+that will never occur. What's kept below is the candidate summary: who
+was considered, their public professional role, and why — the same kind
+of factual record this project already keeps for other rejected design
+options.
 
 ---
 
-## Draft message — French reviewer (Packet B)
+## Candidates researched (real people, independently verified; none contacted)
 
-> Subject: Révision demandée — contenu de leçon Niveau 6 sur Al-Fatiha (brouillon, non publié)
->
-> Bonjour [NAME],
->
-> Nous avons rédigé le premier contenu de leçon pour le Niveau 6 de
-> QuranRoots — trois courtes leçons étudiant Al-Fatiha comme une sourate
-> complète. Rien de tout cela n'est en ligne ni approuvé ; il s'agit d'une
-> pull request en brouillon qui attend votre relecture.
->
-> Le français n'est pas une citation d'une traduction coranique publiée
-> (aucune traduction française gouvernée n'est disponible dans cet
-> environnement) — c'est une prose pédagogique rédigée pour suivre le sens
-> anglais réellement affiché à l'apprenant. Votre rôle est de juger cette
-> prose en elle-même : est-elle fidèle, naturelle, et clairement distincte
-> d'une citation scripturaire ?
->
-> Le paquet de révision liste chaque phrase française avec son équivalent
-> anglais et sa source.
->
-> Paquet : LEVEL6-REVIEW-PACKET-B-FRENCH.md
-> Recherche complète : LEVEL6-RESEARCH-REVIEW.md
-> PR en brouillon : [LIEN PR]
->
-> Pour chaque élément, une réponse du type « Approuvé tel quel », «
-> Remplacer par : ... », « Nécessite une source citée », ou « Ne peut pas
-> approuver : [raison] » est exactement ce dont nous avons besoin.
->
-> Merci,
-> [SENDER]
+### Reviewer A candidates (Qur'an content)
+
+1. **Dr. Sohaib Saeed** (also published as Sohaib Bhutta) — Lecturer in
+   the Study of Islam, University of Glasgow; PhD in Qur'anic hermeneutics,
+   SOAS; translator of Fakhr al-Dīn al-Rāzī's classical tafsīr of
+   Al-Fatiha. Selected as the primary candidate before the cancellation
+   decision.
+2. Dr. Nazir Khan — Senior Fellow, Yaqeen Institute; author of a full book
+   on Al-Fatiha. Noted conflict: his own published work is already cited
+   as source material in this project's own research documents for the
+   exact disputed framing a reviewer would be asked to judge.
+3. Dr. Aaminah Patel — Programme Lead for Arabic, Cambridge Muslim
+   College; PhD Islamic Studies, King's College London.
+
+### Reviewer B candidates (French language)
+
+1. Rachid Ouzzi — professional Arabic-French translator/reviser for
+   French Islamic publishers; CAPES d'arabe. No reliable public
+   professional contact route was ever found for him.
+2. **Youssouf Sangaré** — Maître de conférences, Études arabes, INALCO
+   (Paris). Selected as the backup candidate before the cancellation
+   decision, after no reliable contact route was found for Rachid Ouzzi.
+3. Geneviève Gobillot — Professor Emerita, Université Jean Moulin Lyon
+   III.
+
+Full research detail (qualifications, source links, verification method)
+exists in this session's own conversation record and is not reproduced
+here beyond the summary above, to avoid keeping a second copy of contact-
+adjacent research in the repository once it will never be acted on.
 
 ---
 
-## Reviewer checklist (for whoever is identified)
+## What happened instead
 
-Qur'an-content reviewer:
-- [ ] Has read `LEVEL6-CONTENT-LEDGER.md` in full
-- [ ] Has read `LEVEL6-RESEARCH-REVIEW.md` in full
-- [ ] Has decided Packet A Item 1 (ayah 4 framing: Option A, Option B, or other)
-- [ ] Has decided Packet A Item 2 (evoked vs. earned)
-- [ ] Has given a view on Packet A Item 3 (attribution — priority/severity only, not a fix)
-- [ ] Has recorded the reviewed commit SHA their decisions apply to
-- [ ] Has stated final decision: Approved / Approved with changes / Not approved
+See `LEVEL6-OWNER-REVIEW-CHECKLIST.md`: every claim previously flagged in
+the (now-superseded) review packets as disputed, interpretive, or
+requiring a qualified reviewer's judgment was removed, replaced with
+neutral/objective wording grounded directly in the displayed translation
+text, or explicitly recorded as deferred — never resolved by picking a
+side of a scholarly disagreement, and never represented as qualified
+review.
 
-French reviewer:
-- [ ] Has read Packet B in full, including the "no governed French
-      translation available" context
-- [ ] Has reviewed all 24 French items for naturalness and fidelity to
-      their English counterpart
-- [ ] Has answered Terminology questions 1-4
-- [ ] Has confirmed no French sentence reads as a scriptural quotation
-- [ ] Has recorded the reviewed commit SHA their decisions apply to
-- [ ] Has stated final decision: Approved / Approved with changes / Not approved
-
-**Both reviewers**: if either reviewer's requested changes result in a new
-commit, that commit must go back to *both* reviewers for confirmation
-before final approval is recorded — approval of an earlier draft does not
-carry forward to a later edit (per the task's own Stage 6 instruction).
+The two per-audience review packets this outreach was built around
+(`LEVEL6-REVIEW-PACKET-A-QURAN-CONTENT.md`, `LEVEL6-REVIEW-PACKET-B-
+FRENCH.md`) are superseded by that single owner-review checklist and
+should not be sent to anyone or treated as an active review plan. They
+remain in the repository, unmodified from before this cancellation, as
+historical record of the external-review path that was considered and
+then not pursued.

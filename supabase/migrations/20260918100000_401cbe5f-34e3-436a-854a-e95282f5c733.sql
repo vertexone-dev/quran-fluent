@@ -71,6 +71,43 @@
 -- tension -- all remain open, HUMAN JUDGMENT REQUIRED items per both
 -- reviews and the reconciliation, not resolved here by assumption.
 --
+-- REDUCED SCOPE, owner-controlled release path (see
+-- LEVEL6-OWNER-REVIEW-CHECKLIST.md for the full record; this is NOT
+-- qualified human scholarly or professional-language review -- no
+-- external Qur'an-content or French-language reviewer was contacted or
+-- consulted for this pass; product-owner decision, recorded honestly as
+-- such). The disputed "ayah 4 is still praise" claim identified above was
+-- not resolved by picking a side of the scholarly disagreement -- every
+-- place this migration explicitly extended a "praise" characterization to
+-- include ayah 4 (a range labeled "ayat 1 to 4" or "ayat 1-4", or an
+-- explicit "it is still praise" statement about ayah 4 itself) has been
+-- reworded to the objective, undisputed grammatical fact both named
+-- sources agree on: ayat 1 through 4 describe Allah in the third person
+-- (grammatically verifiable, zero interpretation required), full stop --
+-- no claim is made about whether ayah 4 counts as "praise" or
+-- "transitional." Instances that only used "praise"/"louange" as a loose,
+-- whole-surah-level gloss for the *general* first phase of the surah (the
+-- module goal, Lesson 3's title, and several summary/tip lines) were left
+-- unchanged: both named sources (Sahih Muslim 395 and Darul Iftaa
+-- Birmingham) independently describe the surah's overall movement this
+-- same way ("the first three are in praise... the last three are a
+-- request" -- Darul Iftaa's own words), so this framing is not the
+-- disputed part; only the specific ayah-4 boundary claim was. Also fixed
+-- as a pure exercise-design correction, not an interpretive one: Lesson
+-- 3's first exercise no longer uses the word "concrete" for ayah 6 (it
+-- now asks which ayah first "names the specific request"), leaving
+-- "concrete" used consistently and only for ayah 7 everywhere else in the
+-- lesson, removing the two-different-referents ambiguity a learner could
+-- otherwise be marked wrong over. The "evoked"/"encouru" wording was
+-- deliberately left as-is: it is not an interpretive claim at all, it is
+-- the exact word this app's own `ayahs.translation_en` stores and
+-- displays to the learner (see the "evoked" vs. "earned" note further
+-- below) -- matching displayed text is the more defensible, non-
+-- interpretive default, not a doctrinal choice. The `quran_example`
+-- attribution gap (no translator/edition shown in the UI) is a systemic,
+-- cross-level characteristic, not something this batch introduces or can
+-- fix unilaterally -- left open, recorded, not resolved by assumption.
+--
 -- QUR'AN INTEGRITY: every Arabic string is a (surah_number, ayah_number)
 -- FK reference into the existing ayahs table (enforced by the existing
 -- composite FK and CHECK constraint on lesson_sections / lesson_exercises),
@@ -267,14 +304,14 @@ FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 2, 'explanation',
-  $t$Read together, Al-Fatiha's seven ayat fall into two parts. Ayat 1 to 4 praise Allah, naming who He is. Ayat 5 to 7 turn to a direct request. The turn happens at "You" in ayah 5 -- the first time the surah speaks directly to Allah instead of describing Him.$t$,
-  $t$Lus ensemble, les sept versets d'Al-Fatiha se divisent en deux parties. Les versets 1 à 4 louent Allah, en disant qui Il est. Les versets 5 à 7 se tournent vers une demande directe. Le tournant se produit à « Toi » dans le verset 5 — la première fois que la sourate s'adresse directement à Allah au lieu de Le décrire.$t$
+  $t$Read together, Al-Fatiha's seven ayat fall into two parts. Ayat 1 to 4 describe Allah, naming who He is. Ayat 5 to 7 turn to a direct request. The turn happens at "You" in ayah 5 -- the first time the surah speaks directly to Allah instead of describing Him.$t$,
+  $t$Lus ensemble, les sept versets d'Al-Fatiha se divisent en deux parties. Les versets 1 à 4 décrivent Allah, en disant qui Il est. Les versets 5 à 7 se tournent vers une demande directe. Le tournant se produit à « Toi » dans le verset 5 — la première fois que la sourate s'adresse directement à Allah au lieu de Le décrire.$t$
 FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr)
 SELECT id, 3, 'summary',
-  $t$Two parts, seven ayat: praise (1-4), then request (5-7), turning at ayah 5.$t$,
-  $t$Deux parties, sept versets : louange (1 à 4), puis demande (5 à 7), le tournant se situant au verset 5.$t$
+  $t$Two parts, seven ayat: description (1-4), then request (5-7), turning at ayah 5.$t$,
+  $t$Deux parties, sept versets : description (1 à 4), puis demande (5 à 7), le tournant se situant au verset 5.$t$
 FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 
 INSERT INTO public.lesson_section_translations (section_id, locale, body)
@@ -298,11 +335,11 @@ FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 
 INSERT INTO public.lesson_exercises (lesson_id, order_index, exercise_type, prompt_en, prompt_fr, payload, explanation_en, explanation_fr, review_item_type)
 SELECT id, 1, 'true_false',
-  $t$Ayat 1 to 4 praise and describe Allah; ayat 5 to 7 turn to a direct request.$t$,
-  $t$Les versets 1 à 4 louent et décrivent Allah ; les versets 5 à 7 se tournent vers une demande directe.$t$,
+  $t$Ayat 1 to 4 describe Allah in the third person; ayat 5 to 7 turn to address Him directly with a request.$t$,
+  $t$Les versets 1 à 4 décrivent Allah à la troisième personne ; les versets 5 à 7 s'adressent directement à Lui avec une demande.$t$,
   $t${"correctAnswer": true}$t$::jsonb,
-  $t$That is Al-Fatiha's shape: first praise, then petition.$t$,
-  $t$C'est la structure d'Al-Fatiha : d'abord la louange, puis la demande.$t$,
+  $t$That is Al-Fatiha's shape: first description, then request.$t$,
+  $t$C'est la structure d'Al-Fatiha : d'abord la description, puis la demande.$t$,
   'concept'
 FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 
@@ -310,7 +347,7 @@ INSERT INTO public.lesson_exercises (lesson_id, order_index, exercise_type, prom
 SELECT id, 2, 'matching',
   $t$Match each part of Al-Fatiha to what it does.$t$,
   $t$Associez chaque partie d'Al-Fatiha à ce qu'elle fait.$t$,
-  $t${"pairs": [{"left": "Ayat 1-4", "right": "Praise: naming who Allah is"}, {"left": "Ayat 5-7", "right": "Request: asking Allah directly"}, {"left": "The turning word", "right": "\"You\", in ayah 5"}]}$t$::jsonb,
+  $t${"pairs": [{"left": "Ayat 1-4", "right": "Description: naming who Allah is"}, {"left": "Ayat 5-7", "right": "Request: asking Allah directly"}, {"left": "The turning word", "right": "\"You\", in ayah 5"}]}$t$::jsonb,
   'concept'
 FROM public.lessons WHERE slug = 'al-fatiha-orientation-and-structure';
 
@@ -323,7 +360,7 @@ SELECT e.id, 'fr', e.prompt_fr, e.explanation_fr,
   CASE e.order_index
     WHEN 0 THEN $t${"choices": ["Verset 2", "Verset 4", "Verset 5"], "correctIndex": 2}$t$::jsonb
     WHEN 1 THEN $t${"correctAnswer": true}$t$::jsonb
-    WHEN 2 THEN $t${"pairs": [{"left": "Versets 1 à 4", "right": "Louange : dire qui est Allah"}, {"left": "Versets 5 à 7", "right": "Demande : s'adresser directement à Allah"}, {"left": "Le mot du tournant", "right": "« Toi », au verset 5"}]}$t$::jsonb
+    WHEN 2 THEN $t${"pairs": [{"left": "Versets 1 à 4", "right": "Description : dire qui est Allah"}, {"left": "Versets 5 à 7", "right": "Demande : s'adresser directement à Allah"}, {"left": "Le mot du tournant", "right": "« Toi », au verset 5"}]}$t$::jsonb
   END
 FROM public.lesson_exercises e
 JOIN public.lessons l ON l.id = e.lesson_id WHERE l.slug = 'al-fatiha-orientation-and-structure';
@@ -368,8 +405,8 @@ FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
 INSERT INTO public.lesson_sections (lesson_id, order_index, content_type, body_en, body_fr, surah_number, ayah_number)
 SELECT id, 2, 'quran_example',
-  $t$Ayah 4 -- "Sovereign of the Day of Recompense" -- adds a new description: Allah's authority specifically on the Day of Judgment. It is still praise, still describing Allah in the third person, like ayat 1 through 3.$t$,
-  $t$Le verset 4 — « Maître du Jour de la rétribution » — ajoute une nouvelle description : l'autorité d'Allah, en particulier au Jour du Jugement. C'est encore de la louange, Allah étant toujours décrit à la troisième personne, comme dans les versets 1 à 3.$t$,
+  $t$Ayah 4 -- "Sovereign of the Day of Recompense" -- adds a new description: Allah's authority specifically on the Day of Judgment. Like ayat 1 through 3, it describes Allah in the third person.$t$,
+  $t$Le verset 4 — « Maître du Jour de la rétribution » — ajoute une nouvelle description : l'autorité d'Allah, en particulier au Jour du Jugement. Comme les versets 1 à 3, il décrit Allah à la troisième personne.$t$,
   1, 4
 FROM public.lessons WHERE slug = 'al-fatiha-tracing-meaning';
 
@@ -487,8 +524,8 @@ JOIN public.lessons l ON l.id = s.lesson_id WHERE l.slug = 'al-fatiha-synthesis-
 
 INSERT INTO public.lesson_exercises (lesson_id, order_index, exercise_type, prompt_en, prompt_fr, payload, review_item_type)
 SELECT id, 0, 'multiple_choice',
-  $t$Which ayah first makes the request concrete -- what exactly are we asking Allah to show us?$t$,
-  $t$Quel verset rend la demande concrète pour la première fois — que demandons-nous exactement à Allah de nous montrer ?$t$,
+  $t$Which ayah first names the specific request -- what exactly are we asking Allah for?$t$,
+  $t$Quel verset nomme en premier la demande précise — que demandons-nous exactement à Allah ?$t$,
   $t${"choices": ["Ayah 5", "Ayah 6", "Ayah 7"], "correctIndex": 1}$t$::jsonb,
   'concept'
 FROM public.lessons WHERE slug = 'al-fatiha-synthesis-praise-and-petition';

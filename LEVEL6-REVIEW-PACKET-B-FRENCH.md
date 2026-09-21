@@ -1,5 +1,12 @@
 # Packet B — French reviewer
 
+**SUPERSEDED (2026-09-20): the product owner decided not to pursue
+external qualified review and cancelled all outreach — see
+`LEVEL6-REVIEWER-OUTREACH-DRAFTS.md` for that decision and
+`LEVEL6-OWNER-REVIEW-CHECKLIST.md` for the reduced-scope path taken
+instead. This packet was never sent to anyone and is kept only as a
+historical record of the external-review path that was considered.**
+
 **For a qualified French-speaking reviewer.** Not sent to anyone yet — no
 reviewer has been identified or contacted. Reviewed commit: `4138711`,
 branch `feat/level6-surah-mastery-candidate`. Full context:

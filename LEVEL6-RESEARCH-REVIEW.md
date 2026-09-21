@@ -8,6 +8,20 @@ from scratch, corrects one place where the ledger's own underlying research
 was itself imprecise, and adds citations the ledger did not previously
 carry. Reviewed commit: **`4138711`** (branch `feat/level6-surah-mastery-candidate`).
 
+**Update (2026-09-20)**: the product owner decided not to pursue external
+qualified review and requested a reduced-scope, owner-controlled release
+instead — see `LEVEL6-CONTENT-LEDGER.md` Update 3 and
+`LEVEL6-OWNER-REVIEW-CHECKLIST.md`. Every claim below marked "Needs
+qualification" for an interpretive/doctrinal reason (F2, the L2-S2 row)
+has since had the specific disputed wording it identified removed from
+the migration, not resolved in either direction — this document's own
+findings are still an accurate historical record of what was checked and
+why at commit `4138711`, but the exact line numbers and quoted wording in
+the "Line-by-line review" table below no longer match the current
+migration for the rows this update changed. Treat this document as the
+research trail, and `LEVEL6-OWNER-REVIEW-CHECKLIST.md` as the record of
+what was actually done in response to it.
+
 ## Method
 
 Every claim in the three Level 6 lessons was independently re-checked
