@@ -15,7 +15,23 @@ on:
 jobs:
   production-validation:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Measured, not guessed: Deployment #24's run of this job (before Level
+    # 6's spec 60 existed) took ~27m2s total, with "Run targeted E2E (specs
+    # 17-35, 37-41) against production" alone at 23m50s -- already 80% of
+    # the old 30-minute budget on its own. Deployment #25 (run 35646907072)
+    # added spec 60 (~1m50s) and that same targeted-E2E step grew to
+    # 29m11s (consistent with the two flaky-test retries fixed in specs 22
+    # and 29 below), pushing the job to 34m31s total -- every step,
+    # including Level 6's own, completed and reported `success`
+    # individually; only the job's overall wall clock crossed 30 minutes,
+    # which GitHub Actions then reports as the whole job "cancelled" even
+    # though nothing inside it actually failed. 45 minutes gives ~30%
+    # headroom above that worst observed run (34m31s) and ~67% above the
+    # typical run (~27m), without masking a real hang: a job that is
+    # genuinely stuck still gets killed, just at a limit sized to this
+    # job's actual, measured shape rather than one that was already too
+    # tight for its normal variance.
+    timeout-minutes: 45
 
     env:
       CI: true

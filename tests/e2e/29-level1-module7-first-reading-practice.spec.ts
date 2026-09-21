@@ -225,9 +225,30 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
     const { client, userId } = await createTestUserClient();
     await resetLessonProgress(lesson2.id);
 
-    await page.goto(`/lesson/${lesson2.id}`);
-    await page.getByRole("button", { name: "Next" }).click();
-    await page.getByRole("button", { name: "Next" }).click();
+    // Position writes are enqueued fire-and-forget (persistPosition in
+    // lesson.$lessonId.tsx never awaits the click handler on them), so
+    // nothing otherwise blocks page.reload() below from racing ahead of
+    // the actual network write -- invisible against local/CI's near-zero-
+    // latency Supabase, but real against production's network round trip
+    // (same class of race already fixed for this exact lesson-resume shape
+    // in tests/e2e/30-level1-module8-reading-al-fatiha.spec.ts, confirmed
+    // failing in production run #21; reproduced here locally by injecting
+    // latency on this exact request). Waiting for each write's own
+    // response before the next action is a deterministic fix tied to the
+    // real operation, not a blind timeout.
+    const waitForPositionSave = () =>
+      page.waitForResponse(
+        (res) =>
+          res.url().includes("/rest/v1/user_lesson_progress") && res.request().method() === "POST",
+      );
+
+    // Opening a fresh (just-reset) lesson also enqueues its own initial
+    // step-0 write on mount, before either click -- waited out here first
+    // so it can't be the response either click's own wait below ends up
+    // matching instead of that click's actual write.
+    await Promise.all([waitForPositionSave(), page.goto(`/lesson/${lesson2.id}`)]);
+    await Promise.all([waitForPositionSave(), page.getByRole("button", { name: "Next" }).click()]);
+    await Promise.all([waitForPositionSave(), page.getByRole("button", { name: "Next" }).click()]);
 
     await page.reload();
     const { data: progress } = await client
