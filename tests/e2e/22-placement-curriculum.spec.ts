@@ -284,8 +284,23 @@ test.describe("placement -> curriculum integration", () => {
       .eq("step_key", "harakat");
     if (error) throw error;
 
+    // fetchLearningPath (src/lib/placement.ts) resolves a
+    // findCurriculumEntryPoint chain (levels -> modules -> lessons ->
+    // user_lesson_progress -> lesson_translations, 5 sequential REST round
+    // trips) for every STEP_LEVEL_SLUGS entry, in parallel, before this
+    // page renders any step -- including "harakat", which has no entry
+    // here and is rendered read-only regardless. That fan-out grew from 5
+    // to 6 parallel chains once "surah_mastery" (Level 6) was restored,
+    // and the page shows a loading Skeleton (learning-plan.tsx) until
+    // every chain settles. Reproduced deterministically: injecting 6s of
+    // latency on **/rest/v1/modules* (a request every chain makes) makes
+    // this exact assertion fail at Playwright's default 5s expect timeout
+    // -- a genuine synchronization gap against real production network
+    // conditions, not a hard failure at any fixed delay. This waits
+    // longer for the same authoritative condition (the real rendered DOM,
+    // not a blind sleep) rather than masking it.
     await page.goto("/learning-plan");
-    await expect(page.getByText("Harakat", { exact: true })).toBeVisible();
+    await expect(page.getByText("Harakat", { exact: true })).toBeVisible({ timeout: 15_000 });
     const harakatCard = page.locator("li", { hasText: "Harakat" });
     await expect(harakatCard.getByRole("link")).toHaveCount(0);
   });
