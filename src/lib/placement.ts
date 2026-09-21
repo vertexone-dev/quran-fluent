@@ -232,20 +232,40 @@ export async function fetchLearningPath(userId: string): Promise<LearningPath | 
  * /learn page — adding it means any learner who completes Level 5 sees a
  * real, clickable Level 6 lesson in their authenticated learning path.
  *
- * CONTAINMENT (production incident, PR #31/main commit 5b50be3): that entry
+ * HISTORY (production incident, PR #31/main commit 5b50be3): this entry
  * was briefly present and merged to main *before* the qualified human
- * Qur'an-content and French review LEVEL6-CONTENT-LEDGER.md §7 requires had
- * happened. The Level 6 migration itself was never applied to production
- * (confirmed: zero rows under levels.number=6's modules there), so no
- * unapproved lesson text was ever actually served — but this wiring, left
- * in place, would activate the moment that migration is applied by any
- * future routine deploy, with no further code change or review needed. It
- * is deliberately removed here as defense in depth, independent of the
- * migration-application question, until §7 sign-off actually happens. Do
- * not re-add a "surah_mastery" entry without that sign-off — see
- * LEVEL6-CONTENT-LEDGER.md §5.2 and §7, and the regression coverage in
- * tests/e2e/58-level6-batch1-al-fatiha-surah-study.spec.ts proving this step
- * stays locked/unreachable even once Level 5 is complete.
+ * Qur'an-content and French review LEVEL6-CONTENT-LEDGER.md §7 originally
+ * required had happened. The Level 6 migration was never applied to
+ * production during that window (zero rows under levels.number=6's
+ * modules), so no unapproved lesson text was ever actually served, but the
+ * entry was removed as defense in depth (PR #32) until a deliberate,
+ * documented release decision replaced that requirement — see
+ * `LEVEL6-CONTENT-LEDGER.md` Update 3 and `LEVEL6-OWNER-REVIEW-CHECKLIST.md`:
+ * the content now carries explicit **product-owner editorial approval**
+ * (not qualified Islamic-studies review or independent professional French
+ * review — that distinction is preserved verbatim in the checklist) for a
+ * reduced-scope candidate, approved at commit `db80b85` (PR #33, merged to
+ * main as `db59b2b`).
+ *
+ * RESTORATION (this release, `release/level6-surah-mastery`): the entry
+ * below is restored to activate Level 6 for real learners, but **only once
+ * this PR is merged AND the reviewed migration has been applied to
+ * production AND deployed** — see `LEVEL6-RELEASE-RUNBOOK.md` for the
+ * exact, ordered, auditable sequence (checks → independent approval →
+ * explicit owner authorization → migration → read-only postcondition
+ * verification → merge → deploy → authenticated production verification).
+ * Restoring this code entry alone does **not** activate anything: with
+ * zero modules under `levels.number=6` (still true as of this branch),
+ * `findCurriculumEntryPoint` still resolves to `null` for `surah_mastery`
+ * regardless of this map, so this change is inert until the migration is
+ * separately applied. Do not skip the runbook's ordering, and do not
+ * re-remove this entry casually if a future issue arises — see the
+ * runbook's own containment guidance for the correct wiring-removal
+ * response to a genuine post-deployment failure. See
+ * `LEVEL6-CONTENT-LEDGER.md` §5.2 and §7, and the regression coverage in
+ * tests/e2e/58-level6-batch1-al-fatiha-surah-study.spec.ts proving this
+ * step stays locked before Level 5 completes and becomes available (with a
+ * working first-lesson link) once it does.
  *
  * `requiresLevelSlug`, when set, gates the step on that OTHER level being
  * fully complete first — per Phase 5's placement-strategy review, Level 2
@@ -276,9 +296,10 @@ const STEP_LEVEL_SLUGS: Partial<
     levelSlug: "guided-ayah-comprehension",
     requiresLevelSlug: "core-grammar",
   },
-  // "surah_mastery" (Level 6) intentionally has no entry here -- see the
-  // CONTAINMENT note above this map. Restore it only once
-  // LEVEL6-CONTENT-LEDGER.md §7's human sign-off is complete.
+  surah_mastery: {
+    levelSlug: "quranic-comprehension",
+    requiresLevelSlug: "guided-ayah-comprehension",
+  },
 };
 
 async function fetchStepEntryPoints(
