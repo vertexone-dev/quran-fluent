@@ -153,6 +153,33 @@ jobs:
           path: playwright-report-full-dataset/
           retention-days: 7
 
+      # Authenticated Level 6 production validation (fix/level6-production-
+      # validation): the curated "specs 17-35, 37-41" list above predates
+      # Level 6 and was never extended for it, so Production Validation #18
+      # never exercised the live, deployed Level 6 module at all. A
+      # dedicated, narrower spec -- not 58 itself, which has two tests that
+      # are unsafe to run standalone against the shared production account
+      # (see that spec's own file header and this file's PR description) --
+      # covering gating (via the real placement flow, never faked), all
+      # three lessons, EN/FR content, RTL Arabic, exercise grading, resume,
+      # RLS write-scoping, and three viewports. Separate step, same
+      # `if: always()` reasoning as specs 51/15 above -- a Level 6
+      # regression is attributed clearly to this gate and still fails the
+      # job even if an earlier step already failed.
+      - name: Run Level 6 production validation (spec 60)
+        if: always()
+        env:
+          PLAYWRIGHT_HTML_REPORT: playwright-report-level6
+        run: npx playwright test tests/e2e/60-level6-production-validation.spec.ts
+
+      - name: Upload Level 6 production validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-validation-level6-report
+          path: playwright-report-level6/
+          retention-days: 7
+
       # Confirmed defect: X-Content-Type-Options, X-Frame-Options,
       # Referrer-Policy and Permissions-Policy were present on /assets/*
       # but absent from /, /quran, /learn and HTML 404 responses -- fixed

@@ -132,6 +132,7 @@ export default defineConfig({
         "56-premium-motion-interactions.spec.ts",
         "57-settings.spec.ts",
         "58-level6-batch1-al-fatiha-surah-study.spec.ts",
+        "60-level6-production-validation.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
