@@ -23,6 +23,8 @@ export const common: typeof EnCommon = {
     bookmarks: "Favoris",
     notes: "Notes",
     settings: "Paramètres",
+    premium: "Premium",
+    billing: "Facturation",
     openMenu: "Ouvrir le menu",
     navigation: "Navigation",
     accountMenu: "Menu du compte",

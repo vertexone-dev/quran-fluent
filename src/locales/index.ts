@@ -8,6 +8,7 @@ import { memorization as enMemorization } from "./en/memorization";
 import { progress as enProgress } from "./en/progress";
 import { bookmarks as enBookmarks } from "./en/bookmarks";
 import { notes as enNotes } from "./en/notes";
+import { billing as enBilling } from "./en/billing";
 
 import { common as frCommon } from "./fr/common";
 import { home as frHome } from "./fr/home";
@@ -19,6 +20,7 @@ import { memorization as frMemorization } from "./fr/memorization";
 import { progress as frProgress } from "./fr/progress";
 import { bookmarks as frBookmarks } from "./fr/bookmarks";
 import { notes as frNotes } from "./fr/notes";
+import { billing as frBilling } from "./fr/billing";
 
 export const SUPPORTED_LOCALES = ["en", "fr"] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
@@ -34,6 +36,7 @@ const en = {
   progress: enProgress,
   bookmarks: enBookmarks,
   notes: enNotes,
+  billing: enBilling,
 };
 
 export type Dictionary = typeof en;
@@ -49,6 +52,7 @@ const fr: Dictionary = {
   progress: frProgress,
   bookmarks: frBookmarks,
   notes: frNotes,
+  billing: frBilling,
 };
 
 export const dictionaries: Record<Locale, Dictionary> = { en, fr };

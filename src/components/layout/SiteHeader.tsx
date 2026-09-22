@@ -26,6 +26,7 @@ const publicLinks = [
   { to: "/learn", key: "learn" },
   { to: "/quran", key: "quran" },
   { to: "/features", key: "features" },
+  { to: "/premium", key: "premium" },
   { to: "/about", key: "about" },
 ] as const;
 
@@ -175,6 +176,10 @@ export function SiteHeader() {
                   <Link to="/settings">{t("common.nav.settings")}</Link>
                 </DropdownMenuItem>
 
+                <DropdownMenuItem asChild>
+                  <Link to="/settings/billing">{t("common.nav.billing")}</Link>
+                </DropdownMenuItem>
+
                 <DropdownMenuSeparator />
 
                 <DropdownMenuItem onClick={signOut} data-testid="logout-menu-item">
@@ -253,6 +258,14 @@ export function SiteHeader() {
                       className="rounded-lg px-3 py-3"
                     >
                       {t("common.nav.settings")}
+                    </Link>
+
+                    <Link
+                      to="/settings/billing"
+                      onClick={() => setOpen(false)}
+                      className="rounded-lg px-3 py-3"
+                    >
+                      {t("common.nav.billing")}
                     </Link>
 
                     <Button
