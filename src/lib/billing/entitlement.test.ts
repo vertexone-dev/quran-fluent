@@ -18,6 +18,7 @@ function snapshot(overrides: Partial<SubscriptionSnapshot>): SubscriptionSnapsho
   return {
     status: "active",
     currentPeriodEnd: null,
+    cancelAtPeriodEnd: false,
     statusChangedAt: null,
     ...overrides,
   };
@@ -86,25 +87,52 @@ describe("isPremiumEntitled", () => {
     });
   });
 
-  describe("canceled — entitled through the paid period only", () => {
-    test("entitled while now is before current_period_end", () => {
+  describe("canceled — entitled through the paid period only, and only when that was scheduled at period end", () => {
+    test("entitled while now is before current_period_end AND cancelAtPeriodEnd was true", () => {
       const end = new Date(NOW.getTime() + days(3));
-      expect(isPremiumEntitled(snapshot({ status: "canceled", currentPeriodEnd: end }), NOW)).toBe(
-        true,
-      );
+      expect(
+        isPremiumEntitled(
+          snapshot({ status: "canceled", currentPeriodEnd: end, cancelAtPeriodEnd: true }),
+          NOW,
+        ),
+      ).toBe(true);
     });
 
-    test("not entitled once current_period_end has passed", () => {
+    test("not entitled once current_period_end has passed, even if cancelAtPeriodEnd was true", () => {
       const end = new Date(NOW.getTime() - days(1));
-      expect(isPremiumEntitled(snapshot({ status: "canceled", currentPeriodEnd: end }), NOW)).toBe(
-        false,
-      );
+      expect(
+        isPremiumEntitled(
+          snapshot({ status: "canceled", currentPeriodEnd: end, cancelAtPeriodEnd: true }),
+          NOW,
+        ),
+      ).toBe(false);
     });
 
-    test("no current_period_end on record fails closed (not entitled)", () => {
-      expect(isPremiumEntitled(snapshot({ status: "canceled", currentPeriodEnd: null }), NOW)).toBe(
-        false,
-      );
+    // Regression test: confirmed against a real Stripe sandbox cancellation
+    // that Stripe does NOT collapse current_period_end to "now" for an
+    // immediate (not cancel-at-period-end) cancellation -- it still reports
+    // the original, still-future period end. Without checking
+    // cancelAtPeriodEnd too, an immediately-canceled subscriber would keep
+    // Premium access until that date, contradicting PAYMENT-ARCHITECTURE.md
+    // §11/§14's documented "revoked immediately if canceled outside
+    // [cancel-at-period-end]" rule.
+    test("NOT entitled for an immediate cancellation, even though current_period_end is still in the future", () => {
+      const end = new Date(NOW.getTime() + days(3));
+      expect(
+        isPremiumEntitled(
+          snapshot({ status: "canceled", currentPeriodEnd: end, cancelAtPeriodEnd: false }),
+          NOW,
+        ),
+      ).toBe(false);
+    });
+
+    test("no current_period_end on record fails closed (not entitled), even with cancelAtPeriodEnd true", () => {
+      expect(
+        isPremiumEntitled(
+          snapshot({ status: "canceled", currentPeriodEnd: null, cancelAtPeriodEnd: true }),
+          NOW,
+        ),
+      ).toBe(false);
     });
   });
 
