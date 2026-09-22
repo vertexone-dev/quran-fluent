@@ -29,8 +29,18 @@ export function isBillingStatus(value: unknown): value is BillingStatus {
 export type SubscriptionSnapshot = {
   status: BillingStatus;
   /** End of the current paid period, if known. Drives the `canceled`
-   * still-entitled-until-period-end rule. */
+   * still-entitled-until-period-end rule -- but only when `cancelAtPeriodEnd`
+   * was true at cancellation; see that field's own comment. */
   currentPeriodEnd: Date | null;
+  /** Whether the subscription was scheduled to cancel at period end (true)
+   * or canceled immediately (false) -- Stripe does not collapse
+   * `current_period_end` to "now" for an immediate cancellation, so this
+   * flag is the only way to distinguish "still owns the already-paid
+   * period" from "canceled outside that, e.g. an immediate admin/refund
+   * cancellation" (PAYMENT-ARCHITECTURE.md §11/§14). Confirmed against a
+   * real Stripe sandbox cancellation: an immediately-canceled subscription
+   * still reports its original, still-future current_period_end. */
+  cancelAtPeriodEnd: boolean;
   /** When this row most recently transitioned into `status`. Only consulted
    * for the `past_due` grace window; ignored for every other status. */
   statusChangedAt: Date | null;
@@ -73,6 +83,7 @@ export function isPremiumEntitled(
 
     case "canceled":
       return (
+        subscription.cancelAtPeriodEnd &&
         subscription.currentPeriodEnd != null &&
         now.getTime() < subscription.currentPeriodEnd.getTime()
       );

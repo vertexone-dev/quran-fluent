@@ -43,6 +43,15 @@ CREATE POLICY "billing_customers_select_own" ON public.billing_customers
   FOR SELECT TO authenticated
   USING (auth.uid() = user_id);
 
+-- RLS restricts which rows a permitted operation can see; it does not
+-- grant the operation itself -- every other table migration in this repo
+-- (e.g. 20260816071743, public.profiles) explicitly GRANTs the roles that
+-- may attempt each operation, so this table does too, rather than relying
+-- on a default that this project's local/hosted Postgres does not apply
+-- automatically to new tables.
+GRANT SELECT ON public.billing_customers TO authenticated;
+GRANT ALL ON public.billing_customers TO service_role;
+
 CREATE TRIGGER billing_customers_updated_at
   BEFORE UPDATE ON public.billing_customers
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
@@ -91,6 +100,9 @@ CREATE POLICY "billing_subscriptions_select_own" ON public.billing_subscriptions
   FOR SELECT TO authenticated
   USING (auth.uid() = user_id);
 
+GRANT SELECT ON public.billing_subscriptions TO authenticated;
+GRANT ALL ON public.billing_subscriptions TO service_role;
+
 CREATE TRIGGER billing_subscriptions_updated_at
   BEFORE UPDATE ON public.billing_subscriptions
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
@@ -117,3 +129,6 @@ ALTER TABLE public.billing_webhook_events ENABLE ROW LEVEL SECURITY;
 -- policies for those roles, every SELECT/INSERT/UPDATE/DELETE from a
 -- client-side session is denied by default -- only the service-role key
 -- (used exclusively by the webhook handler) can touch this table at all.
+-- No GRANT to authenticated/anon either, for the same reason -- only
+-- service_role gets table privileges here.
+GRANT ALL ON public.billing_webhook_events TO service_role;

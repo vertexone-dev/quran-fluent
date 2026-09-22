@@ -45,6 +45,7 @@ export async function handleStatus(request: Request): Promise<Response> {
     {
       status: row.status,
       currentPeriodEnd: row.current_period_end ? new Date(row.current_period_end) : null,
+      cancelAtPeriodEnd: row.cancel_at_period_end,
       statusChangedAt: row.status_changed_at ? new Date(row.status_changed_at) : null,
     },
     new Date(),
