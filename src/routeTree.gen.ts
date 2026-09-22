@@ -15,6 +15,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as LearnRouteImport } from './routes/learn'
+import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as QuranRouteImport } from './routes/quran'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedBookmarksRouteImport } from './routes/_authenticated/bookmarks'
@@ -29,6 +30,7 @@ import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProgressRouteImport } from './routes/_authenticated/progress'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedLessonLessonIdRouteImport } from './routes/_authenticated/lesson.$lessonId'
+import { Route as AuthenticatedSettingsBillingRouteImport } from './routes/_authenticated/settings.billing'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -57,6 +59,11 @@ const FeaturesRoute = FeaturesRouteImport.update({
 const LearnRoute = LearnRouteImport.update({
   id: '/learn',
   path: '/learn',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PremiumRoute = PremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QuranRoute = QuranRouteImport.update({
@@ -131,6 +138,12 @@ const AuthenticatedLessonLessonIdRoute =
     path: '/lesson/$lessonId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsBillingRoute =
+  AuthenticatedSettingsBillingRouteImport.update({
+    id: '/billing',
+    path: '/billing',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/features': typeof FeaturesRoute
   '/learn': typeof LearnRoute
+  '/premium': typeof PremiumRoute
   '/quran': typeof QuranRoute
   '/reset-password': typeof ResetPasswordRoute
   '/bookmarks': typeof AuthenticatedBookmarksRoute
@@ -150,8 +164,9 @@ export interface FileRoutesByFullPath {
   '/placement': typeof AuthenticatedPlacementRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/progress': typeof AuthenticatedProgressRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
+  '/settings/billing': typeof AuthenticatedSettingsBillingRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -159,6 +174,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/features': typeof FeaturesRoute
   '/learn': typeof LearnRoute
+  '/premium': typeof PremiumRoute
   '/quran': typeof QuranRoute
   '/reset-password': typeof ResetPasswordRoute
   '/bookmarks': typeof AuthenticatedBookmarksRoute
@@ -171,8 +187,9 @@ export interface FileRoutesByTo {
   '/placement': typeof AuthenticatedPlacementRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/progress': typeof AuthenticatedProgressRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
+  '/settings/billing': typeof AuthenticatedSettingsBillingRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -182,6 +199,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/features': typeof FeaturesRoute
   '/learn': typeof LearnRoute
+  '/premium': typeof PremiumRoute
   '/quran': typeof QuranRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/bookmarks': typeof AuthenticatedBookmarksRoute
@@ -194,8 +212,9 @@ export interface FileRoutesById {
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/progress': typeof AuthenticatedProgressRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
+  '/_authenticated/settings/billing': typeof AuthenticatedSettingsBillingRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -205,6 +224,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/features'
     | '/learn'
+    | '/premium'
     | '/quran'
     | '/reset-password'
     | '/bookmarks'
@@ -219,6 +239,7 @@ export interface FileRouteTypes {
     | '/progress'
     | '/settings'
     | '/lesson/$lessonId'
+    | '/settings/billing'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -226,6 +247,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/features'
     | '/learn'
+    | '/premium'
     | '/quran'
     | '/reset-password'
     | '/bookmarks'
@@ -240,6 +262,7 @@ export interface FileRouteTypes {
     | '/progress'
     | '/settings'
     | '/lesson/$lessonId'
+    | '/settings/billing'
   id:
     | '__root__'
     | '/'
@@ -248,6 +271,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/features'
     | '/learn'
+    | '/premium'
     | '/quran'
     | '/reset-password'
     | '/_authenticated/bookmarks'
@@ -262,6 +286,7 @@ export interface FileRouteTypes {
     | '/_authenticated/progress'
     | '/_authenticated/settings'
     | '/_authenticated/lesson/$lessonId'
+    | '/_authenticated/settings/billing'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -271,6 +296,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   FeaturesRoute: typeof FeaturesRoute
   LearnRoute: typeof LearnRoute
+  PremiumRoute: typeof PremiumRoute
   QuranRoute: typeof QuranRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
 }
@@ -317,6 +343,13 @@ declare module '@tanstack/react-router' {
       path: '/learn'
       fullPath: '/learn'
       preLoaderRoute: typeof LearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/premium': {
+      id: '/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof PremiumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/quran': {
@@ -417,8 +450,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLessonLessonIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings/billing': {
+      id: '/_authenticated/settings/billing'
+      path: '/billing'
+      fullPath: '/settings/billing'
+      preLoaderRoute: typeof AuthenticatedSettingsBillingRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
   }
 }
+
+interface AuthenticatedSettingsRouteChildren {
+  AuthenticatedSettingsBillingRoute: typeof AuthenticatedSettingsBillingRoute
+}
+
+const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsBillingRoute: AuthenticatedSettingsBillingRoute,
+}
+
+const AuthenticatedSettingsRouteWithChildren =
+  AuthenticatedSettingsRoute._addFileChildren(
+    AuthenticatedSettingsRouteChildren,
+  )
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBookmarksRoute: typeof AuthenticatedBookmarksRoute
@@ -431,7 +484,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedProgressRoute: typeof AuthenticatedProgressRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedLessonLessonIdRoute: typeof AuthenticatedLessonLessonIdRoute
 }
 
@@ -446,7 +499,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedProgressRoute: AuthenticatedProgressRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedLessonLessonIdRoute: AuthenticatedLessonLessonIdRoute,
 }
 
@@ -460,6 +513,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   FeaturesRoute: FeaturesRoute,
   LearnRoute: LearnRoute,
+  PremiumRoute: PremiumRoute,
   QuranRoute: QuranRoute,
   ResetPasswordRoute: ResetPasswordRoute,
 }

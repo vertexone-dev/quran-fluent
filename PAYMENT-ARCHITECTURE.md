@@ -1,9 +1,26 @@
 # Payment & Premium Entitlement Architecture
 
-**Status:** Design only. Not implemented. No Stripe account, product, price, or
-webhook endpoint has been created. No billing table has been migrated. No
-payment has been accepted. This document is implementation-ready but requires
-the owner decisions in §23 before any code lands.
+**Status: guarded foundation, test mode only.** The pricing, trial, refund,
+grace-period, existing-user-transition, Stripe Tax, Adaptive Pricing, and
+promotion-code decisions in §23 are now approved and reflected throughout
+this document. The `feat/payment-foundation` PR implements the schema,
+server endpoints, entitlement policy, and UI described here — but:
+
+- No live Stripe account, product, or price has been created. Only test-mode
+  keys are ever used, and only as environment-variable placeholders (§17) —
+  none are entered, requested, printed, committed, or pushed by this work.
+- The billing migration (§19) exists in the repository but has **not** been
+  applied to production.
+- **Premium enforcement is hard-coded disabled**
+  (`PREMIUM_ENFORCEMENT_ENABLED = false` in `src/lib/billing/entitlement.ts`)
+  — every existing learner keeps exactly the access they have today,
+  regardless of this schema's existence or any subscription row's content.
+- Checkout is disabled client-side too (`VITE_BILLING_CHECKOUT_ENABLED=false`)
+  — every "Upgrade"/"Manage billing" button is inert while this flag is off.
+- No payment has been accepted, live or test.
+
+See the "Security note" under §9/§10 below before enabling enforcement —
+this foundation alone does **not** make Levels 3-6 content secure.
 
 **Reconciliation check performed before writing this:** grepped the full
 repository for `stripe|billing|subscription|premium|payment` — no existing
@@ -21,67 +38,133 @@ tests, Playwright for E2E, i18n via `src/locales/{en,fr}`.
 
 ## 1–3. Plans
 
-| Plan | Price (owner-approved, see §23) | Billing period | Target learner |
+| Plan | Price (approved, §23) | Billing period | Target learner |
 |---|---|---|---|
-| **Free** | $0 | — | Everyone; full Level 1 access, limited beyond |
-| **Premium Monthly** | *TBD* | Monthly, recurring | Learners who want month-to-month flexibility |
-| **Premium Annual** | *TBD* | Annual, recurring | Committed learners; priced at a discount vs. 12× monthly |
+| **Free** | $0 | — | Everyone; the Qur'an Reader, Levels 1-2, bookmarks/notes, basic progress |
+| **Premium Monthly** | **$3.99 USD** | Monthly, recurring | Learners who want month-to-month flexibility |
+| **Premium Annual** | **$29.99 USD** | Annual, recurring | Committed learners; ~37% cheaper than 12× monthly |
 
-No price is proposed here — see §23. Both Premium tiers grant identical
-entitlements; they differ only in billing cadence and price. A single Stripe
-Product (`quranroots_premium`) with two Prices (`monthly`, `annual`) is
-sufficient — no separate product per cadence.
+Both Premium tiers grant identical entitlements; they differ only in billing
+cadence and price. A single Stripe Product (`quranroots_premium`) with two
+Prices (`monthly`, `annual`) is sufficient — no separate product per cadence.
+Prices above are USD list prices; **Stripe Adaptive Pricing** is enabled on
+Checkout (§5), so an eligible customer sees and pays in their own local
+currency automatically, with USD as the fallback whenever localized
+presentment isn't available for them — this app never computes or stores a
+second, non-USD price itself.
+
+**Trial:** every new Premium subscription includes a **7-day free trial**
+(`subscription_data.trial_period_days: 7` on the Checkout Session).
+
+**First-payment refund window:** **7 days**, handled via the Stripe
+Dashboard/support (§15) — this codebase does not implement self-service
+refunds.
+
+**Failed-payment grace period:** **7 days**. A `past_due` subscription keeps
+Premium access for 7 days from when that status began, then loses it if the
+payment still hasn't recovered (§11, `src/lib/billing/entitlement.ts`'s
+`PAST_DUE_GRACE_PERIOD_DAYS`).
+
+**Existing-user transition:** once enforcement is eventually activated,
+every learner who already had an account receives a **30-day complimentary
+Premium period** — a one-time grace window so no current learner loses
+access the moment enforcement turns on. Not implemented by this PR
+(enforcement itself stays off); the constant
+(`EXISTING_USER_COMPLIMENTARY_PREMIUM_DAYS`, `src/lib/billing/policy.ts`) is
+fixed now so the later enforcement-activation phase applies it consistently.
+
+**Stripe Tax** is enabled on Checkout (`automatic_tax: { enabled: true }`) —
+Stripe calculates and collects applicable VAT/sales tax per customer
+jurisdiction; this app does not compute tax itself.
+
+**Promotion codes** are enabled on Checkout (`allow_promotion_codes: true`)
+now, ahead of a later Founding Learners Challenge that will use them — no
+codes exist yet; enabling the capability is separate from creating any.
 
 ## 4. Feature-entitlement matrix
 
-Derived from what's actually implemented today (curriculum, Qur'an reader,
-memorization, review, progress) — not invented features.
+Approved product boundary — **Levels 1-2 are Free, Levels 3-6 are Premium**,
+a simple, level-based split rather than per-feature caps.
 
 | Feature | Free | Premium |
 |---|---|---|
-| Level 1 (Foundations of Arabic Script) — all 8 modules, 33 lessons | ✅ Full | ✅ Full |
-| Levels 2–5 (Vocabulary, Roots, Grammar, Guided Comprehension) | 🔒 Preview only (first lesson of each level) | ✅ Full |
 | Qur'an reader (full 114-surah Mushaf, Arabic/Pickthall/Kazimirski) | ✅ Full — Qur'an text is never paywalled | ✅ Full |
+| Level 1 (Foundations of Arabic Script) | ✅ Full | ✅ Full |
+| Level 2 (Basic Vocabulary and Patterns) | ✅ Full | ✅ Full |
+| Level 3 (Roots and Word Patterns) | 🔒 Premium | ✅ Full |
+| Level 4 (Core Grammar) | 🔒 Premium | ✅ Full |
+| Level 5 (Guided Ayah Comprehension) | 🔒 Premium | ✅ Full |
+| Level 6 (Surah Mastery) | 🔒 Premium | ✅ Full |
+| Advanced practice and review | 🔒 Premium | ✅ Full |
+| Future AI Tutor | 🔒 Premium (once shipped) | ✅ Full (once shipped) |
 | Bookmarks / Notes | ✅ Full | ✅ Full |
-| Memorization tracker + spaced-repetition review | 🔒 Capped (e.g. 5 active Ayahs) | ✅ Unlimited |
-| Daily Study plan | ✅ Full | ✅ Full |
-| Practice / concept review | 🔒 Capped daily sessions | ✅ Unlimited |
-| Progress dashboard | ✅ Full | ✅ Full |
-| Audio (recitation, memorization playback) | ✅ Full | ✅ Full |
-| Word-frequency / roots explorer | ✅ Full | ✅ Full |
+| Basic progress tracking | ✅ Full | ✅ Full |
 
-**Deliberate principle: the Qur'an itself, its translations, and canonical
-content are never gated.** Only the *learning product* (curriculum depth,
-review capacity) is. Exact caps are a product decision — see §23 ("Free/
-Premium feature division"); the table above is a starting proposal, not
-final.
+**Deliberate principle, unchanged: the Qur'an itself, its translations, and
+canonical content are never gated.** Only the *learning product* (Levels
+3-6, advanced practice/review) is — see the security note under §9/§10 for
+what "gated" does and does not mean while enforcement is disabled.
 
 ## 5. Stripe Checkout flow
 
-1. Authenticated user clicks "Upgrade" (new `/premium` or `/settings/billing`
-   route) and picks Monthly or Annual.
-2. Client calls a new server route/function — `POST /api/billing/checkout`
-   (a Nitro/TanStack Start server route, colocated with the existing
-   `src/routes/` tree) — with `{ priceId }`. The server route runs with the
-   `STRIPE_SECRET_KEY` (server-only secret, never shipped to the client,
-   matching the existing convention that only `VITE_`-prefixed values reach
-   the browser — see `.env.example`).
-3. Server creates a Stripe Checkout Session
-   (`stripe.checkout.sessions.create`) with:
+**Implemented** (`src/lib/billing/handlers/checkout.ts`), gated behind
+`VITE_BILLING_CHECKOUT_ENABLED=false` client-side (§17) — every button that
+would call this endpoint stays disabled while that flag is off, matching
+this PR's "no live payment can happen" requirement.
+
+1. Authenticated user clicks "Upgrade" (`/premium` or `/settings/billing`)
+   and picks Monthly or Annual.
+2. Client calls `POST /api/billing/checkout` with `{ plan: "monthly" |
+   "annual" }` — **never** a raw Stripe Price id. The server route runs with
+   `STRIPE_SECRET_KEY` (server-only, never shipped to the client — see
+   `.env.example`) and resolves `plan` to a Price id itself, from
+   `STRIPE_PRICE_ID_MONTHLY`/`STRIPE_PRICE_ID_ANNUAL` (`src/lib/billing/
+   prices.ts`) — an unrecognized `plan` value is rejected with 400, never
+   forwarded to Stripe.
+3. Server authenticates the caller from their Supabase access token
+   (`src/lib/billing/requestAuth.ts`, `Authorization: Bearer` header — this
+   app's session lives in localStorage, not a cookie, so the client attaches
+   it explicitly via `src/lib/billing/fetchClient.ts`), then creates a
+   Stripe Checkout Session (`stripe.checkout.sessions.create`) with:
    - `mode: "subscription"`
    - `customer` — the user's existing `stripe_customer_id` if one exists in
      `billing_customers` (§8), else omitted (Stripe creates one, captured on
      the first webhook).
-   - `client_reference_id` — the Supabase `auth.users.id`, so the webhook can
-     always resolve the Stripe customer back to our user even if the
-     customer-creation race (§13) hasn't written `billing_customers` yet.
-   - `success_url` / `cancel_url` pointing back to `/settings/billing`.
+   - `client_reference_id` **and** `metadata.supabase_user_id` — the
+     Supabase `auth.users.id`, set from the already-verified session, never
+     from client input, so the webhook can always resolve the Stripe
+     customer back to our user even if the customer-creation race (§13)
+     hasn't written `billing_customers` yet.
+   - `subscription_data: { trial_period_days: 7, metadata: {
+     supabase_user_id } }` — the approved 7-day trial, and the same user-id
+     metadata copied onto the Subscription object itself (not just the
+     Session), so subscription-lifecycle webhooks can resolve the user
+     without a customer-table lookup.
+   - `adaptive_pricing: { enabled: true }` — Stripe Adaptive Pricing;
+     eligible customers see and pay in their own local currency, USD
+     fallback otherwise (§1-3).
+   - `automatic_tax: { enabled: true }` — Stripe Tax.
+   - `allow_promotion_codes: true` — ahead of the later Founding Learners
+     Challenge.
+   - `success_url` / `cancel_url` pointing back to `/settings/billing`, built
+     from server-controlled `APP_BASE_URL` (`src/lib/billing/env.ts`) —
+     **never** a request's own `Host` header, which a forged request could
+     otherwise use to redirect a paying customer to an attacker-controlled
+     origin after checkout.
 4. Server returns the Checkout Session URL; client redirects
    (`window.location.href = url`) — no Stripe.js/Elements needed for a
-   redirect-based Checkout flow, keeping the client bundle unchanged.
+   redirect-based Checkout flow, keeping the client bundle unchanged (and
+   keeping Stripe's server SDK entirely out of it — verified, §21).
 5. User completes payment on Stripe's hosted page. Stripe redirects back;
    the actual entitlement grant happens asynchronously via webhook (§7), not
    on this redirect — the redirect is UX only, never a trust boundary.
+
+**Not yet verified against a live Stripe account**: no test-mode Stripe
+credentials exist in this repository or its CI, so the exact request shape
+above (particularly `adaptive_pricing` and the newer per-item
+`current_period_end` location the webhook handler already defends against,
+§13) has not been exercised against Stripe's real API. Verifying this is
+one of the remaining setup steps before checkout can ever be turned on.
 
 ## 6. Stripe Customer Portal flow
 
@@ -132,7 +215,12 @@ for signature verification).
    webhook retry policy (exponential backoff, several days) does the right
    thing.
 
-## 8. Supabase billing schema proposal (design only — not migrated)
+## 8. Supabase billing schema
+
+**Implemented as a migration** —
+`supabase/migrations/20260922100000_361f2ef3-3dc0-4a2a-be2d-2ae0575175a8.sql`
+— rehearsed against a fresh local database (§19/§21), **not applied to
+production** by this PR.
 
 ```sql
 -- All monetary/identifier values from Stripe; never re-derive money math
@@ -150,38 +238,50 @@ CREATE TABLE public.billing_customers (
 );
 
 CREATE TABLE public.billing_subscriptions (
-  id                      uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id                 uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  stripe_customer_id      text NOT NULL,
-  stripe_subscription_id  text NOT NULL UNIQUE,
-  stripe_price_id         text NOT NULL,
-  status                  text NOT NULL CHECK (status IN (
-                            'trialing','active','past_due','canceled','unpaid','incomplete',
-                            'incomplete_expired'
-                          )),
-  cancel_at_period_end    boolean NOT NULL DEFAULT false,
-  current_period_end      timestamptz,
-  trial_end               timestamptz,
-  created_at              timestamptz NOT NULL DEFAULT now(),
-  updated_at              timestamptz NOT NULL DEFAULT now()
+  id                       uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id                  uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  stripe_customer_id       text NOT NULL,
+  stripe_subscription_id   text NOT NULL UNIQUE,
+  stripe_price_id          text NOT NULL,
+  status                   text NOT NULL CHECK (status IN (
+                             'trialing', 'active', 'past_due', 'canceled',
+                             'unpaid', 'incomplete', 'incomplete_expired', 'paused'
+                           )),
+  cancel_at_period_end     boolean NOT NULL DEFAULT false,
+  current_period_end       timestamptz,
+  trial_end                timestamptz,
+  -- When `status` most recently changed value -- entitlement.ts's past_due
+  -- grace window is measured from this, not updated_at, so an unrelated
+  -- field update never resets the grace clock.
+  status_changed_at        timestamptz NOT NULL DEFAULT now(),
+  -- The producing Stripe event's own `created` timestamp -- out-of-order
+  -- protection (§13) compares against this, never arrival order.
+  stripe_event_created_at  timestamptz,
+  created_at               timestamptz NOT NULL DEFAULT now(),
+  updated_at               timestamptz NOT NULL DEFAULT now(),
+  processed_at             timestamptz
 );
 CREATE INDEX billing_subscriptions_user_idx ON public.billing_subscriptions (user_id);
 
 -- Idempotency ledger (§12): one row per processed Stripe event id.
 CREATE TABLE public.billing_webhook_events (
-  stripe_event_id  text PRIMARY KEY,
-  event_type       text NOT NULL,
-  received_at      timestamptz NOT NULL DEFAULT now(),
-  processed_at     timestamptz
+  stripe_event_id   text PRIMARY KEY,
+  event_type        text NOT NULL,
+  event_created_at  timestamptz,
+  received_at       timestamptz NOT NULL DEFAULT now(),
+  processed_at      timestamptz
 );
 ```
 
-`user_id` derived server-side from `client_reference_id` /
-`customer.metadata`, never trusted from client input. A future
-`entitlements` view (`is_premium = status IN ('trialing','active') OR
-(status='canceled' AND current_period_end > now())` — see §14) can be added
-as a plain SQL view, not a new table, once the exact grace-period policy is
-approved (§23).
+`status` mirrors Stripe's own vocabulary verbatim, including `paused`
+(Stripe's pause-collection state) alongside the original seven — no local
+status is ever invented. `user_id` is always derived server-side from
+`client_reference_id` / subscription `metadata`, or from an existing
+`billing_customers` row keyed by Stripe customer id — never trusted from
+client input (`src/lib/billing/webhookProcessing.ts`'s
+`resolveUserIdForSubscription`). Entitlement itself is computed by the pure
+`src/lib/billing/entitlement.ts` module (§10), not a SQL view — kept
+in-process and unit-tested rather than pushed into the database layer.
 
 ## 9. Row-Level Security considerations
 
@@ -190,42 +290,92 @@ approved (§23).
   `anon`/`authenticated` at all — only the webhook handler (service-role key,
   bypasses RLS by design, exactly like every existing write-path in this
   schema) ever writes these tables. This makes "a client forges their own
-  Premium status" structurally impossible, not just discouraged.
-- `billing_webhook_events`: no RLS policy needed for `anon`/`authenticated`
-  at all (no grant) — it's an internal idempotency ledger, never read by the
-  client.
-- No new RLS policy is needed on any *existing* table (curriculum, progress,
-  etc.) for this design — entitlement gating happens at the application/
-  server layer (§10), not by restricting row visibility, because Free users
-  still need to *see* Level 2+ exists (as a locked preview), just not consume
-  its full content.
+  Premium status" structurally impossible, not just discouraged. Verified by
+  rehearsal against a fresh local database (§19/§21) and by
+  `entitlement.test.ts`/`webhookProcessing.test.ts`.
+- `billing_webhook_events`: RLS enabled with **zero** policies for
+  `anon`/`authenticated` at all — it's an internal idempotency ledger, never
+  read by the client.
+- **No new RLS policy is added to any existing table** (curriculum,
+  progress, etc.) by this PR. See the security note immediately below for
+  why that is a real, currently-open gap, not a settled design choice.
 
 ## 10. Server-enforced Premium authorization
 
-**Never trust the client for entitlement.** Concretely:
+**Never trust the client for entitlement.** Concretely, once enforcement is
+enabled (it is not, in this PR — §10.1):
 
-- A `requirePremium(userId)` server-side helper (new `src/lib/billing.ts`,
-  mirroring this repo's existing `src/lib/*.ts` server-logic modules) reads
-  `billing_subscriptions` fresh (`status IN ('trialing','active')`, or
-  `'canceled'` still within `current_period_end` — see §14) via the
-  **service-role key**, on the server, on every gated action — not cached
-  client-side beyond a short UI hint.
-- Gated surfaces (Level 2+ full lesson content, unlimited memorization/
-  review) check entitlement in the same server-side data-fetching functions
+- `hasLevelAccess(levelNumber, subscription, now)`
+  (`src/lib/billing/entitlement.ts`) is the single, pure, unit-tested
+  function every gated surface must call — never a locally re-derived
+  check. It reads `PREMIUM_ENFORCEMENT_ENABLED` itself, so a surface that
+  calls it correctly can never accidentally gate while enforcement is off.
+- A subscription snapshot for that check comes from `billing_subscriptions`,
+  read fresh via the **service-role key**, on the server, on every gated
+  action — not cached client-side beyond a short UI hint.
+- Gated surfaces (Level 3-6 full lesson content, advanced practice/review)
+  must check entitlement in the same server-side data-fetching functions
   that already exist (`findCurriculumEntryPoint`, `fetchLessonForPlayer`,
-  etc.) — add an entitlement check alongside the existing lesson-existence
-  check, returning a distinct "requires Premium" result the UI renders as an
-  upgrade prompt, not a 404 or a silent redirect.
+  etc.) — this PR does not yet add that call (§10.1's security note is
+  exactly why: the call alone would not be sufficient today).
 - The client-side UI (upgrade banners, locked-lesson badges) is a courtesy
-  layer only — read from the same `billing_subscriptions` row via a
-  `useQuery` for instant UI feedback, but **every** gated read/write is
-  re-checked server-side regardless of what the client believes.
+  layer only — read from `GET /api/billing/status` for instant UI feedback,
+  but **every** gated read/write must be re-checked server-side regardless
+  of what the client believes.
+
+### 10.1. Security note: this foundation does not yet secure Levels 3-6 content
+
+**This is the single most important caveat in this document, and it applies
+right now, not as a future hypothetical.**
+
+Confirmed directly against this schema (`tests/e2e/16-curriculum-schema.spec.ts`,
+"curriculum hierarchy can be read publicly"): `lesson_sections`,
+`lesson_exercises`, and every other curriculum table grant **open `SELECT`**
+to any caller holding the app's own publishable/anon key — which is, by
+design, shipped in every browser bundle and printed in this repository's own
+`.env.example`. This is intentional and correct for today's all-free
+product (anonymous visitors and Free learners alike need to browse the
+curriculum), but it means:
+
+- **A TanStack Start server loader that adds an entitlement check is not a
+  security boundary by itself.** The loader and the browser both ultimately
+  read the same anon-key-governed PostgREST endpoint. Adding a check inside
+  application code changes what the *loader* returns; it does not change
+  what `GET /rest/v1/lesson_sections?...` returns to a direct caller. A
+  browser's own DevTools, or a two-line script, can already read a Level 6
+  lesson's full body and exercises today, entitlement check or not — the
+  same way this project's own "KNOWN GAP" test
+  (`tests/e2e/58-level6-batch1-al-fatiha-surah-study.spec.ts`) already
+  documents for route-level gating.
+- **A visual lock (a "Locked"/"Premium" badge, a disabled button, a redirect
+  in a page component) is UX, not enforcement.** It stops a learner from
+  casually clicking into content the UI doesn't want to show them yet; it
+  does not stop a request that skips the UI entirely.
+- Therefore: **`PREMIUM_ENFORCEMENT_ENABLED` must stay `false`** — and no
+  future PR should flip it to `true` — **until** Levels 3-6 lesson content
+  is delivered through one of:
+  1. A genuinely server-authorized content path (e.g., a server-only
+     handler using the service-role key that checks entitlement *before*
+     returning section/exercise bodies, with the public anon-key path
+     returning only enough metadata to render a locked-preview state — never
+     the real body/exercise content); **or**
+  2. A redesigned RLS model on the curriculum tables themselves that ties
+     row visibility (or at minimum, sensitive columns) to a verified
+     entitlement, not just table membership.
+  Either is a real, separately-scoped, separately-reviewed engineering
+  phase — not a follow-up config flag flip.
+- **This foundation leaves current access completely unchanged.** No RLS
+  policy on any curriculum table is added, removed, or modified by this PR;
+  no lesson content, migration, or activation wiring for any level is
+  touched; `PREMIUM_ENFORCEMENT_ENABLED=false` and
+  `VITE_BILLING_CHECKOUT_ENABLED=false` together mean nothing about who can
+  read what changes as a result of merging this work.
 
 ## 11. Subscription states
 
-`trialing`, `active`, `past_due`, `canceled`, `unpaid`, `incomplete` (plus
-`incomplete_expired`, Stripe's own terminal state for an abandoned first
-payment) — all six required states plus one Stripe also emits, all stored
+`trialing`, `active`, `past_due`, `canceled`, `unpaid`, `incomplete`,
+`incomplete_expired` (Stripe's own terminal state for an abandoned first
+payment), and `paused` (Stripe's pause-collection state) — all eight stored
 verbatim in `billing_subscriptions.status` (never remapped/renamed), so the
 CHECK constraint and every webhook handler stay a 1:1 mirror of Stripe's own
 model — no local reinterpretation to drift out of sync.
@@ -233,9 +383,12 @@ model — no local reinterpretation to drift out of sync.
 | Status | Entitlement |
 |---|---|
 | `trialing`, `active` | Premium granted |
-| `past_due` | Premium **still granted** (Stripe is retrying payment; don't punish a learner mid-lesson for a card decline) for a bounded grace window (owner decision, §23), then treated as `canceled` |
+| `past_due` | Premium **still granted** for **7 days** from when the status began (Stripe is retrying payment; don't punish a learner mid-lesson for a card decline — §1-3, §23), then revoked |
 | `canceled` | Premium granted only through `current_period_end` if `cancel_at_period_end` was true at cancellation (already-paid period honored); revoked immediately if canceled outside that (e.g. an immediate admin/refund cancellation) |
-| `unpaid`, `incomplete`, `incomplete_expired` | No entitlement — checkout/payment never completed or subscription suspended |
+| `unpaid`, `incomplete`, `incomplete_expired`, `paused` | No entitlement — checkout/payment never completed, subscription suspended, or collection paused |
+
+Implemented, pure and unit-tested: `src/lib/billing/entitlement.ts`
+(`isPremiumEntitled`, `entitlement.test.ts`).
 
 ## 12. Idempotent webhook processing
 
@@ -328,13 +481,17 @@ different code paths.
 
 | Name | Scope | Notes |
 |---|---|---|
-| `STRIPE_SECRET_KEY` | Server-only (Cloudflare Worker secret / GitHub Actions secret for the `production` environment) | Never `VITE_`-prefixed — must never reach the client bundle |
-| `STRIPE_WEBHOOK_SECRET` | Server-only | Per-endpoint signing secret from the Stripe Dashboard/CLI |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | Client-safe | Only needed if a future iteration uses Stripe.js/Elements directly instead of a pure Checkout redirect; not required by the redirect-only flow in §5 |
-| `STRIPE_PRICE_ID_MONTHLY` | Server-only (or a repo constant, not secret) | Stripe Price id for the Monthly plan |
-| `STRIPE_PRICE_ID_ANNUAL` | Server-only (or a repo constant, not secret) | Stripe Price id for the Annual plan |
+| `STRIPE_SECRET_KEY` | Server-only (Cloudflare Worker secret / GitHub Actions secret for the `production` environment) | Never `VITE_`-prefixed — must never reach the client bundle. `src/lib/billing/stripe.ts`. |
+| `STRIPE_WEBHOOK_SECRET` | Server-only | Per-endpoint signing secret from the Stripe Dashboard/CLI. `src/lib/billing/handlers/webhook.ts`. |
+| `STRIPE_PRICE_ID_MONTHLY` | Server-only | Stripe Price id for the Monthly plan. `src/lib/billing/prices.ts`. |
+| `STRIPE_PRICE_ID_ANNUAL` | Server-only | Stripe Price id for the Annual plan. `src/lib/billing/prices.ts`. |
+| `APP_BASE_URL` | Server-only | Checkout/Portal return-URL origin — never derived from a request's own `Host` header. `src/lib/billing/env.ts`. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Server-only, already documented in `.env.example` as platform-managed | First actually *used* by application code in this PR — `src/lib/billing/supabaseAdmin.ts`, the only path with write access to the three billing tables. |
+| `VITE_BILLING_CHECKOUT_ENABLED` | Client-safe | `"true"` / `"false"` (or unset, which defaults to disabled). Gates every checkout-initiating button. `src/lib/billing/checkoutFlag.ts`. Set to `false` for this PR. |
 
-No value for any of these is proposed, read, or required by this document.
+Every value above is a test-mode placeholder in `.env.example` only. No real
+(live or test) value for any of these was entered, requested, printed,
+committed, or pushed while producing this PR.
 
 ## 18. Threat model
 
@@ -346,28 +503,40 @@ No value for any of these is proposed, read, or required by this document.
 | Stolen/leaked `STRIPE_SECRET_KEY` | Server-only secret, never bundled (same class of protection already relied on for `SUPABASE_SERVICE_ROLE_KEY`, per `security.spec.ts`'s existing "no service-role key in the shipped client bundle" test — the same test pattern extends to this key) |
 | User enumeration via Checkout/Portal errors | Both server routes return generic errors to the client; detailed Stripe error text logged server-side only |
 | Double-charging via a duplicate Checkout session | Stripe Checkout Sessions are single-use by design; no server-side retry logic re-creates a session for an already-completed one |
-| Price tampering (client sends an arbitrary `priceId`) | Server validates `priceId` against the two known constants (§17) before creating a Checkout Session — never passes client input straight to Stripe |
-| A canceled-but-still-in-period user is denied access early, or a truly expired one keeps access | Covered by §11/§14's explicit state table; regression-tested (§21) |
+| Price tampering (client sends an arbitrary `priceId`) | Client only ever sends `plan: "monthly" \| "annual"` (§5); server rejects any other value with 400 and resolves the real Price id itself from `STRIPE_PRICE_ID_MONTHLY`/`STRIPE_PRICE_ID_ANNUAL` (§17) — a raw client-supplied Price id is never accepted or forwarded to Stripe. Regression-tested, `checkout.test.ts`. |
+| A canceled-but-still-in-period user is denied access early, or a truly expired one keeps access | Covered by §11/§14's explicit state table; regression-tested, `entitlement.test.ts` (§21) |
+| Enforcement accidentally turned on before curriculum content is actually secured | `PREMIUM_ENFORCEMENT_ENABLED` is a single, named, unit-tested constant (§10.1); flipping it is a deliberate, separately-reviewed code change, not a config toggle a deploy could flip silently |
 
 ## 19. Migration plan
 
-**Not executed. Design only, for a future, separately-authorized phase.**
+**Steps 1 and 6 below are implemented by `feat/payment-foundation`. Steps
+2-5 are explicitly NOT performed by this PR** — no production migration
+applied, no Stripe Dashboard configuration, no production secret added, no
+enforcement gating added to any lesson/review/practice surface.
 
-1. `supabase/migrations/<ts>_<uuid>.sql` — creates the three tables in §8,
-   RLS policies in §9, indexes, and nothing else. Purely additive; touches
-   no existing table.
-2. Deploy the three new server routes (`/api/billing/checkout`,
-   `/api/billing/portal`, `/api/billing/webhook`) alongside the existing
-   TanStack Start route tree — no change to any existing route.
-3. Configure the Stripe webhook endpoint in the Stripe Dashboard (test mode
-   first, then live) pointing at the deployed URL.
-4. Add the secrets in §17 to the Cloudflare Worker / GitHub Actions
+1. ✅ `supabase/migrations/20260922100000_361f2ef3-3dc0-4a2a-be2d-2ae0575175a8.sql`
+   — creates the three tables in §8, RLS policies in §9, indexes, and
+   nothing else. Purely additive; touches no existing table. Rehearsed
+   locally (§21); **not applied to production**.
+2. ⬜ Deploy the four server routes (`/api/billing/checkout`,
+   `/api/billing/portal`, `/api/billing/webhook`, `/api/billing/status`) —
+   they exist in this PR (`src/lib/billing/`, wired into `src/server.ts`,
+   §5-§7) but reach production only once this PR is merged and deployed
+   through the normal, unmodified deployment pipeline (`DEPLOYMENT.md`) —
+   no separate/manual deploy step.
+3. ⬜ Configure the Stripe webhook endpoint in the Stripe Dashboard (test
+   mode first, then live) pointing at the deployed URL. **Not done** — no
+   Stripe account/webhook exists yet.
+4. ⬜ Add the secrets in §17 to the Cloudflare Worker / GitHub Actions
    `production` environment (same protected-environment mechanism already
-   used for `CLOUDFLARE_API_TOKEN`, per `DEPLOYMENT.md`).
-5. Add `requirePremium` gating to the specific lesson/review/practice
-   surfaces the entitlement matrix (§4) names, once §23's exact division is
-   approved.
-6. Add the `/premium` and `/settings/billing` UI routes.
+   used for `CLOUDFLARE_API_TOKEN`, per `DEPLOYMENT.md`). **Not done.**
+5. ⬜ Add `hasLevelAccess` gating to the specific lesson/review/practice
+   surfaces the entitlement matrix (§4) names — **blocked on §10.1's
+   server-authorized-content-delivery phase**, not merely on this step
+   being scheduled.
+6. ✅ `/premium` and `/settings/billing` UI routes — implemented, both
+   locales, checkout/manage-billing buttons disabled while
+   `VITE_BILLING_CHECKOUT_ENABLED=false`.
 
 Each step is independently revertable; step 1 (the migration) is the only
 one that touches the database, and it's purely additive (new tables only).
@@ -449,26 +618,43 @@ convention, e.g. `scripts/db-migration-tests/*.test.sh`):
   event, when received, when processed) — no separate logging table needed
   at this scale.
 
-## 23. Decisions requiring owner approval
+## 23. Owner decisions — resolved
 
-None of the following are decided by this document; implementation of
-anything price- or policy-dependent waits on these:
+All of the following are now approved and reflected throughout this
+document and the `feat/payment-foundation` implementation:
 
-1. **Monthly price.**
-2. **Annual price** (and the discount-vs-monthly framing).
-3. **Trial policy** — free trial length, if any (0 days is a valid answer).
-4. **Free/Premium feature division** — §4's matrix is a starting proposal
-   only (which levels/how much preview, memorization/review caps).
-5. **Refund policy** — window, conditions, whether self-service or
-   support-only.
-6. **Tax handling** — whether Stripe Tax is enabled, which jurisdictions
-   collect VAT/sales tax.
-7. **Supported countries** — which countries Checkout is offered in.
-8. **Supported currencies** — single currency (e.g. USD) vs.
-   Stripe-localized presentment currencies.
+1. **Monthly price**: **$3.99 USD** (§1-3).
+2. **Annual price**: **$29.99 USD** (§1-3) — ~37% cheaper than 12× monthly.
+3. **Trial policy**: **7 days** (§1-3, §5).
+4. **Free/Premium feature division**: **Levels 1-2 Free, Levels 3-6
+   Premium** (§4) — a level-based split, not per-feature caps.
+5. **Refund policy**: **7-day first-payment refund window**, support-issued
+   via the Stripe Dashboard, not self-service (§1-3, §15).
+6. **Tax handling**: **Stripe Tax enabled** (§1-3, §5) — Stripe determines
+   jurisdiction and collects accordingly; not manually configured per
+   country by this app.
+7. **Supported countries**: not separately restricted by this
+   implementation — left at Stripe Checkout's own defaults; a future,
+   separately-authorized change if a specific restriction is ever needed.
+8. **Supported currencies**: **Stripe Adaptive Pricing enabled**, USD
+   fallback (§1-3, §5) — not a single fixed currency.
+
+Two decisions beyond the original eight, made alongside these:
+
+9. **Failed-payment grace period**: **7 days** (§1-3, §11) — how long a
+   `past_due` subscription keeps Premium before losing it.
+10. **Existing-user transition**: **30-day complimentary Premium** once
+    enforcement activates (§1-3) — not implemented by this PR; the constant
+    is fixed for the later activation phase.
+
+Promotion-code support (`allow_promotion_codes: true`) is enabled ahead of
+a later Founding Learners Challenge (§1-3, §5) — no codes exist yet.
 
 ---
 
-*No live Stripe connection, product, price, webhook, or billing table was
-created while producing this document. No payment was accepted. No Supabase
-migration was executed.*
+*No live Stripe connection, product, price, or webhook was created while
+producing this document or the `feat/payment-foundation` implementation. No
+payment, live or test, was accepted. The billing migration (§8, §19) exists
+in the repository but was not applied to production. Premium enforcement
+(`PREMIUM_ENFORCEMENT_ENABLED`) and client-side checkout
+(`VITE_BILLING_CHECKOUT_ENABLED`) are both disabled.*

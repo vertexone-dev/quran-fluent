@@ -2,6 +2,7 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { handleBillingApiRequest, isBillingApiRequest } from "./lib/billing/router";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -85,9 +86,21 @@ export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     let response: Response;
     try {
-      const handler = await getServerEntry();
-      const raw = await handler.fetch(request, env, ctx);
-      response = await normalizeCatastrophicSsrResponse(raw);
+      // Billing endpoints are plain HTTP handlers (see
+      // src/lib/billing/router.ts for why this exact TanStack Start
+      // version needs them handled here rather than as file-based routes),
+      // intercepted before the SSR pipeline ever sees them -- in
+      // particular, POST /api/billing/webhook needs its raw, unparsed
+      // request body for Stripe signature verification, which nothing
+      // downstream of this point would preserve.
+      const { pathname } = new URL(request.url);
+      if (isBillingApiRequest(pathname)) {
+        response = await handleBillingApiRequest(request);
+      } else {
+        const handler = await getServerEntry();
+        const raw = await handler.fetch(request, env, ctx);
+        response = await normalizeCatastrophicSsrResponse(raw);
+      }
     } catch (error) {
       console.error(error);
       response = new Response(renderErrorPage(), {

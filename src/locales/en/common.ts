@@ -21,6 +21,8 @@ export const common = {
     bookmarks: "Bookmarks",
     notes: "Notes",
     settings: "Settings",
+    premium: "Premium",
+    billing: "Billing",
     openMenu: "Open menu",
     navigation: "Navigation",
     accountMenu: "Account menu",
