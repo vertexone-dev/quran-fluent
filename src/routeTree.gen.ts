@@ -30,6 +30,7 @@ import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProgressRouteImport } from './routes/_authenticated/progress'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedLessonLessonIdRouteImport } from './routes/_authenticated/lesson.$lessonId'
+import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings.index'
 import { Route as AuthenticatedSettingsBillingRouteImport } from './routes/_authenticated/settings.billing'
 
 const IndexRoute = IndexRouteImport.update({
@@ -138,6 +139,12 @@ const AuthenticatedLessonLessonIdRoute =
     path: '/lesson/$lessonId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedSettingsIndexRoute =
+  AuthenticatedSettingsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedSettingsBillingRoute =
   AuthenticatedSettingsBillingRouteImport.update({
     id: '/billing',
@@ -167,6 +174,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
   '/settings/billing': typeof AuthenticatedSettingsBillingRoute
+  '/settings/': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -187,9 +195,9 @@ export interface FileRoutesByTo {
   '/placement': typeof AuthenticatedPlacementRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/progress': typeof AuthenticatedProgressRoute
-  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
   '/settings/billing': typeof AuthenticatedSettingsBillingRoute
+  '/settings': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
   '/_authenticated/settings/billing': typeof AuthenticatedSettingsBillingRoute
+  '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/lesson/$lessonId'
     | '/settings/billing'
+    | '/settings/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -260,9 +270,9 @@ export interface FileRouteTypes {
     | '/placement'
     | '/practice'
     | '/progress'
-    | '/settings'
     | '/lesson/$lessonId'
     | '/settings/billing'
+    | '/settings'
   id:
     | '__root__'
     | '/'
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/lesson/$lessonId'
     | '/_authenticated/settings/billing'
+    | '/_authenticated/settings/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -450,6 +461,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLessonLessonIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/settings/': {
+      id: '/_authenticated/settings/'
+      path: '/'
+      fullPath: '/settings/'
+      preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/settings/billing': {
       id: '/_authenticated/settings/billing'
       path: '/billing'
@@ -462,10 +480,12 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedSettingsRouteChildren {
   AuthenticatedSettingsBillingRoute: typeof AuthenticatedSettingsBillingRoute
+  AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
 
 const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
   AuthenticatedSettingsBillingRoute: AuthenticatedSettingsBillingRoute,
+  AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
 }
 
 const AuthenticatedSettingsRouteWithChildren =
