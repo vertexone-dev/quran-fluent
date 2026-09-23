@@ -10,6 +10,7 @@ const PROTECTED_ROUTES = [
   "/learning-plan",
   "/progress",
   "/settings",
+  "/settings/billing",
   "/bookmarks",
   "/notes",
   "/memorize",

@@ -103,26 +103,49 @@ jobs:
       # stripping (unlike dotenv, which both this file's other consumers
       # use), so a quoted value here would be read back literally with
       # the quote characters still attached.
+      # PR #39's CI run failed here in a different way: the Playwright web
+      # server (src/lib/billing/supabaseAdmin.ts's getSupabaseAdminClient)
+      # reads the *bare* SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY pair
+      # server-side -- never the VITE_-prefixed pair, which is browser-only
+      # -- so GET /api/billing/status 500'd with "Missing required
+      # environment variable(s): SUPABASE_SERVICE_ROLE_KEY" the moment
+      # 61-settings-billing-routing.spec.ts exercised it, even though the
+      # route itself (this PR's actual fix) was rendering correctly. Now
+      # every server-side var this app's billing code reads is sourced
+      # from this same disposable local stack too, alongside the existing
+      # VITE_ pair -- never the job-wide `secrets.SUPABASE_*` above, which
+      # (per the block comment on "Start local Supabase" further up) is
+      # the same production project baked into the production bundle.
       - name: Create local .env.test (disposable credentials, local stack only)
         run: |
           set -euo pipefail
           STATUS="$(supabase status -o env)"
           API_URL="$(printf '%s\n' "$STATUS" | grep '^API_URL=' | cut -d= -f2- | tr -d '"')"
           ANON_KEY="$(printf '%s\n' "$STATUS" | grep '^ANON_KEY=' | cut -d= -f2- | tr -d '"')"
+          SERVICE_ROLE_KEY="$(printf '%s\n' "$STATUS" | grep '^SERVICE_ROLE_KEY=' | cut -d= -f2- | tr -d '"')"
 
           if [[ "$API_URL" != http://127.0.0.1:* && "$API_URL" != http://localhost:* ]]; then
             echo "::error::supabase status resolved API_URL to a non-local address -- refusing to write .env.test."
             exit 1
           fi
 
+          if [[ -z "$SERVICE_ROLE_KEY" ]]; then
+            echo "::error::supabase status did not return a SERVICE_ROLE_KEY -- refusing to write .env.test."
+            exit 1
+          fi
+
           DISPOSABLE_EMAIL="e2e-ci-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}@example.com"
           DISPOSABLE_PASSWORD="$(openssl rand -base64 24)"
           echo "::add-mask::$ANON_KEY"
+          echo "::add-mask::$SERVICE_ROLE_KEY"
           echo "::add-mask::$DISPOSABLE_PASSWORD"
 
           {
             echo "VITE_SUPABASE_URL=$API_URL"
             echo "VITE_SUPABASE_PUBLISHABLE_KEY=$ANON_KEY"
+            echo "SUPABASE_URL=$API_URL"
+            echo "SUPABASE_PUBLISHABLE_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
             echo "E2E_TEST_EMAIL=$DISPOSABLE_EMAIL"
             echo "E2E_TEST_PASSWORD=$DISPOSABLE_PASSWORD"
           } > .env.test
@@ -137,9 +160,13 @@ jobs:
           npm run test:e2e:setup
 
       # Defense in depth, independent of the check inside the step above:
-      # re-resolves VITE_SUPABASE_URL from .env.test one more time, right
-      # before Playwright can do anything with it, and refuses to proceed
-      # if it is not localhost.
+      # re-resolves both the browser-side (VITE_SUPABASE_URL) and
+      # server-side (SUPABASE_URL) URLs from .env.test one more time, right
+      # before Playwright can do anything with them, and refuses to
+      # proceed if either is not localhost -- or if SUPABASE_SERVICE_ROLE_KEY
+      # (which the billing API route needs server-side, see the "Create
+      # local .env.test" step above) is missing. The key's value is never
+      # printed, only its presence.
       - name: Verify E2E target is localhost (fail-fast)
         run: |
           set -a
@@ -149,7 +176,15 @@ jobs:
             echo "::error::VITE_SUPABASE_URL (\"$VITE_SUPABASE_URL\") is not localhost -- refusing to run E2E tests."
             exit 1
           fi
-          echo "Confirmed E2E target is localhost."
+          if [[ "$SUPABASE_URL" != http://127.0.0.1:* && "$SUPABASE_URL" != http://localhost:* ]]; then
+            echo "::error::SUPABASE_URL (\"$SUPABASE_URL\") is not localhost -- refusing to run E2E tests."
+            exit 1
+          fi
+          if [[ -z "${SUPABASE_SERVICE_ROLE_KEY:-}" ]]; then
+            echo "::error::SUPABASE_SERVICE_ROLE_KEY is missing -- refusing to run E2E tests."
+            exit 1
+          fi
+          echo "Confirmed E2E target is localhost and the service-role key is present."
 
       - name: Run E2E tests
         run: |
