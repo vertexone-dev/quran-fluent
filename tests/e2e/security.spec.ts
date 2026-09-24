@@ -150,4 +150,107 @@ test.describe("security", () => {
       expect(text).not.toMatch(/"service_role"/);
     }
   });
+
+  test("no Stripe secret key or webhook signing secret is present in the shipped client bundle", async ({
+    page,
+  }) => {
+    const seenScripts: string[] = [];
+    page.on("response", async (response) => {
+      const contentType = response.headers()["content-type"] ?? "";
+      if (contentType.includes("javascript") || response.url().endsWith(".js")) {
+        try {
+          seenScripts.push(await response.text());
+        } catch {
+          // Ignore bodies that can't be read (e.g. already-consumed streams).
+        }
+      }
+    });
+
+    // /premium is the page most likely to pull in billing-related client
+    // code (checkoutFlag.ts, the Checkout-starting buttons) -- the page
+    // this check most needs to cover.
+    await page.goto("/premium");
+    await page.waitForLoadState("networkidle");
+
+    const html = await page.content();
+    const haystacks = [html, ...seenScripts];
+    for (const text of haystacks) {
+      expect(text).not.toMatch(/sk_live_[A-Za-z0-9]{10,}/);
+      expect(text).not.toMatch(/sk_test_[A-Za-z0-9]{10,}/);
+      expect(text).not.toMatch(/whsec_[A-Za-z0-9]{10,}/);
+    }
+  });
+
+  // Real-HTTP-level coverage of src/server.ts's billing routing + each
+  // handler's own auth/validation guard -- distinct from src/lib/billing/
+  // handlers/checkout.test.ts's mocked unit tests, which import and call
+  // handleCheckout directly and so never exercise src/server.ts's own
+  // request routing at all.
+  test.describe("billing API", () => {
+    test("POST /api/billing/checkout without authentication returns 401", async ({
+      request,
+      baseURL,
+    }) => {
+      const response = await request.post(`${baseURL}/api/billing/checkout`, {
+        headers: { "content-type": "application/json" },
+        data: { plan: "monthly" },
+      });
+      expect(response.status()).toBe(401);
+    });
+
+    test("POST /api/billing/checkout with an authenticated but invalid plan returns 400, not a Checkout Session", async ({
+      request,
+      baseURL,
+    }) => {
+      const { client } = await createFreshTestUserClient();
+      const {
+        data: { session },
+      } = await client.auth.getSession();
+      expect(session?.access_token).toBeTruthy();
+
+      const response = await request.post(`${baseURL}/api/billing/checkout`, {
+        headers: {
+          "content-type": "application/json",
+          Authorization: `Bearer ${session!.access_token}`,
+        },
+        data: { priceId: "price_evil_free_forever" },
+      });
+      expect(response.status()).toBe(400);
+      const body = await response.json();
+      expect(body.url).toBeUndefined();
+    });
+
+    test("GET /api/billing/status without authentication returns 401", async ({
+      request,
+      baseURL,
+    }) => {
+      const response = await request.get(`${baseURL}/api/billing/status`);
+      expect(response.status()).toBe(401);
+    });
+
+    test("POST /api/billing/webhook without a Stripe-Signature header returns 400", async ({
+      request,
+      baseURL,
+    }) => {
+      const response = await request.post(`${baseURL}/api/billing/webhook`, {
+        headers: { "content-type": "application/json" },
+        data: { type: "checkout.session.completed" },
+      });
+      expect(response.status()).toBe(400);
+    });
+
+    test("POST /api/billing/webhook with an invalid Stripe-Signature header returns 400, never processing the event", async ({
+      request,
+      baseURL,
+    }) => {
+      const response = await request.post(`${baseURL}/api/billing/webhook`, {
+        headers: {
+          "content-type": "application/json",
+          "stripe-signature": "t=1,v1=not-a-real-signature",
+        },
+        data: { type: "checkout.session.completed" },
+      });
+      expect(response.status()).toBe(400);
+    });
+  });
 });

@@ -148,6 +148,35 @@ jobs:
             echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
             echo "E2E_TEST_EMAIL=$DISPOSABLE_EMAIL"
             echo "E2E_TEST_PASSWORD=$DISPOSABLE_PASSWORD"
+            # PR #41's CI run failed here in a third way: security.spec.ts's
+            # "POST /api/billing/webhook with an invalid Stripe-Signature
+            # header" test expects 400, but got 500, because handleWebhook()
+            # (src/lib/billing/handlers/webhook.ts) checks
+            # STRIPE_WEBHOOK_SECRET first and 500s when it's missing --
+            # correct production behavior (missing config must never be
+            # silently treated as "signature invalid"), but this workflow
+            # never wrote either Stripe var into .env.test, so every local
+            # E2E run hit exactly that missing-config path instead of the
+            # signature-verification path the test actually exercises.
+            # These two values are deterministic, obviously-fake
+            # placeholders -- not real Stripe credentials, never requested
+            # from or valid against Stripe's API -- that exist ONLY in this
+            # disposable local .env.test, alongside the disposable Supabase
+            # credentials above. getStripeClient() (src/lib/billing/
+            # stripe.ts) only ever constructs a Stripe SDK client object
+            # locally from STRIPE_SECRET_KEY; it makes no network call by
+            # itself. handleWebhook()'s signature check
+            # (stripe.webhooks.constructEventAsync, using
+            # STRIPE_WEBHOOK_SECRET) is pure local HMAC verification against
+            # the raw request body -- it rejects an invalid/forged
+            # "stripe-signature" header before any Stripe network request or
+            # Supabase write happens, exactly like it does in production.
+            # Never replace these with real Stripe secret/publishable keys,
+            # a real webhook signing secret, or a GitHub Actions secret --
+            # a real value here would let this job accidentally start
+            # making real Stripe API calls.
+            echo "STRIPE_SECRET_KEY=sk_test_e2e_placeholder_not_a_real_key"
+            echo "STRIPE_WEBHOOK_SECRET=whsec_e2e_placeholder_not_a_real_secret"
           } > .env.test
 
           echo "Wrote .env.test for the local stack at $API_URL (values not printed)."
@@ -184,7 +213,17 @@ jobs:
             echo "::error::SUPABASE_SERVICE_ROLE_KEY is missing -- refusing to run E2E tests."
             exit 1
           fi
-          echo "Confirmed E2E target is localhost and the service-role key is present."
+          # Same defense-in-depth as the Supabase check above, for the
+          # disposable Stripe placeholders the "Create local .env.test" step
+          # writes -- without these, security.spec.ts's webhook tests hit
+          # handleWebhook()'s "not configured" 500 path instead of its
+          # signature-verification 400 path. Presence only, never the
+          # values.
+          if [[ -z "${STRIPE_SECRET_KEY:-}" || -z "${STRIPE_WEBHOOK_SECRET:-}" ]]; then
+            echo "::error::Disposable Stripe E2E configuration is missing."
+            exit 1
+          fi
+          echo "Confirmed E2E target is localhost and the local Supabase and disposable billing-test configuration are present."
 
       - name: Run E2E tests
         run: |

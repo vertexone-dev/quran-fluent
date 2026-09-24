@@ -1,23 +1,29 @@
 # Payment & Premium Entitlement Architecture
 
-**Status: guarded foundation, test mode only.** The pricing, trial, refund,
-grace-period, existing-user-transition, Stripe Tax, Adaptive Pricing, and
-promotion-code decisions in §23 are now approved and reflected throughout
-this document. The `feat/payment-foundation` PR implements the schema,
-server endpoints, entitlement policy, and UI described here — but:
+**Status: deployed, checkout code-complete, checkout and enforcement both
+still off.** The pricing, trial, refund, grace-period, existing-user-
+transition, Stripe Tax, Adaptive Pricing, and promotion-code decisions in
+§23 are approved and reflected throughout this document. The schema,
+server endpoints, entitlement policy, and UI described here are deployed
+to production (§19 steps 1-4, 6) — but:
 
-- No live Stripe account, product, or price has been created. Only test-mode
-  keys are ever used, and only as environment-variable placeholders (§17) —
-  none are entered, requested, printed, committed, or pushed by this work.
-- The billing migration (§19) exists in the repository but has **not** been
-  applied to production.
+- This document never states, and this codebase never checks, which Stripe
+  mode (test or live) the deployed `STRIPE_SECRET_KEY`/price ids/webhook
+  secret belong to — confirming that is a private, human, dashboard-only
+  check (§19.1 step 4), never something CI, this document, or an agent can
+  verify or guess without reading a secret value.
 - **Premium enforcement is hard-coded disabled**
   (`PREMIUM_ENFORCEMENT_ENABLED = false` in `src/lib/billing/entitlement.ts`)
   — every existing learner keeps exactly the access they have today,
   regardless of this schema's existence or any subscription row's content.
-- Checkout is disabled client-side too (`VITE_BILLING_CHECKOUT_ENABLED=false`)
-  — every "Upgrade"/"Manage billing" button is inert while this flag is off.
-- No payment has been accepted, live or test.
+  Not part of this rollout (§19.1) or any near-term one.
+- Checkout is code-complete (the "Choose Monthly"/"Choose Annual" buttons
+  on `/premium` create a real Checkout Session when clicked) but still
+  disabled by the client-safe, build-time
+  `VITE_BILLING_CHECKOUT_ENABLED` flag (§17, §19.1) — every checkout
+  button stays inert while this flag is unset or `"false"`, its current
+  production value.
+- No payment has been accepted through this rollout.
 
 See the "Security note" under §9/§10 below before enabling enforcement —
 this foundation alone does **not** make Levels 3-6 content secure.
@@ -487,7 +493,7 @@ different code paths.
 | `STRIPE_PRICE_ID_ANNUAL` | Server-only | Stripe Price id for the Annual plan. `src/lib/billing/prices.ts`. |
 | `APP_BASE_URL` | Server-only | Checkout/Portal return-URL origin — never derived from a request's own `Host` header. `src/lib/billing/env.ts`. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only, already documented in `.env.example` as platform-managed | First actually *used* by application code in this PR — `src/lib/billing/supabaseAdmin.ts`, the only path with write access to the three billing tables. |
-| `VITE_BILLING_CHECKOUT_ENABLED` | Client-safe | `"true"` / `"false"` (or unset, which defaults to disabled). Gates every checkout-initiating button. `src/lib/billing/checkoutFlag.ts`. Set to `false` for this PR. |
+| `VITE_BILLING_CHECKOUT_ENABLED` | Client-safe, build-time only | `"true"` / `"false"` (or unset, which defaults to disabled — only the exact string `"true"` enables). Gates every checkout-initiating button. `src/lib/billing/checkoutFlag.ts`. Sourced in production from the `production` GitHub Actions **environment variable** of the same name (never a secret), read by `.github/workflows/production-deploy.yml`'s build step with a `|| 'false'` fallback. Currently unset/`false` in production — see §19.1 for the controlled rollout that changes it. |
 
 Every value above is a test-mode placeholder in `.env.example` only. No real
 (live or test) value for any of these was entered, requested, printed,
@@ -509,37 +515,90 @@ committed, or pushed while producing this PR.
 
 ## 19. Migration plan
 
-**Steps 1 and 6 below are implemented by `feat/payment-foundation`. Steps
-2-5 are explicitly NOT performed by this PR** — no production migration
-applied, no Stripe Dashboard configuration, no production secret added, no
-enforcement gating added to any lesson/review/practice surface.
+Steps 1-4 and 6 below are complete as of the `feat/controlled-checkout-
+enablement` PR. **Step 5 (enforcement gating) is still explicitly NOT
+performed** — no lesson/review/practice surface reads `hasLevelAccess`,
+and `PREMIUM_ENFORCEMENT_ENABLED` stays hard-coded `false` regardless of
+everything else below.
 
 1. ✅ `supabase/migrations/20260922100000_361f2ef3-3dc0-4a2a-be2d-2ae0575175a8.sql`
    — creates the three tables in §8, RLS policies in §9, indexes, and
-   nothing else. Purely additive; touches no existing table. Rehearsed
-   locally (§21); **not applied to production**.
-2. ⬜ Deploy the four server routes (`/api/billing/checkout`,
-   `/api/billing/portal`, `/api/billing/webhook`, `/api/billing/status`) —
-   they exist in this PR (`src/lib/billing/`, wired into `src/server.ts`,
-   §5-§7) but reach production only once this PR is merged and deployed
-   through the normal, unmodified deployment pipeline (`DEPLOYMENT.md`) —
-   no separate/manual deploy step.
-3. ⬜ Configure the Stripe webhook endpoint in the Stripe Dashboard (test
-   mode first, then live) pointing at the deployed URL. **Not done** — no
-   Stripe account/webhook exists yet.
-4. ⬜ Add the secrets in §17 to the Cloudflare Worker / GitHub Actions
-   `production` environment (same protected-environment mechanism already
-   used for `CLOUDFLARE_API_TOKEN`, per `DEPLOYMENT.md`). **Not done.**
+   nothing else. Purely additive; touches no existing table. Applied to
+   production; migration history is synchronized.
+2. ✅ The four server routes (`/api/billing/checkout`, `/api/billing/
+   portal`, `/api/billing/webhook`, `/api/billing/status`) are deployed
+   and live in production (`src/lib/billing/`, wired into `src/server.ts`,
+   §5-§7).
+3. ✅ The production Stripe webhook destination exists and points at the
+   deployed URL.
+4. ✅ The secrets in §17 are configured as Cloudflare Worker bindings
+   (confirmed present by name via `wrangler secret list` — never by
+   value).
 5. ⬜ Add `hasLevelAccess` gating to the specific lesson/review/practice
    surfaces the entitlement matrix (§4) names — **blocked on §10.1's
    server-authorized-content-delivery phase**, not merely on this step
-   being scheduled.
+   being scheduled. Not part of this PR or the rollout in §19.1 below.
 6. ✅ `/premium` and `/settings/billing` UI routes — implemented, both
-   locales, checkout/manage-billing buttons disabled while
-   `VITE_BILLING_CHECKOUT_ENABLED=false`.
+   locales, verified rendering correctly in production. Checkout buttons
+   are wired to `POST /api/billing/checkout` (this PR) but stay disabled
+   while `VITE_BILLING_CHECKOUT_ENABLED` is unset or `"false"` — its
+   current, safe production value.
 
 Each step is independently revertable; step 1 (the migration) is the only
 one that touches the database, and it's purely additive (new tables only).
+
+### 19.1. Controlled checkout enablement (this PR)
+
+`feat/controlled-checkout-enablement` makes checkout enablement itself a
+reviewable, single-variable production change, distinct from deploying the
+checkout-capable code and distinct from enabling premium-content
+enforcement — **these are three separate actions**, never bundled:
+
+1. Deploy this PR's code with the production `VITE_BILLING_CHECKOUT_
+   ENABLED` GitHub Actions **environment variable** (`production`
+   environment, Settings → Environments → production → Variables — never
+   Secrets, this value isn't a credential) absent or set to `"false"`.
+   `.github/workflows/production-deploy.yml`'s build step already
+   defaults to `"false"` when the variable is unset
+   (`${{ vars.VITE_BILLING_CHECKOUT_ENABLED || 'false' }}`) — deploying
+   with no action at all keeps checkout exactly as disabled as it is
+   today.
+2. Merge and deploy through the normal pipeline. Checkout stays disabled;
+   `/premium` and `/settings/billing` render identically to today.
+3. Verify production remains healthy (`/api/billing/status` still 200s,
+   both locales still render, `PREMIUM_ENFORCEMENT_ENABLED` still `false`).
+4. **Privately** (never in this repository, a commit, a PR, or a workflow
+   log) confirm:
+   - `STRIPE_SECRET_KEY` belongs to the intended Stripe mode/account (test
+     vs. live) for this launch;
+   - `STRIPE_PRICE_ID_MONTHLY` and `STRIPE_PRICE_ID_ANNUAL` belong to that
+     same mode/account — a live price id paired with a test secret key (or
+     vice versa) fails every Checkout Session creation;
+   - `STRIPE_WEBHOOK_SECRET` belongs to the webhook destination actually
+     receiving events for this deployment;
+   - `APP_BASE_URL` equals the real production origin (Checkout/Portal
+     success and cancel redirects use it directly, §5/§6).
+   This mode-consistency check requires reading secret values Cloudflare
+   never exposes to `wrangler secret list` — it can only be done by
+   whoever has dashboard access to Stripe and Cloudflare, not by CI or by
+   this document.
+5. Set the `production` environment's `VITE_BILLING_CHECKOUT_ENABLED`
+   GitHub Actions variable to `"true"` (exact string — see
+   `checkoutFlag.ts`/§17).
+6. Run a new, approved production deployment (rebuilds the client bundle
+   with the flag compiled in — this is a build-time flag, not a runtime
+   toggle; an already-deployed bundle never picks up a variable change
+   without a fresh build).
+7. Perform one controlled checkout end-to-end (a real or Stripe
+   test-mode purchase, per whichever mode step 4 confirmed).
+8. Verify the Stripe webhook delivered successfully and the corresponding
+   `billing_customers`/`billing_subscriptions` rows landed in Supabase.
+9. Verify the Customer Portal (`/api/billing/portal`, §6) and a
+   cancellation flow both work end-to-end.
+10. Keep `PREMIUM_ENFORCEMENT_ENABLED=false` until a separate, later,
+    separately-reviewed phase (§10.1, §19 step 5) enables entitlement
+    enforcement — accepting payments and gating content are independent
+    decisions, and this rollout only ever does the former.
 
 ## 20. Rollback plan
 
