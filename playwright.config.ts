@@ -11,6 +11,19 @@ const PORT = 4300;
 const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 const baseURL = externalBaseURL ?? `http://localhost:${PORT}`;
 
+// VITE_BILLING_CHECKOUT_ENABLED is a Vite build-time flag (checkoutFlag.ts)
+// -- baked into the compiled bundle when the dev server starts, not a
+// runtime value a test can flip mid-run. Proving the "flag=true" behavior
+// (62-checkout-enabled-flow.spec.ts) for real therefore needs its own dev
+// server, started with that env var set, on its own port -- the main
+// PORT/baseURL above stay on the same default-disabled flag every other
+// spec (and production) actually runs with. Meaningless against a real
+// deployed target (PLAYWRIGHT_BASE_URL/production-validation.yml already
+// runs against whatever flag production actually has), so this whole
+// second server/project only exists for the local, no-externalBaseURL run.
+const CHECKOUT_ENABLED_PORT = 4301;
+const checkoutEnabledBaseURL = `http://localhost:${CHECKOUT_ENABLED_PORT}`;
+
 /**
  * A single shared E2E_TEST_EMAIL account is reused across every spec, so
  * specs must not mutate that account's data concurrently. fullyParallel is
@@ -70,6 +83,19 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
     { name: "setup", testMatch: /auth\.setup\.ts/, dependencies: ["public"] },
+    // Only meaningful for a local run against the checkout-enabled server
+    // above -- omitted entirely when targeting an external deployment (see
+    // that server's own comment).
+    ...(externalBaseURL
+      ? []
+      : [
+          {
+            name: "setup-checkout-enabled",
+            testMatch: /auth\.setup\.checkout-enabled\.ts/,
+            dependencies: ["public"],
+            use: { baseURL: checkoutEnabledBaseURL },
+          },
+        ]),
     {
       name: "authenticated",
       // Numbered filenames, not this array, control run order: Playwright
@@ -134,10 +160,30 @@ export default defineConfig({
         "58-level6-batch1-al-fatiha-surah-study.spec.ts",
         "60-level6-production-validation.spec.ts",
         "61-settings-billing-routing.spec.ts",
+        "62-premium-checkout.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
     },
+    // See the checkoutEnabledBaseURL/CHECKOUT_ENABLED_PORT comment above --
+    // the only project that runs against a server built with
+    // VITE_BILLING_CHECKOUT_ENABLED=true, so it needs its own storageState
+    // (captured against its own origin/port by setup-checkout-enabled,
+    // above) rather than reusing playwright/.auth/user.json.
+    ...(externalBaseURL
+      ? []
+      : [
+          {
+            name: "checkout-enabled",
+            testMatch: ["63-checkout-enabled-flow.spec.ts"],
+            use: {
+              ...devices["Desktop Chrome"],
+              baseURL: checkoutEnabledBaseURL,
+              storageState: "playwright/.auth/user-checkout-enabled.json",
+            },
+            dependencies: ["setup-checkout-enabled"],
+          },
+        ]),
   ],
   // Omitted entirely (rather than pointed at baseURL) when PLAYWRIGHT_BASE_URL
   // targets an external deployment: Playwright's webServer pre-flight check
@@ -145,11 +191,24 @@ export default defineConfig({
   // responding, since reuseExistingServer is forced off in CI.
   webServer: externalBaseURL
     ? undefined
-    : {
-        command: `npm run dev -- --port ${PORT} --strictPort`,
-        url: baseURL,
-        reuseExistingServer: !process.env.CI,
-        timeout: 60_000,
-        stdout: "pipe",
-      },
+    : [
+        {
+          command: `npm run dev -- --port ${PORT} --strictPort`,
+          url: baseURL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 60_000,
+          stdout: "pipe",
+        },
+        {
+          command: `npm run dev -- --port ${CHECKOUT_ENABLED_PORT} --strictPort`,
+          url: checkoutEnabledBaseURL,
+          // Additive on top of this process's own env -- everything else
+          // (Supabase URL/keys, etc.) is identical to the main server
+          // above; only the checkout flag differs.
+          env: { VITE_BILLING_CHECKOUT_ENABLED: "true" },
+          reuseExistingServer: !process.env.CI,
+          timeout: 60_000,
+          stdout: "pipe",
+        },
+      ],
 });

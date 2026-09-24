@@ -12,6 +12,8 @@ export const billing = {
       title: "Payments are being prepared.",
       body: "QuranRoots Premium is not on sale yet. Checkout is disabled while we finish setting up billing — everyone keeps their current access in the meantime, and nothing changes for existing learners.",
     },
+    checkoutError: "Couldn't start checkout. Please try again.",
+    checkoutSignInRequired: "Please sign in again to continue to checkout.",
     free: {
       title: "Free",
       price: "$0",

@@ -163,6 +163,24 @@ jobs:
           # this workflow. See DEPLOYMENT.md for the full classification.
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          # Non-secret, build-time-only flag (src/lib/billing/checkoutFlag.ts)
+          # compiled into the client bundle by Vite, same as the two VITE_
+          # vars above -- it only ever gates whether the Checkout-starting
+          # buttons on /premium and /settings/billing are clickable. It does
+          # NOT activate premium-content enforcement (PREMIUM_ENFORCEMENT_
+          # ENABLED in src/lib/billing/entitlement.ts is a separate,
+          # hard-coded `false`, untouched by this variable or this workflow).
+          # Read from the repository's `production` environment variable of
+          # the same name (Settings -> Environments -> production ->
+          # Variables, NOT Secrets -- this value is not a credential and
+          # must never be stored as a GitHub secret). The `|| 'false'`
+          # fallback is load-bearing: an unset/empty github.vars entry
+          # resolves to an empty string here, which is falsy in GitHub
+          # Actions' expression syntax, so this always defaults to disabled
+          # checkout unless the variable is explicitly set to the literal
+          # string "true" -- matching checkoutFlag.ts's own
+          # exact-string-"true" check.
+          VITE_BILLING_CHECKOUT_ENABLED: ${{ vars.VITE_BILLING_CHECKOUT_ENABLED || 'false' }}
         run: npm run build
 
       - name: Deploy via the established Nitro/Wrangler process

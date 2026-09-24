@@ -12,6 +12,8 @@ export const billing = {
       title: "Les paiements sont en préparation.",
       body: "QuranRoots Premium n'est pas encore en vente. Le paiement est désactivé le temps de finaliser la facturation — chacun conserve son accès actuel en attendant, et rien ne change pour les apprenants existants.",
     },
+    checkoutError: "Impossible de démarrer le paiement. Veuillez réessayer.",
+    checkoutSignInRequired: "Veuillez vous reconnecter pour continuer vers le paiement.",
     free: {
       title: "Gratuit",
       price: "0 $",
