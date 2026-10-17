@@ -17,6 +17,17 @@ export default tseslint.config(
   // to Prettier-format multi-hundred-KB minified single lines. Turned a
   // multi-second run into 7+ CPU-minutes.
   { ignores: ["dist", ".output", ".vinxi", ".wrangler", "playwright-report", "test-results"] },
+  // mobile/ (Phase 0 offline feasibility prototype, feat/offline-mobile-
+  // feasibility): same problem as above, same fix. mobile/ios and
+  // mobile/android are Capacitor-generated native projects -- Swift
+  // Package Manager checkouts, Gradle wrappers/jars, a bundled 6.5MB
+  // SQLite content file and its 669KB sql.js WASM runtime copied in on
+  // every `cap sync` -- none of it hand-written, none of it meant to be
+  // linted. mobile/dist and mobile/content-db are build output. Without
+  // this, `eslint .` went from its usual few seconds to 2+ CPU-minutes
+  // scanning those trees. mobile/src and mobile/scripts (actual source)
+  // are deliberately left linted as normal.
+  { ignores: ["mobile/ios", "mobile/android", "mobile/dist", "mobile/content-db"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

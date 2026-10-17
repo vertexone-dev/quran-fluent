@@ -1,0 +1,27 @@
+# Phase 0 feasibility prototype -- generated/derived artifacts only.
+# Source files (scripts, App.tsx, capacitor config, native project
+# scaffolds) are committed; regenerable or duplicated binary content is
+# not, to keep this branch's diff reviewable and avoid bloating the repo
+# with multiple copies of the same ~6.5MB content database.
+
+node_modules/
+dist/
+
+# Regenerate with `npm run export-content` (reads production, read-only).
+content-db/
+
+# sql.js/wasm + the generated sqlite copy are duplicated here by `vite
+# build` from content-db/ -- not a second source of truth.
+public/quran-content.sqlite
+public/sql-wasm.wasm
+
+# Native build output and the web assets Capacitor copies in from dist/
+# on every `cap sync` -- never hand-edited, never a second source of truth.
+ios/App/App/public/
+ios/DerivedData/
+ios/App/Pods/
+android/.gradle/
+android/build/
+android/app/build/
+android/app/src/main/assets/public/
+android/local.properties
