@@ -176,9 +176,44 @@ async function main() {
   });
   const mappings = allMappings.filter((m) => segmentIds.has(m.segment_id));
 
-  console.log("Fetching lessons and lesson_exercises (curriculum reference content)...");
-  const lessons = await fetchAll("lessons");
-  const lessonExercises = await fetchAll("lesson_exercises");
+  console.log("Fetching curriculum hierarchy (courses/levels/modules/lessons)...");
+  const courses = await fetchAll("courses", { orderBy: "order_index" });
+  const levels = await fetchAll("levels", { orderBy: "course_id,order_index" });
+  const modules = await fetchAll("modules", { orderBy: "level_id,order_index" });
+  const lessons = await fetchAll("lessons", {
+    orderBy: "module_id,order_index",
+    filter: "slug=neq.schema-validation-placeholder",
+  });
+
+  console.log("Fetching lesson_sections and lesson_exercises (curriculum reference content)...");
+  const lessonSections = await fetchAll("lesson_sections", { orderBy: "lesson_id,order_index" });
+  const lessonExercises = await fetchAll("lesson_exercises", {
+    orderBy: "lesson_id,order_index",
+  });
+  const lessonVocabularyWords = await fetchAll("lesson_vocabulary_words", {
+    orderBy: "lesson_id,order_index",
+  });
+
+  // Mobile only ships en/fr today (src/locales/index.ts SUPPORTED_LOCALES),
+  // so only those locale rows are pulled from each *_translations table --
+  // same locale scoping the production app itself applies per-request.
+  console.log("Fetching per-locale translation overrides (en/fr only)...");
+  const localeFilter = "locale=in.(en,fr)";
+  const levelTranslations = await fetchAll("level_translations", { filter: localeFilter });
+  const moduleTranslations = await fetchAll("module_translations", { filter: localeFilter });
+  const lessonTranslations = await fetchAll("lesson_translations", { filter: localeFilter });
+  const lessonSectionTranslations = await fetchAll("lesson_section_translations", {
+    filter: localeFilter,
+  });
+  const lessonExerciseTranslations = await fetchAll("lesson_exercise_translations", {
+    filter: localeFilter,
+  });
+
+  console.log("Fetching word_frequency and its translations...");
+  const wordFrequency = await fetchAll("word_frequency", { orderBy: "frequency_rank" });
+  const wordFrequencyTranslations = await fetchAll("word_frequency_translations", {
+    filter: localeFilter,
+  });
 
   // --- Integrity checks -----------------------------------------------
   console.log("Verifying per-segment text_sha256 (stored vs. recomputed)...");
@@ -205,7 +240,10 @@ async function main() {
   console.log(
     `Counts: ${surahCount} surahs, ${ayahCount} ayahs, ${translationCount} Pickthall rows, ` +
       `${segmentCount} Kazimirski segments, ${mappingCount} segment-ayah mappings, ` +
-      `${lessons.length} lessons, ${lessonExercises.length} lesson_exercises.`,
+      `${courses.length} courses, ${levels.length} levels, ${modules.length} modules, ` +
+      `${lessons.length} lessons, ${lessonSections.length} lesson_sections, ` +
+      `${lessonExercises.length} lesson_exercises, ${lessonVocabularyWords.length} vocab links, ` +
+      `${wordFrequency.length} word_frequency rows.`,
   );
 
   // --- Build SQLite file ------------------------------------------------
@@ -285,20 +323,153 @@ async function main() {
       mapping_confidence TEXT NOT NULL
     );
 
+    CREATE TABLE courses (
+      id TEXT PRIMARY KEY,
+      slug TEXT NOT NULL,
+      title_en TEXT NOT NULL,
+      title_fr TEXT NOT NULL,
+      description_en TEXT,
+      description_fr TEXT,
+      order_index INTEGER NOT NULL
+    );
+
+    CREATE TABLE levels (
+      id TEXT PRIMARY KEY,
+      course_id TEXT NOT NULL,
+      number INTEGER NOT NULL,
+      slug TEXT NOT NULL,
+      title_en TEXT NOT NULL,
+      title_fr TEXT NOT NULL,
+      goal_en TEXT,
+      goal_fr TEXT,
+      order_index INTEGER NOT NULL
+    );
+
+    CREATE TABLE level_translations (
+      level_id TEXT NOT NULL,
+      locale TEXT NOT NULL,
+      title TEXT NOT NULL
+    );
+
+    CREATE TABLE modules (
+      id TEXT PRIMARY KEY,
+      level_id TEXT NOT NULL,
+      slug TEXT NOT NULL,
+      title_en TEXT NOT NULL,
+      title_fr TEXT NOT NULL,
+      goal_en TEXT,
+      goal_fr TEXT,
+      order_index INTEGER NOT NULL
+    );
+
+    CREATE TABLE module_translations (
+      module_id TEXT NOT NULL,
+      locale TEXT NOT NULL,
+      title TEXT NOT NULL
+    );
+
     CREATE TABLE lessons (
       id TEXT PRIMARY KEY,
-      data_json TEXT NOT NULL
+      module_id TEXT NOT NULL,
+      slug TEXT NOT NULL,
+      title_en TEXT NOT NULL,
+      title_fr TEXT NOT NULL,
+      order_index INTEGER NOT NULL,
+      estimated_minutes INTEGER NOT NULL
+    );
+
+    CREATE TABLE lesson_translations (
+      lesson_id TEXT NOT NULL,
+      locale TEXT NOT NULL,
+      title TEXT NOT NULL
+    );
+
+    CREATE TABLE lesson_sections (
+      id TEXT PRIMARY KEY,
+      lesson_id TEXT NOT NULL,
+      order_index INTEGER NOT NULL,
+      content_type TEXT NOT NULL,
+      body_en TEXT,
+      body_fr TEXT,
+      arabic_text TEXT,
+      surah_number INTEGER,
+      ayah_number INTEGER,
+      metadata_json TEXT NOT NULL
+    );
+
+    CREATE TABLE lesson_section_translations (
+      section_id TEXT NOT NULL,
+      locale TEXT NOT NULL,
+      body TEXT NOT NULL
     );
 
     CREATE TABLE lesson_exercises (
       id TEXT PRIMARY KEY,
-      lesson_id TEXT,
-      data_json TEXT NOT NULL
+      lesson_id TEXT NOT NULL,
+      section_id TEXT,
+      order_index INTEGER NOT NULL,
+      exercise_type TEXT NOT NULL,
+      prompt_en TEXT NOT NULL,
+      prompt_fr TEXT NOT NULL,
+      payload_json TEXT NOT NULL,
+      explanation_en TEXT,
+      explanation_fr TEXT,
+      surah_number INTEGER,
+      ayah_number INTEGER,
+      review_item_type TEXT NOT NULL
+    );
+
+    CREATE TABLE lesson_exercise_translations (
+      exercise_id TEXT NOT NULL,
+      locale TEXT NOT NULL,
+      prompt TEXT NOT NULL,
+      explanation TEXT,
+      payload_json TEXT
+    );
+
+    CREATE TABLE lesson_vocabulary_words (
+      lesson_id TEXT NOT NULL,
+      word_id TEXT NOT NULL,
+      order_index INTEGER NOT NULL,
+      PRIMARY KEY (lesson_id, word_id)
+    );
+
+    CREATE TABLE word_frequency (
+      id TEXT PRIMARY KEY,
+      word TEXT NOT NULL,
+      transliteration TEXT,
+      meaning TEXT NOT NULL,
+      meaning_fr TEXT,
+      frequency_rank INTEGER,
+      occurrences INTEGER,
+      root TEXT,
+      example_ayah TEXT,
+      example_reference TEXT,
+      topic_tags_json TEXT,
+      category TEXT
+    );
+
+    CREATE TABLE word_frequency_translations (
+      word_id TEXT NOT NULL,
+      locale TEXT NOT NULL,
+      meaning TEXT NOT NULL
     );
 
     CREATE INDEX idx_translations_surah ON translations(surah_number);
     CREATE INDEX idx_segments_surah ON translation_segments(surah_number);
     CREATE INDEX idx_mappings_ayah ON translation_segment_ayahs(surah_number, ayah_number);
+    CREATE INDEX idx_levels_course ON levels(course_id, order_index);
+    CREATE INDEX idx_modules_level ON modules(level_id, order_index);
+    CREATE INDEX idx_lessons_module ON lessons(module_id, order_index);
+    CREATE INDEX idx_sections_lesson ON lesson_sections(lesson_id, order_index);
+    CREATE INDEX idx_exercises_lesson ON lesson_exercises(lesson_id, order_index);
+    CREATE INDEX idx_level_tr ON level_translations(level_id, locale);
+    CREATE INDEX idx_module_tr ON module_translations(module_id, locale);
+    CREATE INDEX idx_lesson_tr ON lesson_translations(lesson_id, locale);
+    CREATE INDEX idx_section_tr ON lesson_section_translations(section_id, locale);
+    CREATE INDEX idx_exercise_tr ON lesson_exercise_translations(exercise_id, locale);
+    CREATE INDEX idx_word_freq_root ON word_frequency(root);
+    CREATE INDEX idx_word_freq_tr ON word_frequency_translations(word_id, locale);
   `);
 
   const insertSource = db.prepare(
@@ -364,13 +535,159 @@ async function main() {
     insertMapping.run(m.id, m.segment_id, m.surah_number, m.ayah_number, m.mapping_confidence);
   }
 
-  const insertLesson = db.prepare(`INSERT INTO lessons VALUES (?,?)`);
-  for (const l of lessons) {
-    insertLesson.run(l.id, JSON.stringify(l));
+  const insertCourse = db.prepare(`INSERT INTO courses VALUES (?,?,?,?,?,?,?)`);
+  for (const c of courses) {
+    insertCourse.run(
+      c.id,
+      c.slug,
+      c.title_en,
+      c.title_fr,
+      c.description_en,
+      c.description_fr,
+      c.order_index,
+    );
   }
-  const insertExercise = db.prepare(`INSERT INTO lesson_exercises VALUES (?,?,?)`);
+
+  const insertLevel = db.prepare(`INSERT INTO levels VALUES (?,?,?,?,?,?,?,?,?)`);
+  for (const l of levels) {
+    insertLevel.run(
+      l.id,
+      l.course_id,
+      l.number,
+      l.slug,
+      l.title_en,
+      l.title_fr,
+      l.goal_en,
+      l.goal_fr,
+      l.order_index,
+    );
+  }
+  const insertLevelTr = db.prepare(`INSERT INTO level_translations VALUES (?,?,?)`);
+  for (const t of levelTranslations) {
+    insertLevelTr.run(t.level_id, t.locale, t.title);
+  }
+
+  const insertModule = db.prepare(`INSERT INTO modules VALUES (?,?,?,?,?,?,?,?)`);
+  for (const m of modules) {
+    insertModule.run(
+      m.id,
+      m.level_id,
+      m.slug,
+      m.title_en,
+      m.title_fr,
+      m.goal_en,
+      m.goal_fr,
+      m.order_index,
+    );
+  }
+  const insertModuleTr = db.prepare(`INSERT INTO module_translations VALUES (?,?,?)`);
+  for (const t of moduleTranslations) {
+    insertModuleTr.run(t.module_id, t.locale, t.title);
+  }
+
+  const insertLesson = db.prepare(`INSERT INTO lessons VALUES (?,?,?,?,?,?,?)`);
+  for (const l of lessons) {
+    insertLesson.run(
+      l.id,
+      l.module_id,
+      l.slug,
+      l.title_en,
+      l.title_fr,
+      l.order_index,
+      l.estimated_minutes,
+    );
+  }
+  const insertLessonTr = db.prepare(`INSERT INTO lesson_translations VALUES (?,?,?)`);
+  for (const t of lessonTranslations) {
+    insertLessonTr.run(t.lesson_id, t.locale, t.title);
+  }
+
+  const lessonIds = new Set(lessons.map((l) => l.id));
+  const insertSection = db.prepare(`INSERT INTO lesson_sections VALUES (?,?,?,?,?,?,?,?,?,?)`);
+  for (const s of lessonSections) {
+    if (!lessonIds.has(s.lesson_id)) continue; // skip sections of the excluded placeholder lesson
+    insertSection.run(
+      s.id,
+      s.lesson_id,
+      s.order_index,
+      s.content_type,
+      s.body_en,
+      s.body_fr,
+      s.arabic_text,
+      s.surah_number,
+      s.ayah_number,
+      JSON.stringify(s.metadata ?? {}),
+    );
+  }
+  const sectionIds = new Set(lessonSections.map((s) => s.id));
+  const insertSectionTr = db.prepare(`INSERT INTO lesson_section_translations VALUES (?,?,?)`);
+  for (const t of lessonSectionTranslations) {
+    if (!sectionIds.has(t.section_id)) continue;
+    insertSectionTr.run(t.section_id, t.locale, t.body);
+  }
+
+  const insertExercise = db.prepare(
+    `INSERT INTO lesson_exercises VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+  );
   for (const e of lessonExercises) {
-    insertExercise.run(e.id, e.lesson_id ?? null, JSON.stringify(e));
+    if (!lessonIds.has(e.lesson_id)) continue;
+    insertExercise.run(
+      e.id,
+      e.lesson_id,
+      e.section_id,
+      e.order_index,
+      e.exercise_type,
+      e.prompt_en,
+      e.prompt_fr,
+      JSON.stringify(e.payload ?? {}),
+      e.explanation_en,
+      e.explanation_fr,
+      e.surah_number,
+      e.ayah_number,
+      e.review_item_type,
+    );
+  }
+  const exerciseIds = new Set(lessonExercises.map((e) => e.id));
+  const insertExerciseTr = db.prepare(
+    `INSERT INTO lesson_exercise_translations VALUES (?,?,?,?,?)`,
+  );
+  for (const t of lessonExerciseTranslations) {
+    if (!exerciseIds.has(t.exercise_id)) continue;
+    insertExerciseTr.run(
+      t.exercise_id,
+      t.locale,
+      t.prompt,
+      t.explanation,
+      t.payload ? JSON.stringify(t.payload) : null,
+    );
+  }
+
+  const insertVocabLink = db.prepare(`INSERT INTO lesson_vocabulary_words VALUES (?,?,?)`);
+  for (const v of lessonVocabularyWords) {
+    if (!lessonIds.has(v.lesson_id)) continue;
+    insertVocabLink.run(v.lesson_id, v.word_id, v.order_index);
+  }
+
+  const insertWord = db.prepare(`INSERT INTO word_frequency VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`);
+  for (const w of wordFrequency) {
+    insertWord.run(
+      w.id,
+      w.word,
+      w.transliteration,
+      w.meaning,
+      w.meaning_fr,
+      w.frequency_rank,
+      w.occurrences,
+      w.root,
+      w.example_ayah,
+      w.example_reference,
+      w.topic_tags ? JSON.stringify(w.topic_tags) : null,
+      w.category,
+    );
+  }
+  const insertWordTr = db.prepare(`INSERT INTO word_frequency_translations VALUES (?,?,?)`);
+  for (const t of wordFrequencyTranslations) {
+    insertWordTr.run(t.word_id, t.locale, t.meaning);
   }
 
   // Deterministic overall hash: sha256 over a sorted, canonical
@@ -413,8 +730,14 @@ async function main() {
       pickthall_translations: translationCount,
       kazimirski_segments: segmentCount,
       kazimirski_mappings: mappingCount,
+      courses: courses.length,
+      levels: levels.length,
+      modules: modules.length,
       lessons: lessons.length,
+      lesson_sections: lessonSections.length,
       lesson_exercises: lessonExercises.length,
+      lesson_vocabulary_words: lessonVocabularyWords.length,
+      word_frequency: wordFrequency.length,
     },
     expected_counts_from_prior_audit: {
       ayahs: 6236,
