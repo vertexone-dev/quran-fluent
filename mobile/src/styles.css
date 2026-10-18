@@ -1,0 +1,582 @@
+/*
+ * Ported verbatim from ../../src/styles.css's :root/.dark oklch token
+ * values (per the approved Phase 1 plan: "preserve the original
+ * forest-green and ivory palette, typography hierarchy"). Hand-written
+ * CSS classes instead of Tailwind utilities -- mobile/ has no Tailwind
+ * build step (deliberately minimal Phase 0 dependency set) -- but every
+ * color/radius/font value below is copied from the real design system,
+ * never re-derived from the mockup's pixels. Dark mode is toggled by a
+ * `.dark` class (on <html>), matching the web app's own convention
+ * (a manual Settings choice, not prefers-color-scheme).
+ */
+
+/* Self-hosted (public/fonts/), not loaded from fonts.googleapis.com --
+ * this is an offline-first app, so it can never depend on a CDN fetch at
+ * runtime. Each family/weight here is the exact file Google Fonts itself
+ * serves, downloaded once and bundled, latin+arabic subsets only (the only
+ * scripts this app ever renders -- cyrillic/greek/hebrew/vietnamese/math/
+ * symbol subsets the web app's own broader CDN request pulls in are
+ * dropped as genuine dead weight here, not an oversight). */
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/open-sans-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/open-sans-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/open-sans-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/playfair-display-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/fonts/playfair-display-800.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC;
+  src: url("/fonts/amiri-400-arabic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/amiri-400-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC;
+  src: url("/fonts/amiri-700-arabic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/amiri-700-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri Quran";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC;
+  src: url("/fonts/amiri-quran-400-arabic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri Quran";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/amiri-quran-400-latin.woff2") format("woff2");
+}
+
+:root {
+  --radius: 0.75rem;
+
+  --background: oklch(0.974 0.014 88.7);
+  --foreground: oklch(0.321 0 89.9);
+  --card: oklch(1 0 89.9);
+  --card-foreground: oklch(0.321 0 89.9);
+
+  --primary: oklch(0.42 0.09 155);
+  --primary-foreground: oklch(0.974 0.014 88.7);
+  --secondary: oklch(0.936 0.029 87.5);
+  --secondary-foreground: oklch(0.34 0.05 155);
+  --muted: oklch(0.936 0.029 87.5);
+  --muted-foreground: oklch(0.48 0.026 118);
+  --accent: oklch(0.896 0.037 87.8);
+  --accent-foreground: oklch(0.34 0.05 155);
+  --gold: oklch(0.5 0.1 75);
+  --gold-foreground: oklch(0.98 0.02 88);
+  --support: oklch(0.678 0.057 222);
+  --support-foreground: oklch(0.239 0.018 155);
+  --destructive: oklch(0.505 0.19 27.3);
+  --destructive-foreground: oklch(0.98 0.01 88);
+  --border: oklch(0.886 0.026 87.8);
+  --ring: oklch(0.42 0.09 155);
+
+  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", "Cairo", "Open Sans", ui-serif, serif;
+  --font-quran: "Amiri Quran", "Scheherazade New", serif;
+  --font-arabic: "Amiri", "Scheherazade New", serif;
+
+  --shadow-soft:
+    0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent),
+    0 12px 32px -18px color-mix(in oklab, var(--primary) 45%, transparent);
+}
+
+html.dark {
+  --background: oklch(0.239 0.018 155);
+  --foreground: oklch(0.949 0.02 88);
+  --card: oklch(0.283 0.024 155);
+  --card-foreground: oklch(0.949 0.02 88);
+
+  --primary: oklch(0.719 0.09 155);
+  --primary-foreground: oklch(0.213 0.02 155);
+  --secondary: oklch(0.325 0.026 155);
+  --secondary-foreground: oklch(0.949 0.02 88);
+  --muted: oklch(0.325 0.026 155);
+  --muted-foreground: oklch(0.76 0.024 100);
+  --accent: oklch(0.355 0.03 155);
+  --accent-foreground: oklch(0.949 0.02 88);
+  --gold: oklch(0.75 0.095 82);
+  --gold-foreground: oklch(0.213 0.02 155);
+  --support: oklch(0.73 0.06 222);
+  --support-foreground: oklch(0.213 0.02 155);
+  --destructive: oklch(0.65 0.19 25);
+  --destructive-foreground: oklch(0.98 0.01 88);
+  --border: oklch(0.949 0.02 88 / 14%);
+  --ring: oklch(0.719 0.09 155);
+}
+
+* {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.arabic-text {
+  font-family: var(--font-arabic);
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+.quran-text {
+  font-family: var(--font-quran);
+  direction: rtl;
+  unicode-bidi: isolate;
+}
+
+/* --- Layout shell ----------------------------------------------------- */
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.screen {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px calc(84px + env(safe-area-inset-bottom, 0px));
+  padding-top: calc(16px + env(safe-area-inset-top, 0px));
+}
+
+.appbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.appbar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+/* --- Tab bar ------------------------------------------------------------ */
+
+.tab-bar {
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: var(--card);
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+}
+
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--muted-foreground);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 6px 2px;
+  cursor: pointer;
+}
+
+.tab-item.active {
+  color: var(--primary);
+}
+
+.tab-icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+/* --- Cards / lists ------------------------------------------------------ */
+
+.card {
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  padding: 16px;
+}
+
+.card + .card {
+  margin-top: 12px;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 4px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.list-row:last-child {
+  border-bottom: none;
+}
+
+/* --- Buttons -------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: calc(var(--radius) - 2px);
+  padding: 10px 18px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.btn-secondary {
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--primary);
+  border-color: var(--border);
+}
+
+.btn-block {
+  width: 100%;
+}
+
+/* --- Chips / badges -------------------------------------------------------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--accent);
+  color: var(--accent-foreground);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.chip-gold {
+  background: color-mix(in oklab, var(--gold) 18%, transparent);
+  color: var(--gold);
+}
+
+.chip-muted {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+
+/* --- Inputs ------------------------------------------------------------- */
+
+.input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  padding: 10px 14px;
+  font-size: 0.95rem;
+  background: var(--card);
+  color: var(--foreground);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+/* --- Text helpers --------------------------------------------------------- */
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.text-primary {
+  color: var(--primary);
+}
+
+.text-gold {
+  color: var(--gold);
+}
+
+/* --- Grid tiles (Home) ---------------------------------------------- */
+
+.tile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.tile {
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+}
+
+.tile:disabled {
+  cursor: default;
+}
+
+.tile-icon {
+  font-size: 1.5rem;
+}
+
+.tile-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.tile-subtitle {
+  font-size: 0.78rem;
+  opacity: 0.85;
+}
+
+.tile-support {
+  background: color-mix(in oklab, var(--support) 28%, var(--card));
+  color: var(--support-foreground);
+}
+
+.tile-accent {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.tile-primary-tint {
+  background: color-mix(in oklab, var(--primary) 16%, var(--card));
+  color: color-mix(in oklab, var(--primary) 85%, var(--foreground));
+}
+
+.tile-gold {
+  background: color-mix(in oklab, var(--gold) 22%, var(--card));
+  color: color-mix(in oklab, var(--gold) 70%, var(--foreground));
+}
+
+.tile-rose {
+  background: color-mix(in oklab, var(--destructive) 16%, var(--card));
+  color: color-mix(in oklab, var(--destructive) 65%, var(--foreground));
+}
+
+/* --- Progress --------------------------------------------------------- */
+
+.progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+/* --- Radio / choice rows ------------------------------------------------ */
+
+.choice-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) - 2px);
+  cursor: pointer;
+  background: var(--card);
+}
+
+.choice-row + .choice-row {
+  margin-top: 8px;
+}
+
+.choice-row.selected {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 8%, var(--card));
+}
+
+.choice-row.correct {
+  border-color: var(--primary);
+  background: color-mix(in oklab, var(--primary) 14%, var(--card));
+}
+
+.choice-row.incorrect {
+  border-color: var(--destructive);
+  background: color-mix(in oklab, var(--destructive) 10%, var(--card));
+}
+
+/* --- Feedback banners --------------------------------------------------- */
+
+.banner {
+  border-radius: calc(var(--radius) - 2px);
+  padding: 12px 16px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.banner-success {
+  background: color-mix(in oklab, var(--primary) 16%, var(--card));
+  color: var(--primary);
+}
+
+.banner-error {
+  background: color-mix(in oklab, var(--destructive) 14%, var(--card));
+  color: var(--destructive);
+}
+
+/* --- Splash ------------------------------------------------------------- */
+
+.splash-screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: color-mix(in oklab, var(--primary) 70%, black);
+  color: var(--primary-foreground);
+  text-align: center;
+  padding: 24px;
+}
+
+.splash-screen .brand-name {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-foreground);
+}
+
+.splash-screen .brand-tagline {
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+.splash-screen .brand-subtagline {
+  color: color-mix(in oklab, var(--primary-foreground) 70%, transparent);
+  font-size: 0.78rem;
+}

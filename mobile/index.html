@@ -3,15 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>QuranRoots Offline (Feasibility Prototype)</title>
-    <style>
-      html, body, #root { height: 100%; margin: 0; }
-      body {
-        font-family: -apple-system, system-ui, sans-serif;
-        background: #faf8f4;
-        color: #241f16;
-      }
-    </style>
+    <title>QuranRoots</title>
+    <!-- Fonts are bundled locally (public/fonts/, @font-face rules in
+         styles.css) -- NOT loaded from Google Fonts. An offline-first app
+         cannot depend on a CDN fetch at runtime; mobile/e2e/offline.spec.ts
+         asserts zero requests ever leave the app's own origin, catching
+         this if it regresses. -->
+    <link rel="stylesheet" href="/src/styles.css" />
   </head>
   <body>
     <div id="root"></div>
