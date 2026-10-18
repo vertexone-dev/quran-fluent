@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
+import { useHistoryStack } from "../HistoryContext";
 import { listLevels, listModules, listLessons } from "../db";
 import { AppBar } from "../AppBar";
 import type { Route } from "../navigation";
@@ -15,9 +16,20 @@ type ViewTab = "levels" | "categories";
 export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const { d, locale } = useI18n();
   const { db } = useDb();
+  const { pushFrame, goBack } = useHistoryStack();
   const [tab, setTab] = useState<ViewTab>("levels");
   const [levelId, setLevelId] = useState<string | null>(null);
   const [moduleId, setModuleId] = useState<string | null>(null);
+
+  function openLevel(id: string) {
+    pushFrame(() => setLevelId(null));
+    setLevelId(id);
+  }
+
+  function openModule(id: string) {
+    pushFrame(() => setModuleId(null));
+    setModuleId(id);
+  }
 
   const levels = useMemo(() => listLevels(db, locale), [db, locale]);
   const modules = useMemo(
@@ -35,7 +47,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
   if (moduleId && selectedModule) {
     return (
       <div>
-        <AppBar title={selectedModule.title} onBack={() => setModuleId(null)} />
+        <AppBar title={selectedModule.title} onBack={goBack} />
         <div className="card" style={{ padding: 0 }}>
           {lessons.map((lesson) => (
             <div
@@ -63,7 +75,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
   if (levelId && selectedLevel) {
     return (
       <div>
-        <AppBar title={selectedLevel.title} onBack={() => setLevelId(null)} />
+        <AppBar title={selectedLevel.title} onBack={goBack} />
         {selectedLevel.goal && (
           <p className="text-muted" style={{ marginBottom: 16 }}>
             {selectedLevel.goal}
@@ -75,7 +87,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
               key={m.id}
               className="list-row"
               style={{ padding: 14 }}
-              onClick={() => setModuleId(m.id)}
+              onClick={() => openModule(m.id)}
             >
               <div style={{ fontWeight: 600 }}>{m.title}</div>
               <span>→</span>
@@ -126,7 +138,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
                 key={level.id}
                 className="list-row"
                 style={{ padding: 14 }}
-                onClick={() => setLevelId(level.id)}
+                onClick={() => openLevel(level.id)}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <span

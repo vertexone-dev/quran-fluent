@@ -50,6 +50,7 @@ const dictionaries = {
       words: "Words",
       tileSubtitle: "Arabic, English & French",
       noResults: "No surahs match your search.",
+      searchWords: "Search words",
     },
     word: {
       title: "Word Details",
@@ -148,6 +149,7 @@ const dictionaries = {
       words: "Mots",
       tileSubtitle: "Arabe, anglais et français",
       noResults: "Aucune sourate ne correspond à votre recherche.",
+      searchWords: "Rechercher un mot",
     },
     word: {
       title: "Détails du mot",

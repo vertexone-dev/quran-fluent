@@ -25,3 +25,7 @@ android/build/
 android/app/build/
 android/app/src/main/assets/public/
 android/local.properties
+
+# Playwright E2E run artifacts (mobile/e2e/, mobile/playwright.config.ts).
+test-results/
+playwright-report/

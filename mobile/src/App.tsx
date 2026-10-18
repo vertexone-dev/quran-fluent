@@ -3,6 +3,7 @@ import type { Database } from "sql.js";
 
 import { loadContentDb, getContentVersion, type ContentVersion } from "./db";
 import { DbContext } from "./DbContext";
+import { HistoryProvider, useHistoryStack } from "./HistoryContext";
 import { I18nContext, getDictionary, type Locale } from "./i18n";
 import {
   getStoredLocale,
@@ -49,9 +50,6 @@ export function App() {
   const [theme, setTheme] = useState<ThemePreference>(() => getStoredTheme());
   const prefersDark = useSystemPrefersDark();
 
-  const [tab, setTab] = useState<Tab>("home");
-  const [stack, setStack] = useState<Route[]>([{ screen: "home" }]);
-
   useEffect(() => {
     loadContentDb()
       .then((loaded) => {
@@ -78,27 +76,6 @@ export function App() {
 
   const i18nValue = useMemo(() => ({ locale, setLocale, d: getDictionary(locale) }), [locale]);
 
-  function handleNavigate(route: Route) {
-    const matchingTab = (Object.entries(TAB_HOME_ROUTE) as [Tab, Route][]).find(
-      ([, r]) => r.screen === route.screen,
-    )?.[0];
-    if (matchingTab) {
-      setTab(matchingTab);
-      setStack([route]);
-    } else {
-      setStack((prev) => [...prev, route]);
-    }
-  }
-
-  function handleSelectTab(nextTab: Tab) {
-    setTab(nextTab);
-    setStack([TAB_HOME_ROUTE[nextTab]]);
-  }
-
-  function handleBack() {
-    setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
-  }
-
   if (error) {
     return (
       <main style={{ padding: 24 }}>
@@ -108,58 +85,102 @@ export function App() {
     );
   }
 
-  if (!db) {
-    return (
-      <I18nContext.Provider value={i18nValue}>
-        <SplashScreen />
-      </I18nContext.Provider>
+  return (
+    <I18nContext.Provider value={i18nValue}>
+      <HistoryProvider>
+        {!db ? (
+          <SplashScreen />
+        ) : (
+          <DbContext.Provider value={{ db, version }}>
+            <Navigator theme={theme} onThemeChange={handleThemeChange} />
+          </DbContext.Provider>
+        )}
+      </HistoryProvider>
+    </I18nContext.Provider>
+  );
+}
+
+type AppState = { tab: Tab; stack: Route[] };
+
+const INITIAL_STATE: AppState = { tab: "home", stack: [{ screen: "home" }] };
+
+/**
+ * Every transition -- a tab switch or a route push -- goes through
+ * `transition()`, which registers (via pushFrame) a closure that restores
+ * the state being left, then applies the next state. Going back (hardware
+ * or an in-app back control, both funneled through HistoryContext's
+ * goBack()) always runs that same closure, so there is exactly one
+ * mechanism for "what does back do here," never a separate hand-maintained
+ * notion of stack depth that the real WebView history could drift out of
+ * sync with.
+ */
+function Navigator({
+  theme,
+  onThemeChange,
+}: {
+  theme: ThemePreference;
+  onThemeChange: (theme: ThemePreference) => void;
+}) {
+  const { pushFrame, goBack } = useHistoryStack();
+  const [state, setState] = useState<AppState>(INITIAL_STATE);
+
+  function transition(next: AppState) {
+    const previous = state;
+    pushFrame(() => setState(previous));
+    setState(next);
+  }
+
+  function handleNavigate(route: Route) {
+    const matchingTab = (Object.entries(TAB_HOME_ROUTE) as [Tab, Route][]).find(
+      ([, r]) => r.screen === route.screen,
+    )?.[0];
+    transition(
+      matchingTab
+        ? { tab: matchingTab, stack: [route] }
+        : { tab: state.tab, stack: [...state.stack, route] },
     );
   }
 
-  const route = stack[stack.length - 1]!;
+  function handleSelectTab(nextTab: Tab) {
+    transition({ tab: nextTab, stack: [TAB_HOME_ROUTE[nextTab]] });
+  }
+
+  const route = state.stack[state.stack.length - 1]!;
 
   return (
-    <I18nContext.Provider value={i18nValue}>
-      <DbContext.Provider value={{ db, version }}>
-        <div className="app-shell">
-          <div className="screen">
-            {route.screen === "home" && <HomeScreen onNavigate={handleNavigate} />}
-            {route.screen === "surah-list" && <SurahListScreen onNavigate={handleNavigate} />}
-            {route.screen === "reading" && (
-              <ReadingScreen
-                surahNumber={route.surahNumber}
-                onNavigate={handleNavigate}
-                onBack={handleBack}
-              />
-            )}
-            {route.screen === "word-list" && (
-              <WordListScreen onNavigate={handleNavigate} onBack={handleBack} />
-            )}
-            {route.screen === "word-details" && (
-              <WordDetailsScreen
-                wordId={route.wordId}
-                onNavigate={handleNavigate}
-                onBack={handleBack}
-              />
-            )}
-            {route.screen === "lessons" && <LessonsScreen onNavigate={handleNavigate} />}
-            {route.screen === "lesson-player" && (
-              <LessonPlayerScreen
-                lessonId={route.lessonId}
-                startAtFirstExercise={route.startAtFirstExercise}
-                onBack={handleBack}
-              />
-            )}
-            {route.screen === "practice" && <PracticeScreen onNavigate={handleNavigate} />}
-            {route.screen === "more" && <MoreScreen onNavigate={handleNavigate} />}
-            {route.screen === "offline-access" && <OfflineAccessScreen onBack={handleBack} />}
-            {route.screen === "settings" && (
-              <SettingsScreen onBack={handleBack} theme={theme} onThemeChange={handleThemeChange} />
-            )}
-          </div>
-          <TabBar active={tab} onSelect={handleSelectTab} />
-        </div>
-      </DbContext.Provider>
-    </I18nContext.Provider>
+    <div className="app-shell">
+      <div className="screen">
+        {route.screen === "home" && <HomeScreen onNavigate={handleNavigate} />}
+        {route.screen === "surah-list" && <SurahListScreen onNavigate={handleNavigate} />}
+        {route.screen === "reading" && (
+          <ReadingScreen
+            surahNumber={route.surahNumber}
+            onNavigate={handleNavigate}
+            onBack={goBack}
+          />
+        )}
+        {route.screen === "word-list" && (
+          <WordListScreen onNavigate={handleNavigate} onBack={goBack} />
+        )}
+        {route.screen === "word-details" && (
+          <WordDetailsScreen wordId={route.wordId} onNavigate={handleNavigate} onBack={goBack} />
+        )}
+        {route.screen === "lessons" && <LessonsScreen onNavigate={handleNavigate} />}
+        {route.screen === "lesson-player" && (
+          <LessonPlayerScreen
+            lessonId={route.lessonId}
+            startAtFirstExercise={route.startAtFirstExercise}
+            onBack={goBack}
+          />
+        )}
+        {route.screen === "practice" && <PracticeScreen onNavigate={handleNavigate} />}
+        {route.screen === "more" && <MoreScreen onNavigate={handleNavigate} />}
+        {route.screen === "offline-access" && <OfflineAccessScreen onBack={goBack} />}
+        {route.screen === "settings" && (
+          <SettingsScreen onBack={goBack} theme={theme} onThemeChange={onThemeChange} />
+        )}
+      </div>
+      <TabBar active={state.tab} onSelect={handleSelectTab} />
+    </div>
   );
 }

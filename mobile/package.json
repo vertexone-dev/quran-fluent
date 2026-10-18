@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "vite build",
     "export-content": "node scripts/export-content-db.mjs",
-    "test": "cd .. && npx vitest run --config mobile/vitest.config.ts"
+    "test": "cd .. && npx vitest run --config mobile/vitest.config.ts",
+    "test:e2e": "cd .. && npx playwright test --config mobile/playwright.config.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

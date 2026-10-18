@@ -30,7 +30,7 @@ export function WordListScreen({
       <AppBar title={d.reader.words} onBack={onBack} />
       <input
         className="input"
-        placeholder={d.reader.search}
+        placeholder={d.reader.searchWords}
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         style={{ marginBottom: 12 }}
@@ -60,7 +60,7 @@ export function WordListScreen({
         ))}
         {words.length === 0 && (
           <div className="text-muted" style={{ padding: 16, textAlign: "center" }}>
-            {d.reader.noResults}
+            {d.word.noResults}
           </div>
         )}
       </div>

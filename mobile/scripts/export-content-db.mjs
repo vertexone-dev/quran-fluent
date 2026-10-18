@@ -180,10 +180,11 @@ async function main() {
   const courses = await fetchAll("courses", { orderBy: "order_index" });
   const levels = await fetchAll("levels", { orderBy: "course_id,order_index" });
   const modules = await fetchAll("modules", { orderBy: "level_id,order_index" });
-  const lessons = await fetchAll("lessons", {
-    orderBy: "module_id,order_index",
-    filter: "slug=neq.schema-validation-placeholder",
-  });
+  // Fetched once unfiltered too, purely so the manifest can report exactly
+  // how many lessons the placeholder exclusion below removed -- never used
+  // for anything else, and never exported itself.
+  const allLessonsUnfiltered = await fetchAll("lessons", { orderBy: "module_id,order_index" });
+  const lessons = allLessonsUnfiltered.filter((l) => l.slug !== "schema-validation-placeholder");
 
   console.log("Fetching lesson_sections and lesson_exercises (curriculum reference content)...");
   const lessonSections = await fetchAll("lesson_sections", { orderBy: "lesson_id,order_index" });
@@ -241,9 +242,13 @@ async function main() {
     `Counts: ${surahCount} surahs, ${ayahCount} ayahs, ${translationCount} Pickthall rows, ` +
       `${segmentCount} Kazimirski segments, ${mappingCount} segment-ayah mappings, ` +
       `${courses.length} courses, ${levels.length} levels, ${modules.length} modules, ` +
-      `${lessons.length} lessons, ${lessonSections.length} lesson_sections, ` +
+      `${lessons.length} lessons (placeholder already excluded by the fetch filter).`,
+  );
+  console.log(
+    `Fetched before placeholder-lesson exclusion: ${lessonSections.length} lesson_sections, ` +
       `${lessonExercises.length} lesson_exercises, ${lessonVocabularyWords.length} vocab links, ` +
-      `${wordFrequency.length} word_frequency rows.`,
+      `${wordFrequency.length} word_frequency rows. The schema-validation-placeholder lesson's own ` +
+      `rows among these are excluded below, same as lessons itself -- see the "Exported" line.`,
   );
 
   // --- Build SQLite file ------------------------------------------------
@@ -602,10 +607,29 @@ async function main() {
     insertLessonTr.run(t.lesson_id, t.locale, t.title);
   }
 
+  // `lessons` was already fetched with the placeholder lesson excluded
+  // (slug=neq.schema-validation-placeholder, matching the exact exclusion
+  // src/lib/curriculum.ts's own findCurriculumEntryPoint already applies
+  // against this same non-real test lesson). Everything that hangs off a
+  // lesson_id -- sections, exercises, vocab links, and both of their
+  // *_translations rows -- is filtered down to that same lesson set HERE,
+  // once, into real arrays (not a skip-during-insert loop), so every
+  // downstream consumer -- the INSERT loops, the *Ids sets used to filter
+  // translations, the console summary, and manifest.json's counts -- reads
+  // from the one filtered list instead of three separately-computed
+  // notions of "how many got exported" that previously drifted out of
+  // sync with each other.
   const lessonIds = new Set(lessons.map((l) => l.id));
+  const filteredSections = lessonSections.filter((s) => lessonIds.has(s.lesson_id));
+  const filteredExercises = lessonExercises.filter((e) => lessonIds.has(e.lesson_id));
+  const filteredVocabLinks = lessonVocabularyWords.filter((v) => lessonIds.has(v.lesson_id));
+  console.log(
+    `Exported (placeholder lesson's own rows excluded): ${filteredSections.length} lesson_sections, ` +
+      `${filteredExercises.length} lesson_exercises, ${filteredVocabLinks.length} vocab links.`,
+  );
+
   const insertSection = db.prepare(`INSERT INTO lesson_sections VALUES (?,?,?,?,?,?,?,?,?,?)`);
-  for (const s of lessonSections) {
-    if (!lessonIds.has(s.lesson_id)) continue; // skip sections of the excluded placeholder lesson
+  for (const s of filteredSections) {
     insertSection.run(
       s.id,
       s.lesson_id,
@@ -619,7 +643,7 @@ async function main() {
       JSON.stringify(s.metadata ?? {}),
     );
   }
-  const sectionIds = new Set(lessonSections.map((s) => s.id));
+  const sectionIds = new Set(filteredSections.map((s) => s.id));
   const insertSectionTr = db.prepare(`INSERT INTO lesson_section_translations VALUES (?,?,?)`);
   for (const t of lessonSectionTranslations) {
     if (!sectionIds.has(t.section_id)) continue;
@@ -629,8 +653,7 @@ async function main() {
   const insertExercise = db.prepare(
     `INSERT INTO lesson_exercises VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
   );
-  for (const e of lessonExercises) {
-    if (!lessonIds.has(e.lesson_id)) continue;
+  for (const e of filteredExercises) {
     insertExercise.run(
       e.id,
       e.lesson_id,
@@ -647,7 +670,7 @@ async function main() {
       e.review_item_type,
     );
   }
-  const exerciseIds = new Set(lessonExercises.map((e) => e.id));
+  const exerciseIds = new Set(filteredExercises.map((e) => e.id));
   const insertExerciseTr = db.prepare(
     `INSERT INTO lesson_exercise_translations VALUES (?,?,?,?,?)`,
   );
@@ -663,8 +686,7 @@ async function main() {
   }
 
   const insertVocabLink = db.prepare(`INSERT INTO lesson_vocabulary_words VALUES (?,?,?)`);
-  for (const v of lessonVocabularyWords) {
-    if (!lessonIds.has(v.lesson_id)) continue;
+  for (const v of filteredVocabLinks) {
     insertVocabLink.run(v.lesson_id, v.word_id, v.order_index);
   }
 
@@ -734,10 +756,21 @@ async function main() {
       levels: levels.length,
       modules: modules.length,
       lessons: lessons.length,
-      lesson_sections: lessonSections.length,
-      lesson_exercises: lessonExercises.length,
-      lesson_vocabulary_words: lessonVocabularyWords.length,
+      lesson_sections: filteredSections.length,
+      lesson_exercises: filteredExercises.length,
+      lesson_vocabulary_words: filteredVocabLinks.length,
       word_frequency: wordFrequency.length,
+    },
+    excluded_content: {
+      reason:
+        "schema-validation-placeholder is test-only content (title_en literally " +
+        "'[Schema validation placeholder -- not real lesson content]'), never a real " +
+        "lesson -- excluded at fetch time via slug=neq.schema-validation-placeholder, " +
+        "the exact same exclusion src/lib/curriculum.ts's findCurriculumEntryPoint " +
+        "already applies in production. Nothing else was excluded or lost.",
+      lessons_excluded: allLessonsUnfiltered.length - lessons.length,
+      lesson_sections_excluded: lessonSections.length - filteredSections.length,
+      lesson_exercises_excluded: lessonExercises.length - filteredExercises.length,
     },
     expected_counts_from_prior_audit: {
       ayahs: 6236,

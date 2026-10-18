@@ -10,6 +10,94 @@
  * (a manual Settings choice, not prefers-color-scheme).
  */
 
+/* Self-hosted (public/fonts/), not loaded from fonts.googleapis.com --
+ * this is an offline-first app, so it can never depend on a CDN fetch at
+ * runtime. Each family/weight here is the exact file Google Fonts itself
+ * serves, downloaded once and bundled, latin+arabic subsets only (the only
+ * scripts this app ever renders -- cyrillic/greek/hebrew/vietnamese/math/
+ * symbol subsets the web app's own broader CDN request pulls in are
+ * dropped as genuine dead weight here, not an oversight). */
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/open-sans-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/open-sans-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Open Sans";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/open-sans-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/playfair-display-700.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Playfair Display";
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: url("/fonts/playfair-display-800.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC;
+  src: url("/fonts/amiri-400-arabic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/amiri-400-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC;
+  src: url("/fonts/amiri-700-arabic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/amiri-700-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri Quran";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFC;
+  src: url("/fonts/amiri-quran-400-arabic.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Amiri Quran";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/amiri-quran-400-latin.woff2") format("woff2");
+}
+
 :root {
   --radius: 0.75rem;
 
