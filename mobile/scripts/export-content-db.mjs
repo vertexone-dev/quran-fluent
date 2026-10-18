@@ -770,9 +770,19 @@ async function main() {
   };
   writeFileSync(path.join(OUT_DIR, "manifest.json"), JSON.stringify(manifest, null, 2));
 
+  // The app itself (mobile/src/db.ts) fetches from /quran-content.sqlite,
+  // served out of mobile/public/ -- copy the freshly exported file there
+  // too so running this script is always enough on its own; previously
+  // this copy was a manual, undocumented step and public/'s copy could
+  // silently go stale after a re-export.
+  const PUBLIC_DIR = path.resolve(__dirname, "../public");
+  mkdirSync(PUBLIC_DIR, { recursive: true });
+  writeFileSync(path.join(PUBLIC_DIR, "quran-content.sqlite"), readFileSync(dbPath));
+
   console.log("\nDone.");
   console.log(`SQLite file: ${dbPath}`);
   console.log(`Manifest:    ${path.join(OUT_DIR, "manifest.json")}`);
+  console.log(`Copied to:   ${path.join(PUBLIC_DIR, "quran-content.sqlite")}`);
   console.log(`Overall content hash: ${overallHash}`);
 
   const countsMatch = ayahCount === 6236 && segmentCount === 6239 && mappingCount === 6396;

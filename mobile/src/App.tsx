@@ -1,130 +1,165 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Database } from "sql.js";
 
+import { loadContentDb, getContentVersion, type ContentVersion } from "./db";
+import { DbContext } from "./DbContext";
+import { I18nContext, getDictionary, type Locale } from "./i18n";
 import {
-  loadContentDb,
-  listSurahs,
-  getAyahsWithEnglish,
-  getKazimirskiJoinRows,
-  getContentVersion,
-  type Surah,
-  type ContentVersion,
-} from "./db";
-import { buildKazimirskiRenderMap } from "./kazimirski-render";
+  getStoredLocale,
+  setStoredLocale,
+  getStoredTheme,
+  setStoredTheme as persistTheme,
+  type ThemePreference,
+} from "./local-store";
+import { TabBar } from "./TabBar";
+import { SplashScreen } from "./screens/SplashScreen";
+import { HomeScreen } from "./screens/HomeScreen";
+import { SurahListScreen } from "./screens/SurahListScreen";
+import { ReadingScreen } from "./screens/ReadingScreen";
+import { WordListScreen } from "./screens/WordListScreen";
+import { WordDetailsScreen } from "./screens/WordDetailsScreen";
+import { LessonsScreen } from "./screens/LessonsScreen";
+import { LessonPlayerScreen } from "./screens/LessonPlayerScreen";
+import { PracticeScreen } from "./screens/PracticeScreen";
+import { MoreScreen } from "./screens/MoreScreen";
+import { OfflineAccessScreen } from "./screens/OfflineAccessScreen";
+import { SettingsScreen } from "./screens/SettingsScreen";
+import { TAB_HOME_ROUTE, type Route, type Tab } from "./navigation";
 
-/**
- * Phase 0 feasibility proof-of-concept: a minimal offline Qur'an Reader
- * that reads exclusively from the bundled, local content.sqlite --
- * nothing on this screen ever calls fetch() against Supabase, Stripe, or
- * any remote host. This is intentionally not a port of the production
- * AyahReader component (different data path, no React Query, no auth) --
- * it exists to prove the bundled-content-works-offline concept, not to
- * replace anything.
- */
+function useSystemPrefersDark(): boolean {
+  const [prefersDark, setPrefersDark] = useState(
+    () =>
+      typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = (e: MediaQueryListEvent) => setPrefersDark(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return prefersDark;
+}
+
 export function App() {
   const [db, setDb] = useState<Database | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [surahs, setSurahs] = useState<Surah[]>([]);
   const [version, setVersion] = useState<ContentVersion | null>(null);
-  const [selectedSurah, setSelectedSurah] = useState<number>(106);
+  const [error, setError] = useState<string | null>(null);
+
+  const [locale, setLocaleState] = useState<Locale>(() => getStoredLocale() ?? "en");
+  const [theme, setTheme] = useState<ThemePreference>(() => getStoredTheme());
+  const prefersDark = useSystemPrefersDark();
+
+  const [tab, setTab] = useState<Tab>("home");
+  const [stack, setStack] = useState<Route[]>([{ screen: "home" }]);
 
   useEffect(() => {
     loadContentDb()
       .then((loaded) => {
         setDb(loaded);
-        setSurahs(listSurahs(loaded));
         setVersion(getContentVersion(loaded));
       })
       .catch((err) => setError(String(err?.message ?? err)));
   }, []);
 
+  useEffect(() => {
+    const isDark = theme === "dark" || (theme === "system" && prefersDark);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, [theme, prefersDark]);
+
+  function setLocale(next: Locale) {
+    setLocaleState(next);
+    setStoredLocale(next);
+  }
+
+  function handleThemeChange(next: ThemePreference) {
+    setTheme(next);
+    persistTheme(next);
+  }
+
+  const i18nValue = useMemo(() => ({ locale, setLocale, d: getDictionary(locale) }), [locale]);
+
+  function handleNavigate(route: Route) {
+    const matchingTab = (Object.entries(TAB_HOME_ROUTE) as [Tab, Route][]).find(
+      ([, r]) => r.screen === route.screen,
+    )?.[0];
+    if (matchingTab) {
+      setTab(matchingTab);
+      setStack([route]);
+    } else {
+      setStack((prev) => [...prev, route]);
+    }
+  }
+
+  function handleSelectTab(nextTab: Tab) {
+    setTab(nextTab);
+    setStack([TAB_HOME_ROUTE[nextTab]]);
+  }
+
+  function handleBack() {
+    setStack((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  }
+
   if (error) {
     return (
       <main style={{ padding: 24 }}>
         <h1>Offline content failed to load</h1>
-        <p style={{ color: "#a23a2e" }}>{error}</p>
+        <p style={{ color: "var(--destructive)" }}>{error}</p>
       </main>
     );
   }
 
   if (!db) {
     return (
-      <main style={{ padding: 24 }}>
-        <p>Loading bundled content database&hellip;</p>
-      </main>
+      <I18nContext.Provider value={i18nValue}>
+        <SplashScreen />
+      </I18nContext.Provider>
     );
   }
 
-  const ayahs = getAyahsWithEnglish(db, selectedSurah);
-  const kazimirskiRows = getKazimirskiJoinRows(db, selectedSurah);
-  const kazimirskiRender = buildKazimirskiRenderMap(
-    kazimirskiRows.map((r) => ({
-      ayah_number: r.ayah_number,
-      segment: {
-        id: r.seg_id,
-        source_ordinal: r.source_ordinal,
-        text: r.seg_text,
-        alignment_type: r.alignment_type,
-      },
-    })),
-  );
+  const route = stack[stack.length - 1]!;
 
   return (
-    <main style={{ padding: "24px 16px", maxWidth: 680, margin: "0 auto" }}>
-      <h1 style={{ fontSize: 20, marginBottom: 4 }}>QuranRoots Offline (Feasibility)</h1>
-      <p style={{ fontSize: 12, color: "#5c5546", marginTop: 0 }}>
-        Reading entirely from a bundled local file. No network request is made by this screen.
-      </p>
-      {version && (
-        <p style={{ fontSize: 11, color: "#8a8270", fontFamily: "monospace" }}>
-          content v{version.version} &middot; built from {version.source_commit.slice(0, 7)}{" "}
-          &middot; hash {version.overall_sha256.slice(0, 12)}&hellip;
-        </p>
-      )}
-
-      <label style={{ display: "block", margin: "16px 0 8px", fontSize: 13 }}>
-        Surah
-        <select
-          value={selectedSurah}
-          onChange={(e) => setSelectedSurah(Number(e.target.value))}
-          style={{ display: "block", width: "100%", padding: 8, marginTop: 4 }}
-        >
-          {surahs.map((s) => (
-            <option key={s.number} value={s.number}>
-              {s.number}. {s.name_en}
-            </option>
-          ))}
-        </select>
-      </label>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 20, marginTop: 16 }}>
-        {ayahs.map((ayah) => {
-          const fr = kazimirskiRender.get(ayah.ayah_number);
-          return (
-            <article
-              key={ayah.ayah_number}
-              style={{ borderBottom: "1px solid #ddd4c0", paddingBottom: 14 }}
-            >
-              <div style={{ fontSize: 12, color: "#8a8270", marginBottom: 6 }}>
-                Ayah {ayah.ayah_number}
-              </div>
-              <p dir="rtl" lang="ar" style={{ fontSize: 22, lineHeight: 1.7, margin: "0 0 8px" }}>
-                {ayah.arabic_text}
-              </p>
-              <p style={{ fontSize: 14, color: "#241f16", margin: "0 0 4px" }}>
-                <strong>EN:</strong> {ayah.english ?? "(unavailable)"}
-              </p>
-              <p style={{ fontSize: 14, color: "#1f5b61", margin: 0 }}>
-                <strong>FR:</strong>{" "}
-                {fr?.text ??
-                  (fr?.continuesFromAyah
-                    ? `(continues from ayah ${fr.continuesFromAyah})`
-                    : "(unavailable)")}
-              </p>
-            </article>
-          );
-        })}
-      </div>
-    </main>
+    <I18nContext.Provider value={i18nValue}>
+      <DbContext.Provider value={{ db, version }}>
+        <div className="app-shell">
+          <div className="screen">
+            {route.screen === "home" && <HomeScreen onNavigate={handleNavigate} />}
+            {route.screen === "surah-list" && <SurahListScreen onNavigate={handleNavigate} />}
+            {route.screen === "reading" && (
+              <ReadingScreen
+                surahNumber={route.surahNumber}
+                onNavigate={handleNavigate}
+                onBack={handleBack}
+              />
+            )}
+            {route.screen === "word-list" && (
+              <WordListScreen onNavigate={handleNavigate} onBack={handleBack} />
+            )}
+            {route.screen === "word-details" && (
+              <WordDetailsScreen
+                wordId={route.wordId}
+                onNavigate={handleNavigate}
+                onBack={handleBack}
+              />
+            )}
+            {route.screen === "lessons" && <LessonsScreen onNavigate={handleNavigate} />}
+            {route.screen === "lesson-player" && (
+              <LessonPlayerScreen
+                lessonId={route.lessonId}
+                startAtFirstExercise={route.startAtFirstExercise}
+                onBack={handleBack}
+              />
+            )}
+            {route.screen === "practice" && <PracticeScreen onNavigate={handleNavigate} />}
+            {route.screen === "more" && <MoreScreen onNavigate={handleNavigate} />}
+            {route.screen === "offline-access" && <OfflineAccessScreen onBack={handleBack} />}
+            {route.screen === "settings" && (
+              <SettingsScreen onBack={handleBack} theme={theme} onThemeChange={handleThemeChange} />
+            )}
+          </div>
+          <TabBar active={tab} onSelect={handleSelectTab} />
+        </div>
+      </DbContext.Provider>
+    </I18nContext.Provider>
   );
 }
