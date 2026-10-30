@@ -39,7 +39,11 @@ import type { TranslationSource } from "@/lib/translations";
  * identifiers differ.
  */
 
-const EDITION_IDENTIFIER = "kazimirski-1869-segments-v1";
+/** Exported so callers that need to recognize this exact edition (e.g. the
+ * preferred-translation preference's resolution in src/lib/quran.ts) share
+ * this literal instead of duplicating it and risking drift from the filter
+ * below. */
+export const KAZIMIRSKI_EDITION_ID = "kazimirski-1869-segments-v1";
 
 export type KazimirskiSource = TranslationSource;
 
@@ -54,7 +58,7 @@ export function resolveApprovedFrenchSource(): Promise<KazimirskiSource | null> 
         .eq("content_type", "translation")
         .eq("language", "fr")
         .eq("translator", "Albin de Kazimirski Biberstein")
-        .eq("edition_identifier", EDITION_IDENTIFIER)
+        .eq("edition_identifier", KAZIMIRSKI_EDITION_ID)
         .neq("verification_status", "disputed")
         .maybeSingle();
       if (error) throw error;

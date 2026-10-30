@@ -129,6 +129,16 @@ test.describe("translation-fallback compatibility", () => {
     // French, sidestepping the race entirely.
     const { client, userId } = await createTestUserClient();
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
+    // This test proves locale alone drives the reader's translation
+    // language -- a saved preference (now wired up, see
+    // resolvePreferredTranslationLocale in src/lib/quran.ts) would
+    // override that, so it must start from a neutral value rather than
+    // whatever another spec's test account state happened to leave
+    // behind.
+    await client
+      .from("learning_preferences")
+      .update({ preferred_translation: "en_sahih" })
+      .eq("user_id", userId);
 
     try {
       await page.goto("/quran?surah=108");

@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 
 import { createTestUserClient } from "./utils/db";
 
@@ -10,6 +10,117 @@ import { createTestUserClient } from "./utils/db";
  * basic save-and-persist happy path for the page's other controls, since
  * neither existed.
  */
+
+/**
+ * Local dev has no real Kazimirski data (see
+ * 50-kazimirski-french-reader.spec.ts's own module docstring), so this
+ * mocks just enough of it -- Al-Fatiha's 7 āyahs, the same frozen
+ * production fixture 49-french-translation-remediation.spec.ts and
+ * 50-kazimirski-french-reader.spec.ts already use -- to prove the saved
+ * translation preference actually reaches the reader. The English/
+ * Pickthall side below needs no mocking: it's real, fully-covered local
+ * data (Phase 2B covers all 6,236 Ayat).
+ */
+async function mockKazimirskiAlFatiha(page: Page) {
+  await page.route("**/rest/v1/content_sources*", async (route) => {
+    if (!route.request().url().includes("edition_identifier=eq.kazimirski-1869-segments-v1")) {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: "f8443b10-3cc8-59ee-954f-5b1129c1cec4",
+        translator: "Albin de Kazimirski Biberstein",
+      }),
+    });
+  });
+  await page.route("**/rest/v1/translation_segment_ayahs*", async (route) => {
+    if (!route.request().url().includes("surah_number=eq.1")) {
+      await route.continue();
+      return;
+    }
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          ayah_number: 1,
+          segment: {
+            id: "seg-1-0",
+            source_ordinal: 0,
+            text: "Au nom du Dieu clément et miséricordieux.",
+            alignment_type: "source_anomaly",
+          },
+        },
+        {
+          ayah_number: 2,
+          segment: {
+            id: "seg-1-1",
+            source_ordinal: 1,
+            text: "Louange à Dieu, maître de l’univers",
+            alignment_type: "offset",
+          },
+        },
+        {
+          ayah_number: 3,
+          segment: {
+            id: "seg-1-2",
+            source_ordinal: 2,
+            text: "Le clément, le miséricordieux,",
+            alignment_type: "offset",
+          },
+        },
+        {
+          ayah_number: 4,
+          segment: {
+            id: "seg-1-3",
+            source_ordinal: 3,
+            text: "Souverain au jour de la rétribution.",
+            alignment_type: "offset",
+          },
+        },
+        {
+          ayah_number: 5,
+          segment: {
+            id: "seg-1-4",
+            source_ordinal: 4,
+            text: "C’est toi que nous adorons, c’est toi dont nous implorons le secours.",
+            alignment_type: "offset",
+          },
+        },
+        {
+          ayah_number: 6,
+          segment: {
+            id: "seg-1-5",
+            source_ordinal: 5,
+            text: "Dirige-nous dans le sentier droit,",
+            alignment_type: "offset",
+          },
+        },
+        {
+          ayah_number: 7,
+          segment: {
+            id: "seg-1-6",
+            source_ordinal: 6,
+            text: "Dans le sentier de ceux que tu as comblés de tes bienfaits,",
+            alignment_type: "many_to_one",
+          },
+        },
+        {
+          ayah_number: 7,
+          segment: {
+            id: "seg-1-7",
+            source_ordinal: 7,
+            text: "Non pas de ceux qui ont encouru ta colère, ni de ceux qui s’égarent.",
+            alignment_type: "many_to_one",
+          },
+        },
+      ]),
+    });
+  });
+}
 test.describe("settings", () => {
   test.afterEach(async () => {
     // Leaves the daily goal, first name and reciter changed; other specs
@@ -118,5 +229,78 @@ test.describe("settings", () => {
       .eq("user_id", userId)
       .single();
     expect(prefs?.preferred_reciter).toBe("husary");
+  });
+
+  // Regression test for the preferred-translation wiring
+  // (resolvePreferredTranslationLocale in src/lib/quran.ts): proves the
+  // saved preference actually controls the reader, independently of the
+  // interface-language switch, and survives a reload -- not just that it
+  // round-trips through Settings' own form state.
+  test("saved translation preference overrides interface language and persists across reload", async ({
+    page,
+  }) => {
+    const { client, userId } = await createTestUserClient();
+    await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+    const { data: before } = await client
+      .from("learning_preferences")
+      .select("preferred_translation")
+      .eq("user_id", userId)
+      .single();
+    // Falls back to the column's own schema default ("en_sahih" -- the
+    // column is NOT NULL) only in the practically-impossible case this
+    // select returns nothing for the shared test account; never null.
+    const originalPreferredTranslation = before?.preferred_translation ?? "en_sahih";
+    await mockKazimirskiAlFatiha(page);
+
+    try {
+      // 1-2: select Kazimirski (French) and save, while still under the
+      // English interface.
+      await page.goto("/settings");
+      await page.getByLabel("Preferred translation").click();
+      await page.getByRole("option", { name: "French — Kazimirski (1869)" }).click();
+      await page.getByRole("button", { name: "Save changes" }).click();
+      await expect(page.getByText("Settings saved")).toBeVisible();
+
+      // 3-4: the reader shows French under the English interface, and it
+      // survives a reload (not just this one in-memory save).
+      await page.goto("/quran");
+      await expect(page.getByText("Au nom du Dieu clément et miséricordieux.")).toBeVisible();
+      await expect(page.getByText(/^Praise be to Allah/)).not.toBeVisible();
+
+      await page.reload();
+      await expect(page.getByText("Au nom du Dieu clément et miséricordieux.")).toBeVisible();
+
+      const { data: afterKazimirski } = await client
+        .from("learning_preferences")
+        .select("preferred_translation")
+        .eq("user_id", userId)
+        .single();
+      expect(afterKazimirski?.preferred_translation).toBe("kazimirski-1869-segments-v1");
+
+      await page.goto("/settings");
+      await expect(page.getByLabel("Preferred translation")).toContainText("Kazimirski");
+
+      // 6-7: switch to Pickthall (English) and save, then flip the
+      // interface to French -- English must still win, proving the
+      // override works in the other direction too.
+      await page.getByLabel("Preferred translation").click();
+      await page.getByRole("option", { name: "English — Pickthall" }).click();
+      await page.getByRole("button", { name: "Save changes" }).click();
+      await expect(page.getByText("Settings saved")).toBeVisible();
+
+      await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
+      await page.goto("/quran");
+      await expect(page.getByText(/^Praise be to Allah/)).toBeVisible();
+      await expect(page.getByText("Au nom du Dieu clément et miséricordieux.")).not.toBeVisible();
+    } finally {
+      // 8: restore exactly what was there before this test, not a
+      // hardcoded value -- this test must never change what any other
+      // spec sees afterward.
+      await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+      await client
+        .from("learning_preferences")
+        .update({ preferred_translation: originalPreferredTranslation })
+        .eq("user_id", userId);
+    }
   });
 });

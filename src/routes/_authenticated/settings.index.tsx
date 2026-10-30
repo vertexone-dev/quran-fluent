@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,6 +21,9 @@ import { useAuth } from "@/lib/auth";
 import { useTheme, type ThemeMode } from "@/lib/theme";
 import { useI18n, LOCALE_LABELS, SUPPORTED_LOCALES, type Locale } from "@/lib/i18n";
 import { fetchLearnerSnapshot } from "@/lib/learner";
+import { KAZIMIRSKI_EDITION_ID } from "@/lib/kazimirski";
+import { resolvePreferredTranslationLocale } from "@/lib/quran";
+import { PICKTHALL_EDITION_ID } from "@/lib/translations";
 
 export const Route = createFileRoute("/_authenticated/settings/")({
   head: () => ({
@@ -37,11 +40,20 @@ export const Route = createFileRoute("/_authenticated/settings/")({
   component: Settings,
 });
 
-// French removed: no approved French translation source exists yet (the
-// prior fr_hamidullah option pointed at a disputed, unlicensed edition --
-// see the fr.hamidullah-crf content_sources migration). Add it back only
-// once a governed French source is approved.
-const TRANSLATIONS = [{ value: "en_sahih", label: "English — Saheeh International" }];
+// Both values below are the exact edition_identifier the reader's
+// resolvePreferredTranslationLocale (src/lib/quran.ts) recognizes --
+// picking one tells the Qur'an reader which governed translation to show,
+// independently of the interface-language <Select> above. French was
+// previously left out of this list under the assumption that "no approved
+// French source exists yet"; that was only ever true of the disputed
+// Hamidullah edition (fr.hamidullah-crf) -- the governed Kazimirski
+// (1869) source this reader already serves under a French interface (see
+// resolveApprovedFrenchSource) was always a legitimate option here, just
+// never wired up to the reader until now.
+const TRANSLATIONS = [
+  { value: PICKTHALL_EDITION_ID, label: "English — Pickthall" },
+  { value: KAZIMIRSKI_EDITION_ID, label: "French — Kazimirski (1869)" },
+];
 
 const RECITERS = [
   { value: "mishary_alafasy", label: "Mishary Rashid Alafasy" },
@@ -78,9 +90,20 @@ function Settings() {
     refetchOnReconnect: false,
   });
 
+  // Read inside the data-triggered effect below instead of the reactive
+  // `locale` value directly, so that effect never needs `locale` in its
+  // dependency array -- it stays keyed on `data` alone. `locale` can
+  // change while Settings is mounted (the header's LanguageSwitcher isn't
+  // scoped to this page), and re-running the whole effect on every such
+  // change would re-apply every other field from `data` too, clobbering
+  // any in-progress edit (e.g. a half-typed First Name) that has nothing
+  // to do with locale.
+  const localeRef = useRef(locale);
+  localeRef.current = locale;
+
   const [firstName, setFirstName] = useState("");
   const [language, setLanguage] = useState<Locale>(locale);
-  const [translation, setTranslation] = useState("en_sahih");
+  const [translation, setTranslation] = useState(PICKTHALL_EDITION_ID);
   const [reciter, setReciter] = useState("mishary_alafasy");
   const [transliteration, setTransliteration] = useState(true);
   const [dailyGoal, setDailyGoal] = useState(10);
@@ -91,7 +114,23 @@ function Settings() {
     setFirstName(data.profile?.first_name ?? "");
     const saved = data.profile?.interface_language;
     setLanguage(saved === "fr" ? "fr" : "en");
-    setTranslation(data.preferences?.preferred_translation ?? "en_sahih");
+    // Must show exactly what the reader will actually use for this saved
+    // value right now -- never a fixed id. A real saved preference
+    // (Pickthall or Kazimirski) round-trips through
+    // resolvePreferredTranslationLocale unchanged; the legacy "en_sahih"
+    // schema default and a genuinely unset preference both fall back to
+    // the *current* interface locale (the same value the reader itself
+    // reads), not a fixed default -- otherwise this dropdown could show
+    // "Pickthall" while a French-interface learner with the untouched
+    // default is actually being served Kazimirski.
+    const savedTranslation = data.preferences?.preferred_translation;
+    const effectiveTranslationLocale = resolvePreferredTranslationLocale(
+      savedTranslation,
+      localeRef.current,
+    );
+    setTranslation(
+      effectiveTranslationLocale === "fr" ? KAZIMIRSKI_EDITION_ID : PICKTHALL_EDITION_ID,
+    );
     setReciter(data.preferences?.preferred_reciter ?? "mishary_alafasy");
     setDailyGoal(data.preferences?.daily_goal_minutes ?? 10);
   }, [data]);

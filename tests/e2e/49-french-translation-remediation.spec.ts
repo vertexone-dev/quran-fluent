@@ -160,6 +160,16 @@ test.describe("fr.hamidullah disputed-source remediation", () => {
     // source is never served, regardless of what replaced it.
     const { client, userId } = await createTestUserClient();
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
+    // This test proves locale alone drives the reader's translation
+    // language -- a saved preference (now wired up, see
+    // resolvePreferredTranslationLocale in src/lib/quran.ts) would
+    // override that, so it must start from a neutral value rather than
+    // whatever another spec's test account state happened to leave
+    // behind.
+    await client
+      .from("learning_preferences")
+      .update({ preferred_translation: "en_sahih" })
+      .eq("user_id", userId);
     await mockKazimirskiAlFatihaAyah1(page);
     try {
       // Al-Fatiha is the reader's default surah with no ?surah= param, so
@@ -190,6 +200,12 @@ test.describe("fr.hamidullah disputed-source remediation", () => {
   }) => {
     const { client, userId } = await createTestUserClient();
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
+    // Same reasoning as the Reader test above: locale alone must drive
+    // this, so start from a neutral preferred_translation.
+    await client
+      .from("learning_preferences")
+      .update({ preferred_translation: "en_sahih" })
+      .eq("user_id", userId);
     await mockKazimirskiAlFatihaAyah1(page);
     try {
       await page.goto("/memorize?surah=1&ayah=1");
@@ -251,9 +267,14 @@ test.describe("fr.hamidullah disputed-source remediation", () => {
     await page.goto("/settings");
     await page.getByLabel("Preferred translation").click();
     await expect(page.getByRole("option", { name: /Hamidullah/ })).toHaveCount(0);
-    await expect(
-      page.getByRole("option", { name: "English — Saheeh International" }),
-    ).toBeVisible();
+    // The two options are now the real, governed sources the reader
+    // actually serves (see settings.index.tsx's TRANSLATIONS constant) --
+    // the fictional "Saheeh International" option this test used to check
+    // for is gone, replaced by Pickthall; Kazimirski is the governed
+    // replacement for the disputed Hamidullah source this test exists to
+    // prove is no longer offered.
+    await expect(page.getByRole("option", { name: "English — Pickthall" })).toBeVisible();
+    await expect(page.getByRole("option", { name: "French — Kazimirski (1869)" })).toBeVisible();
   });
 
   test("English translation still works (Pickthall, unaffected)", async ({ page }) => {
