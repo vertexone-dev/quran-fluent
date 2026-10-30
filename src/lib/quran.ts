@@ -55,6 +55,23 @@ export function resolvePreferredTranslationLocale(
 }
 
 /**
+ * Resolves the learner's saved `show_transliteration` preference to a
+ * definite boolean -- the one place both the reader and Settings' own
+ * display of the saved value interpret it, so they can never disagree.
+ *
+ * true (the column's own schema default -- `BOOLEAN NOT NULL DEFAULT
+ * true`) for a guest, an unset preference, or while it simply hasn't
+ * loaded yet. That last case matters for the reader specifically: it must
+ * never render as false and then flip to true (or vice versa) once the
+ * real value arrives, which would be a visible flicker for no reason.
+ */
+export function resolveShowTransliteration(
+  showTransliteration: boolean | null | undefined,
+): boolean {
+  return showTransliteration ?? true;
+}
+
+/**
  * A curated V1 bootstrap set (Al-Fatiha plus a handful of short, commonly
  * memorized surahs) — not the full 114-surah Mushaf. See the migration that
  * creates these tables for sourcing/attribution.

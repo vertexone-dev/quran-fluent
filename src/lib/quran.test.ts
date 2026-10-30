@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { resolvePreferredTranslationLocale } from "./quran";
+import { resolvePreferredTranslationLocale, resolveShowTransliteration } from "./quran";
 import { KAZIMIRSKI_EDITION_ID } from "./kazimirski";
 import { PICKTHALL_EDITION_ID } from "./translations";
 
@@ -51,6 +51,25 @@ describe("resolvePreferredTranslationLocale", () => {
   test("no saved preference under a French interface resolves to French, not a hardcoded English default", () => {
     expect(resolvePreferredTranslationLocale(null, "fr")).toBe("fr");
     expect(resolvePreferredTranslationLocale(undefined, "fr")).toBe("fr");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveShowTransliteration -- pure, no network, no mocking needed.
+// ---------------------------------------------------------------------------
+describe("resolveShowTransliteration", () => {
+  test("an explicit saved value round-trips unchanged", () => {
+    expect(resolveShowTransliteration(true)).toBe(true);
+    expect(resolveShowTransliteration(false)).toBe(false);
+  });
+
+  // true is learning_preferences.show_transliteration's own schema default
+  // (BOOLEAN NOT NULL DEFAULT true) -- used here for a guest, an unset
+  // preference, or while it simply hasn't loaded yet, so none of those
+  // cases is ever mistaken for an explicit "off".
+  test("missing/unloaded (null or undefined) falls back to the schema default of true", () => {
+    expect(resolveShowTransliteration(null)).toBe(true);
+    expect(resolveShowTransliteration(undefined)).toBe(true);
   });
 });
 
