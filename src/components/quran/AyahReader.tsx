@@ -16,6 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { fetchLearnerSnapshot } from "@/lib/learner";
 import {
   fetchAyahsWithTranslations,
   fetchBismillahText,
@@ -79,14 +80,27 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
     staleTime: Infinity,
   });
 
+  // Reuses the exact same query key Settings already invalidates on save
+  // (["learner", user.id]) -- see usePreferredReciter's identical pattern
+  // in AyahPlayButton.tsx. An anonymous visitor (user null) never issues
+  // this query and the reader simply falls back to locale-driven
+  // resolution, same as before this preference was wired up.
+  const { data: learnerData } = useQuery({
+    queryKey: ["learner", user?.id],
+    queryFn: () => fetchLearnerSnapshot(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const preferredTranslation = learnerData?.preferences?.preferred_translation ?? null;
+
   const {
     data: ayahs,
     isLoading: ayahsLoading,
     isError: ayahsError,
     refetch: refetchAyahs,
   } = useQuery({
-    queryKey: ["ayahs", activeSurah, locale],
-    queryFn: ({ signal }) => fetchAyahsWithTranslations(activeSurah!, locale, signal),
+    queryKey: ["ayahs", activeSurah, locale, preferredTranslation],
+    queryFn: ({ signal }) =>
+      fetchAyahsWithTranslations(activeSurah!, locale, signal, preferredTranslation),
     enabled: activeSurah != null,
   });
 
