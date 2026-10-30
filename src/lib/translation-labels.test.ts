@@ -15,11 +15,14 @@ describe("translationLabel", () => {
     expect(translationLabel(KAZIMIRSKI_EDITION_ID, "fr")).toBe("Français — Kazimirski (1869)");
   });
 
-  test("labels the legacy en_sahih value as Pickthall, matching how it now resolves", () => {
-    // "en_sahih" never had real content behind it (see resolvePreferredTranslationLocale
-    // in quran.ts, which treats it as "prefer English"/Pickthall) -- the label must agree.
-    expect(translationLabel("en_sahih", "en")).toBe("English — Pickthall");
-    expect(translationLabel("en_sahih", "fr")).toBe("Anglais — Pickthall");
+  test("labels the legacy en_sahih schema default honestly, not as a specific edition", () => {
+    // "en_sahih" is the untouched NOT NULL DEFAULT every learner who never
+    // actively saved a choice still has -- resolvePreferredTranslationLocale
+    // (quran.ts) treats it as "no preference at all" (falls back to the
+    // interface locale), so the label must never claim it means Pickthall
+    // or any other specific edition.
+    expect(translationLabel("en_sahih", "en")).toBe("Not set — follows interface language");
+    expect(translationLabel("en_sahih", "fr")).toBe("Non défini — suit la langue de l'interface");
   });
 
   test("every entry in TRANSLATION_NAMES has both an English and a French label", () => {

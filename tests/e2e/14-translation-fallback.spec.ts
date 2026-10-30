@@ -137,7 +137,7 @@ test.describe("translation-fallback compatibility", () => {
     // behind.
     await client
       .from("learning_preferences")
-      .update({ preferred_translation: null })
+      .update({ preferred_translation: "en_sahih" })
       .eq("user_id", userId);
 
     try {

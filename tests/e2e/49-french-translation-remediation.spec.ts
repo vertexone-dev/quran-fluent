@@ -168,7 +168,7 @@ test.describe("fr.hamidullah disputed-source remediation", () => {
     // behind.
     await client
       .from("learning_preferences")
-      .update({ preferred_translation: null })
+      .update({ preferred_translation: "en_sahih" })
       .eq("user_id", userId);
     await mockKazimirskiAlFatihaAyah1(page);
     try {
@@ -204,7 +204,7 @@ test.describe("fr.hamidullah disputed-source remediation", () => {
     // this, so start from a neutral preferred_translation.
     await client
       .from("learning_preferences")
-      .update({ preferred_translation: null })
+      .update({ preferred_translation: "en_sahih" })
       .eq("user_id", userId);
     await mockKazimirskiAlFatihaAyah1(page);
     try {

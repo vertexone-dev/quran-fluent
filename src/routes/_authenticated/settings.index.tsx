@@ -117,13 +117,12 @@ function Settings() {
     // Must show exactly what the reader will actually use for this saved
     // value right now -- never a fixed id. A real saved preference
     // (Pickthall or Kazimirski) round-trips through
-    // resolvePreferredTranslationLocale unchanged; a legacy "en_sahih"
-    // always resolves to English, same as the reader; and no saved
-    // preference at all falls back to the *current* interface locale
-    // (the same value the reader itself reads), not a fixed default --
-    // otherwise this dropdown could show "Pickthall" while a
-    // French-interface learner with no saved preference is actually
-    // being served Kazimirski.
+    // resolvePreferredTranslationLocale unchanged; the legacy "en_sahih"
+    // schema default and a genuinely unset preference both fall back to
+    // the *current* interface locale (the same value the reader itself
+    // reads), not a fixed default -- otherwise this dropdown could show
+    // "Pickthall" while a French-interface learner with the untouched
+    // default is actually being served Kazimirski.
     const savedTranslation = data.preferences?.preferred_translation;
     const effectiveTranslationLocale = resolvePreferredTranslationLocale(
       savedTranslation,

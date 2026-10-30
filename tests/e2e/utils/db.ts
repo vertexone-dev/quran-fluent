@@ -146,14 +146,15 @@ export async function resetTestUserData(client: SupabaseClient, userId: string) 
       // wired to the reader (src/lib/quran.ts's
       // resolvePreferredTranslationLocale) -- before that it was inert, so
       // a stale value surviving from a prior run was harmless. Now a
-      // leftover value overrides locale-driven resolution for every
-      // locale-driven spec that runs after it, regardless of which run
-      // left it behind (see 52-production-polish.spec.ts, which used to
-      // leave "en_sahih" here in its own cleanup). Resetting it in this
-      // one centralized, run-starting place is what actually guarantees
-      // every run starts clean, independent of any single spec's cleanup
-      // being correct.
-      preferred_translation: null,
+      // leftover real preference (Pickthall/Kazimirski) would override
+      // locale-driven resolution for every locale-driven spec that runs
+      // after it, regardless of which run left it behind. "en_sahih" (not
+      // null -- the column is NOT NULL) is the column's own schema
+      // default and resolves identically to "no preference at all" (see
+      // that function), so resetting to it here is what actually
+      // guarantees every run starts clean, independent of any single
+      // spec's cleanup being correct.
+      preferred_translation: "en_sahih",
     })
     .eq("user_id", userId);
   if (prefsError) throw new Error(`Failed to reset learning_preferences: ${prefsError.message}`);

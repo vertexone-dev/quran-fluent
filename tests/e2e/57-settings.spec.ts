@@ -246,7 +246,10 @@ test.describe("settings", () => {
       .select("preferred_translation")
       .eq("user_id", userId)
       .single();
-    const originalPreferredTranslation = before?.preferred_translation ?? null;
+    // Falls back to the column's own schema default ("en_sahih" -- the
+    // column is NOT NULL) only in the practically-impossible case this
+    // select returns nothing for the shared test account; never null.
+    const originalPreferredTranslation = before?.preferred_translation ?? "en_sahih";
     await mockKazimirskiAlFatiha(page);
 
     try {

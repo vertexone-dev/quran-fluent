@@ -28,8 +28,18 @@ describe("resolvePreferredTranslationLocale", () => {
     expect(resolvePreferredTranslationLocale(KAZIMIRSKI_EDITION_ID, "fr")).toBe("fr");
   });
 
-  test("legacy en_sahih preference resolves to English, same as the real Pickthall id", () => {
-    expect(resolvePreferredTranslationLocale("en_sahih", "fr")).toBe("en");
+  // "en_sahih" is learning_preferences.preferred_translation's schema
+  // default (NOT NULL DEFAULT 'en_sahih'), untouched for every learner who
+  // never actively saved a choice -- effectively every existing learner,
+  // since the old Settings page only ever offered it pre-selected.
+  // Treating it as "prefer English" would silently flip every existing
+  // French-interface learner's reader to English the moment this
+  // shipped, with no action on their part -- exactly the regression this
+  // function exists to prevent, so it must be indistinguishable from "no
+  // preference at all".
+  test("legacy en_sahih schema default falls back to the interface locale, same as no preference", () => {
+    expect(resolvePreferredTranslationLocale("en_sahih", "fr")).toBe("fr");
+    expect(resolvePreferredTranslationLocale("en_sahih", "en")).toBe("en");
   });
 
   // Regression guard: the Settings page's own default-translation display

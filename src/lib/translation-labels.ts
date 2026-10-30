@@ -15,13 +15,16 @@ import { PICKTHALL_EDITION_ID } from "@/lib/translations";
  * against, imported from those modules rather than retyped here, so a
  * label can never drift from the source it actually describes.
  *
- * "en_sahih" is a legacy stored value from before this preference was
- * wired to the reader -- it named a translation ("Saheeh International")
- * that was never actually servable (no content_sources row ever existed
- * for it). resolvePreferredTranslationLocale treats it as "prefer
- * English" for continuity with whatever a learner who saved it intended,
- * so it's labeled the same as the real Pickthall entry here instead of
- * surfacing the now-meaningless original name.
+ * "en_sahih" is `learning_preferences.preferred_translation`'s schema
+ * default (NOT NULL DEFAULT 'en_sahih') -- the value every learner who has
+ * never actively saved a choice on the (now-fixed) Settings page still
+ * has, not a deliberate choice. It named a translation ("Saheeh
+ * International") that was never actually servable (no content_sources
+ * row ever existed for it), and resolvePreferredTranslationLocale treats
+ * it identically to "no preference at all" (falls back to the interface
+ * locale) precisely so it doesn't silently override anyone's existing
+ * behavior. The label reflects that honestly instead of claiming a
+ * specific edition this value was never tied to.
  *
  * Any other stored value (e.g. a legacy "fr_hamidullah" from before French
  * was removed from the settings page) has no established, verified meaning
@@ -35,7 +38,10 @@ export const TRANSLATION_NAMES: Record<string, Record<Locale, string>> = {
     en: "French — Kazimirski (1869)",
     fr: "Français — Kazimirski (1869)",
   },
-  en_sahih: { en: "English — Pickthall", fr: "Anglais — Pickthall" },
+  en_sahih: {
+    en: "Not set — follows interface language",
+    fr: "Non défini — suit la langue de l'interface",
+  },
 };
 
 export function translationLabel(value: string, locale: Locale): string {

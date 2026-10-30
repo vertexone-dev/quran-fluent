@@ -12,12 +12,6 @@ import {
   type TranslationSource,
 } from "@/lib/translations";
 
-/** A stored `preferred_translation` value from before this preference was
- * wired to the reader (see settings.index.tsx's prior TRANSLATIONS
- * constant) -- treated as "prefer English" below so an existing saved
- * value keeps its evident intent instead of being silently reset. */
-const LEGACY_ENGLISH_PREFERENCE = "en_sahih";
-
 /**
  * Decides which language's governed translation the reader should show,
  * given the learner's saved `preferred_translation` value (its exact
@@ -36,22 +30,27 @@ const LEGACY_ENGLISH_PREFERENCE = "en_sahih";
  * about what happens when the *resolved* language's content is
  * unavailable, not about which language gets resolved.
  *
- * No preference, or an unrecognized one (including a stale/foreign
- * value), falls back to the interface locale -- today's exact behavior,
- * so an unset or unmigrated preference never changes what the reader
- * shows.
+ * Everything else falls back to the interface locale -- today's exact
+ * behavior. This deliberately includes the legacy "en_sahih" value:
+ * `learning_preferences.preferred_translation` is `NOT NULL DEFAULT
+ * 'en_sahih'`, and the new-user trigger never overrides it, so "en_sahih"
+ * is the untouched schema default for every learner who has never
+ * actively saved a choice on the (now-fixed) Settings page -- which, since
+ * the old page only ever offered that one pre-selected option, is
+ * effectively every existing learner. Treating it as "prefer English"
+ * would silently flip every existing French-interface learner's reader
+ * from Kazimirski to Pickthall the moment this shipped, with no action on
+ * their part -- the opposite of the "no regression for an unset
+ * preference" guarantee this function exists to provide. So it is
+ * indistinguishable here from "no preference at all", same as an
+ * unrecognized/foreign value.
  */
 export function resolvePreferredTranslationLocale(
   preferredTranslation: string | null | undefined,
   interfaceLocale: Locale,
 ): Locale {
   if (preferredTranslation === KAZIMIRSKI_EDITION_ID) return "fr";
-  if (
-    preferredTranslation === PICKTHALL_EDITION_ID ||
-    preferredTranslation === LEGACY_ENGLISH_PREFERENCE
-  ) {
-    return "en";
-  }
+  if (preferredTranslation === PICKTHALL_EDITION_ID) return "en";
   return interfaceLocale;
 }
 
