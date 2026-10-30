@@ -198,19 +198,32 @@ test.describe("production polish", () => {
       // key somewhere else on the page".
       const translationValue = page.locator("dd").nth(4);
       const reciterValue = page.locator("dd").nth(5);
-      await expect(translationValue).toHaveText("English — Saheeh International");
+      // "en_sahih" is a legacy stored value (see translation-labels.ts) --
+      // it now maps to the real Pickthall edition it behaves as
+      // (resolvePreferredTranslationLocale treats it as "prefer English"),
+      // not the fictional "Saheeh International" name it was labeled
+      // before that preference was wired to the reader.
+      await expect(translationValue).toHaveText("English — Pickthall");
       await expect(reciterValue).toHaveText("Mahmoud Khalil Al-Husary");
 
       await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
       await page.reload();
-      await expect(translationValue).toHaveText("Anglais — Saheeh International");
+      await expect(translationValue).toHaveText("Anglais — Pickthall");
       // Reciter names are proper nouns and stay the same in French.
       await expect(reciterValue).toHaveText("Mahmoud Khalil Al-Husary");
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+      // Restored to null (today's neutral baseline -- see
+      // resetTestUserData), not "en_sahih": that legacy value now resolves
+      // to "always prefer English" regardless of locale
+      // (resolvePreferredTranslationLocale), so leaving it behind would
+      // silently break every other spec that relies on locale alone to
+      // drive the reader's translation language (see
+      // 14-translation-fallback.spec.ts, 49-french-translation-
+      // remediation.spec.ts, 50-kazimirski-french-reader.spec.ts).
       await client
         .from("learning_preferences")
-        .update({ preferred_translation: "en_sahih", preferred_reciter: "mishary_alafasy" })
+        .update({ preferred_translation: null, preferred_reciter: "mishary_alafasy" })
         .eq("user_id", userId);
     }
   });

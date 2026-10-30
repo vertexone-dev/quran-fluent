@@ -194,6 +194,16 @@ async function setFrench(
   userId: string,
 ) {
   await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
+  // Every test in this file proves locale alone drives the reader to
+  // Kazimirski -- a saved preference (now wired up, see
+  // resolvePreferredTranslationLocale in src/lib/quran.ts) would override
+  // that, so this shared setup must start from a neutral value rather
+  // than whatever another spec's test account state happened to leave
+  // behind.
+  await client
+    .from("learning_preferences")
+    .update({ preferred_translation: null })
+    .eq("user_id", userId);
 }
 async function resetToEnglish(
   client: Awaited<ReturnType<typeof createTestUserClient>>["client"],
