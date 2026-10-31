@@ -1,4 +1,4 @@
-import { test, expect, type APIRequestContext } from "@playwright/test";
+import { test, expect, type APIRequestContext, type Page } from "@playwright/test";
 
 import { createTestUserClient, resetLessonProgress } from "./utils/db";
 
@@ -29,6 +29,85 @@ async function fetchPlaceholderLessonId(request: APIRequestContext): Promise<str
   const rows = (await res.json()) as { id: string }[];
   if (rows.length !== 1) throw new Error("Schema-validation placeholder lesson not found.");
   return rows[0]!.id;
+}
+
+/**
+ * Waits for the specific GET that resolves `progress` in
+ * lesson.$lessonId.tsx (fetchLessonProgress -> user_lesson_progress),
+ * fired to the appropriate `page.goto`/`page.reload()` via Promise.all.
+ *
+ * This is NOT the same race already fixed in ab40375/13a58c4 (spec 29/30):
+ * those waited for the *write* (the "Next" click's POST) before reading
+ * state back, because nothing else was blocking page.reload() from racing
+ * ahead of persistPosition()'s fire-and-forget enqueue. Here, the previous
+ * test in this file already confirmed via a direct DB read that the write
+ * had landed well before this test runs, so a write-wait would not touch
+ * this test's own failure mode. What this test actually does on every
+ * fresh mount is *read* that already-persisted state back -- gated by
+ * fetchLessonProgress's own `enabled: Boolean(user?.id) && Boolean(lesson)`,
+ * which makes the progress fetch wait for the lesson fetch to resolve
+ * first, i.e. two sequential round trips, not one. Invisible against
+ * local/CI's near-zero latency; real against production's. Waiting for
+ * this response is the read-side equivalent of the proven write-side
+ * pattern, applied to the actual bottleneck this test has.
+ */
+function waitForProgressRead(page: Page) {
+  return page.waitForResponse(
+    (res) =>
+      res.url().includes("/rest/v1/user_lesson_progress") && res.request().method() === "GET",
+  );
+}
+
+/**
+ * Diagnostic evidence attached only when the resumed-exercise assertion
+ * fails, so a future failure doesn't require pulling the production trace
+ * to tell apart:
+ *  - a missing/delayed persistence response (the wait above itself times
+ *    out with its own distinct error, before this ever runs)
+ *  - an incorrect persisted section index (persistedProgress below)
+ *  - a loading-state problem (stillLoading)
+ *  - a client-side resume/rendering problem (persisted data and load
+ *    state both look right, but sectionBodyVisible shows step 0 anyway)
+ * Never itself throws or changes pass/fail: every read is independently
+ * guarded, and a failure here is reported as "unknown" rather than
+ * replacing the real assertion error.
+ */
+async function attachResumeDiagnostics(page: Page, lessonId: string): Promise<void> {
+  const diagnostics: Record<string, unknown> = {};
+  try {
+    const { client, userId } = await createTestUserClient();
+    const { data, error } = await client
+      .from("user_lesson_progress")
+      .select("status, last_section_index, progress_percent")
+      .eq("user_id", userId)
+      .eq("lesson_id", lessonId)
+      .maybeSingle();
+    diagnostics.persistedProgress = error ? `query error: ${error.message}` : data;
+  } catch (e) {
+    diagnostics.persistedProgress = `unavailable: ${(e as Error).message}`;
+  }
+  diagnostics.stillLoading = await page
+    .locator(".animate-pulse")
+    .first()
+    .isVisible()
+    .catch(() => "unknown");
+  diagnostics.sectionBodyVisible = await page
+    .getByText(PLACEHOLDER_SECTION_BODY_EN)
+    .isVisible()
+    .catch(() => "unknown");
+  await test.info().attach("resume-diagnostics", {
+    body: JSON.stringify(diagnostics, null, 2),
+    contentType: "application/json",
+  });
+}
+
+async function assertResumedAtExerciseStep(page: Page, lessonId: string): Promise<void> {
+  try {
+    await expect(page.getByText(PLACEHOLDER_PROMPT_EN)).toBeVisible();
+  } catch (e) {
+    await attachResumeDiagnostics(page, lessonId);
+    throw e;
+  }
 }
 
 test.describe("lesson player", () => {
@@ -141,11 +220,11 @@ test.describe("lesson player", () => {
     test("refreshing the page resumes at the saved exercise step, not the beginning", async ({
       page,
     }) => {
-      await page.goto(`/lesson/${lessonId}`);
-      await expect(page.getByText(PLACEHOLDER_PROMPT_EN)).toBeVisible();
+      await Promise.all([waitForProgressRead(page), page.goto(`/lesson/${lessonId}`)]);
+      await assertResumedAtExerciseStep(page, lessonId);
 
-      await page.reload();
-      await expect(page.getByText(PLACEHOLDER_PROMPT_EN)).toBeVisible();
+      await Promise.all([waitForProgressRead(page), page.reload()]);
+      await assertResumedAtExerciseStep(page, lessonId);
       await expect(page.getByText(PLACEHOLDER_SECTION_BODY_EN)).not.toBeVisible();
     });
 
