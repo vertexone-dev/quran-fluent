@@ -123,17 +123,22 @@ async function mockKazimirskiAlFatiha(page: Page) {
 }
 test.describe("settings", () => {
   test.afterEach(async () => {
-    // Leaves the daily goal, first name and reciter changed; other specs
-    // that read them (e.g. dashboard/progress goal displays, and
-    // 55-dashboard-mobile-greeting.spec.ts's generic-fallback-name
-    // assertion) expect the account's normal baseline, not whatever this
-    // file's tests last saved. first_name back to null (not a guessed
-    // string) is what resolveGreetingName's own null/empty branch expects;
-    // preferred_reciter back to the column's schema default.
+    // Leaves the daily goal, first name, reciter and transliteration
+    // toggle changed; other specs that read them (e.g. dashboard/progress
+    // goal displays, and 55-dashboard-mobile-greeting.spec.ts's
+    // generic-fallback-name assertion) expect the account's normal
+    // baseline, not whatever this file's tests last saved. first_name
+    // back to null (not a guessed string) is what resolveGreetingName's
+    // own null/empty branch expects; preferred_reciter and
+    // show_transliteration back to their column's own schema default.
     const { client, userId } = await createTestUserClient();
     await client
       .from("learning_preferences")
-      .update({ daily_goal_minutes: 10, preferred_reciter: "mishary_alafasy" })
+      .update({
+        daily_goal_minutes: 10,
+        preferred_reciter: "mishary_alafasy",
+        show_transliteration: true,
+      })
       .eq("user_id", userId);
     await client.from("profiles").update({ first_name: null }).eq("id", userId);
   });
@@ -300,6 +305,96 @@ test.describe("settings", () => {
       await client
         .from("learning_preferences")
         .update({ preferred_translation: originalPreferredTranslation })
+        .eq("user_id", userId);
+    }
+  });
+
+  // Regression test for the show_transliteration load fix
+  // (resolveShowTransliteration in src/lib/quran.ts): Settings previously
+  // always showed the toggle "on" regardless of what was actually saved
+  // (defect #1). The reader itself deliberately shows nothing for this
+  // preference -- no per-ayah transliteration data exists anywhere (the
+  // `ayahs` table has no such column), and a per-ayah "not available" note
+  // was explicitly rejected as noisy UX -- so this only covers Settings:
+  // loading the real saved value, the explanatory hint instead of a false
+  // promise of immediate content, persistence after reload, and no
+  // interference with the independently saved translation preference.
+  test("transliteration toggle loads the real saved value, shows its unavailable-today hint, and persists after reload", async ({
+    page,
+  }) => {
+    const { client, userId } = await createTestUserClient();
+    await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+    // Seeded to false (the opposite of the schema default) so loading
+    // Settings next is a real test of defect #1 -- the toggle must show
+    // *this* saved value, not its own useState(true) placeholder.
+    await client
+      .from("learning_preferences")
+      .update({ show_transliteration: false, preferred_translation: "en_sahih" })
+      .eq("user_id", userId);
+
+    try {
+      await page.goto("/settings");
+      await expect(page.getByLabel("Show transliteration")).toHaveAttribute(
+        "aria-checked",
+        "false",
+      );
+      // Must be honest that enabling it doesn't mean content appears
+      // immediately -- never implies the reader will show anything yet.
+      await expect(
+        page.getByText(
+          "Ayah-by-ayah transliteration isn't available in the Qur'an Reader yet. Your preference is saved and will take effect as soon as it launches.",
+        ),
+      ).toBeVisible();
+
+      // Flip it on and save.
+      await page.getByLabel("Show transliteration").click();
+      await page.getByRole("button", { name: "Save changes" }).click();
+      await expect(page.getByText("Settings saved")).toBeVisible();
+
+      // Persists after reload, not just this in-memory save.
+      await page.reload();
+      await expect(page.getByLabel("Show transliteration")).toHaveAttribute("aria-checked", "true");
+
+      // The reader renders no transliteration row at all, enabled or not
+      // -- no fabricated content, and no repeated "unavailable" message
+      // either. Scoped to the Ayah cards themselves (each has
+      // id="ayah-{surah}-{ayah}" -- see AyahCard.tsx), not the whole page:
+      // /quran's own static copy legitimately mentions "transliteration"
+      // twice (the page intro and the vocabulary section intro, both
+      // pre-existing and unrelated to AyahCard), so a page-wide search
+      // would always find matches that have nothing to do with what this
+      // assertion is actually checking.
+      await page.goto("/quran");
+      await expect(page.locator('[id^="ayah-"]').getByText(/[Tt]ransliteration/)).toHaveCount(0);
+
+      // No regression to the independently saved translation preference:
+      // switching it to Kazimirski must keep working, and must not affect
+      // the transliteration toggle (proves the two preferences don't
+      // interfere with each other).
+      await page.goto("/settings");
+      await page.getByLabel("Preferred translation").click();
+      await page.getByRole("option", { name: "French — Kazimirski (1869)" }).click();
+      await page.getByRole("button", { name: "Save changes" }).click();
+      await expect(page.getByText("Settings saved")).toBeVisible();
+      await expect(page.getByLabel("Show transliteration")).toHaveAttribute("aria-checked", "true");
+
+      const { data: prefs } = await client
+        .from("learning_preferences")
+        .select("show_transliteration, preferred_translation")
+        .eq("user_id", userId)
+        .single();
+      expect(prefs?.show_transliteration).toBe(true);
+      expect(prefs?.preferred_translation).toBe("kazimirski-1869-segments-v1");
+    } finally {
+      // afterEach already restores show_transliteration to the schema
+      // default, but it never touches preferred_translation (the sibling
+      // test above restores its own, more precisely, since it can't
+      // assume what was there before) -- this test set it to "en_sahih"
+      // itself above, so restoring that exact value here is what
+      // actually happened before this test touched it.
+      await client
+        .from("learning_preferences")
+        .update({ preferred_translation: "en_sahih" })
         .eq("user_id", userId);
     }
   });

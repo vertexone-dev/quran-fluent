@@ -155,6 +155,11 @@ export async function resetTestUserData(client: SupabaseClient, userId: string) 
       // guarantees every run starts clean, independent of any single
       // spec's cleanup being correct.
       preferred_translation: "en_sahih",
+      // Same reasoning as preferred_translation above, added proactively
+      // now that the reader actually reads this value too (see
+      // resolveShowTransliteration in src/lib/quran.ts) -- true is this
+      // column's own schema default.
+      show_transliteration: true,
     })
     .eq("user_id", userId);
   if (prefsError) throw new Error(`Failed to reset learning_preferences: ${prefsError.message}`);

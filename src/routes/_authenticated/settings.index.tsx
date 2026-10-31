@@ -22,7 +22,7 @@ import { useTheme, type ThemeMode } from "@/lib/theme";
 import { useI18n, LOCALE_LABELS, SUPPORTED_LOCALES, type Locale } from "@/lib/i18n";
 import { fetchLearnerSnapshot } from "@/lib/learner";
 import { KAZIMIRSKI_EDITION_ID } from "@/lib/kazimirski";
-import { resolvePreferredTranslationLocale } from "@/lib/quran";
+import { resolvePreferredTranslationLocale, resolveShowTransliteration } from "@/lib/quran";
 import { PICKTHALL_EDITION_ID } from "@/lib/translations";
 
 export const Route = createFileRoute("/_authenticated/settings/")({
@@ -133,6 +133,9 @@ function Settings() {
     );
     setReciter(data.preferences?.preferred_reciter ?? "mishary_alafasy");
     setDailyGoal(data.preferences?.daily_goal_minutes ?? 10);
+    // Previously never read here -- the toggle always showed its own
+    // useState(true) default regardless of what was actually saved.
+    setTransliteration(resolveShowTransliteration(data.preferences?.show_transliteration));
   }, [data]);
 
   async function save() {
@@ -284,15 +287,20 @@ function Settings() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-center justify-between gap-4 rounded-xl border border-border p-4">
-              <Label htmlFor="transliteration" className="cursor-pointer">
-                {t("learning.settings.showTransliteration")}
-              </Label>
-              <Switch
-                id="transliteration"
-                checked={transliteration}
-                onCheckedChange={setTransliteration}
-              />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4 rounded-xl border border-border p-4">
+                <Label htmlFor="transliteration" className="cursor-pointer">
+                  {t("learning.settings.showTransliteration")}
+                </Label>
+                <Switch
+                  id="transliteration"
+                  checked={transliteration}
+                  onCheckedChange={setTransliteration}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t("learning.settings.transliterationHint")}
+              </p>
             </div>
           </CardContent>
         </Card>

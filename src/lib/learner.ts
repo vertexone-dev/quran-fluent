@@ -74,6 +74,13 @@ export type LearnerSnapshot = {
     preferred_translation: string;
     preferred_reciter: string;
     onboarding_completed: boolean;
+    // Was missing here even though the query below already selects it
+    // (select("*")) -- this is a type gap, not a missing fetch, but it's
+    // exactly why no consumer could read it: settings.index.tsx's loading
+    // effect never populated its toggle from this field, so the toggle
+    // always showed its own useState(true) default instead of the real
+    // saved value.
+    show_transliteration: boolean;
   } | null;
   streak: {
     current_streak: number;

@@ -22,7 +22,16 @@ type AyahCardProps = {
   actions?: ReactNode;
 };
 
-/** Shared ayah display: reader, bookmarks and notes all render the same card. */
+/**
+ * Shared ayah display: reader, bookmarks and notes all render the same
+ * card. Deliberately renders no transliteration row of any kind: no
+ * per-ayah transliteration data exists anywhere (the `ayahs` table has no
+ * such column -- only surah *names* and vocabulary *words* have one), and
+ * this must never fabricate it. Settings' own "show transliteration"
+ * preference is still saved and loaded correctly (see
+ * resolveShowTransliteration in src/lib/quran.ts) for whenever real data
+ * exists to show -- this component just has nothing to gate on yet.
+ */
 export function AyahCard({ ayah, surahLabel, highlighted, selected, actions }: AyahCardProps) {
   const { d } = useI18n();
   const r = d.quran.reader;

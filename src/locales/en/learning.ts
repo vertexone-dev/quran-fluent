@@ -140,6 +140,8 @@ export const learning = {
     preferredTranslation: "Preferred translation",
     preferredReciter: "Preferred reciter",
     showTransliteration: "Show transliteration",
+    transliterationHint:
+      "Ayah-by-ayah transliteration isn't available in the Qur'an Reader yet. Your preference is saved and will take effect as soon as it launches.",
     appearance: "Appearance",
     security: "Account security",
     securityDesc: "Send yourself a secure link to change your password.",
