@@ -70,8 +70,17 @@ export const quran = {
     attribution: {
       label: "Translator: {translator}",
       detailsAriaLabel: "Translation source details",
-      details:
-        "Marmaduke Pickthall — Project Gutenberg eBook #16955 digital edition. Public domain in the United States. Not represented as an exact reproduction of the 1930 first edition.",
+      // Keyed by translator (see resolveTranslationAttributionKey in
+      // src/lib/quran.ts), not by interface locale -- preferred_translation
+      // can diverge from locale (e.g. Kazimirski read under this English
+      // interface), so the popover must pick its text by which source is
+      // actually active, never by which language the UI chrome is in.
+      details: {
+        pickthall:
+          "Marmaduke Pickthall — Project Gutenberg eBook #16955 digital edition. Public domain in the United States. Not represented as an exact reproduction of the 1930 first edition.",
+        kazimirski:
+          "Albin de Kazimirski Biberstein — Le Koran, Charpentier, 1869 edition (translation first published in 1840). Public domain. Historical translation: 1869 spelling, punctuation and word choices preserved without modernization. The correspondence between Kazimirski's verse segmentation and today's canonical numbering has undergone dedicated human review; a separate review of the translation's own quality remains open.",
+      },
     },
   },
   audio: {

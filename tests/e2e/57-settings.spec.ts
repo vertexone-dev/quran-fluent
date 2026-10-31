@@ -272,6 +272,21 @@ test.describe("settings", () => {
       await expect(page.getByText("Au nom du Dieu clément et miséricordieux.")).toBeVisible();
       await expect(page.getByText(/^Praise be to Allah/)).not.toBeVisible();
 
+      // Attribution must describe the actually active translator
+      // (Kazimirski), in English (the interface language) -- not
+      // Pickthall's details under the English UI, which is exactly the
+      // bug this proves is fixed.
+      await page
+        .getByRole("button", { name: "Translator: Albin de Kazimirski Biberstein" })
+        .first()
+        .click();
+      await expect(
+        page.getByText(
+          /Le Koran, Charpentier, 1869 edition \(translation first published in 1840\)/,
+        ),
+      ).toBeVisible();
+      await expect(page.getByText(/Project Gutenberg eBook #16955/)).not.toBeVisible();
+
       await page.reload();
       await expect(page.getByText("Au nom du Dieu clément et miséricordieux.")).toBeVisible();
 
@@ -297,6 +312,15 @@ test.describe("settings", () => {
       await page.goto("/quran");
       await expect(page.getByText(/^Praise be to Allah/)).toBeVisible();
       await expect(page.getByText("Au nom du Dieu clément et miséricordieux.")).not.toBeVisible();
+
+      // And the reverse: Pickthall's details, in French, under the French
+      // interface -- not Kazimirski's details, proving the fix works in
+      // both directions and updates correctly after the preference change.
+      await page.getByRole("button", { name: "Traducteur : Marmaduke Pickthall" }).first().click();
+      await expect(
+        page.getByText(/édition numérique Project Gutenberg eBook n° 16955/),
+      ).toBeVisible();
+      await expect(page.getByText(/Charpentier, édition de 1869/)).not.toBeVisible();
     } finally {
       // 8: restore exactly what was there before this test, not a
       // hardcoded value -- this test must never change what any other
