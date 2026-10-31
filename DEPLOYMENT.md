@@ -110,6 +110,24 @@ quranroots → Settings → Variables, or `wrangler secret put`) — they are
 traffic correctly today, this is already configured; the deploy workflow
 does not need to touch it.
 
+**The same is true of `BILLING_CHECKOUT_ENABLED`** (`src/lib/billing/
+serverCheckoutFlag.ts`), the server-side checkout kill switch
+`POST /api/billing/checkout` itself enforces — see
+`PAYMENT-ARCHITECTURE.md` §5.1 for the full frontend-vs-server-side
+distinction this mirrors. It is easy to confuse with the similarly-named
+`VITE_BILLING_CHECKOUT_ENABLED` (§below, set via this GitHub Actions
+workflow's build step) precisely because they look alike and do related
+things — they are configured in two completely different places, by two
+different people/processes, and this workflow has no path to the
+server-only one at all. Setting only the `VITE_` one (as this workflow's
+own `production` environment variable allows) changes what the *buttons*
+do; it has no effect on what the *server* will accept. Forgetting to also
+set `BILLING_CHECKOUT_ENABLED` on the Worker is not a deploy failure this
+workflow will catch — confirm it directly (Cloudflare dashboard, or
+`GET /api/billing/status` while authenticated, which does not reveal the
+flag's value but a disabled checkout attempt returning 503 instead of a
+redirect URL is the actual proof) before relying on checkout being live.
+
 ## 6. How deployment is triggered
 
 **Automatically:** every time `.github/workflows/ci.yml` ("QuranRoots CI")
