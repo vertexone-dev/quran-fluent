@@ -357,9 +357,15 @@ test.describe("settings", () => {
 
       // The reader renders no transliteration row at all, enabled or not
       // -- no fabricated content, and no repeated "unavailable" message
-      // either.
+      // either. Scoped to the Ayah cards themselves (each has
+      // id="ayah-{surah}-{ayah}" -- see AyahCard.tsx), not the whole page:
+      // /quran's own static copy legitimately mentions "transliteration"
+      // twice (the page intro and the vocabulary section intro, both
+      // pre-existing and unrelated to AyahCard), so a page-wide search
+      // would always find matches that have nothing to do with what this
+      // assertion is actually checking.
       await page.goto("/quran");
-      await expect(page.getByText(/[Tt]ransliteration/)).toHaveCount(0);
+      await expect(page.locator('[id^="ayah-"]').getByText(/[Tt]ransliteration/)).toHaveCount(0);
 
       // No regression to the independently saved translation preference:
       // switching it to Kazimirski must keep working, and must not affect
