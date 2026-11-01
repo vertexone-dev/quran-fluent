@@ -3,11 +3,13 @@ import type { Locale } from "@/lib/i18n";
 import {
   fetchKazimirskiRenderForSurah,
   KAZIMIRSKI_EDITION_ID,
+  KAZIMIRSKI_TRANSLATOR_NAME,
   resolveApprovedFrenchSource,
 } from "@/lib/kazimirski";
 import {
   fetchTranslationsForSurah,
   PICKTHALL_EDITION_ID,
+  PICKTHALL_TRANSLATOR_NAME,
   resolveVerifiedEnglishSource,
   type TranslationSource,
 } from "@/lib/translations";
@@ -69,6 +71,35 @@ export function resolveShowTransliteration(
   showTransliteration: boolean | null | undefined,
 ): boolean {
   return showTransliteration ?? true;
+}
+
+/** Which locale-file key (src/locales/{en,fr}/quran.ts's
+ * `reader.attribution.details`) holds the real, source-specific
+ * attribution text for a given translator. */
+export type TranslationAttributionKey = "pickthall" | "kazimirski";
+
+/**
+ * Resolves `ayah.translationSource.translator` (always the real,
+ * governed source's name, independent of interface locale -- see
+ * resolvePreferredTranslationLocale above) to the attribution text that
+ * actually describes it. This is the one place that mapping is made, so
+ * the reader's attribution popover can never show one translator's
+ * details under another's name -- the bug this function replaces: the
+ * popover used to pick its details text by interface locale, which was
+ * only ever correct before preferred_translation could diverge from
+ * locale.
+ *
+ * Returns null for anything else (no third governed source exists yet)
+ * so a caller can choose not to render attribution details at all for an
+ * unrecognized translator, rather than guessing or showing stale/wrong
+ * text.
+ */
+export function resolveTranslationAttributionKey(
+  translator: string,
+): TranslationAttributionKey | null {
+  if (translator === PICKTHALL_TRANSLATOR_NAME) return "pickthall";
+  if (translator === KAZIMIRSKI_TRANSLATOR_NAME) return "kazimirski";
+  return null;
 }
 
 /**

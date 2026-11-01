@@ -72,8 +72,18 @@ export const quran: typeof EnQuran = {
     attribution: {
       label: "Traducteur : {translator}",
       detailsAriaLabel: "Détails de la source de traduction",
-      details:
-        "Albin de Kazimirski Biberstein — Le Koran, Charpentier, édition de 1869 (traduction publiée pour la première fois en 1840). Domaine public. Traduction historique : orthographe, ponctuation et choix de vocabulaire de 1869 préservés sans modernisation. La correspondance entre le découpage des versets de Kazimirski et la numérotation canonique actuelle a fait l'objet d'une revue humaine dédiée ; une revue distincte portant sur la qualité de la traduction elle-même reste ouverte.",
+      // Classé par traducteur (voir resolveTranslationAttributionKey dans
+      // src/lib/quran.ts), pas par langue de l'interface -- la préférence
+      // de traduction peut différer de la langue de l'interface (par
+      // exemple Pickthall lu sous cette interface française), donc la
+      // fenêtre contextuelle doit choisir son texte selon la source
+      // réellement active, jamais selon la langue de l'interface.
+      details: {
+        pickthall:
+          "Marmaduke Pickthall — édition numérique Project Gutenberg eBook n° 16955. Domaine public aux États-Unis. Non présentée comme une reproduction exacte de l'édition originale de 1930.",
+        kazimirski:
+          "Albin de Kazimirski Biberstein — Le Koran, Charpentier, édition de 1869 (traduction publiée pour la première fois en 1840). Domaine public. Traduction historique : orthographe, ponctuation et choix de vocabulaire de 1869 préservés sans modernisation. La correspondance entre le découpage des versets de Kazimirski et la numérotation canonique actuelle a fait l'objet d'une revue humaine dédiée ; une revue distincte portant sur la qualité de la traduction elle-même reste ouverte.",
+      },
     },
   },
   audio: {

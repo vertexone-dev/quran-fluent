@@ -1,8 +1,12 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-import { resolvePreferredTranslationLocale, resolveShowTransliteration } from "./quran";
-import { KAZIMIRSKI_EDITION_ID } from "./kazimirski";
-import { PICKTHALL_EDITION_ID } from "./translations";
+import {
+  resolvePreferredTranslationLocale,
+  resolveShowTransliteration,
+  resolveTranslationAttributionKey,
+} from "./quran";
+import { KAZIMIRSKI_EDITION_ID, KAZIMIRSKI_TRANSLATOR_NAME } from "./kazimirski";
+import { PICKTHALL_EDITION_ID, PICKTHALL_TRANSLATOR_NAME } from "./translations";
 
 // ---------------------------------------------------------------------------
 // resolvePreferredTranslationLocale -- pure, no network, no mocking needed.
@@ -211,5 +215,25 @@ describe("fetchAyahsWithTranslations", () => {
     });
     const result = await fetchAyahsWithTranslations(1, "en", undefined, "some_unknown_value");
     expect(result[0]!.translationSource?.translator).toBe("Marmaduke Pickthall");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// resolveTranslationAttributionKey -- pure, no network, no mocking needed.
+// ---------------------------------------------------------------------------
+describe("resolveTranslationAttributionKey", () => {
+  test("Pickthall's exact translator name resolves to the pickthall key", () => {
+    expect(resolveTranslationAttributionKey(PICKTHALL_TRANSLATOR_NAME)).toBe("pickthall");
+  });
+
+  test("Kazimirski's exact translator name resolves to the kazimirski key", () => {
+    expect(resolveTranslationAttributionKey(KAZIMIRSKI_TRANSLATOR_NAME)).toBe("kazimirski");
+  });
+
+  // No third governed source exists yet -- an unrecognized name must never
+  // be guessed at or mapped to either real translator's attribution text.
+  test("an unrecognized translator resolves to null, never a guessed key", () => {
+    expect(resolveTranslationAttributionKey("Muhammad Hamidullah")).toBeNull();
+    expect(resolveTranslationAttributionKey("")).toBeNull();
   });
 });

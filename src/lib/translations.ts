@@ -18,6 +18,12 @@ export type TranslationSource = {
  * duplicating it and risking drift from the filter below. */
 export const PICKTHALL_EDITION_ID = "pickthall-gutenberg-16955";
 
+/** Exported for the same reason as PICKTHALL_EDITION_ID above -- callers
+ * that need to recognize this exact translator (e.g. the attribution-text
+ * resolution in src/lib/quran.ts) share this literal instead of
+ * duplicating it and risking drift from the filter below. */
+export const PICKTHALL_TRANSLATOR_NAME = "Marmaduke Pickthall";
+
 let cachedEnglishSource: Promise<TranslationSource | null> | null = null;
 
 /**
@@ -39,7 +45,7 @@ export function resolveVerifiedEnglishSource(): Promise<TranslationSource | null
         .select("id, translator")
         .eq("content_type", "translation")
         .eq("language", "en")
-        .eq("translator", "Marmaduke Pickthall")
+        .eq("translator", PICKTHALL_TRANSLATOR_NAME)
         .eq("edition_identifier", PICKTHALL_EDITION_ID)
         .eq("verification_status", "verified")
         .maybeSingle();
