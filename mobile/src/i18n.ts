@@ -33,8 +33,11 @@ const dictionaries = {
     home: {
       greeting: "Welcome back",
       continueReading: "Continue Reading",
+      startReading: "Start Reading",
+      continueLearning: "Continue Learning",
       startLearning: "Start Learning",
       yourProgress: "Your Progress",
+      explore: "Explore",
     },
     reader: {
       surahs: "Surahs",
@@ -132,8 +135,11 @@ const dictionaries = {
     home: {
       greeting: "Bon retour",
       continueReading: "Continuer la lecture",
+      startReading: "Commencer la lecture",
+      continueLearning: "Continuer l'apprentissage",
       startLearning: "Commencer à apprendre",
       yourProgress: "Votre progression",
+      explore: "Explorer",
     },
     reader: {
       surahs: "Sourates",

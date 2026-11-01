@@ -14,6 +14,6 @@ export default defineConfig({
     },
   },
   test: {
-    include: ["mobile/scripts/**/*.test.ts"],
+    include: ["mobile/scripts/**/*.test.ts", "mobile/src/**/*.test.ts"],
   },
 });

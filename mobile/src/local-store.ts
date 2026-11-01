@@ -12,6 +12,7 @@ const KEYS = {
   locale: "qr.settings.locale",
   theme: "qr.settings.theme",
   textSize: "qr.settings.textSize",
+  lastReadSurah: "qr.reading.lastSurah",
 } as const;
 
 export type ThemePreference = "light" | "dark" | "system";
@@ -74,4 +75,16 @@ export function getStoredTextSize(): TextSize {
 
 export function setStoredTextSize(size: TextSize): void {
   writeJson(KEYS.textSize, size);
+}
+
+/** Surah-level only -- the Reading screen has no per-ayah scroll-position
+ * tracking, so recording a specific ayah here would be fabricated, not
+ * observed. See mobile/src/home-dashboard.ts for how the Home Dashboard's
+ * Continue Reading card uses this. */
+export function getLastReadSurah(): number | null {
+  return readJson<number | null>(KEYS.lastReadSurah, null);
+}
+
+export function setLastReadSurah(surahNumber: number): void {
+  writeJson(KEYS.lastReadSurah, surahNumber);
 }
