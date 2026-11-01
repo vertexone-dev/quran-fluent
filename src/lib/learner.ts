@@ -1,5 +1,38 @@
 import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * Every consumer of `["learner", user.id]` (AyahReader, AyahPlayButton,
+ * Dashboard, Settings, Progress, the learning plan) must use this exact
+ * same `staleTime`, or the shared cache entry behaves inconsistently
+ * depending on which observer happens to mount first.
+ *
+ * Root-caused for CI #163: AyahReader and AyahPlayButton both query this
+ * identical key, but AyahPlayButton only exists once the (independent)
+ * `ayahs` query resolves and mounts the ayah list -- by then, AyahReader's
+ * own earlier-mounted observer has frequently already settled this query.
+ * With the default `staleTime: 0`, settled-but-still-fresh data is
+ * immediately "stale" to a newly-subscribing observer, so AyahPlayButton's
+ * mount triggered its own redundant background refetch of data that had
+ * already arrived correctly moments before (confirmed live via a traced
+ * repro: fetchLearnerSnapshot called twice, once from each component,
+ * seconds apart). The learner's resolved reciter/translation preference
+ * was never actually wrong in that window -- the cache already held the
+ * real, correct value -- but the pointless second round-trip is exactly
+ * what made 46-audio-preferred-reciter.spec.ts's "still loading" assertion
+ * racy: whether that assertion ever observes the loading state depends on
+ * which of the two identically-keyed queries happens to resolve first.
+ *
+ * 10s comfortably covers that intra-page-load race (measured well under
+ * 2s between the two mounts) without meaningfully risking stale data for
+ * real use: the other known mutation that changes this data outside of
+ * Settings' own save flow (daily.tsx's touchStreak, via logStudySession)
+ * explicitly invalidates `["learner", user.id]` once the write lands, the
+ * same way Settings' own save flow does
+ * (`queryClient.invalidateQueries({ queryKey: ["learner", user.id] })`),
+ * so both mutation paths force a fresh fetch regardless of staleTime.
+ */
+export const LEARNER_SNAPSHOT_STALE_TIME_MS = 10_000;
+
 export type ArabicLevel =
   "complete_beginner" | "knows_alphabet" | "reads_slowly" | "reads_quran" | "intermediate";
 

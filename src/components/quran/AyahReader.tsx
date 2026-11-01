@@ -16,7 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import { fetchLearnerSnapshot } from "@/lib/learner";
+import { fetchLearnerSnapshot, LEARNER_SNAPSHOT_STALE_TIME_MS } from "@/lib/learner";
 import {
   fetchAyahsWithTranslations,
   fetchBismillahText,
@@ -89,6 +89,7 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
     queryKey: ["learner", user?.id],
     queryFn: () => fetchLearnerSnapshot(user!.id),
     enabled: Boolean(user?.id),
+    staleTime: LEARNER_SNAPSHOT_STALE_TIME_MS,
   });
   const preferredTranslation = learnerData?.preferences?.preferred_translation ?? null;
 

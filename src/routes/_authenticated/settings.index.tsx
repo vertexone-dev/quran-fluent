@@ -20,7 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useTheme, type ThemeMode } from "@/lib/theme";
 import { useI18n, LOCALE_LABELS, SUPPORTED_LOCALES, type Locale } from "@/lib/i18n";
-import { fetchLearnerSnapshot } from "@/lib/learner";
+import { fetchLearnerSnapshot, LEARNER_SNAPSHOT_STALE_TIME_MS } from "@/lib/learner";
 import { KAZIMIRSKI_EDITION_ID } from "@/lib/kazimirski";
 import { resolvePreferredTranslationLocale, resolveShowTransliteration } from "@/lib/quran";
 import { PICKTHALL_EDITION_ID } from "@/lib/translations";
@@ -88,6 +88,7 @@ function Settings() {
     // and from React Query's normal invalidation after Save.
     retry: 1,
     refetchOnReconnect: false,
+    staleTime: LEARNER_SNAPSHOT_STALE_TIME_MS,
   });
 
   // Read inside the data-triggered effect below instead of the reactive

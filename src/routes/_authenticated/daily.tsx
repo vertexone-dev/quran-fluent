@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { Check, ChevronLeft, Clock, X } from "lucide-react";
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/daily")({
 function DailyStudy() {
   const { user } = useAuth();
   const { t, d, locale } = useI18n();
+  const queryClient = useQueryClient();
   const copy = d.learning.daily;
 
   const [items, setItems] = useState<DailyStudyItem[]>([]);
@@ -113,12 +115,18 @@ function DailyStudy() {
 
   // Guarded by a ref: the effect used to depend on `elapsed`, which ticks every
   // second, so a finished session inserted a study_sessions row per second.
+  // logStudySession() also touches the streak shown by the shared
+  // ["learner", user.id] query (see LEARNER_SNAPSHOT_STALE_TIME_MS in
+  // learner.ts), so invalidate it once the write actually lands, the same
+  // way Settings' save flow does.
   useEffect(() => {
     if (!finished || !learnerId || loggedRef.current) return;
     loggedRef.current = true;
     const minutes = Math.max(1, Math.round(elapsed / 60));
-    void logStudySession(learnerId, "daily", minutes);
-  }, [finished, learnerId, elapsed]);
+    void logStudySession(learnerId, "daily", minutes).then(() =>
+      queryClient.invalidateQueries({ queryKey: ["learner", learnerId] }),
+    );
+  }, [finished, learnerId, elapsed, queryClient]);
 
   if (!user) return null;
 

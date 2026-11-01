@@ -21,7 +21,11 @@ import { ProgressRing } from "@/components/common/ProgressRing";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { findLevel1EntryPoint } from "@/lib/curriculum";
-import { fetchLearnerSnapshot, resolveGreetingName } from "@/lib/learner";
+import {
+  fetchLearnerSnapshot,
+  LEARNER_SNAPSHOT_STALE_TIME_MS,
+  resolveGreetingName,
+} from "@/lib/learner";
 import { fetchLearningPath, nextStep } from "@/lib/placement";
 import { countDueReviews, getDailyStats, getWeakAreas, WEAK_AREA_LABEL_KEYS } from "@/lib/study";
 import { fetchBookmarks } from "@/lib/bookmarks";
@@ -78,6 +82,7 @@ function Dashboard() {
     queryKey: ["learner", user?.id],
     queryFn: () => fetchLearnerSnapshot(user!.id),
     enabled: Boolean(user?.id),
+    staleTime: LEARNER_SNAPSHOT_STALE_TIME_MS,
   });
 
   const { data: path } = useQuery({
