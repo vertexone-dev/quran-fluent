@@ -55,20 +55,24 @@ test.describe("Reading View", () => {
     await page.locator(".list-row", { hasText: "Al-Fatiha" }).click();
     await expect(page.locator("h1")).toHaveText("Al-Fatiha");
 
-    // Arabic tab is selected by default.
+    // Arabic is always shown (Phase 2A: translation selection adds a
+    // translation alongside it rather than replacing it), and "Arabic
+    // only" is the default selection.
     await expect(page.locator(".quran-text").first()).toContainText("بِسْمِ");
 
-    await page.locator(".chip", { hasText: "English" }).click();
-    await expect(page.locator(".card").first()).toContainText(/In the name of Allah/i);
+    await page.locator(".seg", { hasText: "English" }).click();
+    await expect(page.locator(".verse-card").first()).toContainText(/In the name of Allah/i);
+    // Arabic remains visible alongside the English translation.
+    await expect(page.locator(".quran-text").first()).toContainText("بِسْمِ");
 
-    await page.locator(".chip", { hasText: "French" }).click();
-    await expect(page.locator(".card").first()).toContainText(/Dieu/);
+    await page.locator(".seg", { hasText: "French" }).click();
+    await expect(page.locator(".verse-card").first()).toContainText(/Dieu/);
   });
 
   test("every ayah in Al-Fatiha renders (no silent gaps)", async ({ page }) => {
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();
     await page.locator(".list-row", { hasText: "Al-Fatiha" }).click();
-    await expect(page.locator(".card")).toHaveCount(7);
+    await expect(page.locator(".verse-card")).toHaveCount(7);
   });
 });
 

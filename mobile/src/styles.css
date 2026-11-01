@@ -813,3 +813,140 @@ html.dark .hero-ar {
 .tile:active:not(:disabled) {
   transform: scale(0.97);
 }
+
+/* --- Quran Reader (Phase 2A, Emergent UI integration) ---------------------
+ * Adapted from the approved Emergent "Stage B" reference's prototype.css
+ * (src/qr/screens/ReaderScreen.tsx). Scoped to
+ * mobile/src/screens/ReadingScreen.tsx only. `.icon-btn`/`.icon-btn-bordered`
+ * are generic enough to reuse elsewhere later, but land here first since
+ * this is their first real consumer (the font-size stepper). */
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--primary);
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+.icon-btn:hover:not(:disabled) {
+  background: var(--accent);
+}
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.icon-btn-bordered {
+  border-color: var(--border);
+  background: var(--card);
+}
+
+/* Sticky surah header + progress bar. Margins cancel exactly .screen's own
+ * 16px/safe-area padding (mobile/src/styles.css's .screen rule) so this
+ * reaches the screen's true edges instead of floating inset. */
+.reader-sticky {
+  position: sticky;
+  top: calc(-16px - env(safe-area-inset-top, 0px));
+  z-index: 5;
+  margin: calc(-16px - env(safe-area-inset-top, 0px)) -16px 14px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px;
+  background: color-mix(in oklab, var(--background) 90%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.reader-sticky .appbar {
+  margin-bottom: 10px;
+}
+.reader-ar-title {
+  font-size: 1.45rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+/* Translation + font-size controls card. */
+.reader-controls .segmented {
+  display: flex;
+  width: 100%;
+}
+.reader-controls .seg {
+  flex: 1;
+}
+.control-label {
+  font-weight: 700;
+  color: var(--muted-foreground);
+  margin-bottom: 8px;
+}
+.font-size-value {
+  min-width: 44px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* Audio bar: always disabled on mobile (no bundled reciter audio yet --
+ * this is never wired to real playback, unlike the web app's AyahPlayButton). */
+.audio-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+  background: var(--muted);
+  opacity: 0.85;
+}
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.audio-play {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border);
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+}
+
+/* Per-ayah card. */
+.ayah-marker {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gold);
+  border: 1.5px solid color-mix(in oklab, var(--gold) 60%, transparent);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 3px var(--card), inset 0 0 0 4px color-mix(in oklab, var(--gold) 30%, transparent);
+}
+.ayah-arabic {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 10px 0 14px;
+  transition: font-size 0.2s ease;
+}
+.ayah-arabic .quran-text {
+  color: var(--primary);
+  line-height: 1.6;
+}
