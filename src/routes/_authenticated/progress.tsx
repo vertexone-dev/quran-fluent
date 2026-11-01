@@ -18,7 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import { fetchLearnerSnapshot } from "@/lib/learner";
+import { fetchLearnerSnapshot, LEARNER_SNAPSHOT_STALE_TIME_MS } from "@/lib/learner";
 import { getWeakAreas, getDailyStats } from "@/lib/study";
 import { getVocabularyStats, getWeeklyStudyMinutes } from "@/lib/vocabulary";
 import { cn } from "@/lib/utils";
@@ -55,6 +55,7 @@ function ProgressPage() {
     queryKey: ["learner", user?.id],
     queryFn: () => fetchLearnerSnapshot(user!.id),
     enabled: Boolean(user),
+    staleTime: LEARNER_SNAPSHOT_STALE_TIME_MS,
   });
 
   const { data: weakAreas } = useQuery({
