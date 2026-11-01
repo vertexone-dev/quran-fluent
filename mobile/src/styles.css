@@ -629,3 +629,187 @@ button {
   color: var(--primary);
   box-shadow: var(--shadow-soft);
 }
+
+/* --- Home Dashboard (Phase 1, Emergent UI integration) -------------------
+ * Adapted from the approved Emergent "Stage B" reference's prototype.css.
+ * Scoped to mobile/src/screens/HomeScreen.tsx only -- none of these class
+ * names existed before this phase, and none of them touch the app shell,
+ * tab bar, or app bar rules used by every other screen. */
+
+.stagger > * {
+  animation: screen-in 0.4s ease both;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.stagger > *:nth-child(n + 5) {
+  animation-delay: 160ms;
+}
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.tagline {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 20px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.row-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.small {
+  font-size: 0.8rem;
+}
+
+.card-button {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  display: block;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
+}
+.card-button:active {
+  transform: scale(0.985);
+}
+
+/* Continue Reading hero card */
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border: none;
+  border-radius: calc(var(--radius) + 6px);
+  padding: 20px;
+  text-align: left;
+  font: inherit;
+  background: color-mix(in oklab, var(--primary) 82%, black);
+  color: var(--primary-foreground);
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.hero-card:active {
+  transform: scale(0.985);
+}
+html.dark .hero-card {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+.hero-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image: radial-gradient(circle at 100% 0%, var(--gold) 0 2px, transparent 3px),
+    repeating-conic-gradient(from 45deg at 90% 10%, var(--gold) 0 8deg, transparent 8deg 30deg);
+  mask-image: radial-gradient(circle at 92% 8%, black 0, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle at 92% 8%, black 0, transparent 70%);
+}
+.hero-top,
+.hero-body {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.hero-body {
+  margin: 16px 0 16px;
+  align-items: flex-end;
+}
+.hero-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+html:not(.dark) .hero-label {
+  color: oklch(0.82 0.09 82);
+}
+.hero-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+.hero-sub {
+  font-size: 0.82rem;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+.hero-ar {
+  font-size: 2rem;
+  line-height: 1.2;
+  color: oklch(0.82 0.09 82);
+}
+html.dark .hero-ar {
+  color: var(--gold);
+}
+
+/* Continue Learning card */
+.level-medallion {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--gold) 35%, transparent);
+}
+
+/* Explore tiles: Home-only, additive on top of the existing .tile rule
+ * (mobile/src/screens/HomeScreen.tsx is still the only user of .tile). */
+.tile {
+  min-height: 116px;
+  gap: 6px;
+  transition: transform 0.15s ease;
+}
+.tile:active:not(:disabled) {
+  transform: scale(0.97);
+}

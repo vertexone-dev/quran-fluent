@@ -12,6 +12,7 @@
     "test:e2e": "cd .. && npx playwright test --config mobile/playwright.config.ts"
   },
   "dependencies": {
+    "lucide-react": "^0.544.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "sql.js": "^1.15.0"

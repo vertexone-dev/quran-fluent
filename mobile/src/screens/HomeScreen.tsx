@@ -1,12 +1,21 @@
+import { BookOpen, Brain, ChevronRight, GraduationCap, PenLine } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
-import { listCourses, listLevels, listModules, listLessons } from "../db";
+import { listCourses, listLevels, listModules, listLessons, listSurahs } from "../db";
+import { getLastReadSurah } from "../local-store";
+import { pickReadingCardSurah } from "../home-dashboard";
+import { SectionTitle } from "../components/ui";
 import type { Route } from "../navigation";
 
-/** Mockup panel 2: Home. "Continue Learning" links to the real first lesson
- * of the real first level/module (no fabricated progress numbers -- Phase 1
- * keeps lesson-player position in-memory only, so there is no persisted
- * "resume where you left off" state to show here yet). */
+/** Home Dashboard, Phase 1 of the Emergent UI integration. Reuses the real
+ * curriculum/content queries from ../db (same source as before this phase)
+ * -- nothing here is mock data. "Continue Learning" has no persisted
+ * progress to show yet (lesson-player position is in-memory only, see
+ * LessonPlayerScreen.tsx), so it always links to the real first lesson
+ * rather than inventing a completion percentage. "Continue Reading" is
+ * genuinely stateful: ReadingScreen.tsx now records the last surah opened
+ * (surah-level only, see local-store.ts), and this card reflects that real
+ * history or an honest "Start Reading" empty state otherwise. */
 export function HomeScreen({ onNavigate }: { onNavigate: (route: Route) => void }) {
   const { d, locale } = useI18n();
   const { db } = useDb();
@@ -25,8 +34,13 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: Route) => void 
       )
     : 0;
 
+  const { surah: readingCardSurah, isContinuing } = pickReadingCardSurah(
+    listSurahs(db),
+    getLastReadSurah(),
+  );
+
   return (
-    <div>
+    <div className="stagger">
       <div className="appbar">
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <img src="/quranroots-logo.png" alt="" width={28} height={28} style={{ height: 28 }} />
@@ -43,47 +57,71 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: Route) => void 
         </button>
       </div>
 
-      {firstLevel && firstLesson && (
+      <p className="eyebrow">{d.home.greeting}</p>
+      <p className="tagline">{d.brand.tagline}</p>
+
+      {readingCardSurah && (
         <button
-          className="card"
-          style={{
-            background: "var(--primary)",
-            color: "var(--primary-foreground)",
-            border: "none",
-            width: "100%",
-            textAlign: "left",
-            cursor: "pointer",
-            marginBottom: 16,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-          onClick={() => onNavigate({ screen: "lesson-player", lessonId: firstLesson.id })}
           type="button"
+          className="hero-card"
+          onClick={() => onNavigate({ screen: "reading", surahNumber: readingCardSurah.number })}
         >
-          <div>
-            <div style={{ fontSize: "0.78rem", opacity: 0.85, marginBottom: 4 }}>
-              {d.home.startLearning}
-            </div>
-            <div style={{ fontWeight: 700 }}>
-              {d.lessons.level} {firstLevel.number} · {firstLevel.title}
-            </div>
-            <div style={{ fontSize: "0.78rem", opacity: 0.85, marginTop: 4 }}>
-              {totalLessonsInLevel} {d.lessons.title.toLowerCase()}
-            </div>
+          <div className="hero-pattern" aria-hidden="true" />
+          <div className="hero-top">
+            <span className="hero-label">
+              {isContinuing ? d.home.continueReading : d.home.startReading}
+            </span>
+            <ChevronRight size={20} />
           </div>
-          <span style={{ fontSize: "1.3rem" }}>→</span>
+          <div className="hero-body">
+            <div>
+              <div className="hero-title">{readingCardSurah.name_en}</div>
+              <div className="hero-sub">
+                {readingCardSurah.ayah_count} {locale === "fr" ? "versets" : "ayahs"}
+              </div>
+            </div>
+            <div className="quran-text hero-ar">{readingCardSurah.name_ar}</div>
+          </div>
         </button>
       )}
 
+      {/* Always "Start Learning", never "Continue Learning": lesson-player
+          position is in-memory only (see LessonPlayerScreen.tsx), so there
+          is no real signal -- unlike the reading card's isContinuing above
+          -- that would make "continuing" a true statement here. */}
+      <SectionTitle>{d.home.startLearning}</SectionTitle>
+      {firstLevel && firstLesson ? (
+        <button
+          type="button"
+          className="card card-button"
+          onClick={() => onNavigate({ screen: "lesson-player", lessonId: firstLesson.id })}
+        >
+          <div className="row-between">
+            <div className="row" style={{ gap: 12 }}>
+              <span className="level-medallion">{firstLevel.number}</span>
+              <div>
+                <div className="row-title">{firstLesson.title}</div>
+                <div className="text-muted small">
+                  {d.lessons.level} {firstLevel.number} · {totalLessonsInLevel}{" "}
+                  {d.lessons.title.toLowerCase()}
+                </div>
+              </div>
+            </div>
+            <ChevronRight size={20} className="text-muted" />
+          </div>
+        </button>
+      ) : (
+        <div className="card text-muted">{d.home.startLearning}</div>
+      )}
+
+      <SectionTitle>{d.home.explore}</SectionTitle>
       <div className="tile-grid">
         <button
           className="tile tile-support"
           onClick={() => onNavigate({ screen: "surah-list" })}
           type="button"
         >
-          <span className="tile-icon">📖</span>
+          <BookOpen size={22} />
           <span className="tile-title">{d.nav.quran}</span>
           <span className="tile-subtitle">{d.reader.tileSubtitle}</span>
         </button>
@@ -92,7 +130,7 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: Route) => void 
           onClick={() => onNavigate({ screen: "lessons" })}
           type="button"
         >
-          <span className="tile-icon">🎓</span>
+          <GraduationCap size={22} />
           <span className="tile-title">{d.nav.lessons}</span>
           <span className="tile-subtitle">{course?.title ?? ""}</span>
         </button>
@@ -101,43 +139,16 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: Route) => void 
           onClick={() => onNavigate({ screen: "practice" })}
           type="button"
         >
-          <span className="tile-icon">✎</span>
+          <PenLine size={22} />
           <span className="tile-title">{d.nav.practice}</span>
           <span className="tile-subtitle">{d.practice.subtitle}</span>
         </button>
         <button className="tile tile-rose" disabled type="button">
-          <span className="tile-icon">🧠</span>
+          <Brain size={22} />
           <span className="tile-title">{d.more.memorization}</span>
           <span className="tile-subtitle">{d.more.comingSoon}</span>
         </button>
       </div>
-
-      <button
-        className="card"
-        style={{
-          width: "100%",
-          textAlign: "left",
-          cursor: "pointer",
-          marginTop: 16,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
-        onClick={() => onNavigate({ screen: "offline-access" })}
-        type="button"
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ color: "var(--primary)", fontSize: "1.2rem" }}>✓</span>
-          <div>
-            <div style={{ fontWeight: 700 }}>{d.offline.title}</div>
-            <div className="text-muted" style={{ fontSize: "0.8rem" }}>
-              {d.offline.upToDate}
-            </div>
-          </div>
-        </div>
-        <span>→</span>
-      </button>
     </div>
   );
 }

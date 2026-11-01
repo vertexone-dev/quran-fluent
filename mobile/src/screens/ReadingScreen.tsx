@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { getAyahsWithEnglish, getKazimirskiJoinRows, listSurahs } from "../db";
 import { buildKazimirskiRenderMap } from "../kazimirski-render";
+import { setLastReadSurah } from "../local-store";
 import { AppBar } from "../AppBar";
 import type { Route } from "../navigation";
 
@@ -29,6 +30,12 @@ export function ReadingScreen({
   const { d, locale } = useI18n();
   const { db } = useDb();
   const [tab, setTab] = useState<Tab>("ar");
+
+  // Surah-level only -- feeds the Home Dashboard's Continue Reading card
+  // (mobile/src/home-dashboard.ts). No per-ayah position is tracked.
+  useEffect(() => {
+    setLastReadSurah(surahNumber);
+  }, [surahNumber]);
 
   const surah = useMemo(
     () => listSurahs(db).find((s) => s.number === surahNumber),
