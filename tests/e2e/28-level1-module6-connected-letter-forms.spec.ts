@@ -264,7 +264,30 @@ test.describe("Level 1 Module 6 — Connected Letter Forms", () => {
     await page.getByRole("button", { name: "Next" }).click();
     await page.getByRole("button", { name: "Next" }).click();
 
+    // Guarantee the second "Next" click's position write has actually
+    // landed before reloading -- persistPosition() enqueues its Supabase
+    // write without the caller awaiting it (see createSerialLatestQueue
+    // in src/lib/curriculum.ts), so page.reload() can otherwise abort the
+    // still-in-flight write, exactly the race
+    // 48-lesson-position-race.spec.ts already proves is unsafe to do
+    // unguarded.
+    await expect
+      .poll(async () => {
+        const { data } = await client
+          .from("user_lesson_progress")
+          .select("last_section_index")
+          .eq("user_id", userId)
+          .eq("lesson_id", lesson2.id)
+          .maybeSingle();
+        return data?.last_section_index;
+      })
+      .toBe(2);
+
     await page.reload();
+    // Verifies the resumed lesson actually opens at the correct step in
+    // the UI, not just that the DB row says so.
+    await expect(page.getByText(/Step 3 of \d+/)).toBeVisible();
+
     const { data: progress } = await client
       .from("user_lesson_progress")
       .select("status, last_section_index")

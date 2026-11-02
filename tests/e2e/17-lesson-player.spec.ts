@@ -72,6 +72,74 @@ function waitForProgressRead(page: Page) {
  * guarded, and a failure here is reported as "unknown" rather than
  * replacing the real assertion error.
  */
+/**
+ * Polls the authoritative persisted row directly (bypassing the page)
+ * until last_section_index reaches `expectedIndex`. persistPosition() in
+ * lesson.$lessonId.tsx (enqueued via createSerialLatestQueue, see
+ * src/lib/curriculum.ts) is never awaited by its caller, so the instant a
+ * "Next" click's own `await .click()` resolves, that write is still just
+ * an in-flight network request -- nothing in the UI signals when it
+ * actually lands. Navigating away (goto/reload) before it does aborts the
+ * request outright, exactly the race 48-lesson-position-race.spec.ts's
+ * "refreshing after the position write has settled..." test already
+ * proves is unsafe to do unguarded.
+ */
+async function waitForPersistedStepIndex(lessonId: string, expectedIndex: number): Promise<void> {
+  const { client, userId } = await createTestUserClient();
+  await expect
+    .poll(async () => {
+      const { data } = await client
+        .from("user_lesson_progress")
+        .select("last_section_index")
+        .eq("user_id", userId)
+        .eq("lesson_id", lessonId)
+        .maybeSingle();
+      return data?.last_section_index;
+    })
+    .toBe(expectedIndex);
+}
+
+/**
+ * Independently establishes (and verifies) a completed-lesson state via a
+ * direct write to the authoritative table, mirroring the exact row shape
+ * upsertLessonProgressCompleted (src/lib/curriculum.ts) itself writes --
+ * rather than relying on the serial lifecycle block below having already
+ * finished the lesson through the UI. The French-interface and mobile-
+ * viewport tests only need a completed lesson to exist; they don't re-
+ * prove how completion is reached, so this gives them that end state
+ * without an execution-order dependency on the lifecycle block.
+ */
+async function ensureLessonCompleted(lessonId: string): Promise<void> {
+  const { client, userId } = await createTestUserClient();
+  const now = new Date().toISOString();
+  const { error } = await client.from("user_lesson_progress").upsert(
+    {
+      user_id: userId,
+      lesson_id: lessonId,
+      status: "completed",
+      started_at: now,
+      completed_at: now,
+      // The placeholder lesson is exactly one section + one exercise (see
+      // this file's header comment) -- step index 1 is its final step.
+      last_section_index: 1,
+      progress_percent: 100,
+    },
+    { onConflict: "user_id,lesson_id" },
+  );
+  if (error) throw error;
+
+  const { data, error: readError } = await client
+    .from("user_lesson_progress")
+    .select("status")
+    .eq("user_id", userId)
+    .eq("lesson_id", lessonId)
+    .single();
+  if (readError) throw readError;
+  if (data.status !== "completed") {
+    throw new Error(`Expected lesson ${lessonId} to be completed, got status "${data.status}"`);
+  }
+}
+
 async function attachResumeDiagnostics(page: Page, lessonId: string): Promise<void> {
   const diagnostics: Record<string, unknown> = {};
   try {
@@ -201,6 +269,11 @@ test.describe("lesson player", () => {
       // Step 1: the exercise, attached to that section, not the section body.
       await expect(page.getByText(PLACEHOLDER_PROMPT_EN)).toBeVisible();
       await expect(page.getByText(PLACEHOLDER_SECTION_BODY_EN)).not.toBeVisible();
+
+      // Guarantees the "Next" click's position write actually landed
+      // before any later test in this serial block reloads/navigates --
+      // see waitForPersistedStepIndex.
+      await waitForPersistedStepIndex(lessonId, 1);
     });
 
     test("starting the lesson persisted an in_progress progress row", async () => {
@@ -340,13 +413,17 @@ test.describe("lesson player", () => {
   }) => {
     const lessonId = await fetchPlaceholderLessonId(request);
     const { client, userId } = await createTestUserClient();
+    // Independently established (see ensureLessonCompleted) rather than
+    // relying on the serial lifecycle block above having already
+    // finished the lesson -- this test only needs a completed lesson to
+    // exist, not to re-prove how completion is reached.
+    await ensureLessonCompleted(lessonId);
     await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
 
     try {
       await page.goto(`/lesson/${lessonId}`);
       await expect(page.locator("html")).toHaveAttribute("lang", "fr");
-      // The lesson is already completed by the serial block above — its
-      // French completion copy is real i18n content, not a guess.
+      // Its French completion copy is real i18n content, not a guess.
       await expect(page.getByText("Leçon terminée !")).toBeVisible();
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
@@ -361,6 +438,10 @@ test.describe("lesson player", () => {
       request,
     }) => {
       const lessonId = await fetchPlaceholderLessonId(request);
+      // Independently established (see ensureLessonCompleted) -- this
+      // test only needs the completion screen rendered at this viewport,
+      // not the serial lifecycle block above to have already reached it.
+      await ensureLessonCompleted(lessonId);
       await page.goto(`/lesson/${lessonId}`);
       await expect(page.getByText("Lesson complete!")).toBeVisible();
 
