@@ -65,6 +65,12 @@ const dictionaries = {
       previousVerse: "Previous verse",
       nextVerse: "Next verse",
     },
+    bookmarks: {
+      title: "Bookmarks",
+      empty: "Bookmark an ayah while reading to find it here.",
+      add: "Bookmark this ayah",
+      remove: "Remove bookmark",
+    },
     word: {
       title: "Word Details",
       root: "Root",
@@ -182,6 +188,12 @@ const dictionaries = {
       audioUnavailable: "Pas encore disponible",
       previousVerse: "Verset précédent",
       nextVerse: "Verset suivant",
+    },
+    bookmarks: {
+      title: "Signets",
+      empty: "Ajoutez un verset aux signets pendant la lecture pour le retrouver ici.",
+      add: "Ajouter ce verset aux signets",
+      remove: "Retirer des signets",
     },
     word: {
       title: "Détails du mot",
