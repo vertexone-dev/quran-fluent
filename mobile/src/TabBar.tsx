@@ -1,4 +1,11 @@
-import { BookOpen, GraduationCap, Home, MoreHorizontal, PenLine, type LucideIcon } from "lucide-react";
+import {
+  BookOpen,
+  GraduationCap,
+  Home,
+  MoreHorizontal,
+  PenLine,
+  type LucideIcon,
+} from "lucide-react";
 import { useI18n } from "./i18n";
 import type { Tab } from "./navigation";
 

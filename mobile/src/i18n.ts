@@ -83,7 +83,8 @@ const dictionaries = {
       minutes: "min",
       levelsTab: "Levels",
       categoriesTab: "Categories",
-      categoriesUnavailable: "Categories aren't part of the offline content bundle in this release.",
+      categoriesUnavailable:
+        "Categories aren't part of the offline content bundle in this release.",
     },
     player: {
       step: "Step",
@@ -200,7 +201,8 @@ const dictionaries = {
       minutes: "min",
       levelsTab: "Niveaux",
       categoriesTab: "Catégories",
-      categoriesUnavailable: "Les catégories ne font pas partie du contenu hors ligne de cette version.",
+      categoriesUnavailable:
+        "Les catégories ne font pas partie du contenu hors ligne de cette version.",
     },
     player: {
       step: "Étape",

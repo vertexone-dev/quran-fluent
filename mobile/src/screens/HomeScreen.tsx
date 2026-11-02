@@ -1,4 +1,13 @@
-import { BookOpen, Brain, ChevronRight, GraduationCap, Languages, Moon, PenLine, Sun } from "lucide-react";
+import {
+  BookOpen,
+  Brain,
+  ChevronRight,
+  GraduationCap,
+  Languages,
+  Moon,
+  PenLine,
+  Sun,
+} from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { listCourses, listLevels, listModules, listLessons, listSurahs } from "../db";
