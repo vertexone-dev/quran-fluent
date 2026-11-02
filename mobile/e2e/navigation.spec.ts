@@ -51,7 +51,7 @@ test("back steps through a multi-level drill-down one screen at a time", async (
 test("in-app back controls and browser back stay in sync (no double-pop)", async ({ page }) => {
   await page.locator(".tab-item", { hasText: "Qur'an" }).click();
   await page.locator(".list-row", { hasText: "Al-Fatiha" }).click();
-  await page.locator(".back-button").click(); // in-app back arrow
+  await page.locator('button[aria-label="Back"]').click(); // in-app back arrow
   await expect(page.locator(".appbar-title")).toHaveText("Surahs");
 
   // Browser back from here should go to Home (the tab switch), not land

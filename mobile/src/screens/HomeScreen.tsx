@@ -1,9 +1,25 @@
-import { BookOpen, Brain, ChevronRight, GraduationCap, PenLine } from "lucide-react";
+import {
+  BookOpen,
+  Brain,
+  ChevronRight,
+  GraduationCap,
+  Languages,
+  Moon,
+  PenLine,
+  Sun,
+} from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { listCourses, listLevels, listModules, listLessons, listSurahs } from "../db";
-import { getLastReadSurah } from "../local-store";
+import {
+  getLastReadSurah,
+  nextThemePreference,
+  resolveIsDark,
+  setStoredTheme,
+  type ThemePreference,
+} from "../local-store";
 import { pickReadingCardSurah } from "../home-dashboard";
+import { Logo } from "../Logo";
 import { SectionTitle } from "../components/ui";
 import type { Route } from "../navigation";
 
@@ -16,9 +32,33 @@ import type { Route } from "../navigation";
  * genuinely stateful: ReadingScreen.tsx now records the last surah opened
  * (surah-level only, see local-store.ts), and this card reflects that real
  * history or an honest "Start Reading" empty state otherwise. */
-export function HomeScreen({ onNavigate }: { onNavigate: (route: Route) => void }) {
-  const { d, locale } = useI18n();
+export function HomeScreen({
+  onNavigate,
+  theme,
+  onThemeChange,
+  prefersDark,
+}: {
+  onNavigate: (route: Route) => void;
+  theme: ThemePreference;
+  onThemeChange: (theme: ThemePreference) => void;
+  prefersDark: boolean;
+}) {
+  const { d, locale, setLocale } = useI18n();
   const { db } = useDb();
+
+  function cycleTheme() {
+    const next = nextThemePreference(theme);
+    setStoredTheme(next);
+    onThemeChange(next);
+  }
+  const isDark = resolveIsDark(theme, prefersDark);
+  const nextTheme = nextThemePreference(theme);
+  const nextThemeLabel =
+    nextTheme === "light"
+      ? d.settings.themeLight
+      : nextTheme === "dark"
+        ? d.settings.themeDark
+        : d.settings.themeSystem;
 
   const courses = listCourses(db, locale);
   const course = courses[0];
@@ -43,18 +83,28 @@ export function HomeScreen({ onNavigate }: { onNavigate: (route: Route) => void 
     <div className="stagger">
       <div className="appbar">
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img src="/quranroots-logo.png" alt="" width={28} height={28} style={{ height: 28 }} />
+          <Logo showWordmark={false} size={28} />
           <h1 className="appbar-title">{d.brand.name}</h1>
         </div>
-        <button
-          className="back-button"
-          style={{ fontSize: "1.2rem" }}
-          onClick={() => onNavigate({ screen: "settings" })}
-          type="button"
-          aria-label={d.settings.title}
-        >
-          ⚙
-        </button>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button
+            type="button"
+            className="icon-btn icon-btn-bordered lang-btn"
+            onClick={() => setLocale(locale === "en" ? "fr" : "en")}
+            aria-label={d.settings.language}
+          >
+            <Languages size={16} />
+            <span>{locale.toUpperCase()}</span>
+          </button>
+          <button
+            type="button"
+            className="icon-btn icon-btn-bordered"
+            onClick={cycleTheme}
+            aria-label={`${d.settings.theme}: ${nextThemeLabel}`}
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+        </div>
       </div>
 
       <p className="eyebrow">{d.home.greeting}</p>

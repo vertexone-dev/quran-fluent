@@ -81,6 +81,10 @@ const dictionaries = {
       module: "Module",
       lesson: "Lesson",
       minutes: "min",
+      levelsTab: "Levels",
+      categoriesTab: "Categories",
+      categoriesUnavailable:
+        "Categories aren't part of the offline content bundle in this release.",
     },
     player: {
       step: "Step",
@@ -113,6 +117,8 @@ const dictionaries = {
       theme: "Theme",
       themeLight: "Light",
       themeDark: "Dark",
+      themeSystem: "System",
+      appearance: "Appearance",
       textSizeSmall: "Small",
       textSizeMedium: "Medium",
       textSizeLarge: "Large",
@@ -193,6 +199,10 @@ const dictionaries = {
       module: "Module",
       lesson: "Leçon",
       minutes: "min",
+      levelsTab: "Niveaux",
+      categoriesTab: "Catégories",
+      categoriesUnavailable:
+        "Les catégories ne font pas partie du contenu hors ligne de cette version.",
     },
     player: {
       step: "Étape",
@@ -225,6 +235,8 @@ const dictionaries = {
       theme: "Thème",
       themeLight: "Clair",
       themeDark: "Sombre",
+      themeSystem: "Système",
+      appearance: "Apparence",
       textSizeSmall: "Petit",
       textSizeMedium: "Moyen",
       textSizeLarge: "Grand",

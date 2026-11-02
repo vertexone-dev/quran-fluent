@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ChevronRight } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { useHistoryStack } from "../HistoryContext";
@@ -90,7 +91,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
               onClick={() => openModule(m.id)}
             >
               <div style={{ fontWeight: 600 }}>{m.title}</div>
-              <span>→</span>
+              <ChevronRight size={18} className="text-muted" />
             </div>
           ))}
           {modules.length === 0 && (
@@ -113,7 +114,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
           style={{ border: "none", cursor: "pointer" }}
           onClick={() => setTab("levels")}
         >
-          Levels
+          {d.lessons.levelsTab}
         </button>
         <button
           type="button"
@@ -121,7 +122,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
           style={{ border: "none", cursor: "pointer" }}
           onClick={() => setTab("categories")}
         >
-          Categories
+          {d.lessons.categoriesTab}
         </button>
       </div>
 
@@ -164,14 +165,14 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
                     </div>
                   </div>
                 </div>
-                <span>→</span>
+                <ChevronRight size={18} className="text-muted" />
               </div>
             );
           })}
         </div>
       ) : (
         <div className="card text-muted" style={{ textAlign: "center", padding: 24 }}>
-          Categories aren't part of the offline content bundle in this release.
+          {d.lessons.categoriesUnavailable}
         </div>
       )}
     </div>

@@ -1,8 +1,11 @@
 import { useMemo, useState } from "react";
+import { Bookmark } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { listSurahs } from "../db";
 import { getFavoriteSurahs, toggleFavoriteSurah } from "../local-store";
+import { Logo } from "../Logo";
+import { Segmented } from "../components/ui";
 import type { Route } from "../navigation";
 
 type Filter = "all" | "meccan" | "medinan" | "favorites";
@@ -35,18 +38,11 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
     return true;
   });
 
-  const filters: { key: Filter; label: string }[] = [
-    { key: "all", label: d.reader.filterAll },
-    { key: "meccan", label: d.reader.filterMakki },
-    { key: "medinan", label: d.reader.filterMadani },
-    { key: "favorites", label: d.reader.favoritesOnly },
-  ];
-
   return (
     <div>
       <div className="appbar">
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img src="/quranroots-logo.png" alt="" width={24} height={24} style={{ height: 24 }} />
+          <Logo showWordmark={false} size={28} />
           <h1 className="appbar-title">{d.reader.surahs}</h1>
         </div>
         <button
@@ -66,18 +62,19 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
         style={{ marginBottom: 12 }}
       />
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
-        {filters.map((f) => (
-          <button
-            key={f.key}
-            type="button"
-            className={filter === f.key ? "chip" : "chip chip-muted"}
-            style={{ border: "none", cursor: "pointer" }}
-            onClick={() => setFilter(f.key)}
-          >
-            {f.label}
-          </button>
-        ))}
+      <div style={{ marginBottom: 12, overflowX: "auto" }}>
+        <Segmented
+          label={d.reader.surahs}
+          testId="surah-filter"
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { value: "all", label: d.reader.filterAll },
+            { value: "meccan", label: d.reader.filterMakki },
+            { value: "medinan", label: d.reader.filterMadani },
+            { value: "favorites", label: d.reader.favoritesOnly },
+          ]}
+        />
       </div>
 
       <div className="card" style={{ padding: 0 }}>
@@ -122,8 +119,8 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
                 background: "none",
                 border: "none",
                 cursor: "pointer",
+                display: "flex",
                 color: favorites.has(s.number) ? "var(--gold)" : "var(--muted-foreground)",
-                fontSize: "1.1rem",
                 flexShrink: 0,
               }}
               onClick={() => {
@@ -131,7 +128,7 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
                 forceRender((n) => n + 1);
               }}
             >
-              {favorites.has(s.number) ? "★" : "☆"}
+              <Bookmark size={18} fill={favorites.has(s.number) ? "currentColor" : "none"} />
             </button>
           </div>
         ))}

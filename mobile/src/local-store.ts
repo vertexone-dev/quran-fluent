@@ -69,6 +69,22 @@ export function setStoredTheme(theme: ThemePreference): void {
   writeJson(KEYS.theme, theme);
 }
 
+const THEME_ORDER: ThemePreference[] = ["system", "light", "dark"];
+
+/** Single source of truth for the System -> Light -> Dark -> System cycle,
+ * shared by Settings' theme row and the Home header's theme toggle so the
+ * two controls can never drift out of sync with each other. */
+export function nextThemePreference(current: ThemePreference): ThemePreference {
+  return THEME_ORDER[(THEME_ORDER.indexOf(current) + 1) % THEME_ORDER.length]!;
+}
+
+/** Same resolution App.tsx applies to the `<html class="dark">` toggle --
+ * shared so any control that needs to show the *current* light/dark state
+ * (e.g. a sun/moon icon) matches what's actually on screen. */
+export function resolveIsDark(theme: ThemePreference, prefersDark: boolean): boolean {
+  return theme === "dark" || (theme === "system" && prefersDark);
+}
+
 export function getStoredTextSize(): TextSize {
   return readJson<TextSize>(KEYS.textSize, "medium");
 }
