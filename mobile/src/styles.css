@@ -288,6 +288,7 @@ button {
 .tab-icon {
   font-size: 1.25rem;
   line-height: 1;
+  display: flex;
 }
 
 /* --- Cards / lists ------------------------------------------------------ */
@@ -848,6 +849,14 @@ html.dark .hero-ar {
 .icon-btn-bordered {
   border-color: var(--border);
   background: var(--card);
+}
+
+/* Home header's language toggle (P0 Emergent fidelity fix): widens the
+ * icon-btn to fit an "EN"/"FR" label next to the icon. */
+.lang-btn {
+  padding: 0 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 /* Sticky surah header + progress bar. Margins cancel exactly .screen's own

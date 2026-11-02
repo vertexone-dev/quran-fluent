@@ -10,6 +10,7 @@ import {
   setStoredLocale,
   getStoredTheme,
   setStoredTheme as persistTheme,
+  resolveIsDark,
   type ThemePreference,
 } from "./local-store";
 import { TabBar } from "./TabBar";
@@ -60,8 +61,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    const isDark = theme === "dark" || (theme === "system" && prefersDark);
-    document.documentElement.classList.toggle("dark", isDark);
+    document.documentElement.classList.toggle("dark", resolveIsDark(theme, prefersDark));
   }, [theme, prefersDark]);
 
   function setLocale(next: Locale) {
@@ -92,7 +92,7 @@ export function App() {
           <SplashScreen />
         ) : (
           <DbContext.Provider value={{ db, version }}>
-            <Navigator theme={theme} onThemeChange={handleThemeChange} />
+            <Navigator theme={theme} onThemeChange={handleThemeChange} prefersDark={prefersDark} />
           </DbContext.Provider>
         )}
       </HistoryProvider>
@@ -117,9 +117,11 @@ const INITIAL_STATE: AppState = { tab: "home", stack: [{ screen: "home" }] };
 function Navigator({
   theme,
   onThemeChange,
+  prefersDark,
 }: {
   theme: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
+  prefersDark: boolean;
 }) {
   const { pushFrame, goBack } = useHistoryStack();
   const [state, setState] = useState<AppState>(INITIAL_STATE);
@@ -150,7 +152,14 @@ function Navigator({
   return (
     <div className="app-shell">
       <div className="screen">
-        {route.screen === "home" && <HomeScreen onNavigate={handleNavigate} />}
+        {route.screen === "home" && (
+          <HomeScreen
+            onNavigate={handleNavigate}
+            theme={theme}
+            onThemeChange={onThemeChange}
+            prefersDark={prefersDark}
+          />
+        )}
         {route.screen === "surah-list" && <SurahListScreen onNavigate={handleNavigate} />}
         {route.screen === "reading" && (
           <ReadingScreen

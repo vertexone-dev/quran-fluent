@@ -5,6 +5,7 @@ import {
   setStoredTheme,
   getStoredTextSize,
   setStoredTextSize,
+  nextThemePreference,
   type ThemePreference,
   type TextSize,
 } from "../local-store";
@@ -28,8 +29,7 @@ export function SettingsScreen({
   const textSize = getStoredTextSize();
 
   function cycleTheme() {
-    const order: ThemePreference[] = ["system", "light", "dark"];
-    const next = order[(order.indexOf(theme) + 1) % order.length]!;
+    const next = nextThemePreference(theme);
     setStoredTheme(next);
     onThemeChange(next);
   }
@@ -41,7 +41,11 @@ export function SettingsScreen({
   }
 
   const themeLabel =
-    theme === "light" ? d.settings.themeLight : theme === "dark" ? d.settings.themeDark : "System";
+    theme === "light"
+      ? d.settings.themeLight
+      : theme === "dark"
+        ? d.settings.themeDark
+        : d.settings.themeSystem;
   const textSizeLabel =
     textSize === "small"
       ? d.settings.textSizeSmall
@@ -82,7 +86,7 @@ export function SettingsScreen({
         className="text-muted"
         style={{ fontSize: "0.78rem", textTransform: "uppercase", marginBottom: 8 }}
       >
-        Appearance
+        {d.settings.appearance}
       </h2>
       <div className="card" style={{ padding: 0 }}>
         <div className="list-row" style={{ padding: 14 }} onClick={cycleTextSize}>

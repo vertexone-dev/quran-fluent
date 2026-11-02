@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { AppBar } from "../AppBar";
@@ -41,7 +42,7 @@ export function OfflineAccessScreen({ onBack }: { onBack: () => void }) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: "1.2rem" }}>✓</span>
+          <Check size={20} />
           <div style={{ fontWeight: 700 }}>{d.offline.upToDate}</div>
         </div>
       </div>
@@ -50,7 +51,7 @@ export function OfflineAccessScreen({ onBack }: { onBack: () => void }) {
         {rows.map((row) => (
           <div key={row.label} className="list-row" style={{ padding: 14, cursor: "default" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ color: "var(--primary)" }}>✓</span>
+              <Check size={18} className="text-primary" />
               <span style={{ fontWeight: 600 }}>{row.label}</span>
             </div>
             <span className="text-muted" style={{ fontSize: "0.8rem" }}>

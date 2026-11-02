@@ -30,7 +30,7 @@ test.describe("Surah List", () => {
 
   test("Makki/Madani filter narrows the real revelation_type split", async ({ page }) => {
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();
-    await page.locator(".chip", { hasText: "Madani" }).click();
+    await page.locator(".seg", { hasText: "Madani" }).click();
     const count = await page.locator(".list-row").count();
     expect(count).toBeGreaterThan(0);
     expect(count).toBeLessThan(114);
@@ -43,7 +43,7 @@ test.describe("Surah List", () => {
 
     await page.reload();
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();
-    await page.locator(".chip", { hasText: "Favorites" }).click();
+    await page.locator(".seg", { hasText: "Favorites" }).click();
     await expect(page.locator(".list-row")).toHaveCount(1);
     await expect(page.locator(".list-row").first()).toContainText("Al-Fatiha");
   });

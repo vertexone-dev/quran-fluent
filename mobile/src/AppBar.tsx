@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ChevronLeft } from "lucide-react";
 import { useI18n } from "./i18n";
 
 export function AppBar({
@@ -13,10 +14,10 @@ export function AppBar({
   const { d } = useI18n();
   return (
     <div className="appbar">
-      <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
         {onBack && (
-          <button className="back-button" onClick={onBack} type="button" aria-label={d.common.back}>
-            ←
+          <button className="icon-btn" onClick={onBack} type="button" aria-label={d.common.back}>
+            <ChevronLeft size={22} />
           </button>
         )}
         <h1 className="appbar-title">{title}</h1>

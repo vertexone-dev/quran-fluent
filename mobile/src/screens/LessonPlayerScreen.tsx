@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { getLessonForPlayer, getAyah } from "../db";
@@ -99,9 +100,9 @@ export function LessonPlayerScreen({
   return (
     <div>
       <div className="appbar">
-        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <button className="back-button" onClick={onBack} type="button">
-            ←
+        <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+          <button className="icon-btn" onClick={onBack} type="button" aria-label={d.common.back}>
+            <ChevronLeft size={22} />
           </button>
           <h1 className="appbar-title" style={{ fontSize: "1rem" }}>
             {d.lessons.level} {lesson.level.number} · {lesson.title}
@@ -138,7 +139,7 @@ export function LessonPlayerScreen({
           onClick={() => goTo(index - 1)}
           disabled={index === 0}
         >
-          ← {d.player.previous}
+          <ChevronLeft size={16} /> {d.player.previous}
         </button>
         <button
           type="button"
@@ -147,7 +148,7 @@ export function LessonPlayerScreen({
           onClick={() => goTo(index + 1)}
           disabled={!canAdvance || index === steps.length - 1}
         >
-          {d.player.next} →
+          {d.player.next} <ChevronRight size={16} />
         </button>
       </div>
     </div>
@@ -280,7 +281,8 @@ function ExerciseView({
           className={`banner ${correct ? "banner-success" : "banner-error"}`}
           style={{ marginTop: 16 }}
         >
-          {correct ? `✓ ${d.player.correct}` : `✗ ${d.player.incorrect}`}
+          {correct ? <Check size={16} /> : <X size={16} />}
+          {correct ? d.player.correct : d.player.incorrect}
           {exercise.explanation && (
             <span style={{ fontWeight: 400, marginLeft: 6 }}>{exercise.explanation}</span>
           )}
