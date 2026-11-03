@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-import { loginAndExpect } from "./utils/auth";
+import { clickAndExpect, loginAndExpect } from "./utils/auth";
 
 /**
  * Runs in the "public" project (no stored session). Uses the shared
@@ -21,9 +21,15 @@ test.describe("auth", () => {
     await page.getByLabel("Email").fill("not-an-email");
     await page.getByLabel("Password").fill("short");
 
-    await page.getByRole("button", { name: "Log in" }).click();
-
-    await expect(page.getByText("Enter a valid email address.")).toBeVisible();
+    // Same cold-vite-dev-compile hydration-remount race /auth is already
+    // known to have (see utils/auth.ts's own doc comment): a click can
+    // land right before React replaces the node during hydration, so the
+    // click fires but no live listener ever handles it. Every other test
+    // in this file already retries through loginAndExpect; this one
+    // didn't, despite exercising the same route.
+    await clickAndExpect(page.getByRole("button", { name: "Log in" }), async () => {
+      await expect(page.getByText("Enter a valid email address.")).toBeVisible();
+    });
 
     // Client-side validation must block the request entirely.
     await expect(page).toHaveURL(/\/auth\?mode=login/);

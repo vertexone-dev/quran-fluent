@@ -140,7 +140,12 @@ test.describe("Level 1 Module 7 — First Reading Practice", () => {
       const lessons = await fetchModule7Lessons(request);
       const lesson = lessons.find((l) => l.slug === slug)!;
       await page.goto(`/lesson/${lesson.id}`);
-      await expect(page.getByRole("heading", { name: lesson.title_en })).toBeVisible();
+      // waitForHeadingResilient, not a bare expect(...).toBeVisible(): this
+      // file's own resilience helpers exist specifically because /lesson/:id
+      // can hydration-remount shortly after load; this one check, directly
+      // after page.goto, had no retry protection even though every other
+      // interaction in this file goes through these same helpers.
+      await waitForHeadingResilient(page, lesson.title_en);
     });
   }
 
