@@ -41,9 +41,19 @@ export function AyahBookmarksScreen({
               className="list-row"
               style={{ padding: "12px" }}
             >
-              <div
+              <button
+                type="button"
                 data-testid="bookmark-open"
-                style={{ minWidth: 0, flex: 1, cursor: "pointer" }}
+                style={{
+                  minWidth: 0,
+                  flex: 1,
+                  cursor: "pointer",
+                  background: "none",
+                  border: "none",
+                  color: "inherit",
+                  font: "inherit",
+                  textAlign: "left",
+                }}
                 onClick={() =>
                   onNavigate({
                     screen: "reading",
@@ -69,7 +79,7 @@ export function AyahBookmarksScreen({
                     {ayah.arabic_text}
                   </div>
                 )}
-              </div>
+              </button>
               <button
                 type="button"
                 className="icon-btn"

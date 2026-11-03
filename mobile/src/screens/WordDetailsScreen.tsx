@@ -100,8 +100,9 @@ export function WordDetailsScreen({
           <h2 style={{ fontSize: "1rem", marginBottom: 8 }}>{d.word.relatedWords}</h2>
           <div className="card" style={{ padding: 0 }}>
             {related.map((w) => (
-              <div
+              <button
                 key={w.id}
+                type="button"
                 className="list-row"
                 style={{ padding: "12px" }}
                 onClick={() => onNavigate({ screen: "word-details", wordId: w.id })}
@@ -112,7 +113,7 @@ export function WordDetailsScreen({
                   </div>
                 </div>
                 <div style={{ fontSize: "0.85rem" }}>{w.resolvedMeaning}</div>
-              </div>
+              </button>
             ))}
           </div>
         </div>

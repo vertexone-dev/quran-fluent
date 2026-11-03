@@ -64,14 +64,15 @@ export function SettingsScreen({
         {d.settings.language}
       </h2>
       <div className="card" style={{ padding: 0, marginBottom: 20 }}>
-        <div
+        <button
+          type="button"
           className="list-row"
           style={{ padding: 14 }}
           onClick={() => setLocale(locale === "en" ? "fr" : "en")}
         >
           <span style={{ fontWeight: 600 }}>{d.settings.language}</span>
           <span className="text-muted">{locale === "en" ? "English" : "Français"}</span>
-        </div>
+        </button>
         <div className="list-row" style={{ padding: 14, cursor: "default" }}>
           <span style={{ fontWeight: 600 }}>{d.settings.translations}</span>
           <span className="text-muted" style={{ fontSize: "0.8rem", textAlign: "right" }}>
@@ -89,14 +90,14 @@ export function SettingsScreen({
         {d.settings.appearance}
       </h2>
       <div className="card" style={{ padding: 0 }}>
-        <div className="list-row" style={{ padding: 14 }} onClick={cycleTextSize}>
+        <button type="button" className="list-row" style={{ padding: 14 }} onClick={cycleTextSize}>
           <span style={{ fontWeight: 600 }}>{d.settings.textSize}</span>
           <span className="text-muted">{textSizeLabel}</span>
-        </div>
-        <div className="list-row" style={{ padding: 14 }} onClick={cycleTheme}>
+        </button>
+        <button type="button" className="list-row" style={{ padding: 14 }} onClick={cycleTheme}>
           <span style={{ fontWeight: 600 }}>{d.settings.theme}</span>
           <span className="text-muted">{themeLabel}</span>
-        </div>
+        </button>
       </div>
     </div>
   );

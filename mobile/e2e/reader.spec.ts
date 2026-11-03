@@ -39,7 +39,11 @@ test.describe("Surah List", () => {
 
   test("favoriting a surah persists locally across a reload", async ({ page }) => {
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();
-    await page.locator(".list-row").first().locator("button[aria-label='favorite']").click();
+    await page
+      .locator(".list-row")
+      .first()
+      .locator("button[aria-label='Add to Favorites']")
+      .click();
 
     await page.reload();
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();

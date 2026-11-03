@@ -156,16 +156,7 @@ export function LessonPlayerScreen({
           <button className="icon-btn" onClick={onBack} type="button" aria-label={d.common.back}>
             <ChevronLeft size={22} />
           </button>
-          <h1
-            className="appbar-title"
-            style={{
-              fontSize: "1rem",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              minWidth: 0,
-            }}
-          >
+          <h1 className="appbar-title" style={{ fontSize: "1rem" }}>
             {d.lessons.level} {lesson.level.number} · {lesson.title}
           </h1>
         </div>

@@ -237,6 +237,10 @@ button {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .back-button {
@@ -306,18 +310,32 @@ button {
   margin-top: 12px;
 }
 
+/* Base styling for both plain (non-interactive, informational) rows and
+ * real <button> rows -- the width/background/color/font/text-align resets
+ * only affect button usages (a <div> never had browser-default button
+ * chrome to begin with), so the same class works unmodified on either
+ * element. Interactive rows must be real buttons, not click-handled divs,
+ * so they're reachable by keyboard and announced correctly by screen
+ * readers (WCAG 2.1.1) -- see SurahListScreen/LessonsScreen/etc. */
 .list-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  width: 100%;
   padding: 14px 4px;
-  border-bottom: 1px solid var(--border);
+  border-width: 0 0 1px;
+  border-style: solid;
+  border-color: var(--border);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
 }
 
 .list-row:last-child {
-  border-bottom: none;
+  border-bottom-width: 0;
 }
 
 /* --- Buttons -------------------------------------------------------------- */
@@ -975,4 +993,20 @@ html.dark .hero-ar {
 .ayah-arabic .quran-text {
   color: var(--primary);
   line-height: 1.6;
+}
+
+/* Respect the OS-level "reduce motion" accessibility setting: disable the
+ * Home screen's stagger-in animation and the small active-state scale
+ * transforms used across cards/tiles/buttons, without removing any
+ * functionality -- everything still renders, just without movement. */
+@media (prefers-reduced-motion: reduce) {
+  .stagger > * {
+    animation: none;
+  }
+  .card-button:active,
+  .hero-card:active,
+  .tile:active:not(:disabled),
+  .icon-btn:active:not(:disabled) {
+    transform: none;
+  }
 }

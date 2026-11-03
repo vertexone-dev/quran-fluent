@@ -21,11 +21,20 @@ export function OfflineAccessScreen({ onBack }: { onBack: () => void }) {
   };
 
   const rows = [
-    { label: `Arabic Qur'an (${counts.surahs} surahs)`, detail: `${counts.ayahs} ayahs` },
-    { label: "English Translation (Pickthall)", detail: `${counts.englishRows} ayahs` },
-    { label: "French Translation (Kazimirski)", detail: `${counts.frenchSegments} segments` },
-    { label: d.offline.lessonsLabel, detail: `${counts.lessons} lessons` },
-    { label: "Exercises", detail: `${counts.exercises} exercises` },
+    {
+      label: `${d.offline.arabicQuranLabel} (${counts.surahs} ${d.offline.unitSurahs})`,
+      detail: `${counts.ayahs} ${d.offline.unitAyahs}`,
+    },
+    {
+      label: d.offline.englishTranslationLabel,
+      detail: `${counts.englishRows} ${d.offline.unitAyahs}`,
+    },
+    {
+      label: d.offline.frenchTranslationLabel,
+      detail: `${counts.frenchSegments} ${d.offline.unitSegments}`,
+    },
+    { label: d.offline.lessonsLabel, detail: `${counts.lessons} ${d.offline.unitLessons}` },
+    { label: d.offline.exercisesLabel, detail: `${counts.exercises} ${d.offline.unitExercises}` },
   ];
 
   return (
