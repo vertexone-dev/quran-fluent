@@ -5,10 +5,14 @@ import {
   getReaderFontSizeIndex,
   getReaderTranslation,
   getReadingPosition,
+  getStoredTheme,
   isAyahBookmarked,
+  nextThemePreference,
+  resolveIsDark,
   setReaderFontSizeIndex,
   setReaderTranslation,
   setReadingPosition,
+  setStoredTheme,
   toggleAyahBookmark,
 } from "./local-store";
 
@@ -153,6 +157,52 @@ describe("exact reading position", () => {
     localStorage.setItem("qr.reading.position", "{broken");
     expect(() => getReadingPosition()).not.toThrow();
     expect(getReadingPosition()).toBeNull();
+  });
+});
+
+describe("theme preference", () => {
+  it("defaults to light for a brand-new install with nothing saved yet (Sprint 4 decision)", () => {
+    expect(getStoredTheme()).toBe("light");
+  });
+
+  it("defaults to light, not system, when the stored value is corrupted JSON", () => {
+    localStorage.setItem("qr.settings.theme", "{not valid json");
+    expect(getStoredTheme()).toBe("light");
+  });
+
+  it("defaults to light, not system, when the stored value isn't a recognized theme", () => {
+    localStorage.setItem("qr.settings.theme", JSON.stringify("blue"));
+    expect(getStoredTheme()).toBe("light");
+  });
+
+  it("preserves an existing saved 'dark' preference across reads, simulating an app restart", () => {
+    setStoredTheme("dark");
+    expect(getStoredTheme()).toBe("dark");
+  });
+
+  it("preserves an existing saved 'system' preference across reads, simulating an app restart", () => {
+    setStoredTheme("system");
+    expect(getStoredTheme()).toBe("system");
+  });
+
+  it("preserves an explicitly saved 'light' preference the same way (not just as the fallback)", () => {
+    setStoredTheme("light");
+    expect(getStoredTheme()).toBe("light");
+  });
+
+  it("cycles System -> Light -> Dark -> System, the order the Settings and Home toggles share", () => {
+    expect(nextThemePreference("system")).toBe("light");
+    expect(nextThemePreference("light")).toBe("dark");
+    expect(nextThemePreference("dark")).toBe("system");
+  });
+
+  it("resolves whether dark mode is actually active for each preference", () => {
+    expect(resolveIsDark("light", true)).toBe(false);
+    expect(resolveIsDark("light", false)).toBe(false);
+    expect(resolveIsDark("dark", true)).toBe(true);
+    expect(resolveIsDark("dark", false)).toBe(true);
+    expect(resolveIsDark("system", true)).toBe(true);
+    expect(resolveIsDark("system", false)).toBe(false);
   });
 });
 

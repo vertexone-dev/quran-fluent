@@ -72,8 +72,21 @@ export function setStoredLocale(locale: Locale): void {
   writeJson(KEYS.locale, locale);
 }
 
+const VALID_THEMES: readonly ThemePreference[] = ["light", "dark", "system"];
+
+/** "light" is the default for a brand-new install (Sprint 4 decision) or
+ * any stored value that isn't one of the three valid preferences (a
+ * missing key, corrupted JSON, or a foreign/legacy value all collapse to
+ * the same "no valid saved preference" case) -- never "system", so a new
+ * user's first screen is never silently decided by their OS appearance
+ * setting. An existing install that has a real, valid "system" (or
+ * "light"/"dark") choice already saved keeps it exactly as-is: this only
+ * changes what happens when there is nothing valid to read back. */
 export function getStoredTheme(): ThemePreference {
-  return readJson<ThemePreference>(KEYS.theme, "system");
+  const value = readJson<string | null>(KEYS.theme, null);
+  return (VALID_THEMES as readonly string[]).includes(value as string)
+    ? (value as ThemePreference)
+    : "light";
 }
 
 export function setStoredTheme(theme: ThemePreference): void {
