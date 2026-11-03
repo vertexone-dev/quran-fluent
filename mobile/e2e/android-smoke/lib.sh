@@ -6,7 +6,7 @@
 # on screen, via the accessibility tree) or a real adb state read-back.
 # Nothing asserts on a sleep alone, and nothing asserts on a screenshot.
 
-PKG="${PKG:-com.quranroots.mobilefeasibility}"
+PKG="${PKG:-com.quranroots.app}"
 ACTIVITY="${ACTIVITY:-$PKG/.MainActivity}"
 
 PASS_COUNT=0
@@ -78,9 +78,26 @@ assert_changed() {
 }
 
 # tap_on_text <dump_file> <text>
-# Finds the bounds="[x1,y1][x2,y2]" of the first node with this exact text
-# and taps its center. Resource-id-free, matching how the app is already
-# driven by visible text in mobile/e2e/offline.spec.ts (Playwright).
+# Finds the bounds="[x1,y1][x2,y2]" of a matching node and taps its center.
+# Resource-id-free, matching how the app is already driven by visible text
+# in mobile/e2e/offline.spec.ts (Playwright).
+#
+# Tries an exact text="..." match first (unambiguous for simple labels like
+# tab names), then falls back to a substring match -- same reasoning as
+# assert_text_present above, plus a Sprint 4 case that made it load-bearing
+# here too: list rows that used to be plain, non-interactive <div>s are now
+# real <button>s (a keyboard/screen-reader accessibility fix), and a
+# WebView-backed android.widget.Button node reports its *entire* subtree's
+# text as one concatenated string (e.g. text="1 Al-Fatiha 7 . Makki" for a
+# single surah row), not as separately addressable child nodes the way the
+# old non-interactive div's children were. An exact match against
+# "Al-Fatiha" alone stopped finding that node; this is correct, improved
+# screen-reader behavior (the whole row is announced as one coherent unit),
+# not a bug. Either pass skips zero-area nodes (bounds collapsed to a
+# single point) -- observed for an off-screen/virtualized list row whose
+# concatenated text happened to also contain the search text (a Practice
+# lesson literally titled "More Root Families" shadowing the tab labeled
+# "More") -- nothing with zero area is ever the node meant to be tapped.
 tap_on_text() {
   local dump_file="$1" text="$2"
   local coords
@@ -88,11 +105,21 @@ tap_on_text() {
 import re, sys
 dump_file, text = sys.argv[1], sys.argv[2]
 data = open(dump_file).read()
-m = re.search(r'text=\"' + re.escape(text) + r'\"[^>]*bounds=\"\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]\"', data)
-if not m:
+
+def first_real_match(pattern):
+    for m in re.finditer(pattern, data):
+        x1, y1, x2, y2 = (int(g) for g in m.groups())
+        if x2 > x1 and y2 > y1:
+            return (x1 + x2) // 2, (y1 + y2) // 2
+    return None
+
+bounds_re = r'[^>]*bounds=\"\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]\"'
+result = first_real_match(r'text=\"' + re.escape(text) + r'\"' + bounds_re)
+if result is None:
+    result = first_real_match(r'text=\"[^\"]*' + re.escape(text) + r'[^\"]*\"' + bounds_re)
+if result is None:
     sys.exit(1)
-x1, y1, x2, y2 = (int(g) for g in m.groups())
-print((x1 + x2) // 2, (y1 + y2) // 2)
+print(result[0], result[1])
 " "$dump_file" "$text")
   if [ -z "$coords" ]; then
     log "tap_on_text('$text'): FAILED to locate node in $(basename "$dump_file")"

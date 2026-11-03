@@ -90,8 +90,21 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
       <div className="card" style={{ padding: 0 }}>
         {filtered.map((s) => (
           <div key={s.number} className="list-row" style={{ padding: "12px 12px" }}>
-            <div
-              style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}
+            <button
+              type="button"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                minWidth: 0,
+                flex: 1,
+                background: "none",
+                border: "none",
+                color: "inherit",
+                font: "inherit",
+                textAlign: "left",
+                cursor: "pointer",
+              }}
               onClick={() => onNavigate({ screen: "reading", surahNumber: s.number })}
             >
               <span
@@ -118,13 +131,13 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
                   {s.revelation_type === "meccan" ? d.reader.filterMakki : d.reader.filterMadani}
                 </div>
               </div>
-            </div>
+            </button>
             <span className="arabic-text" style={{ fontSize: "1.1rem", flexShrink: 0 }}>
               {s.name_ar}
             </span>
             <button
               type="button"
-              aria-label="favorite"
+              aria-label={favorites.has(s.number) ? d.reader.unfavorite : d.reader.favorite}
               style={{
                 background: "none",
                 border: "none",

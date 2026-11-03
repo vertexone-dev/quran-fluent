@@ -21,7 +21,7 @@ never a screenshot and never a fixed sleep alone.
 ## Prerequisites
 
 - A running Android emulator or attached device with the app already
-  installed (`com.quranroots.mobilefeasibility`). This suite does not start
+  installed (`com.quranroots.app`). This suite does not start
   an emulator or install the app — it only drives what's already there.
   - To start the known-good AVD used during development: `emulator -avd
     Pixel_9` (Android 15 / API 35), then install with `cd mobile/android &&

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Database } from "sql.js";
+import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 
 import { loadContentDb, getContentVersion, type ContentVersion } from "./db";
 import { DbContext } from "./DbContext";
@@ -62,8 +63,30 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", resolveIsDark(theme, prefersDark));
+    const isDark = resolveIsDark(theme, prefersDark);
+    document.documentElement.classList.toggle("dark", isDark);
+
+    // SystemBars (bundled with @capacitor/core since 8.0, no separate
+    // plugin) has no web implementation -- it rejects every call outside
+    // the native Android/iOS runtime, which is exactly where `npm run
+    // dev`/Playwright always run this. isNativePlatform() skips the call
+    // there entirely instead of catching an always-expected rejection, so
+    // a real native-side failure (which .catch() below still surfaces,
+    // not swallows) is never confused with that expected case.
+    if (Capacitor.isNativePlatform()) {
+      SystemBars.setStyle({ style: isDark ? SystemBarsStyle.Dark : SystemBarsStyle.Light }).catch(
+        (err: unknown) => {
+          console.error("SystemBars.setStyle failed:", err);
+        },
+      );
+    }
   }, [theme, prefersDark]);
+
+  // Screen readers use <html lang> to pick pronunciation rules; without
+  // this, French UI text was always announced as if it were English.
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   function setLocale(next: Locale) {
     setLocaleState(next);
@@ -78,9 +101,10 @@ export function App() {
   const i18nValue = useMemo(() => ({ locale, setLocale, d: getDictionary(locale) }), [locale]);
 
   if (error) {
+    const d = getDictionary(locale);
     return (
       <main style={{ padding: 24 }}>
-        <h1>Offline content failed to load</h1>
+        <h1>{d.common.contentLoadError}</h1>
         <p style={{ color: "var(--destructive)" }}>{error}</p>
       </main>
     );

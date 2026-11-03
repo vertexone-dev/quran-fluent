@@ -19,7 +19,8 @@ export function MoreScreen({ onNavigate }: { onNavigate: (route: Route) => void 
           </div>
           <span className="chip chip-muted">{d.more.comingSoon}</span>
         </div>
-        <div
+        <button
+          type="button"
           className="list-row"
           style={{ padding: 14 }}
           onClick={() => onNavigate({ screen: "offline-access" })}
@@ -29,8 +30,9 @@ export function MoreScreen({ onNavigate }: { onNavigate: (route: Route) => void 
             <span style={{ fontWeight: 600 }}>{d.more.offlineAccess}</span>
           </div>
           <ChevronRight size={18} className="text-muted" />
-        </div>
-        <div
+        </button>
+        <button
+          type="button"
           className="list-row"
           style={{ padding: 14 }}
           onClick={() => onNavigate({ screen: "settings" })}
@@ -40,7 +42,7 @@ export function MoreScreen({ onNavigate }: { onNavigate: (route: Route) => void 
             <span style={{ fontWeight: 600 }}>{d.more.settings}</span>
           </div>
           <ChevronRight size={18} className="text-muted" />
-        </div>
+        </button>
       </div>
     </div>
   );

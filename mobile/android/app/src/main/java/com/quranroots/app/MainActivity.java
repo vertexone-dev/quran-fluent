@@ -1,8 +1,9 @@
-package com.quranroots.mobilefeasibility;
+package com.quranroots.app;
 
 import android.os.Bundle;
 import android.webkit.WebView;
 import androidx.activity.OnBackPressedCallback;
+import androidx.core.view.WindowCompat;
 import com.getcapacitor.BridgeActivity;
 
 /**
@@ -25,6 +26,23 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        // Diagnostic fix (Sprint 4): Capacitor's bundled SystemBars plugin
+        // (com.getcapacitor.plugin.SystemBars, see node_modules) calls
+        // WindowInsetsControllerCompat.setAppearanceLightStatusBars/
+        // setAppearanceLightNavigationBars on every setStyle() call, but
+        // never itself calls WindowCompat.setDecorFitsSystemWindows(false)
+        // -- Capacitor's own docs note this is expected to be set up by the
+        // app (and say Capacitor 9 will do it automatically). Without it,
+        // this app's appearance updates only visually took effect on the
+        // very first call (made during SystemBars' own plugin load(), amid
+        // initial window setup) -- confirmed via logcat that every later
+        // call (a runtime theme switch) dispatches correctly and resolves
+        // without error, but silently fails to repaint, while a rotation's
+        // own relayout immediately repaints whatever style was last
+        // requested. Declaring edge-to-edge explicitly, before super.onCreate
+        // per this API's own documented usage, is the fix.
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
         super.onCreate(savedInstanceState);
 
         getOnBackPressedDispatcher()
