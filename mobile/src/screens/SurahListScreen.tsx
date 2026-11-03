@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bookmark } from "lucide-react";
+import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { listSurahs } from "../db";
@@ -45,13 +45,23 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
           <Logo showWordmark={false} size={28} />
           <h1 className="appbar-title">{d.reader.surahs}</h1>
         </div>
-        <button
-          className="back-button"
-          type="button"
-          onClick={() => onNavigate({ screen: "word-list" })}
-        >
-          {d.reader.words}
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <button
+            className="icon-btn icon-btn-bordered"
+            type="button"
+            aria-label={d.bookmarks.title}
+            onClick={() => onNavigate({ screen: "ayah-bookmarks" })}
+          >
+            <BookmarkCheck size={18} />
+          </button>
+          <button
+            className="back-button"
+            type="button"
+            onClick={() => onNavigate({ screen: "word-list" })}
+          >
+            {d.reader.words}
+          </button>
+        </div>
       </div>
 
       <input

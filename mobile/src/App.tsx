@@ -18,6 +18,7 @@ import { SplashScreen } from "./screens/SplashScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { SurahListScreen } from "./screens/SurahListScreen";
 import { ReadingScreen } from "./screens/ReadingScreen";
+import { AyahBookmarksScreen } from "./screens/AyahBookmarksScreen";
 import { WordListScreen } from "./screens/WordListScreen";
 import { WordDetailsScreen } from "./screens/WordDetailsScreen";
 import { LessonsScreen } from "./screens/LessonsScreen";
@@ -164,9 +165,13 @@ function Navigator({
         {route.screen === "reading" && (
           <ReadingScreen
             surahNumber={route.surahNumber}
+            targetAyahNumber={route.targetAyahNumber}
             onNavigate={handleNavigate}
             onBack={goBack}
           />
+        )}
+        {route.screen === "ayah-bookmarks" && (
+          <AyahBookmarksScreen onNavigate={handleNavigate} onBack={goBack} />
         )}
         {route.screen === "word-list" && (
           <WordListScreen onNavigate={handleNavigate} onBack={goBack} />

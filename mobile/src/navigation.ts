@@ -3,7 +3,8 @@ export type Tab = "home" | "quran" | "lessons" | "practice" | "more";
 export type Route =
   | { screen: "home" }
   | { screen: "surah-list" }
-  | { screen: "reading"; surahNumber: number }
+  | { screen: "reading"; surahNumber: number; targetAyahNumber?: number }
+  | { screen: "ayah-bookmarks" }
   | { screen: "word-list" }
   | { screen: "word-details"; wordId: string }
   | { screen: "lessons" }
