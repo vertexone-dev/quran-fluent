@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Overrides the Capacitor template defaults (indigo/pink, see
+  node_modules/@capacitor/android's own colors.xml) with the approved
+  QuranRoots brand palette, so native chrome (status bar tint on older
+  Android versions, text-selection handles, AppCompat dialog buttons and
+  ripples) matches the app's own forest-green/gold theme instead of stock
+  Material colors. Values are the real primary/gold design tokens from
+  mobile/src/styles.css's root block, converted from OKLCH to sRGB hex
+  (CSS Color 4 conversion matrices); colorPrimaryDark is the same hue at
+  lower lightness, not a separate invented color.
+-->
+<resources>
+    <color name="colorPrimary">#185B37</color>
+    <color name="colorPrimaryDark">#003F1D</color>
+    <color name="colorAccent">#845A0F</color>
+</resources>
