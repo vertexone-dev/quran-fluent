@@ -5,6 +5,7 @@ import { isBillingPlan, resolvePriceId } from "../prices";
 import { TRIAL_PERIOD_DAYS } from "../policy";
 import { jsonError, jsonResponse } from "../http";
 import { getAppBaseUrl } from "../env";
+import { isServerCheckoutEnabled } from "../serverCheckoutFlag";
 
 /**
  * POST /api/billing/checkout
@@ -17,6 +18,18 @@ import { getAppBaseUrl } from "../env";
 export async function handleCheckout(request: Request): Promise<Response> {
   const userId = await requireAuthenticatedUserId(request);
   if (!userId) return jsonError(401, "Sign in required.");
+
+  // The real authorization boundary (see serverCheckoutFlag.ts) -- checked
+  // immediately after authentication and before any plan/pricing/Stripe
+  // work, so a disabled kill switch can never be reached by any code path
+  // that creates a Checkout Session, regardless of how valid the rest of
+  // the request is. Placed after the auth check specifically so an
+  // unauthenticated caller still gets 401 (unchanged, existing, tested
+  // behavior) while an authenticated one is blocked here instead of
+  // reaching Stripe.
+  if (!isServerCheckoutEnabled()) {
+    return jsonError(503, "Checkout is not available right now. Please try again later.");
+  }
 
   let body: unknown;
   try {

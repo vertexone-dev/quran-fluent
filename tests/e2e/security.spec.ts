@@ -198,7 +198,7 @@ test.describe("security", () => {
       expect(response.status()).toBe(401);
     });
 
-    test("POST /api/billing/checkout with an authenticated but invalid plan returns 400, not a Checkout Session", async ({
+    test("POST /api/billing/checkout from an authenticated user returns 503, not a Checkout Session, while the server-side kill switch is disabled (the default)", async ({
       request,
       baseURL,
     }) => {
@@ -208,14 +208,26 @@ test.describe("security", () => {
       } = await client.auth.getSession();
       expect(session?.access_token).toBeTruthy();
 
+      // BILLING_CHECKOUT_ENABLED (server-side, no VITE_ prefix -- see
+      // serverCheckoutFlag.ts) is never set in this test environment, so it
+      // stays at its fail-closed default. handleCheckout checks it
+      // immediately after authentication and before plan validation, so
+      // even a well-formed, otherwise-valid plan from an authenticated
+      // user must still be rejected here -- this is the actual security
+      // boundary this test needs to cover, not the plan-validation check
+      // beneath it. Enabled-checkout plan validation (valid plan -> 200,
+      // invalid/attacker-supplied value -> 400) is already covered by
+      // src/lib/billing/handlers/checkout.test.ts's mocked-Stripe unit
+      // tests, which can safely flip the flag without a real Stripe call;
+      // this E2E run never enables it (see playwright.config.ts).
       const response = await request.post(`${baseURL}/api/billing/checkout`, {
         headers: {
           "content-type": "application/json",
           Authorization: `Bearer ${session!.access_token}`,
         },
-        data: { priceId: "price_evil_free_forever" },
+        data: { plan: "monthly" },
       });
-      expect(response.status()).toBe(400);
+      expect(response.status()).toBe(503);
       const body = await response.json();
       expect(body.url).toBeUndefined();
     });

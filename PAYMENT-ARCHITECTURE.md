@@ -18,11 +18,13 @@ to production (§19 steps 1-4, 6) — but:
   regardless of this schema's existence or any subscription row's content.
   Not part of this rollout (§19.1) or any near-term one.
 - Checkout is code-complete (the "Choose Monthly"/"Choose Annual" buttons
-  on `/premium` create a real Checkout Session when clicked) but still
-  disabled by the client-safe, build-time
-  `VITE_BILLING_CHECKOUT_ENABLED` flag (§17, §19.1) — every checkout
-  button stays inert while this flag is unset or `"false"`, its current
-  production value.
+  on `/premium` create a real Checkout Session when clicked) but gated by
+  **two independent switches**, not one — see §5.1. The client-safe,
+  build-time `VITE_BILLING_CHECKOUT_ENABLED` flag (§17, §19.1) hides/
+  disables the buttons themselves; the server-only `BILLING_CHECKOUT_ENABLED`
+  flag (§5.1, §17) is what `POST /api/billing/checkout` itself now checks
+  before ever creating a Checkout Session. Both default to disabled and
+  must independently be `"true"` for a real checkout to be reachable.
 - No payment has been accepted through this rollout.
 
 See the "Security note" under §9/§10 below before enabling enforcement —
@@ -171,6 +173,27 @@ above (particularly `adaptive_pricing` and the newer per-item
 `current_period_end` location the webhook handler already defends against,
 §13) has not been exercised against Stripe's real API. Verifying this is
 one of the remaining setup steps before checkout can ever be turned on.
+
+### 5.1. Frontend checkout availability vs. server-side checkout authorization
+
+These are two independent switches, checked in two different places, by
+two different mechanisms. Neither implies the other, and **both must be
+`"true"` for a real user to complete a real checkout**:
+
+| | `VITE_BILLING_CHECKOUT_ENABLED` | `BILLING_CHECKOUT_ENABLED` |
+|---|---|---|
+| **What it controls** | Whether the "Choose Monthly"/"Choose Annual" (and Portal "Manage billing") buttons render enabled in the browser | Whether `POST /api/billing/checkout` itself will create a Stripe Checkout Session |
+| **Where it's checked** | Client-side, `src/routes/premium.tsx` / `src/routes/_authenticated/settings.billing.tsx`, via `src/lib/billing/checkoutFlag.ts` | Server-side, inside `handleCheckout` itself, via `src/lib/billing/serverCheckoutFlag.ts` — checked immediately after authentication, before any plan/pricing/Stripe work |
+| **How it reaches the app** | A `VITE_`-prefixed build-time substitution. Compiled into the public client bundle by Vite when the app is built — see "How each is configured" below | A genuinely server-only environment variable, read from `process.env` at request time, inside the already-deployed Cloudflare Worker — never compiled into any bundle |
+| **Who can read its value** | Anyone — it's plaintext in the shipped JavaScript | Nothing outside the Worker's own runtime |
+| **If it's the only one left on** | Buttons are clickable, but every click 503s — nothing is created | A direct, authenticated `POST /api/billing/checkout` would succeed even with every button hidden/disabled — this was a real, now-closed gap (found by production audit, Deployment #35 follow-up) |
+| **Default when unset/malformed** | Disabled (`checkoutFlag.test.ts`) | Disabled (`serverCheckoutFlag.test.ts`) |
+
+**Why both exist, not just one:** the client-side flag is UX — it's what makes the buttons look and behave right for a learner. It was never a security boundary and was never claimed to be one; nothing stops a request that skips the UI entirely (the same principle §10.1 already states for content access applies here too). The server-side flag is the actual authorization check. Before this addition, `handleCheckout` had no flag check of its own at all — grep confirms zero references to either flag anywhere under `src/lib/billing/handlers/`, `src/lib/billing/router.ts`, or `src/server.ts` prior to `serverCheckoutFlag.ts` — so disabling only the client flag (as Deployment #35 did) was real and effective *only* because nothing was sending the request, not because the server would have refused it.
+
+**How each is configured** (see §17's full table):
+- `VITE_BILLING_CHECKOUT_ENABLED` — a GitHub Actions **environment variable** on the `production` environment, read by `production-deploy.yml`'s build step (`${{ vars.VITE_BILLING_CHECKOUT_ENABLED || 'false' }}`). Changing it requires a new build/deploy to take effect (build-time, not runtime) — an already-deployed bundle never picks up a variable change on its own.
+- `BILLING_CHECKOUT_ENABLED` — a **Cloudflare Worker environment variable** on the `quranroots` Worker itself (Cloudflare dashboard → Workers & Pages → quranroots → Settings → Variables, or `wrangler vars put`/`wrangler secret put` — the exact same mechanism `DEPLOYMENT.md` §5 already documents for `STRIPE_SECRET_KEY` and friends). The GitHub Actions deploy workflow has **no path to this variable at all** — it only ever supplies `VITE_`-prefixed values at build time. Changing it takes effect on the next request the Worker handles — no rebuild or redeploy needed, since it's read from `process.env` at request time, not compiled in.
 
 ## 6. Stripe Customer Portal flow
 
@@ -493,7 +516,8 @@ different code paths.
 | `STRIPE_PRICE_ID_ANNUAL` | Server-only | Stripe Price id for the Annual plan. `src/lib/billing/prices.ts`. |
 | `APP_BASE_URL` | Server-only | Checkout/Portal return-URL origin — never derived from a request's own `Host` header. `src/lib/billing/env.ts`. |
 | `SUPABASE_SERVICE_ROLE_KEY` | Server-only, already documented in `.env.example` as platform-managed | First actually *used* by application code in this PR — `src/lib/billing/supabaseAdmin.ts`, the only path with write access to the three billing tables. |
-| `VITE_BILLING_CHECKOUT_ENABLED` | Client-safe, build-time only | `"true"` / `"false"` (or unset, which defaults to disabled — only the exact string `"true"` enables). Gates every checkout-initiating button. `src/lib/billing/checkoutFlag.ts`. Sourced in production from the `production` GitHub Actions **environment variable** of the same name (never a secret), read by `.github/workflows/production-deploy.yml`'s build step with a `|| 'false'` fallback. Currently unset/`false` in production — see §19.1 for the controlled rollout that changes it. |
+| `VITE_BILLING_CHECKOUT_ENABLED` | Client-safe, build-time only | `"true"` / `"false"` (or unset, which defaults to disabled — only the exact string `"true"` enables). Gates every checkout-initiating button. `src/lib/billing/checkoutFlag.ts`. Sourced in production from the `production` GitHub Actions **environment variable** of the same name (never a secret), read by `.github/workflows/production-deploy.yml`'s build step with a `|| 'false'` fallback. See §19.1 for the controlled rollout that changes it. |
+| `BILLING_CHECKOUT_ENABLED` | Server-only, runtime (Cloudflare Worker environment variable — **not** a GitHub Actions value of any kind) | `"true"` / `"false"` (or unset/malformed, which defaults to disabled — only the exact string `"true"` enables, same contract as the `VITE_` flag above). The actual authorization check `POST /api/billing/checkout` enforces before creating a Checkout Session — see §5.1. `src/lib/billing/serverCheckoutFlag.ts`. Configured directly as a Cloudflare Worker variable on the `quranroots` Worker (dashboard or `wrangler`), the same way `STRIPE_SECRET_KEY` above already is — `DEPLOYMENT.md` §5. Read at request time, not build time, so a value change takes effect immediately with no redeploy. |
 
 Every value above is a test-mode placeholder in `.env.example` only. No real
 (live or test) value for any of these was entered, requested, printed,
@@ -552,17 +576,29 @@ one that touches the database, and it's purely additive (new tables only).
 `feat/controlled-checkout-enablement` makes checkout enablement itself a
 reviewable, single-variable production change, distinct from deploying the
 checkout-capable code and distinct from enabling premium-content
-enforcement — **these are three separate actions**, never bundled:
+enforcement — **these are three separate actions**, never bundled.
+
+**Since `feat/server-side-checkout-kill-switch`, "enabling checkout" is
+two independent actions, not one** (§5.1) — step 1 and step 5 below now
+each cover both the client-side `VITE_BILLING_CHECKOUT_ENABLED` flag *and*
+the server-side `BILLING_CHECKOUT_ENABLED` flag. Flipping only one leaves
+checkout either inert-but-unprotected (server on, client off — buttons
+hidden, but a direct request would still succeed) or visible-but-broken
+(client on, server off — buttons clickable, every click 503s). A real,
+working checkout needs both `"true"` at the same time.
 
 1. Deploy this PR's code with the production `VITE_BILLING_CHECKOUT_
    ENABLED` GitHub Actions **environment variable** (`production`
    environment, Settings → Environments → production → Variables — never
-   Secrets, this value isn't a credential) absent or set to `"false"`.
+   Secrets, this value isn't a credential) absent or set to `"false"`,
+   *and* the Cloudflare Worker's `BILLING_CHECKOUT_ENABLED` variable
+   (quranroots Worker → Settings → Variables) absent or set to `"false"`.
    `.github/workflows/production-deploy.yml`'s build step already
-   defaults to `"false"` when the variable is unset
-   (`${{ vars.VITE_BILLING_CHECKOUT_ENABLED || 'false' }}`) — deploying
-   with no action at all keeps checkout exactly as disabled as it is
-   today.
+   defaults the client flag to `"false"` when unset
+   (`${{ vars.VITE_BILLING_CHECKOUT_ENABLED || 'false' }}`), and
+   `serverCheckoutFlag.ts` defaults the server flag to `"false"` the same
+   way — deploying with no action at all keeps checkout exactly as
+   disabled as it is today, on both sides.
 2. Merge and deploy through the normal pipeline. Checkout stays disabled;
    `/premium` and `/settings/billing` render identically to today.
 3. Verify production remains healthy (`/api/billing/status` still 200s,
@@ -582,13 +618,19 @@ enforcement — **these are three separate actions**, never bundled:
    never exposes to `wrangler secret list` — it can only be done by
    whoever has dashboard access to Stripe and Cloudflare, not by CI or by
    this document.
-5. Set the `production` environment's `VITE_BILLING_CHECKOUT_ENABLED`
-   GitHub Actions variable to `"true"` (exact string — see
-   `checkoutFlag.ts`/§17).
-6. Run a new, approved production deployment (rebuilds the client bundle
-   with the flag compiled in — this is a build-time flag, not a runtime
-   toggle; an already-deployed bundle never picks up a variable change
-   without a fresh build).
+5. Set **both** flags to `"true"` (exact string in each case):
+   the `production` environment's `VITE_BILLING_CHECKOUT_ENABLED` GitHub
+   Actions variable (see `checkoutFlag.ts`/§17), and the `quranroots`
+   Cloudflare Worker's `BILLING_CHECKOUT_ENABLED` variable (see
+   `serverCheckoutFlag.ts`/§17/§5.1). Either alone is not "checkout
+   enabled" — see this subsection's opening note.
+6. Run a new, approved production deployment to pick up the client flag
+   (rebuilds the client bundle with it compiled in — this is a build-time
+   flag, not a runtime toggle; an already-deployed bundle never picks up a
+   variable change without a fresh build). The server flag takes effect on
+   its own, at the Worker's next request, independent of any
+   deploy — confirm it's actually set to `"true"` *before* step 7, since a
+   redeploy for step 6 does not set it for you.
 7. Perform one controlled checkout end-to-end (a real or Stripe
    test-mode purchase, per whichever mode step 4 confirmed).
 8. Verify the Stripe webhook delivered successfully and the corresponding
