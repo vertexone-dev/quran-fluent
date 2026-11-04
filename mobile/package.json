@@ -1,8 +1,8 @@
 {
-  "name": "quranroots-mobile-feasibility",
+  "name": "quranroots-mobile",
   "private": true,
-  "version": "0.1.0-feasibility",
-  "description": "Phase 0 offline-first mobile feasibility prototype -- a separate, locally bundled client build, kept fully independent from the existing Cloudflare/Nitro production app. Not wired into any production build or deploy pipeline.",
+  "version": "0.1.0",
+  "description": "Offline-first QuranRoots mobile app (Capacitor/Android) -- a separate, locally bundled client build, independent from the web app's Cloudflare/Nitro deployment. Not yet wired into any production build or deploy pipeline.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,6 +12,7 @@
     "test:e2e": "cd .. && npx playwright test --config mobile/playwright.config.ts"
   },
   "dependencies": {
+    "lucide-react": "^0.544.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "sql.js": "^1.15.0"

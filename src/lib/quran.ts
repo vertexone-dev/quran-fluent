@@ -1,11 +1,106 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Locale } from "@/lib/i18n";
-import { fetchKazimirskiRenderForSurah, resolveApprovedFrenchSource } from "@/lib/kazimirski";
+import {
+  fetchKazimirskiRenderForSurah,
+  KAZIMIRSKI_EDITION_ID,
+  KAZIMIRSKI_TRANSLATOR_NAME,
+  resolveApprovedFrenchSource,
+} from "@/lib/kazimirski";
 import {
   fetchTranslationsForSurah,
+  PICKTHALL_EDITION_ID,
+  PICKTHALL_TRANSLATOR_NAME,
   resolveVerifiedEnglishSource,
   type TranslationSource,
 } from "@/lib/translations";
+
+/**
+ * Decides which language's governed translation the reader should show,
+ * given the learner's saved `preferred_translation` value (its exact
+ * edition_identifier -- see PICKTHALL_EDITION_ID / KAZIMIRSKI_EDITION_ID)
+ * and the active interface locale. This is the one place that preference
+ * is interpreted, so Settings, the reader, and any future consumer can
+ * never disagree on what a stored value means.
+ *
+ * A recognized preference wins outright -- this is the mechanism that
+ * lets a learner read, say, the Kazimirski (French) translation while
+ * using the English interface, or vice versa, which is the whole point of
+ * having an independent translation preference. It is a deliberate,
+ * explicit choice the learner saved, not a silent cross-language
+ * fallback, so it does not conflict with ayahTranslation()'s "never
+ * silently show English under a French UI" rule below -- that rule is
+ * about what happens when the *resolved* language's content is
+ * unavailable, not about which language gets resolved.
+ *
+ * Everything else falls back to the interface locale -- today's exact
+ * behavior. This deliberately includes the legacy "en_sahih" value:
+ * `learning_preferences.preferred_translation` is `NOT NULL DEFAULT
+ * 'en_sahih'`, and the new-user trigger never overrides it, so "en_sahih"
+ * is the untouched schema default for every learner who has never
+ * actively saved a choice on the (now-fixed) Settings page -- which, since
+ * the old page only ever offered that one pre-selected option, is
+ * effectively every existing learner. Treating it as "prefer English"
+ * would silently flip every existing French-interface learner's reader
+ * from Kazimirski to Pickthall the moment this shipped, with no action on
+ * their part -- the opposite of the "no regression for an unset
+ * preference" guarantee this function exists to provide. So it is
+ * indistinguishable here from "no preference at all", same as an
+ * unrecognized/foreign value.
+ */
+export function resolvePreferredTranslationLocale(
+  preferredTranslation: string | null | undefined,
+  interfaceLocale: Locale,
+): Locale {
+  if (preferredTranslation === KAZIMIRSKI_EDITION_ID) return "fr";
+  if (preferredTranslation === PICKTHALL_EDITION_ID) return "en";
+  return interfaceLocale;
+}
+
+/**
+ * Resolves the learner's saved `show_transliteration` preference to a
+ * definite boolean -- the one place both the reader and Settings' own
+ * display of the saved value interpret it, so they can never disagree.
+ *
+ * true (the column's own schema default -- `BOOLEAN NOT NULL DEFAULT
+ * true`) for a guest, an unset preference, or while it simply hasn't
+ * loaded yet. That last case matters for the reader specifically: it must
+ * never render as false and then flip to true (or vice versa) once the
+ * real value arrives, which would be a visible flicker for no reason.
+ */
+export function resolveShowTransliteration(
+  showTransliteration: boolean | null | undefined,
+): boolean {
+  return showTransliteration ?? true;
+}
+
+/** Which locale-file key (src/locales/{en,fr}/quran.ts's
+ * `reader.attribution.details`) holds the real, source-specific
+ * attribution text for a given translator. */
+export type TranslationAttributionKey = "pickthall" | "kazimirski";
+
+/**
+ * Resolves `ayah.translationSource.translator` (always the real,
+ * governed source's name, independent of interface locale -- see
+ * resolvePreferredTranslationLocale above) to the attribution text that
+ * actually describes it. This is the one place that mapping is made, so
+ * the reader's attribution popover can never show one translator's
+ * details under another's name -- the bug this function replaces: the
+ * popover used to pick its details text by interface locale, which was
+ * only ever correct before preferred_translation could diverge from
+ * locale.
+ *
+ * Returns null for anything else (no third governed source exists yet)
+ * so a caller can choose not to render attribution details at all for an
+ * unrecognized translator, rather than guessing or showing stale/wrong
+ * text.
+ */
+export function resolveTranslationAttributionKey(
+  translator: string,
+): TranslationAttributionKey | null {
+  if (translator === PICKTHALL_TRANSLATOR_NAME) return "pickthall";
+  if (translator === KAZIMIRSKI_TRANSLATOR_NAME) return "kazimirski";
+  return null;
+}
 
 /**
  * A curated V1 bootstrap set (Al-Fatiha plus a handful of short, commonly
@@ -175,15 +270,23 @@ export type ResolvedAyah = Ayah & {
  *            the disputed-source remediation; the remainder is the same
  *            disputed source and must not be served either). This must
  *            never show English text under a French UI.
+ *
+ * Which language that fallback chain runs for is `preferredTranslation`
+ * (the learner's saved choice) when recognized, else `locale` — see
+ * resolvePreferredTranslationLocale. `locale` itself keeps controlling
+ * every other locale-driven concern (interface chrome, RTL, etc.)
+ * untouched; only this function's own language selection changes.
  */
 export async function fetchAyahsWithTranslations(
   surahNumber: number,
   locale: Locale,
   signal?: AbortSignal,
+  preferredTranslation?: string | null,
 ): Promise<ResolvedAyah[]> {
   const ayahs = await fetchAyahs(surahNumber, signal);
+  const translationLocale = resolvePreferredTranslationLocale(preferredTranslation, locale);
 
-  if (locale !== "en") {
+  if (translationLocale !== "en") {
     const source = await resolveApprovedFrenchSource();
     const rendered = source
       ? await fetchKazimirskiRenderForSurah(surahNumber, source.id, signal)
@@ -224,7 +327,7 @@ export async function fetchAyahsWithTranslations(
         }
       : {
           ...ayah,
-          resolvedTranslation: ayahTranslation(ayah, locale),
+          resolvedTranslation: ayahTranslation(ayah, translationLocale),
           translationSource: null,
           translationContinuesFromAyah: null,
         };

@@ -53,8 +53,9 @@ export function PracticeScreen({ onNavigate }: { onNavigate: (route: Route) => v
       ) : (
         <div className="card" style={{ padding: 0 }}>
           {entries.map((e) => (
-            <div
+            <button
               key={e.lessonId}
+              type="button"
               className="list-row"
               style={{ padding: 14 }}
               onClick={() =>
@@ -72,7 +73,7 @@ export function PracticeScreen({ onNavigate }: { onNavigate: (route: Route) => v
                 </div>
               </div>
               <span className="chip chip-muted">{e.exerciseCount}</span>
-            </div>
+            </button>
           ))}
         </div>
       )}

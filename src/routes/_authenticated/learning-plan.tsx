@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PathTimeline } from "@/components/learning/PathTimeline";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import { fetchLearnerSnapshot } from "@/lib/learner";
+import { fetchLearnerSnapshot, LEARNER_SNAPSHOT_STALE_TIME_MS } from "@/lib/learner";
 import { fetchLearningPath } from "@/lib/placement";
 import { translationLabel } from "@/lib/translation-labels";
 import { reciterLabel } from "@/lib/audio";
@@ -37,6 +37,7 @@ function LearningPlan() {
     queryKey: ["learner", user?.id],
     queryFn: () => fetchLearnerSnapshot(user!.id),
     enabled: Boolean(user?.id),
+    staleTime: LEARNER_SNAPSHOT_STALE_TIME_MS,
   });
   const { data: path } = useQuery({
     queryKey: ["learning-path", user?.id],

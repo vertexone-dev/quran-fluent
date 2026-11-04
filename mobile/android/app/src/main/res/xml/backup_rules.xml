@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Governs Auto Backup on devices running Android 11 (API 30) or lower.
+  See data_extraction_rules.xml for the Android 12+ equivalent; both files
+  are required since this app's minSdk (24) spans both eras.
+
+  This app's only real user data (ayah bookmarks, exact reading position,
+  and translation/theme/text-size preferences, see
+  mobile/src/local-store.ts) lives entirely in plain WebView localStorage,
+  physically backed by Chromium's LevelDB store under
+  app_webview/Default/Local Storage/. Everything else under app_webview/ is
+  WebView/Chromium engine-internal state: the HTTP/code cache is already
+  excluded by the OS via the cache/ directory, and this file additionally
+  keeps out Web Data (autofill), Session Storage, Shared Dictionary,
+  shared_proto_db, cookies, the variations seed, and, most importantly,
+  webview_data.lock, a live lock file that must never be restored
+  verbatim onto a different device or WebView engine version. Listing one
+  <include> narrows backup to only that one path, so nothing else above is
+  ever considered and no separate <exclude> rules are needed for it.
+
+  This narrows, rather than fully solves, the underlying reliability
+  question: a raw LevelDB directory is not guaranteed to open cleanly
+  after being restored onto a different device/WebView version. Treat
+  this as best-effort preservation of bookmarks/reading-position/
+  preferences, not a guarantee.
+-->
+<full-backup-content>
+    <include domain="root" path="app_webview/Default/Local Storage/" />
+</full-backup-content>

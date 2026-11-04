@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
-import type { ResolvedAyah } from "@/lib/quran";
+import { resolveTranslationAttributionKey, type ResolvedAyah } from "@/lib/quran";
 
 type AyahCardProps = {
   ayah: ResolvedAyah;
@@ -22,12 +22,31 @@ type AyahCardProps = {
   actions?: ReactNode;
 };
 
-/** Shared ayah display: reader, bookmarks and notes all render the same card. */
+/**
+ * Shared ayah display: reader, bookmarks and notes all render the same
+ * card. Deliberately renders no transliteration row of any kind: no
+ * per-ayah transliteration data exists anywhere (the `ayahs` table has no
+ * such column -- only surah *names* and vocabulary *words* have one), and
+ * this must never fabricate it. Settings' own "show transliteration"
+ * preference is still saved and loaded correctly (see
+ * resolveShowTransliteration in src/lib/quran.ts) for whenever real data
+ * exists to show -- this component just has nothing to gate on yet.
+ */
 export function AyahCard({ ayah, surahLabel, highlighted, selected, actions }: AyahCardProps) {
   const { d } = useI18n();
   const r = d.quran.reader;
   const translation = ayah.resolvedTranslation;
   const continuesFrom = ayah.translationContinuesFromAyah;
+  // Keyed by the actually active translator, not by interface locale --
+  // preferred_translation can diverge from locale (Milestone 1A), so the
+  // attribution popover must describe whichever source really produced
+  // this text. null for any unrecognized translator (no third governed
+  // source exists yet): never show one translator's details under
+  // another's name, and never show blank/guessed text either -- hide the
+  // whole attribution control instead of misleading.
+  const attributionKey = ayah.translationSource
+    ? resolveTranslationAttributionKey(ayah.translationSource.translator)
+    : null;
   return (
     <Card
       id={`ayah-${ayah.surah_number}-${ayah.ayah_number}`}
@@ -67,7 +86,7 @@ export function AyahCard({ ayah, surahLabel, highlighted, selected, actions }: A
             ? r.translationContinuesFrom.replace("{number}", String(continuesFrom))
             : (translation ?? r.translationUnavailable)}
         </p>
-        {ayah.translationSource && (
+        {ayah.translationSource && attributionKey && (
           <Popover>
             <PopoverTrigger asChild>
               <button
@@ -93,7 +112,7 @@ export function AyahCard({ ayah, surahLabel, highlighted, selected, actions }: A
               className="w-auto max-w-xs text-xs text-muted-foreground"
               aria-label={r.attribution.detailsAriaLabel}
             >
-              {r.attribution.details}
+              {r.attribution.details[attributionKey]}
             </PopoverContent>
           </Popover>
         )}

@@ -237,6 +237,10 @@ button {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .back-button {
@@ -288,6 +292,7 @@ button {
 .tab-icon {
   font-size: 1.25rem;
   line-height: 1;
+  display: flex;
 }
 
 /* --- Cards / lists ------------------------------------------------------ */
@@ -305,18 +310,32 @@ button {
   margin-top: 12px;
 }
 
+/* Base styling for both plain (non-interactive, informational) rows and
+ * real <button> rows -- the width/background/color/font/text-align resets
+ * only affect button usages (a <div> never had browser-default button
+ * chrome to begin with), so the same class works unmodified on either
+ * element. Interactive rows must be real buttons, not click-handled divs,
+ * so they're reachable by keyboard and announced correctly by screen
+ * readers (WCAG 2.1.1) -- see SurahListScreen/LessonsScreen/etc. */
 .list-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  width: 100%;
   padding: 14px 4px;
-  border-bottom: 1px solid var(--border);
+  border-width: 0 0 1px;
+  border-style: solid;
+  border-color: var(--border);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
   cursor: pointer;
 }
 
 .list-row:last-child {
-  border-bottom: none;
+  border-bottom-width: 0;
 }
 
 /* --- Buttons -------------------------------------------------------------- */
@@ -500,11 +519,19 @@ button {
   display: flex;
   align-items: center;
   gap: 10px;
+  width: 100%;
   padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: calc(var(--radius) - 2px);
   cursor: pointer;
   background: var(--card);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+}
+
+.choice-row:disabled {
+  cursor: default;
 }
 
 .choice-row + .choice-row {
@@ -579,4 +606,407 @@ button {
 .splash-screen .brand-subtagline {
   color: color-mix(in oklab, var(--primary-foreground) 70%, transparent);
   font-size: 0.78rem;
+}
+
+/* --- Section title -------------------------------------------------------
+ * Added for mobile/src/components/ui.tsx's <SectionTitle>; not yet used by
+ * any screen (landed ahead of the Emergent UI integration's later phases). */
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 26px 0 10px;
+}
+
+.section-title h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+/* --- Segmented control -----------------------------------------------------
+ * Added for mobile/src/components/ui.tsx's <Segmented>; not yet used by any
+ * screen (landed ahead of the Emergent UI integration's later phases). */
+
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  background: var(--muted);
+  border-radius: 999px;
+  gap: 2px;
+  max-width: 100%;
+}
+
+.seg {
+  border: none;
+  background: transparent;
+  color: var(--muted-foreground);
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  min-height: 34px;
+  white-space: nowrap;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.seg.active {
+  background: var(--card);
+  color: var(--primary);
+  box-shadow: var(--shadow-soft);
+}
+
+/* --- Home Dashboard (Phase 1, Emergent UI integration) -------------------
+ * Adapted from the approved Emergent "Stage B" reference's prototype.css.
+ * Scoped to mobile/src/screens/HomeScreen.tsx only -- none of these class
+ * names existed before this phase, and none of them touch the app shell,
+ * tab bar, or app bar rules used by every other screen. */
+
+.stagger > * {
+  animation: screen-in 0.4s ease both;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.stagger > *:nth-child(n + 5) {
+  animation-delay: 160ms;
+}
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.tagline {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 700;
+  line-height: 1.25;
+  margin-bottom: 20px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.row-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.row-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.small {
+  font-size: 0.8rem;
+}
+
+.card-button {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  display: block;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+.card-button:active {
+  transform: scale(0.985);
+}
+
+/* Continue Reading hero card */
+.hero-card {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  border: none;
+  border-radius: calc(var(--radius) + 6px);
+  padding: 20px;
+  text-align: left;
+  font: inherit;
+  background: color-mix(in oklab, var(--primary) 82%, black);
+  color: var(--primary-foreground);
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.hero-card:active {
+  transform: scale(0.985);
+}
+html.dark .hero-card {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+.hero-pattern {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image:
+    radial-gradient(circle at 100% 0%, var(--gold) 0 2px, transparent 3px),
+    repeating-conic-gradient(from 45deg at 90% 10%, var(--gold) 0 8deg, transparent 8deg 30deg);
+  mask-image: radial-gradient(circle at 92% 8%, black 0, transparent 70%);
+  -webkit-mask-image: radial-gradient(circle at 92% 8%, black 0, transparent 70%);
+}
+.hero-top,
+.hero-body {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.hero-body {
+  margin: 16px 0 16px;
+  align-items: flex-end;
+}
+.hero-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+html:not(.dark) .hero-label {
+  color: oklch(0.82 0.09 82);
+}
+.hero-title {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+.hero-sub {
+  font-size: 0.82rem;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+.hero-ar {
+  font-size: 2rem;
+  line-height: 1.2;
+  color: oklch(0.82 0.09 82);
+}
+html.dark .hero-ar {
+  color: var(--gold);
+}
+
+/* Continue Learning card */
+.level-medallion {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-weight: 800;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--gold) 35%, transparent);
+}
+
+/* Explore tiles: Home-only, additive on top of the existing .tile rule
+ * (mobile/src/screens/HomeScreen.tsx is still the only user of .tile). */
+.tile {
+  min-height: 116px;
+  gap: 6px;
+  transition: transform 0.15s ease;
+}
+.tile:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* --- Quran Reader (Phase 2A, Emergent UI integration) ---------------------
+ * Adapted from the approved Emergent "Stage B" reference's prototype.css
+ * (src/qr/screens/ReaderScreen.tsx). Scoped to
+ * mobile/src/screens/ReadingScreen.tsx only. `.icon-btn`/`.icon-btn-bordered`
+ * are generic enough to reuse elsewhere later, but land here first since
+ * this is their first real consumer (the font-size stepper). */
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--primary);
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    transform 0.15s ease;
+}
+.icon-btn:hover:not(:disabled) {
+  background: var(--accent);
+}
+.icon-btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.icon-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.icon-btn-bordered {
+  border-color: var(--border);
+  background: var(--card);
+}
+
+/* Home header's language toggle (P0 Emergent fidelity fix): widens the
+ * icon-btn to fit an "EN"/"FR" label next to the icon. */
+.lang-btn {
+  padding: 0 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* Sticky surah header + progress bar. Margins cancel exactly .screen's own
+ * 16px/safe-area padding (mobile/src/styles.css's .screen rule) so this
+ * reaches the screen's true edges instead of floating inset. */
+.reader-sticky {
+  position: sticky;
+  top: calc(-16px - env(safe-area-inset-top, 0px));
+  z-index: 5;
+  margin: calc(-16px - env(safe-area-inset-top, 0px)) -16px 14px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px;
+  background: color-mix(in oklab, var(--background) 90%, transparent);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.reader-sticky .appbar {
+  margin-bottom: 10px;
+}
+.reader-ar-title {
+  font-size: 1.45rem;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+/* Translation + font-size controls card. */
+.reader-controls .segmented {
+  display: flex;
+  width: 100%;
+}
+.reader-controls .seg {
+  flex: 1;
+}
+.control-label {
+  font-weight: 700;
+  color: var(--muted-foreground);
+  margin-bottom: 8px;
+}
+.font-size-value {
+  min-width: 44px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* Audio bar: always disabled on mobile (no bundled reciter audio yet --
+ * this is never wired to real playback, unlike the web app's AyahPlayButton). */
+.audio-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--border);
+  background: var(--muted);
+  opacity: 0.85;
+}
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.audio-play {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--border);
+  color: var(--muted-foreground);
+  cursor: not-allowed;
+}
+
+/* Per-ayah card. */
+.ayah-marker {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gold);
+  border: 1.5px solid color-mix(in oklab, var(--gold) 60%, transparent);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 3px var(--card),
+    inset 0 0 0 4px color-mix(in oklab, var(--gold) 30%, transparent);
+}
+.ayah-arabic {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 10px 0 14px;
+  transition: font-size 0.2s ease;
+}
+.ayah-arabic .quran-text {
+  color: var(--primary);
+  line-height: 1.6;
+}
+
+/* Respect the OS-level "reduce motion" accessibility setting: disable the
+ * Home screen's stagger-in animation and the small active-state scale
+ * transforms used across cards/tiles/buttons, without removing any
+ * functionality -- everything still renders, just without movement. */
+@media (prefers-reduced-motion: reduce) {
+  .stagger > * {
+    animation: none;
+  }
+  .card-button:active,
+  .hero-card:active,
+  .tile:active:not(:disabled),
+  .icon-btn:active:not(:disabled) {
+    transform: none;
+  }
 }

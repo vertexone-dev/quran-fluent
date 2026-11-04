@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Check, ChevronLeft, ChevronRight, X } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { getLessonForPlayer, getAyah } from "../db";
@@ -8,6 +9,7 @@ import {
   clampStepIndex,
   evaluateExerciseAnswer,
   hasCompleteResponse,
+  isLastStep,
   type ExerciseResponse,
   type LessonSection,
   type LessonExercise,
@@ -57,6 +59,13 @@ export function LessonPlayerScreen({
   const [response, setResponse] = useState<ExerciseResponse | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [correct, setCorrect] = useState(false);
+  // In-memory only, same as stepIndex above -- no user_lesson_progress
+  // write (see this file's header comment), so re-opening a completed
+  // lesson shows step 0 again rather than a remembered completion state.
+  // That is the existing, deliberate Phase 1 behavior this screen already
+  // has for position; this flag doesn't change that, it only gives the
+  // *current* session's last step a real end state instead of a dead end.
+  const [completed, setCompleted] = useState(false);
 
   if (!lesson) {
     return (
@@ -76,9 +85,45 @@ export function LessonPlayerScreen({
     );
   }
 
+  if (completed) {
+    return (
+      <div>
+        <AppBar title={lesson.title} onBack={onBack} />
+        <div className="card" style={{ textAlign: "center", padding: "32px 20px" }}>
+          <div
+            aria-hidden="true"
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: "50%",
+              background: "var(--primary)",
+              color: "var(--primary-foreground)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 16px",
+            }}
+          >
+            <Check size={30} />
+          </div>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "1.3rem", marginBottom: 8 }}>
+            {d.player.lessonComplete}
+          </h2>
+          <p className="text-muted" style={{ marginBottom: 20 }}>
+            {d.player.lessonCompleteBody}
+          </p>
+          <button type="button" className="btn btn-primary btn-block" onClick={onBack}>
+            {d.player.backToLessons}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const index = clampStepIndex(stepIndex, steps.length);
   const step = steps[index]!;
   const progress = computeProgressPercent(index, steps.length);
+  const atEnd = isLastStep(index, steps.length);
 
   function goTo(nextIndex: number) {
     setStepIndex(clampStepIndex(nextIndex, steps.length));
@@ -94,25 +139,41 @@ export function LessonPlayerScreen({
     setSubmitted(true);
   }
 
+  function handlePrimaryAction() {
+    if (atEnd) {
+      setCompleted(true);
+      return;
+    }
+    goTo(index + 1);
+  }
+
   const canAdvance = step.type === "section" || submitted;
 
   return (
     <div>
       <div className="appbar">
-        <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
-          <button className="back-button" onClick={onBack} type="button">
-            ←
+        <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+          <button className="icon-btn" onClick={onBack} type="button" aria-label={d.common.back}>
+            <ChevronLeft size={22} />
           </button>
           <h1 className="appbar-title" style={{ fontSize: "1rem" }}>
             {d.lessons.level} {lesson.level.number} · {lesson.title}
           </h1>
         </div>
         <span className="text-muted" style={{ fontSize: "0.85rem", flexShrink: 0 }}>
-          {index + 1}/{steps.length}
+          {d.player.step} {index + 1} {d.player.of} {steps.length}
         </span>
       </div>
 
-      <div className="progress-track" style={{ marginBottom: 20 }}>
+      <div
+        className="progress-track"
+        role="progressbar"
+        aria-label={d.player.step}
+        aria-valuenow={index + 1}
+        aria-valuemin={1}
+        aria-valuemax={steps.length}
+        style={{ marginBottom: 20 }}
+      >
         <div className="progress-fill" style={{ width: `${progress}%` }} />
       </div>
 
@@ -138,16 +199,17 @@ export function LessonPlayerScreen({
           onClick={() => goTo(index - 1)}
           disabled={index === 0}
         >
-          ← {d.player.previous}
+          <ChevronLeft size={16} /> {d.player.previous}
         </button>
         <button
           type="button"
           className="btn btn-primary"
           style={{ flex: 1 }}
-          onClick={() => goTo(index + 1)}
-          disabled={!canAdvance || index === steps.length - 1}
+          onClick={handlePrimaryAction}
+          disabled={!canAdvance}
         >
-          {d.player.next} →
+          {atEnd ? d.player.finish : d.player.next}{" "}
+          {atEnd ? <Check size={16} /> : <ChevronRight size={16} />}
         </button>
       </div>
     </div>
@@ -252,7 +314,7 @@ function ExerciseView({
         />
       )}
       {exercise.exercise_type === "true_false" && (
-        <TrueFalseControl response={response} submitted={submitted} onChange={onChange} />
+        <TrueFalseControl response={response} submitted={submitted} onChange={onChange} d={d} />
       )}
       {exercise.exercise_type === "matching" && (
         <MatchingControl
@@ -260,6 +322,7 @@ function ExerciseView({
           response={response}
           submitted={submitted}
           onChange={onChange}
+          d={d}
         />
       )}
 
@@ -280,7 +343,8 @@ function ExerciseView({
           className={`banner ${correct ? "banner-success" : "banner-error"}`}
           style={{ marginTop: 16 }}
         >
-          {correct ? `✓ ${d.player.correct}` : `✗ ${d.player.incorrect}`}
+          {correct ? <Check size={16} /> : <X size={16} />}
+          {correct ? d.player.correct : d.player.incorrect}
           {exercise.explanation && (
             <span style={{ fontWeight: 400, marginLeft: 6 }}>{exercise.explanation}</span>
           )}
@@ -306,11 +370,12 @@ function ChoiceControl({
   const selectedIndex = response?.kind === "choice" ? response.index : null;
 
   return (
-    <div>
+    <div role="radiogroup" aria-label={exercise.prompt} style={{ display: "grid", gap: 8 }}>
       {choices.map((choice, idx) => {
         const isSelected = selectedIndex === idx;
+        const isCorrectChoice = idx === correctIndex;
         const stateClass = submitted
-          ? idx === correctIndex
+          ? isCorrectChoice
             ? "correct"
             : isSelected
               ? "incorrect"
@@ -319,14 +384,20 @@ function ChoiceControl({
             ? "selected"
             : "";
         return (
-          <div
+          <button
             key={idx}
+            type="button"
+            role="radio"
+            aria-checked={isSelected}
+            disabled={submitted}
             className={`choice-row ${stateClass}`}
-            onClick={() => !submitted && onChange({ kind: "choice", index: idx })}
+            onClick={() => onChange({ kind: "choice", index: idx })}
           >
-            <span>{isSelected ? "●" : "○"}</span>
-            <span>{choice}</span>
-          </div>
+            <span aria-hidden="true">{isSelected ? "●" : "○"}</span>
+            <span style={{ flex: 1 }}>{choice}</span>
+            {submitted && isCorrectChoice && <Check size={16} aria-hidden="true" />}
+            {submitted && isSelected && !isCorrectChoice && <X size={16} aria-hidden="true" />}
+          </button>
         );
       })}
     </div>
@@ -337,31 +408,35 @@ function TrueFalseControl({
   response,
   submitted,
   onChange,
+  d,
 }: {
   response: ExerciseResponse | null;
   submitted: boolean;
   onChange: (r: ExerciseResponse) => void;
+  d: ReturnType<typeof useI18n>["d"];
 }) {
   const selected = response?.kind === "boolean" ? response.value : null;
   return (
     <div style={{ display: "flex", gap: 12 }}>
       <button
         type="button"
+        aria-pressed={selected === true}
         className={selected === true ? "btn btn-primary" : "btn btn-outline"}
         style={{ flex: 1 }}
         disabled={submitted}
         onClick={() => onChange({ kind: "boolean", value: true })}
       >
-        True
+        {d.player.true}
       </button>
       <button
         type="button"
+        aria-pressed={selected === false}
         className={selected === false ? "btn btn-primary" : "btn btn-outline"}
         style={{ flex: 1 }}
         disabled={submitted}
         onClick={() => onChange({ kind: "boolean", value: false })}
       >
-        False
+        {d.player.false}
       </button>
     </div>
   );
@@ -372,11 +447,13 @@ function MatchingControl({
   response,
   submitted,
   onChange,
+  d,
 }: {
   exercise: LessonExercise;
   response: ExerciseResponse | null;
   submitted: boolean;
   onChange: (r: ExerciseResponse) => void;
+  d: ReturnType<typeof useI18n>["d"];
 }) {
   const pairs =
     (exercise.resolvedPayload["pairs"] as { left: string; right: string }[] | undefined) ?? [];
@@ -396,12 +473,13 @@ function MatchingControl({
           <span style={{ minWidth: 100, fontWeight: 600 }}>{pair.left}</span>
           <select
             className="input"
+            aria-label={pair.left}
             value={selections[idx] ?? ""}
             disabled={submitted}
             onChange={(e) => setSelection(idx, e.target.value)}
           >
             <option value="" disabled>
-              …
+              {d.player.selectAnswer}
             </option>
             {options.map((opt) => (
               <option key={opt} value={opt}>

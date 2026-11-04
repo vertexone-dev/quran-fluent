@@ -1,3 +1,4 @@
+import { Check } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { AppBar } from "../AppBar";
@@ -20,11 +21,20 @@ export function OfflineAccessScreen({ onBack }: { onBack: () => void }) {
   };
 
   const rows = [
-    { label: `Arabic Qur'an (${counts.surahs} surahs)`, detail: `${counts.ayahs} ayahs` },
-    { label: "English Translation (Pickthall)", detail: `${counts.englishRows} ayahs` },
-    { label: "French Translation (Kazimirski)", detail: `${counts.frenchSegments} segments` },
-    { label: d.offline.lessonsLabel, detail: `${counts.lessons} lessons` },
-    { label: "Exercises", detail: `${counts.exercises} exercises` },
+    {
+      label: `${d.offline.arabicQuranLabel} (${counts.surahs} ${d.offline.unitSurahs})`,
+      detail: `${counts.ayahs} ${d.offline.unitAyahs}`,
+    },
+    {
+      label: d.offline.englishTranslationLabel,
+      detail: `${counts.englishRows} ${d.offline.unitAyahs}`,
+    },
+    {
+      label: d.offline.frenchTranslationLabel,
+      detail: `${counts.frenchSegments} ${d.offline.unitSegments}`,
+    },
+    { label: d.offline.lessonsLabel, detail: `${counts.lessons} ${d.offline.unitLessons}` },
+    { label: d.offline.exercisesLabel, detail: `${counts.exercises} ${d.offline.unitExercises}` },
   ];
 
   return (
@@ -41,7 +51,7 @@ export function OfflineAccessScreen({ onBack }: { onBack: () => void }) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ fontSize: "1.2rem" }}>✓</span>
+          <Check size={20} />
           <div style={{ fontWeight: 700 }}>{d.offline.upToDate}</div>
         </div>
       </div>
@@ -50,7 +60,7 @@ export function OfflineAccessScreen({ onBack }: { onBack: () => void }) {
         {rows.map((row) => (
           <div key={row.label} className="list-row" style={{ padding: 14, cursor: "default" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ color: "var(--primary)" }}>✓</span>
+              <Check size={18} className="text-primary" />
               <span style={{ fontWeight: 600 }}>{row.label}</span>
             </div>
             <span className="text-muted" style={{ fontSize: "0.8rem" }}>

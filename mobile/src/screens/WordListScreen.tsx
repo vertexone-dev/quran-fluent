@@ -37,8 +37,9 @@ export function WordListScreen({
       />
       <div className="card" style={{ padding: 0 }}>
         {words.map((w) => (
-          <div
+          <button
             key={w.id}
+            type="button"
             className="list-row"
             style={{ padding: "12px" }}
             onClick={() => onNavigate({ screen: "word-details", wordId: w.id })}
@@ -56,7 +57,7 @@ export function WordListScreen({
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: "0.88rem" }}>{w.resolvedMeaning}</div>
             </div>
-          </div>
+          </button>
         ))}
         {words.length === 0 && (
           <div className="text-muted" style={{ padding: 16, textAlign: "center" }}>

@@ -5,6 +5,7 @@ import {
   setStoredTheme,
   getStoredTextSize,
   setStoredTextSize,
+  nextThemePreference,
   type ThemePreference,
   type TextSize,
 } from "../local-store";
@@ -28,8 +29,7 @@ export function SettingsScreen({
   const textSize = getStoredTextSize();
 
   function cycleTheme() {
-    const order: ThemePreference[] = ["system", "light", "dark"];
-    const next = order[(order.indexOf(theme) + 1) % order.length]!;
+    const next = nextThemePreference(theme);
     setStoredTheme(next);
     onThemeChange(next);
   }
@@ -41,7 +41,11 @@ export function SettingsScreen({
   }
 
   const themeLabel =
-    theme === "light" ? d.settings.themeLight : theme === "dark" ? d.settings.themeDark : "System";
+    theme === "light"
+      ? d.settings.themeLight
+      : theme === "dark"
+        ? d.settings.themeDark
+        : d.settings.themeSystem;
   const textSizeLabel =
     textSize === "small"
       ? d.settings.textSizeSmall
@@ -60,14 +64,15 @@ export function SettingsScreen({
         {d.settings.language}
       </h2>
       <div className="card" style={{ padding: 0, marginBottom: 20 }}>
-        <div
+        <button
+          type="button"
           className="list-row"
           style={{ padding: 14 }}
           onClick={() => setLocale(locale === "en" ? "fr" : "en")}
         >
           <span style={{ fontWeight: 600 }}>{d.settings.language}</span>
           <span className="text-muted">{locale === "en" ? "English" : "Français"}</span>
-        </div>
+        </button>
         <div className="list-row" style={{ padding: 14, cursor: "default" }}>
           <span style={{ fontWeight: 600 }}>{d.settings.translations}</span>
           <span className="text-muted" style={{ fontSize: "0.8rem", textAlign: "right" }}>
@@ -82,17 +87,17 @@ export function SettingsScreen({
         className="text-muted"
         style={{ fontSize: "0.78rem", textTransform: "uppercase", marginBottom: 8 }}
       >
-        Appearance
+        {d.settings.appearance}
       </h2>
       <div className="card" style={{ padding: 0 }}>
-        <div className="list-row" style={{ padding: 14 }} onClick={cycleTextSize}>
+        <button type="button" className="list-row" style={{ padding: 14 }} onClick={cycleTextSize}>
           <span style={{ fontWeight: 600 }}>{d.settings.textSize}</span>
           <span className="text-muted">{textSizeLabel}</span>
-        </div>
-        <div className="list-row" style={{ padding: 14 }} onClick={cycleTheme}>
+        </button>
+        <button type="button" className="list-row" style={{ padding: 14 }} onClick={cycleTheme}>
           <span style={{ fontWeight: 600 }}>{d.settings.theme}</span>
           <span className="text-muted">{themeLabel}</span>
-        </div>
+        </button>
       </div>
     </div>
   );

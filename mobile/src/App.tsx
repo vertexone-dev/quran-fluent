@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Database } from "sql.js";
+import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 
 import { loadContentDb, getContentVersion, type ContentVersion } from "./db";
 import { DbContext } from "./DbContext";
@@ -10,6 +11,7 @@ import {
   setStoredLocale,
   getStoredTheme,
   setStoredTheme as persistTheme,
+  resolveIsDark,
   type ThemePreference,
 } from "./local-store";
 import { TabBar } from "./TabBar";
@@ -17,6 +19,7 @@ import { SplashScreen } from "./screens/SplashScreen";
 import { HomeScreen } from "./screens/HomeScreen";
 import { SurahListScreen } from "./screens/SurahListScreen";
 import { ReadingScreen } from "./screens/ReadingScreen";
+import { AyahBookmarksScreen } from "./screens/AyahBookmarksScreen";
 import { WordListScreen } from "./screens/WordListScreen";
 import { WordDetailsScreen } from "./screens/WordDetailsScreen";
 import { LessonsScreen } from "./screens/LessonsScreen";
@@ -60,9 +63,30 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    const isDark = theme === "dark" || (theme === "system" && prefersDark);
+    const isDark = resolveIsDark(theme, prefersDark);
     document.documentElement.classList.toggle("dark", isDark);
+
+    // SystemBars (bundled with @capacitor/core since 8.0, no separate
+    // plugin) has no web implementation -- it rejects every call outside
+    // the native Android/iOS runtime, which is exactly where `npm run
+    // dev`/Playwright always run this. isNativePlatform() skips the call
+    // there entirely instead of catching an always-expected rejection, so
+    // a real native-side failure (which .catch() below still surfaces,
+    // not swallows) is never confused with that expected case.
+    if (Capacitor.isNativePlatform()) {
+      SystemBars.setStyle({ style: isDark ? SystemBarsStyle.Dark : SystemBarsStyle.Light }).catch(
+        (err: unknown) => {
+          console.error("SystemBars.setStyle failed:", err);
+        },
+      );
+    }
   }, [theme, prefersDark]);
+
+  // Screen readers use <html lang> to pick pronunciation rules; without
+  // this, French UI text was always announced as if it were English.
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
 
   function setLocale(next: Locale) {
     setLocaleState(next);
@@ -77,9 +101,10 @@ export function App() {
   const i18nValue = useMemo(() => ({ locale, setLocale, d: getDictionary(locale) }), [locale]);
 
   if (error) {
+    const d = getDictionary(locale);
     return (
       <main style={{ padding: 24 }}>
-        <h1>Offline content failed to load</h1>
+        <h1>{d.common.contentLoadError}</h1>
         <p style={{ color: "var(--destructive)" }}>{error}</p>
       </main>
     );
@@ -92,7 +117,7 @@ export function App() {
           <SplashScreen />
         ) : (
           <DbContext.Provider value={{ db, version }}>
-            <Navigator theme={theme} onThemeChange={handleThemeChange} />
+            <Navigator theme={theme} onThemeChange={handleThemeChange} prefersDark={prefersDark} />
           </DbContext.Provider>
         )}
       </HistoryProvider>
@@ -117,9 +142,11 @@ const INITIAL_STATE: AppState = { tab: "home", stack: [{ screen: "home" }] };
 function Navigator({
   theme,
   onThemeChange,
+  prefersDark,
 }: {
   theme: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
+  prefersDark: boolean;
 }) {
   const { pushFrame, goBack } = useHistoryStack();
   const [state, setState] = useState<AppState>(INITIAL_STATE);
@@ -150,14 +177,25 @@ function Navigator({
   return (
     <div className="app-shell">
       <div className="screen">
-        {route.screen === "home" && <HomeScreen onNavigate={handleNavigate} />}
+        {route.screen === "home" && (
+          <HomeScreen
+            onNavigate={handleNavigate}
+            theme={theme}
+            onThemeChange={onThemeChange}
+            prefersDark={prefersDark}
+          />
+        )}
         {route.screen === "surah-list" && <SurahListScreen onNavigate={handleNavigate} />}
         {route.screen === "reading" && (
           <ReadingScreen
             surahNumber={route.surahNumber}
+            targetAyahNumber={route.targetAyahNumber}
             onNavigate={handleNavigate}
             onBack={goBack}
           />
+        )}
+        {route.screen === "ayah-bookmarks" && (
+          <AyahBookmarksScreen onNavigate={handleNavigate} onBack={goBack} />
         )}
         {route.screen === "word-list" && (
           <WordListScreen onNavigate={handleNavigate} onBack={goBack} />

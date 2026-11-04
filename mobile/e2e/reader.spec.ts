@@ -30,7 +30,7 @@ test.describe("Surah List", () => {
 
   test("Makki/Madani filter narrows the real revelation_type split", async ({ page }) => {
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();
-    await page.locator(".chip", { hasText: "Madani" }).click();
+    await page.locator(".seg", { hasText: "Madani" }).click();
     const count = await page.locator(".list-row").count();
     expect(count).toBeGreaterThan(0);
     expect(count).toBeLessThan(114);
@@ -39,11 +39,15 @@ test.describe("Surah List", () => {
 
   test("favoriting a surah persists locally across a reload", async ({ page }) => {
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();
-    await page.locator(".list-row").first().locator("button[aria-label='favorite']").click();
+    await page
+      .locator(".list-row")
+      .first()
+      .locator("button[aria-label='Add to Favorites']")
+      .click();
 
     await page.reload();
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();
-    await page.locator(".chip", { hasText: "Favorites" }).click();
+    await page.locator(".seg", { hasText: "Favorites" }).click();
     await expect(page.locator(".list-row")).toHaveCount(1);
     await expect(page.locator(".list-row").first()).toContainText("Al-Fatiha");
   });
@@ -55,20 +59,24 @@ test.describe("Reading View", () => {
     await page.locator(".list-row", { hasText: "Al-Fatiha" }).click();
     await expect(page.locator("h1")).toHaveText("Al-Fatiha");
 
-    // Arabic tab is selected by default.
+    // Arabic is always shown (Phase 2A: translation selection adds a
+    // translation alongside it rather than replacing it), and "Arabic
+    // only" is the default selection.
     await expect(page.locator(".quran-text").first()).toContainText("بِسْمِ");
 
-    await page.locator(".chip", { hasText: "English" }).click();
-    await expect(page.locator(".card").first()).toContainText(/In the name of Allah/i);
+    await page.locator(".seg", { hasText: "English" }).click();
+    await expect(page.locator(".verse-card").first()).toContainText(/In the name of Allah/i);
+    // Arabic remains visible alongside the English translation.
+    await expect(page.locator(".quran-text").first()).toContainText("بِسْمِ");
 
-    await page.locator(".chip", { hasText: "French" }).click();
-    await expect(page.locator(".card").first()).toContainText(/Dieu/);
+    await page.locator(".seg", { hasText: "French" }).click();
+    await expect(page.locator(".verse-card").first()).toContainText(/Dieu/);
   });
 
   test("every ayah in Al-Fatiha renders (no silent gaps)", async ({ page }) => {
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();
     await page.locator(".list-row", { hasText: "Al-Fatiha" }).click();
-    await expect(page.locator(".card")).toHaveCount(7);
+    await expect(page.locator(".verse-card")).toHaveCount(7);
   });
 });
 

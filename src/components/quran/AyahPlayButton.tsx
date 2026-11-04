@@ -5,7 +5,7 @@ import { Loader2, Pause, Play, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
-import { fetchLearnerSnapshot } from "@/lib/learner";
+import { fetchLearnerSnapshot, LEARNER_SNAPSHOT_STALE_TIME_MS } from "@/lib/learner";
 import {
   ayahAudioPlayer,
   DEFAULT_RECITER,
@@ -66,6 +66,7 @@ export function usePreferredReciter(): { reciter: ReciterKey; isReady: boolean }
     queryKey: ["learner", user?.id],
     queryFn: () => fetchLearnerSnapshot(user!.id),
     enabled: Boolean(user?.id),
+    staleTime: LEARNER_SNAPSHOT_STALE_TIME_MS,
   });
   if (!user) return { reciter: DEFAULT_RECITER, isReady: true };
   return {

@@ -198,16 +198,28 @@ test.describe("production polish", () => {
       // key somewhere else on the page".
       const translationValue = page.locator("dd").nth(4);
       const reciterValue = page.locator("dd").nth(5);
-      await expect(translationValue).toHaveText("English — Saheeh International");
+      // "en_sahih" is learning_preferences.preferred_translation's schema
+      // default (see translation-labels.ts) -- resolvePreferredTranslationLocale
+      // treats it as "no preference at all" (falls back to the interface
+      // locale), not a specific edition, so the label must say so honestly
+      // rather than claim it means Pickthall.
+      await expect(translationValue).toHaveText("Not set — follows interface language");
       await expect(reciterValue).toHaveText("Mahmoud Khalil Al-Husary");
 
       await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
       await page.reload();
-      await expect(translationValue).toHaveText("Anglais — Saheeh International");
+      await expect(translationValue).toHaveText("Non défini — suit la langue de l'interface");
       // Reciter names are proper nouns and stay the same in French.
       await expect(reciterValue).toHaveText("Mahmoud Khalil Al-Husary");
     } finally {
       await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+      // Restored to "en_sahih" -- the column is NOT NULL, and this is its
+      // own schema default, which resolvePreferredTranslationLocale
+      // treats identically to "no preference at all" (falls back to
+      // locale), so leaving it behind can never break any other spec that
+      // relies on locale alone to drive the reader's translation language
+      // (see 14-translation-fallback.spec.ts, 49-french-translation-
+      // remediation.spec.ts, 50-kazimirski-french-reader.spec.ts).
       await client
         .from("learning_preferences")
         .update({ preferred_translation: "en_sahih", preferred_reciter: "mishary_alafasy" })

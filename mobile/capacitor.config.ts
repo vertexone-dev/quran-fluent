@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.quranroots.mobilefeasibility",
-  appName: "QuranRoots Offline",
+  appId: "com.quranroots.app",
+  appName: "QuranRoots",
   webDir: "dist",
 };
 

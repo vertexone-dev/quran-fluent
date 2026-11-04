@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#FFFFFF</color>
+    <!-- Warm ivory, the approved brand's real "background" design token (Sprint 4). -->
+    <color name="ic_launcher_background">#FAF6EC</color>
 </resources>

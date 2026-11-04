@@ -1,3 +1,4 @@
+import { Brain, Check, ChevronRight, Settings as SettingsIcon } from "lucide-react";
 import { useI18n } from "../i18n";
 import { AppBar } from "../AppBar";
 import type { Route } from "../navigation";
@@ -13,33 +14,35 @@ export function MoreScreen({ onNavigate }: { onNavigate: (route: Route) => void 
       <div className="card" style={{ padding: 0 }}>
         <div className="list-row" style={{ padding: 14, opacity: 0.55, cursor: "default" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: "1.2rem" }}>🧠</span>
+            <Brain size={18} />
             <span style={{ fontWeight: 600 }}>{d.more.memorization}</span>
           </div>
           <span className="chip chip-muted">{d.more.comingSoon}</span>
         </div>
-        <div
+        <button
+          type="button"
           className="list-row"
           style={{ padding: 14 }}
           onClick={() => onNavigate({ screen: "offline-access" })}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: "1.2rem" }}>✓</span>
+            <Check size={18} className="text-primary" />
             <span style={{ fontWeight: 600 }}>{d.more.offlineAccess}</span>
           </div>
-          <span>→</span>
-        </div>
-        <div
+          <ChevronRight size={18} className="text-muted" />
+        </button>
+        <button
+          type="button"
           className="list-row"
           style={{ padding: 14 }}
           onClick={() => onNavigate({ screen: "settings" })}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: "1.2rem" }}>⚙</span>
+            <SettingsIcon size={18} />
             <span style={{ fontWeight: 600 }}>{d.more.settings}</span>
           </div>
-          <span>→</span>
-        </div>
+          <ChevronRight size={18} className="text-muted" />
+        </button>
       </div>
     </div>
   );

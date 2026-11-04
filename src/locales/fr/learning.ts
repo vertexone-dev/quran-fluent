@@ -145,6 +145,8 @@ export const learning: typeof EnLearning = {
     preferredTranslation: "Traduction préférée",
     preferredReciter: "Récitateur préféré",
     showTransliteration: "Afficher la translittération",
+    transliterationHint:
+      "La translittération verset par verset n'est pas encore disponible dans le lecteur du Coran. Votre préférence est enregistrée et prendra effet dès son lancement.",
     appearance: "Apparence",
     security: "Sécurité du compte",
     securityDesc: "Recevez un lien sécurisé pour changer votre mot de passe.",

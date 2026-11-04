@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ChevronRight } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { useHistoryStack } from "../HistoryContext";
@@ -50,8 +51,9 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
         <AppBar title={selectedModule.title} onBack={goBack} />
         <div className="card" style={{ padding: 0 }}>
           {lessons.map((lesson) => (
-            <div
+            <button
               key={lesson.id}
+              type="button"
               className="list-row"
               style={{ padding: 14 }}
               onClick={() => onNavigate({ screen: "lesson-player", lessonId: lesson.id })}
@@ -60,7 +62,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
               <div className="text-muted" style={{ fontSize: "0.8rem" }}>
                 {lesson.estimated_minutes} {d.lessons.minutes}
               </div>
-            </div>
+            </button>
           ))}
           {lessons.length === 0 && (
             <div className="text-muted" style={{ padding: 16 }}>
@@ -83,15 +85,16 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
         )}
         <div className="card" style={{ padding: 0 }}>
           {modules.map((m) => (
-            <div
+            <button
               key={m.id}
+              type="button"
               className="list-row"
               style={{ padding: 14 }}
               onClick={() => openModule(m.id)}
             >
               <div style={{ fontWeight: 600 }}>{m.title}</div>
-              <span>→</span>
-            </div>
+              <ChevronRight size={18} className="text-muted" />
+            </button>
           ))}
           {modules.length === 0 && (
             <div className="text-muted" style={{ padding: 16 }}>
@@ -113,7 +116,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
           style={{ border: "none", cursor: "pointer" }}
           onClick={() => setTab("levels")}
         >
-          Levels
+          {d.lessons.levelsTab}
         </button>
         <button
           type="button"
@@ -121,7 +124,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
           style={{ border: "none", cursor: "pointer" }}
           onClick={() => setTab("categories")}
         >
-          Categories
+          {d.lessons.categoriesTab}
         </button>
       </div>
 
@@ -134,8 +137,9 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
               0,
             );
             return (
-              <div
+              <button
                 key={level.id}
+                type="button"
                 className="list-row"
                 style={{ padding: 14 }}
                 onClick={() => openLevel(level.id)}
@@ -164,14 +168,14 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
                     </div>
                   </div>
                 </div>
-                <span>→</span>
-              </div>
+                <ChevronRight size={18} className="text-muted" />
+              </button>
             );
           })}
         </div>
       ) : (
         <div className="card text-muted" style={{ textAlign: "center", padding: 24 }}>
-          Categories aren't part of the offline content bundle in this release.
+          {d.lessons.categoriesUnavailable}
         </div>
       )}
     </div>
