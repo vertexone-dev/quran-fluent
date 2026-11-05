@@ -5,8 +5,10 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * QuranRoots design system (Phase 9 premium redesign).
- * Brand palette:
+ * QuranRoots design system (Phase 9 premium redesign; QR-UI-002A
+ * foundation update).
+ * Brand palette (:root / light theme -- preserved as the accessible
+ * alternate theme per the Design Lock v1.0 approved direction):
  *   Deep Emerald      primary surfaces, buttons -- cooler/deeper than the
  *                     original olive-green, still from the same warm-earth
  *                     family, never a bright/saturated "app green"
@@ -14,6 +16,10 @@
  *   Antique Gold      restrained accent -- muted, not a bright/metallic gold
  *   Sky Blue Support  #70A0B1  support
  *   Charcoal          text / detail
+ * .dark is now the site's DEFAULT identity (see theme.tsx), built from the
+ * Design Lock v1.0 manifest's named palette (Midnight Teal / Emerald /
+ * Antique Gold / Ivory / Sand) -- see the .dark block below for the
+ * hex -> oklch derivation and contrast verification.
  * All colors are oklch tokens. Never hardcode colors in components.
  * Every pairing below is checked against real WCAG contrast math (not
  * eyeballed) -- see the contrast verification in this phase's PR body.
@@ -151,44 +157,62 @@
 }
 
 .dark {
-  --background: oklch(0.239 0.018 155);
-  --foreground: oklch(0.949 0.02 88);
-  --card: oklch(0.283 0.024 155);
-  --card-foreground: oklch(0.949 0.02 88);
-  --popover: oklch(0.283 0.024 155);
-  --popover-foreground: oklch(0.949 0.02 88);
-  /* Same deep-emerald hue shift as :root's --primary/--gold above. */
-  --primary: oklch(0.719 0.09 155);
-  --primary-foreground: oklch(0.213 0.02 155);
-  --secondary: oklch(0.325 0.026 155);
-  --secondary-foreground: oklch(0.949 0.02 88);
-  --muted: oklch(0.325 0.026 155);
-  --muted-foreground: oklch(0.76 0.024 100);
-  --accent: oklch(0.355 0.03 155);
-  --accent-foreground: oklch(0.949 0.02 88);
-  --gold: oklch(0.75 0.095 82);
-  --gold-foreground: oklch(0.213 0.02 155);
+  /* QR-UI-002A: dark mode is now the approved Design Lock v1.0 "Midnight
+     Teal" brand identity (the site's default -- see theme.tsx), not just an
+     alternate color scheme. Anchor colors come directly from the Design
+     Lock manifest's named palette, converted to oklch via the standard
+     sRGB -> OKLab -> OKLCH transform (Ottosson); WCAG contrast re-verified
+     against the literal hex values, not eyeballed:
+       Midnight Teal #0B2F2F -> oklch(0.280 0.040 195.1)  background
+       Emerald       #0F766E -> oklch(0.511 0.086 186.4)  primary
+       Antique Gold  #D4AF37 -> oklch(0.767 0.139 91.1)   gold
+       Ivory         #F9F6EF -> oklch(0.974 0.010 87.5)   foreground/text
+       Sand          #E7D9C5 -> oklch(0.891 0.031 77.0)   muted-foreground
+     Verified: ivory-on-teal 13.31:1, gold-on-teal 6.83:1, ivory-on-emerald
+     5.07:1, sand-on-teal 10.35:1 -- all clear WCAG AA (4.5:1). --support
+     (Sky Blue) and --destructive are outside the 5 approved colors and are
+     deliberately left unchanged from the prior palette. Surface tones
+     (card/secondary/accent) keep the same lightness/chroma offsets from
+     --background the previous palette used, just re-centered on the new
+     teal hue instead of the old green one, so the existing visual
+     hierarchy is preserved. */
+  --background: oklch(0.28 0.04 195.1);
+  --foreground: oklch(0.974 0.01 87.5);
+  --card: oklch(0.324 0.046 195.1);
+  --card-foreground: oklch(0.974 0.01 87.5);
+  --popover: oklch(0.324 0.046 195.1);
+  --popover-foreground: oklch(0.974 0.01 87.5);
+  --primary: oklch(0.511 0.086 186.4);
+  --primary-foreground: oklch(0.974 0.01 87.5);
+  --secondary: oklch(0.366 0.048 195.1);
+  --secondary-foreground: oklch(0.974 0.01 87.5);
+  --muted: oklch(0.366 0.048 195.1);
+  --muted-foreground: oklch(0.891 0.031 77);
+  --accent: oklch(0.396 0.052 195.1);
+  --accent-foreground: oklch(0.974 0.01 87.5);
+  --gold: oklch(0.767 0.139 91.1);
+  --gold-foreground: oklch(0.28 0.04 195.1);
   --support: oklch(0.73 0.06 222);
   --support-foreground: oklch(0.213 0.02 155);
-  --parchment: oklch(0.325 0.026 155);
+  --parchment: oklch(0.366 0.048 195.1);
   --destructive: oklch(0.65 0.19 25);
   --destructive-foreground: oklch(0.98 0.01 88);
-  --border: oklch(0.949 0.02 88 / 14%);
-  --input: oklch(0.949 0.02 88 / 18%);
-  --ring: oklch(0.719 0.09 155);
-  --chart-1: oklch(0.719 0.09 155);
-  --chart-2: oklch(0.75 0.095 82);
+  --border: oklch(0.974 0.01 87.5 / 14%);
+  --input: oklch(0.974 0.01 87.5 / 18%);
+  --ring: oklch(0.511 0.086 186.4);
+  --chart-1: oklch(0.511 0.086 186.4);
+  --chart-2: oklch(0.767 0.139 91.1);
   --chart-3: oklch(0.73 0.06 222);
-  --chart-4: oklch(0.63 0.07 155);
-  --chart-5: oklch(0.86 0.03 88);
-  --sidebar: oklch(0.283 0.024 155);
-  --sidebar-foreground: oklch(0.949 0.02 88);
-  --sidebar-primary: oklch(0.719 0.09 155);
-  --sidebar-primary-foreground: oklch(0.213 0.02 155);
-  --sidebar-accent: oklch(0.355 0.03 155);
-  --sidebar-accent-foreground: oklch(0.949 0.02 88);
-  --sidebar-border: oklch(0.949 0.02 88 / 14%);
-  --sidebar-ring: oklch(0.719 0.09 155);
+  --chart-4: oklch(0.63 0.07 195.1);
+  --chart-5: oklch(0.86 0.03 87.5);
+  --sidebar: oklch(0.324 0.046 195.1);
+  --sidebar-foreground: oklch(0.974 0.01 87.5);
+  --sidebar-primary: oklch(0.511 0.086 186.4);
+  --sidebar-primary-foreground: oklch(0.974 0.01 87.5);
+  --sidebar-accent: oklch(0.396 0.052 195.1);
+  --sidebar-accent-foreground: oklch(0.974 0.01 87.5);
+  --sidebar-border: oklch(0.974 0.01 87.5 / 14%);
+  --sidebar-ring: oklch(0.511 0.086 186.4);
 
   --gradient-hero:
     radial-gradient(
