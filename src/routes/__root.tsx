@@ -127,10 +127,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+// QR-UI-002A: Midnight Teal (.dark) is the site's new default theme (see
+// theme.tsx), but SSR always renders :root -- ThemeProvider only adds the
+// .dark class from a useEffect, which runs after first paint. Without this,
+// every visitor whose stored/default theme resolves to dark would see a
+// flash of the old ivory theme before hydration. This blocking inline
+// script runs before paint and must stay logically identical to
+// applyTheme()/STORAGE_KEY in src/lib/theme.tsx (duplicated on purpose --
+// it has to run standalone, before any app code loads). It intentionally
+// mutates <html> before React hydrates, so <html> below needs
+// suppressHydrationWarning -- otherwise React flags the className this
+// script just set as a mismatch against the class-less SSR markup.
+const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem("quranroots-theme");var dark=s==="dark"||s===null||(s==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",dark);}catch(e){}})();`;
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>

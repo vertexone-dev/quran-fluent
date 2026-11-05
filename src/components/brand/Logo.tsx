@@ -12,11 +12,22 @@ export function Logo({ className, showWordmark = true, tagline = false }: LogoPr
   const { d } = useI18n();
   return (
     <span className={cn("flex items-center gap-3", className)}>
+      {/* QR-UI-002A: logo asset is now a cropped badge from the Design Lock
+          v1.0 official logo (arch/mosque/book emblem, wordmark text
+          excluded -- the wordmark below is still live text, not baked into
+          the image). It carries its own Midnight Teal background rather
+          than being transparent, so it's rendered as a rounded badge
+          instead of a borderless mark -- that reads as intentional in both
+          themes instead of showing a stray rectangle in the light theme.
+          width/height match the asset's real 240x216 intrinsic ratio
+          (previously 70x40 didn't match the old asset's ratio either; it's
+          just a layout-reservation hint, h-10 w-auto still controls the
+          rendered size). */}
       <img
         src={logoAsset.url}
         alt={d.common.brand.logoAlt}
-        className="h-10 w-auto shrink-0"
-        width={70}
+        className="h-10 w-auto shrink-0 rounded-lg"
+        width={44}
         height={40}
       />
       {showWordmark && (
