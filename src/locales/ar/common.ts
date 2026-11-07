@@ -20,6 +20,7 @@ export const common = {
     about: "حول",
     dashboard: "لوحة التحكم",
     daily: "الدراسة اليومية",
+    reflect: "تدبّر",
     memorize: "الحفظ",
     practice: "التمرين",
     progress: "التقدّم",

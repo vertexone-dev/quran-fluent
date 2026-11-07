@@ -57,6 +57,7 @@ export const quran = {
       bookmark: "Bookmark Ayah",
       removeBookmark: "Remove Bookmark",
       addNote: "Add Note",
+      reflect: "Reflect",
       memorize: "Memorize",
       more: "More actions",
     },

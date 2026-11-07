@@ -1,0 +1,50 @@
+export const reflect = {
+  title: "Méditer",
+  subtitle: "Réfléchir • Appliquer • Grandir",
+  cardTitle: "Méditation sur ce verset",
+  defaultQuestion: "Comment ce verset parle-t-il à ma vie aujourd’hui ?",
+  prompts: [
+    {
+      label: "Gratitude",
+      question: "De quel bienfait ce verset vous rappelle-t-il d’être reconnaissant ?",
+    },
+    {
+      label: "Patience",
+      question: "Où ce verset pourrait-il vous aider à être plus patient ?",
+    },
+    {
+      label: "Confiance en Allah",
+      question: "Comment ce verset peut-il renforcer votre confiance en Allah aujourd’hui ?",
+    },
+    {
+      label: "Pratique quotidienne",
+      question: "Quelle petite action pouvez-vous accomplir aujourd’hui grâce à ce verset ?",
+    },
+  ],
+  promptsLabel: "Pistes de méditation",
+  placeholder: "Écrivez votre réflexion…",
+  save: "Enregistrer la réflexion",
+  saved: "Réflexion enregistrée",
+  cancel: "Annuler",
+  edit: "Modifier",
+  del: "Supprimer",
+  deleteConfirmTitle: "Supprimer cette réflexion ?",
+  deleteConfirmBody: "Cette action est irréversible.",
+  notesTitle: "Vos réflexions sur ce verset",
+  empty: "Vos réflexions enregistrées sur ce verset apparaîtront ici.",
+  loading: "Chargement de vos réflexions…",
+  saveError: "Impossible d’enregistrer votre réflexion. Réessayez.",
+  deleteError: "Impossible de supprimer votre réflexion. Réessayez.",
+  error: {
+    title: "Impossible de charger vos réflexions.",
+    retry: "Réessayer",
+  },
+  openAyah: "Ouvrir dans le lecteur",
+  ayahUnavailable: "Ce verset n’a pas pu être chargé.",
+  noAyah: {
+    title: "Choisissez un verset à méditer",
+    body: "Ouvrez le lecteur du Coran, choisissez un verset, puis sélectionnez « Méditer » pour commencer.",
+    cta: "Ouvrir le lecteur du Coran",
+  },
+  viewAllNotes: "Voir toutes vos notes",
+};

@@ -35,6 +35,7 @@ const authedLinks = [
   { to: "/daily", key: "daily" },
   { to: "/learn", key: "learn" },
   { to: "/quran", key: "quran" },
+  { to: "/reflect", key: "reflect" },
   { to: "/memorize", key: "memorize" },
   { to: "/practice", key: "practice" },
   { to: "/progress", key: "progress" },

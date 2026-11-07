@@ -56,6 +56,7 @@ export const quran = {
       bookmark: "إشارة مرجعية للآية",
       removeBookmark: "إزالة الإشارة المرجعية",
       addNote: "إضافة ملاحظة",
+      reflect: "تدبّر",
       memorize: "حفظ",
       more: "إجراءات أخرى",
     },

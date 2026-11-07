@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, BookmarkCheck, BookOpen, Check, NotebookPen } from "lucide-react";
+import { Bookmark, BookmarkCheck, BookOpen, Check, NotebookPen, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -281,6 +281,20 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
                           }
                         >
                           <NotebookPen className="size-4" aria-hidden />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={r.actions.reflect}
+                          title={r.actions.reflect}
+                          asChild
+                        >
+                          <Link
+                            to="/reflect"
+                            search={{ surah: ayah.surah_number, ayah: ayah.ayah_number }}
+                          >
+                            <Sparkles className="size-4" aria-hidden />
+                          </Link>
                         </Button>
                         <Button
                           variant="ghost"

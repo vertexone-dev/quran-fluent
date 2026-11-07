@@ -165,6 +165,7 @@ export default defineConfig({
         "60-level6-production-validation.spec.ts",
         "61-settings-billing-routing.spec.ts",
         "62-premium-checkout.spec.ts",
+        "65-reflect.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],

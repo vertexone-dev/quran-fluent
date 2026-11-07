@@ -1,0 +1,50 @@
+export const reflect = {
+  title: "Reflect",
+  subtitle: "Ponder · Apply · Grow",
+  cardTitle: "Reflection on This Ayah",
+  defaultQuestion: "How does this verse speak to my life today?",
+  prompts: [
+    {
+      label: "Gratitude",
+      question: "What blessing does this ayah remind you to be grateful for?",
+    },
+    {
+      label: "Patience",
+      question: "Where in your life could this ayah help you be more patient?",
+    },
+    {
+      label: "Trust in Allah",
+      question: "How can this ayah strengthen your trust in Allah today?",
+    },
+    {
+      label: "Daily Practice",
+      question: "What is one small action you can take today from this ayah?",
+    },
+  ],
+  promptsLabel: "Reflection prompts",
+  placeholder: "Write your reflection…",
+  save: "Save reflection",
+  saved: "Reflection saved",
+  cancel: "Cancel",
+  edit: "Edit",
+  del: "Delete",
+  deleteConfirmTitle: "Delete this reflection?",
+  deleteConfirmBody: "This can't be undone.",
+  notesTitle: "Your reflections on this ayah",
+  empty: "Your saved reflections on this ayah will appear here.",
+  loading: "Loading your reflections…",
+  saveError: "Couldn't save your reflection. Try again.",
+  deleteError: "Couldn't delete your reflection. Try again.",
+  error: {
+    title: "Couldn't load your reflections.",
+    retry: "Retry",
+  },
+  openAyah: "Open in reader",
+  ayahUnavailable: "This ayah couldn't be loaded.",
+  noAyah: {
+    title: "Choose an ayah to reflect on",
+    body: 'Open the Qur\'an Reader, pick an ayah, and select "Reflect" to begin.',
+    cta: "Open the Qur'an Reader",
+  },
+  viewAllNotes: "View all your notes",
+};

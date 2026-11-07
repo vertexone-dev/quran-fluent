@@ -58,6 +58,7 @@ export const quran: typeof EnQuran = {
       bookmark: "Ajouter aux favoris",
       removeBookmark: "Retirer des favoris",
       addNote: "Ajouter une note",
+      reflect: "Méditer",
       memorize: "Mémoriser",
       more: "Plus d'actions",
     },
