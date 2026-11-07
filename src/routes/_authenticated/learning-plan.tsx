@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PathTimeline } from "@/components/learning/PathTimeline";
 import { useAuth } from "@/lib/auth";
-import { useI18n } from "@/lib/i18n";
+import { LOCALE_LABELS, useI18n } from "@/lib/i18n";
+import { isLocale } from "@/locales";
 import { fetchLearnerSnapshot, LEARNER_SNAPSHOT_STALE_TIME_MS } from "@/lib/learner";
 import { fetchLearningPath } from "@/lib/placement";
 import { translationLabel } from "@/lib/translation-labels";
@@ -71,7 +72,9 @@ function LearningPlan() {
     },
     {
       label: plan.interfaceLanguage,
-      value: data?.profile?.interface_language === "fr" ? "Français" : "English",
+      value: isLocale(data?.profile?.interface_language)
+        ? LOCALE_LABELS[data.profile.interface_language].label
+        : LOCALE_LABELS.en.label,
     },
     {
       label: plan.preferredTranslation,

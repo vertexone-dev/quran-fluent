@@ -9,6 +9,8 @@ import {
   type ReactNode,
 } from "react";
 
+import { DirectionProvider } from "@radix-ui/react-direction";
+
 import { dictionaries, isLocale, SUPPORTED_LOCALES, type Dictionary, type Locale } from "@/locales";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -22,6 +24,9 @@ export { SUPPORTED_LOCALES, isRtlLocale };
 export const LOCALE_LABELS: Record<Locale, { label: string; short: string }> = {
   en: { label: "English", short: "EN" },
   fr: { label: "Français", short: "FR" },
+  // Each locale's own native name, shown as-is regardless of the active UI
+  // language -- matches the existing en/fr convention above (QR-INT-002).
+  ar: { label: "العربية", short: "AR" },
 };
 
 type Vars = Record<string, string | number>;
@@ -171,7 +176,16 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     };
   }, [locale, setLocale]);
 
-  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+  return (
+    <I18nContext.Provider value={value}>
+      {/* QR-INT-002: lets Radix's Popper-based primitives (dropdown, select,
+          menu, tooltip, popover...) flip their "start"/"end" placement math
+          for rtl locales, instead of relying on each one's own best-effort
+          DOM `dir` detection. Mirrors the document.dir effect above exactly,
+          off the same `locale`. */}
+      <DirectionProvider dir={isRtlLocale(locale) ? "rtl" : "ltr"}>{children}</DirectionProvider>
+    </I18nContext.Provider>
+  );
 }
 
 export function useI18n() {

@@ -33,19 +33,27 @@ import { PICKTHALL_EDITION_ID } from "@/lib/translations";
  * rather than inventing a name.
  */
 export const TRANSLATION_NAMES: Record<string, Record<Locale, string>> = {
-  [PICKTHALL_EDITION_ID]: { en: "English — Pickthall", fr: "Anglais — Pickthall" },
+  [PICKTHALL_EDITION_ID]: {
+    en: "English — Pickthall",
+    fr: "Anglais — Pickthall",
+    ar: "الإنجليزية — بيكثال",
+  },
   [KAZIMIRSKI_EDITION_ID]: {
     en: "French — Kazimirski (1869)",
     fr: "Français — Kazimirski (1869)",
+    ar: "الفرنسية — كازيمرسكي (1869)",
   },
   en_sahih: {
     en: "Not set — follows interface language",
     fr: "Non défini — suit la langue de l'interface",
+    ar: "غير محدد — يتبع لغة الواجهة",
   },
 };
 
 export function translationLabel(value: string, locale: Locale): string {
   const known = TRANSLATION_NAMES[value];
   if (known) return known[locale];
-  return locale === "fr" ? `Source configurée : ${value}` : `Configured source: ${value}`;
+  if (locale === "fr") return `Source configurée : ${value}`;
+  if (locale === "ar") return `المصدر المُهيَّأ: ${value}`;
+  return `Configured source: ${value}`;
 }
