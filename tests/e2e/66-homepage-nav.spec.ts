@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+import { clickAndExpect } from "./utils/auth";
+
 // QR-INT-004: the public homepage's new quick-link grid (Qur'an, Learn,
 // Reflect, Memorize -- the same four destinations as the authenticated
 // nav minus "Home", since this page already is Home) and the Design Lock
@@ -67,18 +69,29 @@ test.describe("homepage theme support", () => {
     // visible/interactable at this test's viewport; getByTestId does not
     // filter by visibility and would match both.
     const themeTrigger = page.getByRole("button", { name: "Change theme" });
+    const lightItem = page.getByRole("menuitem", { name: "Light" });
+    const darkItem = page.getByRole("menuitem", { name: "Dark" });
 
     // Default is the Design Lock v1 Midnight Teal identity (dark).
     await expect(page.locator("html")).toHaveClass(/dark/);
     await expect(quickLinks(page).getByRole("link", { name: "Reflect" })).toBeVisible();
 
-    await themeTrigger.click();
-    await page.getByRole("menuitem", { name: "Light" }).click();
+    // Same cold-`vite dev`-compile hydration-remount race as submitLogin in
+    // utils/auth.ts (confirmed via a local trace: the click lands --
+    // Playwright's own accessibility snapshot shows the button in its
+    // transient `:active` state -- but the dropdown never reaches
+    // data-state="open", because the click landed on a trigger instance
+    // React was about to replace). Reproduced locally under repeated runs
+    // and matches CI #190's report exactly (same line, same symptom, both
+    // the initial attempt and Playwright's own retry). Retrying the whole
+    // open-click is the same fix applied there, not an arbitrary wait.
+    await clickAndExpect(themeTrigger, () => expect(lightItem).toBeVisible());
+    await lightItem.click();
     await expect(page.locator("html")).not.toHaveClass(/dark/);
     await expect(quickLinks(page).getByRole("link", { name: "Reflect" })).toBeVisible();
 
-    await themeTrigger.click();
-    await page.getByRole("menuitem", { name: "Dark" }).click();
+    await clickAndExpect(themeTrigger, () => expect(darkItem).toBeVisible());
+    await darkItem.click();
     await expect(page.locator("html")).toHaveClass(/dark/);
   });
 });
