@@ -292,8 +292,11 @@ test.describe("production polish", () => {
       await page.goto("/");
       // Headline, subtitle and both CTAs are unaffected by the image failure.
       // "Start Learning" also appears in the header nav and footer CTA --
-      // .first() scopes to the hero's own copy.
-      await expect(page.getByRole("heading", { name: /Learn Arabic/i })).toBeVisible();
+      // .first() scopes to the hero's own copy. level: 1 scopes the
+      // heading to the hero's real <h1> (QR-INT-004's quick-links grid
+      // below the hero added its own <h3>"Learn Arabic" card, which an
+      // unscoped name match now also resolves to).
+      await expect(page.getByRole("heading", { name: /Learn Arabic/i, level: 1 })).toBeVisible();
       await expect(page.getByRole("link", { name: "Start Learning" }).first()).toBeVisible();
       await expect(page.getByRole("link", { name: "Explore the Qur'an" })).toBeVisible();
     });
