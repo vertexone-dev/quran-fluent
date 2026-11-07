@@ -14,6 +14,7 @@ export const common = {
     about: "About",
     dashboard: "Dashboard",
     daily: "Daily study",
+    reflect: "Reflect",
     memorize: "Memorize",
     practice: "Practice",
     progress: "Progress",

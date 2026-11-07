@@ -16,6 +16,7 @@ export const common: typeof EnCommon = {
     about: "À propos",
     dashboard: "Accueil",
     daily: "Leçon du jour",
+    reflect: "Méditer",
     memorize: "Mémoriser",
     practice: "S'entraîner",
     progress: "Progression",

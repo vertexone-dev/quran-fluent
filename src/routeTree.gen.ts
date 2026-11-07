@@ -28,6 +28,7 @@ import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authentic
 import { Route as AuthenticatedPlacementRouteImport } from './routes/_authenticated/placement'
 import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticated/practice'
 import { Route as AuthenticatedProgressRouteImport } from './routes/_authenticated/progress'
+import { Route as AuthenticatedReflectRouteImport } from './routes/_authenticated/reflect'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedLessonLessonIdRouteImport } from './routes/_authenticated/lesson.$lessonId'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings.index'
@@ -128,6 +129,11 @@ const AuthenticatedProgressRoute = AuthenticatedProgressRouteImport.update({
   path: '/progress',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedReflectRoute = AuthenticatedReflectRouteImport.update({
+  id: '/reflect',
+  path: '/reflect',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -171,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/placement': typeof AuthenticatedPlacementRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/progress': typeof AuthenticatedProgressRoute
+  '/reflect': typeof AuthenticatedReflectRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
   '/settings/billing': typeof AuthenticatedSettingsBillingRoute
@@ -195,6 +202,7 @@ export interface FileRoutesByTo {
   '/placement': typeof AuthenticatedPlacementRoute
   '/practice': typeof AuthenticatedPracticeRoute
   '/progress': typeof AuthenticatedProgressRoute
+  '/reflect': typeof AuthenticatedReflectRoute
   '/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
   '/settings/billing': typeof AuthenticatedSettingsBillingRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
@@ -220,6 +228,7 @@ export interface FileRoutesById {
   '/_authenticated/placement': typeof AuthenticatedPlacementRoute
   '/_authenticated/practice': typeof AuthenticatedPracticeRoute
   '/_authenticated/progress': typeof AuthenticatedProgressRoute
+  '/_authenticated/reflect': typeof AuthenticatedReflectRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
   '/_authenticated/settings/billing': typeof AuthenticatedSettingsBillingRoute
@@ -246,6 +255,7 @@ export interface FileRouteTypes {
     | '/placement'
     | '/practice'
     | '/progress'
+    | '/reflect'
     | '/settings'
     | '/lesson/$lessonId'
     | '/settings/billing'
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/placement'
     | '/practice'
     | '/progress'
+    | '/reflect'
     | '/lesson/$lessonId'
     | '/settings/billing'
     | '/settings'
@@ -294,6 +305,7 @@ export interface FileRouteTypes {
     | '/_authenticated/placement'
     | '/_authenticated/practice'
     | '/_authenticated/progress'
+    | '/_authenticated/reflect'
     | '/_authenticated/settings'
     | '/_authenticated/lesson/$lessonId'
     | '/_authenticated/settings/billing'
@@ -447,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedProgressRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/reflect': {
+      id: '/_authenticated/reflect'
+      path: '/reflect'
+      fullPath: '/reflect'
+      preLoaderRoute: typeof AuthenticatedReflectRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/settings': {
       id: '/_authenticated/settings'
       path: '/settings'
@@ -504,6 +523,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPlacementRoute: typeof AuthenticatedPlacementRoute
   AuthenticatedPracticeRoute: typeof AuthenticatedPracticeRoute
   AuthenticatedProgressRoute: typeof AuthenticatedProgressRoute
+  AuthenticatedReflectRoute: typeof AuthenticatedReflectRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedLessonLessonIdRoute: typeof AuthenticatedLessonLessonIdRoute
 }
@@ -519,6 +539,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPlacementRoute: AuthenticatedPlacementRoute,
   AuthenticatedPracticeRoute: AuthenticatedPracticeRoute,
   AuthenticatedProgressRoute: AuthenticatedProgressRoute,
+  AuthenticatedReflectRoute: AuthenticatedReflectRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedLessonLessonIdRoute: AuthenticatedLessonLessonIdRoute,
 }

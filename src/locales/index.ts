@@ -8,6 +8,7 @@ import { memorization as enMemorization } from "./en/memorization";
 import { progress as enProgress } from "./en/progress";
 import { bookmarks as enBookmarks } from "./en/bookmarks";
 import { notes as enNotes } from "./en/notes";
+import { reflect as enReflect } from "./en/reflect";
 import { billing as enBilling } from "./en/billing";
 
 import { common as frCommon } from "./fr/common";
@@ -20,6 +21,7 @@ import { memorization as frMemorization } from "./fr/memorization";
 import { progress as frProgress } from "./fr/progress";
 import { bookmarks as frBookmarks } from "./fr/bookmarks";
 import { notes as frNotes } from "./fr/notes";
+import { reflect as frReflect } from "./fr/reflect";
 import { billing as frBilling } from "./fr/billing";
 
 import { common as arCommon } from "./ar/common";
@@ -32,6 +34,7 @@ import { memorization as arMemorization } from "./ar/memorization";
 import { progress as arProgress } from "./ar/progress";
 import { bookmarks as arBookmarks } from "./ar/bookmarks";
 import { notes as arNotes } from "./ar/notes";
+import { reflect as arReflect } from "./ar/reflect";
 import { billing as arBilling } from "./ar/billing";
 
 export const SUPPORTED_LOCALES = ["en", "fr", "ar"] as const;
@@ -48,6 +51,7 @@ const en = {
   progress: enProgress,
   bookmarks: enBookmarks,
   notes: enNotes,
+  reflect: enReflect,
   billing: enBilling,
 };
 
@@ -64,6 +68,7 @@ const fr: Dictionary = {
   progress: frProgress,
   bookmarks: frBookmarks,
   notes: frNotes,
+  reflect: frReflect,
   billing: frBilling,
 };
 
@@ -78,6 +83,7 @@ const ar: Dictionary = {
   progress: arProgress,
   bookmarks: arBookmarks,
   notes: arNotes,
+  reflect: arReflect,
   billing: arBilling,
 };
 
