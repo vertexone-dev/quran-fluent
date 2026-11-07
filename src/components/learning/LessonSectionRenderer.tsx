@@ -117,6 +117,13 @@ function QuranExampleSection({ section }: { section: LessonSection }) {
                     className="font-quran text-right text-2xl leading-loose text-foreground"
                     dir="rtl"
                     lang="ar"
+                    // QR-INT-002 follow-up: a bare [lang="ar"] locator used
+                    // to be an unambiguous way to find this canonical ayah
+                    // text, but now also matches the header's Arabic
+                    // LanguageSwitcher button (which legitimately carries
+                    // lang="ar" too, for its own sr-only Arabic label) --
+                    // this testid is the stable, unambiguous target.
+                    data-testid="quran-example-arabic-text"
                   >
                     {data.arabic_text}
                   </p>
