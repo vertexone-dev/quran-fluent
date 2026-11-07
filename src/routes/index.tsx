@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  BookOpen,
   BookOpenText,
   Sparkles,
   Headphones,
   Brain,
+  Feather,
   GraduationCap,
   LineChart,
   Languages,
@@ -40,6 +42,18 @@ export const Route = createFileRoute("/")({
 });
 
 const pillarIcons = [GraduationCap, BookOpenText, Brain, Languages, Headphones, LineChart];
+
+// QR-INT-004: the five primary app destinations, minus "Home" (we're
+// already on it) -- same order and targets as the authenticated nav's
+// authedLinks in SiteHeader.tsx. Reflect/Memorize are behind auth; a
+// signed-out click lands on /auth, same as every other authenticated link
+// this page already offers (e.g. the hero's "Start Learning" CTA).
+const quickLinkMeta = [
+  { icon: BookOpenText, to: "/quran" as const },
+  { icon: GraduationCap, to: "/learn" as const },
+  { icon: Feather, to: "/reflect" as const },
+  { icon: BookOpen, to: "/memorize" as const },
+];
 
 function Home() {
   const { t, d } = useI18n();
@@ -135,6 +149,42 @@ function Home() {
         </section>
 
         <section
+          className="relative mx-auto -mt-10 max-w-6xl px-4 sm:-mt-14"
+          aria-labelledby="quick-links"
+        >
+          <h2 id="quick-links" className="sr-only">
+            {home.quickLinks.title}
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            {home.quickLinks.items.map((item, index) => {
+              const meta = quickLinkMeta[index];
+              if (!meta) return null;
+              const Icon = meta.icon;
+              return (
+                <Link
+                  key={item.title}
+                  to={meta.to}
+                  className="animate-in fade-in slide-in-from-bottom-2 group block h-full rounded-2xl duration-700"
+                  style={{ animationDelay: `${index * 80}ms` }}
+                >
+                  <Card className="shadow-soft hover:shadow-elevated h-full border-border/70 bg-card/90 backdrop-blur transition-all duration-300 group-hover:-translate-y-1 group-hover:border-gold/60">
+                    <CardContent className="pt-6">
+                      <span className="bg-gold/15 text-gold inline-flex size-10 items-center justify-center rounded-xl">
+                        <Icon className="size-5" aria-hidden />
+                      </span>
+                      <h3 className="mt-4 font-display text-base font-semibold sm:text-lg">
+                        {item.title}
+                      </h3>
+                      <p className="mt-1.5 text-sm text-muted-foreground">{item.body}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+
+        <section
           className="section-py-normal mx-auto max-w-6xl px-4"
           aria-labelledby="how-it-works"
         >
@@ -144,7 +194,7 @@ function Home() {
           <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {home.how.steps.map((step, index) => (
               <li key={step.title}>
-                <Card className="h-full shadow-soft">
+                <Card className="shadow-soft hover:shadow-elevated h-full border-t-2 border-t-gold/60 transition-all duration-300 hover:-translate-y-1">
                   <CardContent className="pt-6">
                     <span className="font-display text-sm font-bold text-gold">0{index + 1}</span>
                     <h3 className="mt-2 font-display text-lg font-semibold">{step.title}</h3>
@@ -165,7 +215,10 @@ function Home() {
               {home.pillars.items.map((pillar, index) => {
                 const Icon = pillarIcons[index] ?? GraduationCap;
                 return (
-                  <Card key={pillar.title} className="h-full border-border/70 shadow-soft">
+                  <Card
+                    key={pillar.title}
+                    className="shadow-soft hover:shadow-elevated h-full border-border/70 transition-all duration-300 hover:-translate-y-1 hover:border-gold/60"
+                  >
                     <CardContent className="pt-6">
                       <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <Icon className="size-5" aria-hidden />
@@ -196,7 +249,7 @@ function Home() {
                 ))}
               </ul>
             </div>
-            <Card className="shadow-elevated">
+            <Card className="shadow-elevated border-gold/40">
               <CardContent className="p-6">
                 <p className="text-xs uppercase tracking-wide text-muted-foreground">
                   {home.wordStudy.panelLabel}
@@ -255,14 +308,16 @@ function Home() {
             for when real, approved testimonials exist to restore this
             section with. */}
 
-        <section className="section-py-normal mx-auto max-w-4xl px-4 text-center">
-          <h2 className="font-display text-3xl font-bold">{home.cta.title}</h2>
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">{home.cta.body}</p>
-          <Button size="lg" className="mt-8" asChild>
-            <Link to="/auth" search={{ mode: "signup" }}>
-              {t("common.actions.startLearning")}
-            </Link>
-          </Button>
+        <section className="section-py-normal mx-auto max-w-4xl px-4">
+          <div className="border-gold/30 bg-secondary/60 rounded-3xl border px-6 py-12 text-center sm:px-12">
+            <h2 className="font-display text-3xl font-bold">{home.cta.title}</h2>
+            <p className="mx-auto mt-3 max-w-xl text-muted-foreground">{home.cta.body}</p>
+            <Button size="lg" className="mt-8" asChild>
+              <Link to="/auth" search={{ mode: "signup" }}>
+                {t("common.actions.startLearning")}
+              </Link>
+            </Button>
+          </div>
         </section>
       </main>
 

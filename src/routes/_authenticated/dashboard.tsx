@@ -185,14 +185,14 @@ function Dashboard() {
           instead of clipping; sm:flex-row restores the original side-by-side
           layout once there's room, matching the Continue-learning card's
           own flex-col/sm:flex-row pattern below. */}
-      <header className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <header className="animate-in fade-in slide-in-from-bottom-2 flex flex-col items-start gap-4 duration-500 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <h1 className="font-display text-2xl font-bold sm:text-3xl">
             {t("dashboard.greeting", { name: firstName })}
           </h1>
           <p className="mt-1 text-muted-foreground">{copy.subtitle}</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2 rounded-xl border border-border bg-card px-3 py-2">
+        <div className="shadow-soft flex shrink-0 items-center gap-2 rounded-2xl border border-gold/30 bg-card px-3 py-2">
           <Flame className="size-5 text-gold" aria-hidden />
           <div className="text-sm">
             <div className="font-semibold">
@@ -206,7 +206,7 @@ function Dashboard() {
       </header>
 
       <div className="mt-8 grid gap-4 lg:grid-cols-3">
-        <Card className="shadow-soft lg:col-span-2">
+        <Card className="shadow-elevated border-l-4 border-l-gold lg:col-span-2">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">{copy.continueLearning}</CardTitle>
           </CardHeader>
@@ -315,7 +315,7 @@ function Dashboard() {
           </Button>
         </div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card className="h-full">
+          <Card className="shadow-soft hover:shadow-elevated h-full transition-all duration-300 hover:-translate-y-1">
             <CardContent className="pt-6">
               <Repeat2 className="size-5 text-primary" aria-hidden />
               <h3 className="mt-3 font-display text-base font-semibold">
@@ -330,7 +330,7 @@ function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="h-full">
+          <Card className="shadow-soft hover:shadow-elevated h-full transition-all duration-300 hover:-translate-y-1">
             <CardContent className="pt-6">
               <Brain className="size-5 text-primary" aria-hidden />
               <h3 className="mt-3 font-display text-base font-semibold">{copy.today.weak.title}</h3>
@@ -346,7 +346,7 @@ function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="h-full">
+          <Card className="shadow-soft hover:shadow-elevated h-full transition-all duration-300 hover:-translate-y-1">
             <CardContent className="pt-6">
               <Library className="size-5 text-primary" aria-hidden />
               <h3 className="mt-3 font-display text-base font-semibold">{copy.today.path.title}</h3>
@@ -359,7 +359,7 @@ function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="h-full">
+          <Card className="shadow-soft hover:shadow-elevated h-full transition-all duration-300 hover:-translate-y-1">
             <CardContent className="pt-6">
               <Target className="size-5 text-primary" aria-hidden />
               <h3 className="mt-3 font-display text-base font-semibold">{copy.today.goal.title}</h3>
@@ -397,7 +397,7 @@ function Dashboard() {
         className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
         aria-label={copy.activityLabel}
       >
-        <Card className="h-full">
+        <Card className="shadow-soft hover:shadow-elevated h-full transition-all duration-300 hover:-translate-y-1">
           <CardContent className="pt-6">
             <Library className="size-5 text-primary" aria-hidden />
             <h3 className="mt-3 font-display text-base font-semibold">
@@ -424,7 +424,7 @@ function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="h-full">
+        <Card className="shadow-soft hover:shadow-elevated h-full transition-all duration-300 hover:-translate-y-1">
           <CardContent className="pt-6">
             <BookMarked className="size-5 text-primary" aria-hidden />
             <h3 className="mt-3 font-display text-base font-semibold">
@@ -443,7 +443,7 @@ function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="h-full">
+        <Card className="shadow-soft hover:shadow-elevated h-full transition-all duration-300 hover:-translate-y-1">
           <CardContent className="pt-6">
             <NotebookPen className="size-5 text-primary" aria-hidden />
             <h3 className="mt-3 font-display text-base font-semibold">{copy.notesCard.title}</h3>

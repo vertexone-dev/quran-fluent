@@ -8,6 +8,27 @@ export const home = {
     imageAlt: "A Qur'an on a wooden stand in a sunlit archway.",
     documentTitle: "QuranRoots — Learn Arabic. Understand the Qur'an.",
   },
+  quickLinks: {
+    title: "Explore QuranRoots",
+    items: [
+      {
+        title: "Read the Qur'an",
+        body: "Browse by Surah, Ayah or Juz with verified Arabic text.",
+      },
+      {
+        title: "Learn Arabic",
+        body: "Six structured levels, from the alphabet to full comprehension.",
+      },
+      {
+        title: "Reflect",
+        body: "Guided prompts to connect any ayah to your own life.",
+      },
+      {
+        title: "Memorize",
+        body: "Listen, repeat and review with spaced repetition.",
+      },
+    ],
+  },
   how: {
     title: "How it works",
     steps: [

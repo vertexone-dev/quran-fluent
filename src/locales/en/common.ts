@@ -2,7 +2,8 @@ export const common = {
   brand: {
     name: "QuranRoots",
     tagline: "Trace the Language. Uncover the Meaning.",
-    logoAlt: "QuranRoots logo: a tree growing from an open book",
+    logoAlt:
+      "QuranRoots logo: a sprout growing from an open book, framed by a golden mosque archway under a crescent moon",
     homeAria: "QuranRoots home",
   },
   nav: {
@@ -12,7 +13,6 @@ export const common = {
     quran: "Qur'an",
     features: "Features",
     about: "About",
-    dashboard: "Dashboard",
     daily: "Daily study",
     reflect: "Reflect",
     memorize: "Memorize",

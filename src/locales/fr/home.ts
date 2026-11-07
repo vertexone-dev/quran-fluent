@@ -10,6 +10,27 @@ export const home: typeof EnHome = {
     imageAlt: "Un Coran posé sur un lutrin en bois dans une arcade ensoleillée.",
     documentTitle: "QuranRoots — Apprenez l'arabe. Comprenez le Coran.",
   },
+  quickLinks: {
+    title: "Découvrir QuranRoots",
+    items: [
+      {
+        title: "Lire le Coran",
+        body: "Parcourez par sourate, verset ou juz avec un texte arabe vérifié.",
+      },
+      {
+        title: "Apprendre l'arabe",
+        body: "Six niveaux structurés, de l'alphabet à la compréhension complète.",
+      },
+      {
+        title: "Méditer",
+        body: "Des invites guidées pour relier chaque verset à votre propre vie.",
+      },
+      {
+        title: "Mémoriser",
+        body: "Écoutez, répétez et révisez avec une répétition espacée.",
+      },
+    ],
+  },
   how: {
     title: "Comment ça marche",
     steps: [
