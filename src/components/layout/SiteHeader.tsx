@@ -30,15 +30,31 @@ const publicLinks = [
   { to: "/about", key: "about" },
 ] as const;
 
+// QR-INT-004: the five primary app destinations (Design Lock v1 nav).
+// "home" reuses the same translation key the signed-out nav already uses
+// for "/" -- the authenticated landing page (dashboard) now fills that
+// same "Home" role instead of being labeled "Dashboard" in the primary
+// nav, so no new copy is needed here.
 const authedLinks = [
-  { to: "/dashboard", key: "dashboard" },
-  { to: "/daily", key: "daily" },
-  { to: "/learn", key: "learn" },
+  { to: "/dashboard", key: "home" },
   { to: "/quran", key: "quran" },
+  { to: "/learn", key: "learn" },
   { to: "/reflect", key: "reflect" },
   { to: "/memorize", key: "memorize" },
+] as const;
+
+// Everything that used to share top-level billing with the five primary
+// destinations above, now grouped as secondary navigation (account menu on
+// desktop, same list inside the drawer on mobile -- previously mobile only
+// duplicated Settings/Billing here and had no drawer path at all to
+// Learning Plan, Bookmarks or Notes).
+const authedSecondaryLinks = [
+  { to: "/daily", key: "daily" },
   { to: "/practice", key: "practice" },
   { to: "/progress", key: "progress" },
+  { to: "/learning-plan", key: "learningPlan" },
+  { to: "/bookmarks", key: "bookmarks" },
+  { to: "/notes", key: "notes" },
 ] as const;
 
 function ThemeToggle() {
@@ -126,9 +142,9 @@ export function SiteHeader() {
               activeOptions={{
                 exact: link.to === "/",
               }}
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+              className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:bg-accent hover:text-accent-foreground"
               activeProps={{
-                className: "bg-accent text-accent-foreground",
+                className: "bg-gold/15 text-foreground ring-1 ring-gold/50",
               }}
             >
               {t(`common.nav.${link.key}`)}
@@ -162,21 +178,11 @@ export function SiteHeader() {
 
                 <DropdownMenuSeparator />
 
-                <DropdownMenuItem asChild>
-                  <Link to="/dashboard">{t("common.nav.dashboard")}</Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem asChild>
-                  <Link to="/learning-plan">{t("common.nav.learningPlan")}</Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem asChild>
-                  <Link to="/bookmarks">{t("common.nav.bookmarks")}</Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem asChild>
-                  <Link to="/notes">{t("common.nav.notes")}</Link>
-                </DropdownMenuItem>
+                {authedSecondaryLinks.map((link) => (
+                  <DropdownMenuItem key={link.to} asChild>
+                    <Link to={link.to}>{t(`common.nav.${link.key}`)}</Link>
+                  </DropdownMenuItem>
+                ))}
 
                 <DropdownMenuItem asChild>
                   <Link to="/settings">{t("common.nav.settings")}</Link>
@@ -248,7 +254,8 @@ export function SiteHeader() {
                     key={link.to}
                     to={link.to}
                     onClick={() => setOpen(false)}
-                    className="rounded-lg px-3 py-3 text-base font-medium text-foreground hover:bg-accent"
+                    className="rounded-lg px-3 py-3 text-base font-medium text-foreground transition-colors duration-300 hover:bg-accent"
+                    activeProps={{ className: "bg-gold/15 ring-1 ring-gold/50" }}
                   >
                     {t(`common.nav.${link.key}`)}
                   </Link>
@@ -258,6 +265,17 @@ export function SiteHeader() {
 
                 {user ? (
                   <>
+                    {authedSecondaryLinks.map((link) => (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        onClick={() => setOpen(false)}
+                        className="rounded-lg px-3 py-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      >
+                        {t(`common.nav.${link.key}`)}
+                      </Link>
+                    ))}
+
                     <Link
                       to="/settings"
                       onClick={() => setOpen(false)}

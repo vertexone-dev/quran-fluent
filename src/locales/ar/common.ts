@@ -8,7 +8,7 @@ export const common = {
   brand: {
     name: "QuranRoots",
     tagline: "تتبّع اللغة. اكتشف المعنى.",
-    logoAlt: "شعار QuranRoots: شجرة تنمو من كتاب مفتوح",
+    logoAlt: "شعار QuranRoots: برعم ينمو من كتاب مفتوح، ضمن قوس ذهبي على هيئة مسجد تحت هلال",
     homeAria: "الصفحة الرئيسية لـ QuranRoots",
   },
   nav: {
@@ -18,7 +18,6 @@ export const common = {
     quran: "القرآن",
     features: "المزايا",
     about: "حول",
-    dashboard: "لوحة التحكم",
     daily: "الدراسة اليومية",
     reflect: "تدبّر",
     memorize: "الحفظ",

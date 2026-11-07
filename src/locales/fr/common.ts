@@ -4,7 +4,8 @@ export const common: typeof EnCommon = {
   brand: {
     name: "QuranRoots",
     tagline: "Remontez à la langue. Découvrez le sens.",
-    logoAlt: "Logo QuranRoots : un arbre qui pousse d'un livre ouvert",
+    logoAlt:
+      "Logo QuranRoots : une jeune pousse sortant d'un livre ouvert, encadrée par une arche dorée en forme de mosquée sous un croissant de lune",
     homeAria: "Accueil QuranRoots",
   },
   nav: {
@@ -14,7 +15,6 @@ export const common: typeof EnCommon = {
     quran: "Coran",
     features: "Fonctionnalités",
     about: "À propos",
-    dashboard: "Accueil",
     daily: "Leçon du jour",
     reflect: "Méditer",
     memorize: "Mémoriser",

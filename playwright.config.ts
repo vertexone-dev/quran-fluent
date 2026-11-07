@@ -83,6 +83,9 @@ export default defineConfig({
         // localStorage, independent of auth -- same rationale as the spec
         // just above.
         "64-arabic-rtl.spec.ts",
+        // QR-INT-004: the public homepage's quick-links/theme/RTL/reduced-
+        // motion checks are all signed-out-only, same rationale again.
+        "66-homepage-nav.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },
@@ -166,6 +169,7 @@ export default defineConfig({
         "61-settings-billing-routing.spec.ts",
         "62-premium-checkout.spec.ts",
         "65-reflect.spec.ts",
+        "67-dashboard-nav.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
