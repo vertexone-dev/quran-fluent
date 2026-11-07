@@ -79,6 +79,10 @@ export default defineConfig({
         // against the title assertion (CI runs #114/#115). See this spec's
         // own header comment for the full root-cause writeup.
         "59-unauthenticated-page-titles.spec.ts",
+        // QR-INT-002: a signed-out visitor's language choice lives in
+        // localStorage, independent of auth -- same rationale as the spec
+        // just above.
+        "64-arabic-rtl.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },

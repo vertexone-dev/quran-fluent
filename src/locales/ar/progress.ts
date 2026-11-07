@@ -1,0 +1,41 @@
+// QR-INT-002: machine-drafted Arabic -- see note in ar/common.ts. Flag for
+// native-speaker review before treating as final.
+export const progress = {
+  title: "التقدّم",
+  phase: "المرحلة 2 والمرحلة 5",
+  intro: "التقدّم هنا موجود لتشجيع الاستمرارية، لا لتحويل العبادة إلى لعبة.",
+  planned: [
+    "سلسلة التعلّم المتتالية ووقت الدراسة الأسبوعي",
+    "الدروس المكتملة",
+    "تفصيل إتقان المفردات",
+    "أداء الاختبارات عبر الزمن",
+    "مستوى القراءة العربية",
+    "السور التي تمت دراستها والآيات المحفوظة",
+    "درجة فهم القرآن لكل سورة",
+  ],
+  note: "بيانات السلسلة المتتالية محفوظة بالفعل في حسابك وستُعبّئ هذه الرسوم البيانية مع تسجيل النشاط.",
+  metrics: {
+    currentStreak: "السلسلة المتتالية الحالية",
+    studyTime: "وقت الدراسة",
+    lessonsCompleted: "الدروس المكتملة",
+    wordsLearned: "الكلمات المتعلَّمة",
+    ayatMemorized: "الآيات المحفوظة",
+    surahsStudied: "السور المدروسة",
+  },
+  vocabulary: {
+    unknown: "لا أعرفها",
+    learning: "قيد التعلّم",
+    known: "أعرفها",
+    mastered: "تم إتقانها",
+  },
+  weakAreas: "نقاط الضعف",
+  weakAreasEmpty: "لا توجد نقاط ضعف بعد. أدِّ اختبار تحديد المستوى أو تمرّن لإظهارها.",
+  vocabularyTitle: "قوة المفردات",
+  vocabularyEmpty: "لم تحفظ أي كلمات بعد. زُر صفحة القرآن لبدء بناء مفرداتك.",
+  recentActivity: "النشاط الأخير",
+  weeklyMinutes: "آخر 7 أيام",
+  today: "اليوم",
+  level: "المستوى الحالي",
+  goal: "الهدف اليومي",
+  minutes: "{count} دقيقة",
+};

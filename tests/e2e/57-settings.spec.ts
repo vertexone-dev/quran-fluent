@@ -422,4 +422,43 @@ test.describe("settings", () => {
         .eq("user_id", userId);
     }
   });
+
+  // QR-INT-002: the authenticated, profile-persisted locale path (as
+  // opposed to the anonymous localStorage-only path already covered by
+  // tests/e2e/64-arabic-rtl.spec.ts). Mirrors this file's own fr-switching
+  // tests above -- same try/finally restore-to-"en" discipline, since this
+  // is the shared test account every other authenticated spec also reads.
+  test("Settings renders in Arabic with rtl layout when the saved profile language is ar", async ({
+    page,
+  }) => {
+    const { client, userId } = await createTestUserClient();
+    await client.from("profiles").update({ interface_language: "ar" }).eq("id", userId);
+
+    try {
+      await page.goto("/settings");
+      await expect(page.locator("html")).toHaveAttribute("lang", "ar");
+      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+
+      await expect(page.getByRole("heading", { name: "الإعدادات" })).toBeVisible();
+      const dailyGoal = page.getByLabel("الهدف اليومي (بالدقائق)");
+      await expect(dailyGoal).toBeVisible();
+
+      // Still fully usable under rtl, not just translated: the same
+      // clamp-to-240 behavior the first test in this file checks in
+      // English.
+      await dailyGoal.fill("99999");
+      await expect(dailyGoal).toHaveValue("240");
+      await page.getByRole("button", { name: "حفظ التغييرات" }).click();
+      await expect(page.getByText("تم حفظ الإعدادات")).toBeVisible();
+
+      const { data } = await client
+        .from("learning_preferences")
+        .select("daily_goal_minutes")
+        .eq("user_id", userId)
+        .single();
+      expect(data?.daily_goal_minutes).toBe(240);
+    } finally {
+      await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
+    }
+  });
 });

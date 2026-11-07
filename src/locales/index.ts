@@ -22,7 +22,19 @@ import { bookmarks as frBookmarks } from "./fr/bookmarks";
 import { notes as frNotes } from "./fr/notes";
 import { billing as frBilling } from "./fr/billing";
 
-export const SUPPORTED_LOCALES = ["en", "fr"] as const;
+import { common as arCommon } from "./ar/common";
+import { home as arHome } from "./ar/home";
+import { auth as arAuth } from "./ar/auth";
+import { learning as arLearning } from "./ar/learning";
+import { quran as arQuran } from "./ar/quran";
+import { dashboard as arDashboard } from "./ar/dashboard";
+import { memorization as arMemorization } from "./ar/memorization";
+import { progress as arProgress } from "./ar/progress";
+import { bookmarks as arBookmarks } from "./ar/bookmarks";
+import { notes as arNotes } from "./ar/notes";
+import { billing as arBilling } from "./ar/billing";
+
+export const SUPPORTED_LOCALES = ["en", "fr", "ar"] as const;
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 const en = {
@@ -55,7 +67,21 @@ const fr: Dictionary = {
   billing: frBilling,
 };
 
-export const dictionaries: Record<Locale, Dictionary> = { en, fr };
+const ar: Dictionary = {
+  common: arCommon,
+  home: arHome,
+  auth: arAuth,
+  learning: arLearning,
+  quran: arQuran,
+  dashboard: arDashboard,
+  memorization: arMemorization,
+  progress: arProgress,
+  bookmarks: arBookmarks,
+  notes: arNotes,
+  billing: arBilling,
+};
+
+export const dictionaries: Record<Locale, Dictionary> = { en, fr, ar };
 
 export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && (SUPPORTED_LOCALES as readonly string[]).includes(value);
