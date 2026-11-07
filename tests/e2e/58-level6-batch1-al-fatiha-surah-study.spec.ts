@@ -336,8 +336,10 @@ test.describe("Level 6 Batch 1 — al-fatiha-surah-study", () => {
       page.getByText("In the name of Allah, the Entirely Merciful, the Especially Merciful."),
     ).toBeVisible();
     // The real, governed Arabic text for 1:1 -- never invented text --
-    // rendered RTL.
-    const ayahText = page.locator("[lang='ar']").first();
+    // rendered RTL. A bare [lang="ar"] selector would also match the
+    // header's Arabic LanguageSwitcher button (QR-INT-002) -- the testid
+    // targets the actual ayah paragraph unambiguously.
+    const ayahText = page.getByTestId("quran-example-arabic-text").first();
     await expect(ayahText).toBeVisible();
     await expect(ayahText).toHaveAttribute("dir", "rtl");
 
@@ -530,7 +532,7 @@ test.describe("Level 6 Batch 1 — al-fatiha-surah-study", () => {
     // pre-Level-6 fallback string shows instead of a blank or broken
     // section.
     await page.getByRole("button", { name: "Suivant" }).click();
-    const ayahText = page.locator("[lang='ar']").first();
+    const ayahText = page.getByTestId("quran-example-arabic-text").first();
     await expect(ayahText).toBeVisible();
     await expect(
       page.getByText("Traduction française pas encore disponible pour ce verset."),

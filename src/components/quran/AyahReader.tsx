@@ -265,7 +265,7 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
                             <span
                               aria-hidden
                               data-testid="bookmark-confirmed"
-                              className="animate-in zoom-in-50 fade-in-0 bg-primary text-primary-foreground pointer-events-none absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full duration-300 ease-out"
+                              className="animate-in zoom-in-50 fade-in-0 bg-primary text-primary-foreground pointer-events-none absolute -end-1 -top-1 flex size-4 items-center justify-center rounded-full duration-300 ease-out"
                             >
                               <Check className="size-3" />
                             </span>

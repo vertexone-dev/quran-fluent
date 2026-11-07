@@ -66,9 +66,11 @@ function isReciterKey(value: string): value is ReciterKey {
  * <Select> already does. Falls back to a generic, locale-aware label for
  * any stored value not in RECITER_NAMES rather than guessing at a name;
  * never changes or matches the stored preference itself. */
-export function reciterLabel(value: string, locale: "en" | "fr"): string {
+export function reciterLabel(value: string, locale: "en" | "fr" | "ar"): string {
   if (isReciterKey(value)) return RECITER_NAMES[value];
-  return locale === "fr" ? `Récitateur configuré : ${value}` : `Configured reciter: ${value}`;
+  if (locale === "fr") return `Récitateur configuré : ${value}`;
+  if (locale === "ar") return `القارئ المُهيَّأ: ${value}`;
+  return `Configured reciter: ${value}`;
 }
 
 /**

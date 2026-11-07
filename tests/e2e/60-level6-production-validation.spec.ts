@@ -234,8 +234,11 @@ test.describe("Level 6 production validation", () => {
     await expect(
       page.getByText("In the name of Allah, the Entirely Merciful, the Especially Merciful."),
     ).toBeVisible();
-    // The real, governed Arabic text -- never invented -- rendered RTL.
-    const ayahText = page.locator("[lang='ar']").first();
+    // The real, governed Arabic text -- never invented -- rendered RTL. A
+    // bare [lang="ar"] selector would also match the header's Arabic
+    // LanguageSwitcher button (QR-INT-002) -- the testid targets the
+    // actual ayah paragraph unambiguously.
+    const ayahText = page.getByTestId("quran-example-arabic-text").first();
     await expect(ayahText).toBeVisible();
     await expect(ayahText).toHaveAttribute("dir", "rtl");
 
@@ -372,7 +375,7 @@ test.describe("Level 6 production validation", () => {
     ).toBeVisible();
 
     await page.getByRole("button", { name: "Suivant" }).click();
-    const ayahText = page.locator("[lang='ar']").first();
+    const ayahText = page.getByTestId("quran-example-arabic-text").first();
     await expect(ayahText).toBeVisible();
     await expect(ayahText).toHaveAttribute("dir", "rtl");
   });

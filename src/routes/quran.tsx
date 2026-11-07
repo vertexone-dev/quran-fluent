@@ -199,14 +199,14 @@ function QuranPage() {
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <div className="relative max-w-sm flex-1">
                   <Search
-                    className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                    className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
                     aria-hidden
                   />
                   <Input
                     placeholder={vocab.searchPlaceholder}
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9"
+                    className="ps-9"
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">

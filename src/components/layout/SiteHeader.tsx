@@ -17,7 +17,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
 import { useAuth } from "@/lib/auth";
-import { useI18n } from "@/lib/i18n";
+import { isRtlLocale, useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -79,7 +79,12 @@ function ThemeToggle() {
 
 export function SiteHeader() {
   const { user } = useAuth();
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  // The trigger button sits at the row's trailing edge in both directions
+  // (it's the last item in a flex row that the browser itself mirrors under
+  // dir="rtl"), so the drawer should open from that same edge: the right in
+  // ltr, the left in rtl (QR-INT-002).
+  const mobileNavSide = isRtlLocale(locale) ? "left" : "right";
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -233,7 +238,7 @@ export function SiteHeader() {
               </Button>
             </SheetTrigger>
 
-            <SheetContent side="right" className="w-[86vw] max-w-sm">
+            <SheetContent side={mobileNavSide} className="w-[86vw] max-w-sm">
               <SheetTitle className="sr-only">{t("common.nav.navigation")}</SheetTitle>
 
               <div className="mt-2 flex flex-col gap-1">

@@ -39,6 +39,7 @@ describe("reciterLabel", () => {
     for (const [key, name] of Object.entries(RECITER_NAMES)) {
       expect(reciterLabel(key, "en")).toBe(name);
       expect(reciterLabel(key, "fr")).toBe(name);
+      expect(reciterLabel(key, "ar")).toBe(name);
     }
   });
 
@@ -49,11 +50,15 @@ describe("reciterLabel", () => {
     expect(reciterLabel("some_unknown_reciter", "fr")).toBe(
       "Récitateur configuré : some_unknown_reciter",
     );
+    expect(reciterLabel("some_unknown_reciter", "ar")).toBe(
+      "القارئ المُهيَّأ: some_unknown_reciter",
+    );
   });
 
   test("never returns the raw key unexplained for a known reciter", () => {
     for (const key of Object.keys(RECITER_IDS)) {
       expect(reciterLabel(key, "en")).not.toBe(key);
+      expect(reciterLabel(key, "ar")).not.toBe(key);
     }
   });
 });
