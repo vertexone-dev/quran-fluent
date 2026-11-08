@@ -270,7 +270,7 @@ function CinematicHero({
           {...fadeUp(0.3, reduce)}
           data-testid="hero-steps"
           style={{ color: HERO_GOLD }}
-          className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[11px] font-semibold tracking-[0.3em] uppercase sm:text-xs rtl:text-sm rtl:tracking-normal"
+          className="-my-1 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 rounded-2xl bg-[oklch(0.15_0.035_190/0.42)] px-4 py-1 text-[11px] font-semibold tracking-[0.3em] uppercase sm:text-xs rtl:text-sm rtl:tracking-normal [text-shadow:0_0_2px_oklch(0.1_0.03_190/1),0_1px_3px_oklch(0.1_0.03_190/0.95),0_0_8px_oklch(0.12_0.03_190/0.85),0_0_18px_oklch(0.12_0.03_190/0.6)]"
         >
           {home.hero.steps.map((step, i) => (
             <span key={step} className="inline-flex items-center gap-2.5">
@@ -324,7 +324,10 @@ function CinematicHero({
             {t("common.actions.exploreQuran")}
           </Link>
         </motion.div>
-        <motion.p {...fadeUp(1.25, reduce)} className="mt-6 max-w-md text-sm text-white/70">
+        <motion.p
+          {...fadeUp(1.25, reduce)}
+          className="-mb-1.5 mt-[1.125rem] max-w-md rounded-2xl bg-[oklch(0.15_0.035_190/0.62)] px-4 py-1.5 text-sm text-white/90 backdrop-blur-[3px] [text-shadow:0_1px_2px_oklch(0.12_0.03_190/0.95),0_0_8px_oklch(0.12_0.03_190/0.85),0_0_18px_oklch(0.12_0.03_190/0.6)]"
+        >
           {home.hero.note}
         </motion.p>
       </div>
