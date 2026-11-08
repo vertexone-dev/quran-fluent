@@ -48,7 +48,7 @@ export function Logo({
             collapseWordmark && "max-[409px]:sr-only min-[1024px]:max-[1279px]:sr-only",
           )}
         >
-          <span className="font-display text-xl font-bold tracking-tight text-primary">
+          <span className="font-display text-xl font-bold tracking-tight text-primary dark:text-foreground">
             {d.common.brand.name}
           </span>
           {tagline && (
