@@ -43,6 +43,12 @@ test.describe("Qur'an study tabs are URL-addressable", () => {
 
   test("choosing a tab updates the URL so it can be shared", async ({ page }) => {
     await page.goto("/quran");
+    // /quran is server-rendered: a click before TanStack Start finishes
+    // hydrating lands on an inert tab and is lost (the URL stays /quran).
+    await page.waitForFunction(() => {
+      const tsr = (window as unknown as { $_TSR?: { hydrated?: boolean } }).$_TSR;
+      return !tsr || tsr.hydrated === true;
+    });
     await page.getByRole("tab", { name: "Translations" }).click();
     await expect(page).toHaveURL(/tab=translations/);
   });

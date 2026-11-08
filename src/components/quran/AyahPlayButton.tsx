@@ -61,13 +61,17 @@ export function useAyahAudioState(): AyahAudioState {
  * holds if every caller goes through the same gate.
  */
 export function usePreferredReciter(): { reciter: ReciterKey; isReady: boolean } {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { data, isLoading } = useQuery({
     queryKey: ["learner", user?.id],
     queryFn: () => fetchLearnerSnapshot(user!.id),
     enabled: Boolean(user?.id),
     staleTime: LEARNER_SNAPSHOT_STALE_TIME_MS,
   });
+  // While auth is still resolving `user` is null for signed-in learners too;
+  // treating that as "anonymous, default reciter is correct" would offer a
+  // playable control that could fire with the wrong reciter.
+  if (authLoading) return { reciter: DEFAULT_RECITER, isReady: false };
   if (!user) return { reciter: DEFAULT_RECITER, isReady: true };
   return {
     reciter: resolvePreferredReciter(data?.preferences?.preferred_reciter),
