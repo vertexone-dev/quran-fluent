@@ -1,11 +1,35 @@
 import type { home as EnHome } from "../en/home";
 
 export const home: typeof EnHome = {
+  understand: {
+    eyebrow: "Comprendre",
+    title: "Comprendre ce verset",
+    body: "Étudiez un verset à la fois : l’arabe, son sens, ses mots et un espace pour méditer.",
+    reference: "{surah} · {surahNumber}:{ayah}",
+    tabs: { meaning: "Sens", words: "Mot à mot", tafsir: "Tafsir", reflect: "Méditer" },
+    wordsUnavailable: "L’étude mot à mot de ce verset attend une source vérifiée.",
+    wordsCta: "Pratiquer le vocabulaire coranique",
+    tafsirUnavailable:
+      "Le tafsir n’apparaîtra ici qu’à partir d’une source vérifiée et attribuée, revue par des savants qualifiés.",
+    reflectPrompt: "De quelle manière ce verset peut-il guider votre journée ?",
+    reflectCta: "Écrire une réflexion",
+    openReader: "Ouvrir dans le lecteur",
+    loading: "Chargement du verset…",
+    error: "Ce verset n’a pas pu être chargé. Vérifiez votre connexion et réessayez.",
+    retry: "Réessayer",
+  },
+  journeys: {
+    eyebrow: "Apprendre",
+    title: "Parcours d’apprentissage guidés",
+    body: "Des niveaux progressifs, de l’alphabet arabe à la compréhension de versets complets.",
+    explore: "Découvrir le cours",
+    continueLearning: "Continuer l’apprentissage",
+  },
   hero: {
     steps: ["Lire", "Comprendre", "Méditer", "Pratiquer", "Progresser"],
     titleLine1: "Un voyage plus profond",
     titleLine2: "avec le Coran",
-    subtitle: "Progressez en arabe coranique, un mot, un verset et une leçon à la fois.",
+    subtitle: "Lire, comprendre, méditer et vivre selon les enseignements du Coran.",
     note: "Le texte coranique et les traductions proviennent exclusivement de sources vérifiées.",
     continueReading: "Continuer la lecture",
     continuingFrom: "Reprise à {surah}, verset {ayah}",

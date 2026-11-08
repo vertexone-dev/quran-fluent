@@ -32,11 +32,13 @@ export const common = {
     searchHeading: "Surahs",
     searchEmpty: "No Surah found.",
     searchLoading: "Loading Surahs…",
+    searchError: "Surahs couldn't be loaded. Please try again.",
     searchTitle: "Search the Qur'an",
   },
 
   actions: {
     login: "Log in",
+    createAccount: "Create account",
     signup: "Sign up",
     logout: "Log out",
     startLearning: "Start Learning",

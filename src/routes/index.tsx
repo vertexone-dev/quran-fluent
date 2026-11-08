@@ -20,12 +20,15 @@ import {
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { UnderstandAyahSection } from "@/components/home/UnderstandAyahSection";
+import { GuidedJourneysSection } from "@/components/home/GuidedJourneysSection";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 import { fetchBookmarks } from "@/lib/bookmarks";
 import { fetchSurahs, surahName } from "@/lib/quran";
 import { isRtlLocale, useI18n } from "@/lib/i18n";
 import { useDocumentTitle } from "@/lib/use-document-title";
+import { heroArt } from "@/design/artwork";
 
 // QR-INT-005: shared easing/duration for the hero's entrance choreography,
 // reused across every staggered element below so they read as one
@@ -248,9 +251,9 @@ function CinematicHero({
       <div className="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
         <motion.div style={{ y, scale }} className="absolute inset-0 origin-top">
           <picture>
-            <source media="(max-width: 767px)" srcSet="/quranroots-hero-cinematic-mobile.jpg" />
+            <source media="(max-width: 767px)" srcSet={heroArt.mobile} />
             <img
-              src="/quranroots-hero-cinematic-desktop.jpg"
+              src={heroArt.desktop}
               alt=""
               fetchPriority="high"
               decoding="async"
@@ -316,12 +319,6 @@ function CinematicHero({
                 aria-hidden
               />
             </CtaGlowContent>
-          </Link>
-          <Link
-            to="/quran"
-            className="inline-flex h-[60px] items-center justify-center rounded-full border border-white/40 px-9 text-lg font-semibold text-white transition-colors duration-300 hover:border-gold hover:bg-white/10 sm:h-[70px] sm:px-11"
-          >
-            {t("common.actions.exploreQuran")}
           </Link>
         </motion.div>
         <motion.p
@@ -534,6 +531,10 @@ function Home() {
 
         <main>
           <CinematicHero home={home} dir={dir} />
+
+          <UnderstandAyahSection />
+
+          <GuidedJourneysSection />
 
           <section
             className="section-py-normal mx-auto max-w-6xl px-4"

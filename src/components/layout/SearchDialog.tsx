@@ -29,7 +29,11 @@ export function SearchDialog({ className }: { className?: string }) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  const { data: surahs, isLoading } = useQuery({
+  const {
+    data: surahs,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["surahs"],
     queryFn: ({ signal }) => fetchSurahs(signal),
     enabled: open,
@@ -67,7 +71,16 @@ export function SearchDialog({ className }: { className?: string }) {
               {isLoading && (
                 <div className="px-4 py-6 text-center text-sm">{t("common.nav.searchLoading")}</div>
               )}
-              {!isLoading && <CommandEmpty>{t("common.nav.searchEmpty")}</CommandEmpty>}
+              {isError && (
+                <div
+                  role="alert"
+                  className="px-4 py-6 text-center text-sm"
+                  data-testid="header-search-error"
+                >
+                  {t("common.nav.searchError")}
+                </div>
+              )}
+              {!isLoading && !isError && <CommandEmpty>{t("common.nav.searchEmpty")}</CommandEmpty>}
               {surahs && (
                 <CommandGroup heading={t("common.nav.searchHeading")}>
                   {surahs.map((s) => (

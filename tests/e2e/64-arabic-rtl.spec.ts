@@ -21,8 +21,13 @@ import { test, expect, type Page } from "@playwright/test";
 
 const EN_GROUP_LABEL = "Change language"; // common.language.change, English copy
 const AR_GROUP_LABEL = "تغيير اللغة"; // same key, Arabic copy
-const AR_BUTTON = /^AR\b/; // LanguageSwitcher's visible short code + sr-only full name, e.g. "AR — العربية"
-const EN_BUTTON = /^EN\b/;
+// QR-INT-005/006: the header's globe dropdown (LanguageMenu.tsx) replaced the
+// segmented EN/FR/AR switcher. Its trigger carries the localized "Change
+// language" label; each option is a menuitemradio named in its own language.
+const AR_OPTION = "ar";
+const EN_OPTION = "en";
+
+const visibleTrigger = (page: Page) => page.locator("[data-testid=language-menu-trigger]:visible");
 
 /** Seeds localStorage before the app's own scripts ever run, for every
  * navigation on this page -- the correct way to pre-seed a locale (a plain
@@ -49,17 +54,21 @@ function seedLocale(page: Page, locale: "ar" | "en" | "fr") {
 async function switchLocaleViaUi(
   page: Page,
   currentGroupLabel: string,
-  buttonPattern: RegExp,
+  option: "ar" | "en",
   expectedLang: string,
   maxMs = 15_000,
 ) {
   const start = Date.now();
   while (Date.now() - start < maxMs) {
-    const button = page
-      .getByRole("group", { name: currentGroupLabel })
-      .first()
-      .getByRole("button", { name: buttonPattern });
-    await button.click({ timeout: 2_000 }).catch(() => {});
+    const trigger = visibleTrigger(page);
+    await expect(trigger)
+      .toHaveAttribute("aria-label", currentGroupLabel, { timeout: 2_000 })
+      .catch(() => {});
+    await trigger.click({ timeout: 2_000 }).catch(() => {});
+    await page
+      .getByTestId(`language-option-${option}`)
+      .click({ timeout: 2_000 })
+      .catch(() => {});
     const matched = await page
       .locator("html")
       .evaluate((el, lang) => el.getAttribute("lang") === lang, expectedLang)
@@ -81,7 +90,7 @@ test.describe("Arabic locale selection and persistence", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator("html")).not.toHaveAttribute("dir", "rtl");
 
-    await switchLocaleViaUi(page, EN_GROUP_LABEL, AR_BUTTON, "ar");
+    await switchLocaleViaUi(page, EN_GROUP_LABEL, AR_OPTION, "ar");
 
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
@@ -102,7 +111,7 @@ test.describe("Arabic locale selection and persistence", () => {
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
 
-    await switchLocaleViaUi(page, AR_GROUP_LABEL, EN_BUTTON, "en");
+    await switchLocaleViaUi(page, AR_GROUP_LABEL, EN_OPTION, "en");
 
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator("html")).not.toHaveAttribute("dir", "rtl");
@@ -110,21 +119,34 @@ test.describe("Arabic locale selection and persistence", () => {
     await expect(page.getByRole("link", { name: "Home" }).first()).toBeVisible();
   });
 
-  test("the Arabic switcher button is reachable and activatable by keyboard", async ({ page }) => {
+  test("the Arabic option is reachable and activatable by keyboard", async ({ page }) => {
     await page.goto("/");
 
-    // Keyboard activation needs its own attempt (not switchLocaleViaUi's
-    // mouse .click()), but gets the same remount-safe retry: re-focus and
-    // re-press fresh each attempt rather than trusting one focus to survive
-    // a possible remount.
+    // Keyboard-only: focus the globe trigger, Enter opens the menu with focus
+    // on the active (English) option, two ArrowDowns reach Arabic (English,
+    // Français, العربية),
+    // Enter selects it. Same remount-safe retry as switchLocaleViaUi.
     const start = Date.now();
     let lang: string | null = null;
     while (Date.now() - start < 15_000) {
-      const button = page
-        .getByRole("group", { name: EN_GROUP_LABEL })
-        .first()
-        .getByRole("button", { name: AR_BUTTON });
-      await button.focus().catch(() => {});
+      await page.keyboard.press("Escape").catch(() => {});
+      await visibleTrigger(page)
+        .focus()
+        .catch(() => {});
+      await page.keyboard.press("Enter").catch(() => {});
+      await expect(page.getByTestId("language-option-en"))
+        .toBeFocused({ timeout: 2_000 })
+        .catch(() => {});
+      // Keys pressed during the menu's open animation are dropped, so step
+      // down one option at a time until Arabic actually holds focus.
+      for (let i = 0; i < 12; i++) {
+        const onArabic = await page.evaluate(
+          () => document.activeElement?.getAttribute("data-testid") === "language-option-ar",
+        );
+        if (onArabic) break;
+        await page.keyboard.press("ArrowDown").catch(() => {});
+        await page.waitForTimeout(200);
+      }
       await page.keyboard.press("Enter").catch(() => {});
       lang = await page
         .locator("html")
@@ -135,35 +157,35 @@ test.describe("Arabic locale selection and persistence", () => {
     }
     expect(lang).toBe("ar");
 
-    const arButton = page
-      .getByRole("group", { name: AR_GROUP_LABEL })
-      .first()
-      .getByRole("button", { name: AR_BUTTON });
-    await expect(arButton).toHaveAttribute("aria-pressed", "true");
+    // Focus returns to the trigger (now labelled in Arabic) and the menu
+    // reports Arabic as the checked option when reopened.
+    await expect(visibleTrigger(page)).toHaveAttribute("aria-label", AR_GROUP_LABEL);
+    await expect(visibleTrigger(page)).toContainText("AR");
+    await visibleTrigger(page).click();
+    await expect(page.getByTestId("language-option-ar")).toHaveAttribute("aria-checked", "true");
   });
 });
 
 test.describe("Arabic RTL layout", () => {
-  test("mobile nav drawer opens from the left edge under rtl (flipped from English's right)", async ({
+  test("mobile navigation under rtl: Arabic bottom tab bar, Home on the right edge", async ({
     page,
   }) => {
+    // QR-INT-005 replaced the mobile drawer with the Emergent bottom tab bar
+    // (MobileTabBar.tsx). Under rtl its first destination (Home) must sit on
+    // the physical right, and every label must be the Arabic copy.
     await page.setViewportSize({ width: 390, height: 844 });
     await seedLocale(page, "ar");
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
 
-    await page.getByRole("button", { name: "فتح القائمة" }).click();
-    const sheet = page.getByRole("dialog");
-    await expect(sheet).toBeVisible();
-    // The sheet's own open/close transform class names encode the physical
-    // side (src/components/ui/sheet.tsx's sheetVariants) -- "left" here is
-    // the concrete, assertable signal that SiteHeader actually passed
-    // side="left" for rtl, not just that *some* drawer opened.
-    await expect(sheet).toHaveClass(/inset-y-0 left-0/);
-
-    // Still fully navigable: every top-level Arabic nav label reachable
-    // from inside the open drawer.
-    await expect(sheet.getByRole("link", { name: "القرآن" })).toBeVisible();
+    const bar = page.getByTestId("mobile-tab-bar");
+    await expect(bar).toBeVisible();
+    await expect(bar.getByRole("link", { name: "القرآن" })).toBeVisible();
+    const home = await bar.getByRole("link").first().boundingBox();
+    const last = await bar.getByRole("link").last().boundingBox();
+    expect(home && last && home.x > last.x, "Home should be right of the last tab under rtl").toBe(
+      true,
+    );
   });
 
   test("no horizontal overflow on the homepage or Qur'an page at desktop and mobile widths", async ({

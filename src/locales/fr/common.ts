@@ -34,11 +34,13 @@ export const common: typeof EnCommon = {
     searchHeading: "Sourates",
     searchEmpty: "Aucune sourate trouvée.",
     searchLoading: "Chargement des sourates…",
+    searchError: "Impossible de charger les sourates. Veuillez réessayer.",
     searchTitle: "Rechercher dans le Coran",
   },
 
   actions: {
     login: "Se connecter",
+    createAccount: "Créer un compte",
     signup: "Créer un compte",
     logout: "Se déconnecter",
     startLearning: "Commencer à apprendre",

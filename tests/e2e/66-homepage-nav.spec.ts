@@ -37,7 +37,7 @@ test.describe("homepage headline, mission eyebrow and public navigation", () => 
     await expect(links).toHaveText(["Home", "Qur'an", "Learn", "Reflect", "Memorize"]);
   });
 
-  test("Features, Premium and About remain reachable from the footer and the mobile drawer", async ({
+  test("Features, Premium and About remain reachable from the footer and the profile menu", async ({
     page,
   }) => {
     await page.goto("/");
@@ -45,11 +45,17 @@ test.describe("homepage headline, mission eyebrow and public navigation", () => 
     for (const name of ["Features", "Premium", "About"]) {
       await expect(footer.getByRole("link", { name })).toBeVisible();
     }
+    // QR-INT-006: the circular profile control replaces the mobile drawer.
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole("button", { name: "Open menu" }).click();
-    const sheet = page.getByRole("dialog");
+    // A click before hydration lands on an inert, server-rendered trigger.
+    await page.waitForFunction(() => {
+      const tsr = (window as unknown as { $_TSR?: { hydrated?: boolean } }).$_TSR;
+      return !tsr || tsr.hydrated === true;
+    });
+    await page.locator("[data-testid=profile-menu-trigger]:visible").click();
+    const menu = page.getByTestId("profile-menu-content");
     for (const name of ["Features", "Premium", "About"]) {
-      await expect(sheet.getByRole("link", { name })).toBeVisible();
+      await expect(menu.getByRole("menuitem", { name })).toBeVisible();
     }
   });
 
@@ -208,42 +214,25 @@ test.describe("header never overlaps at laptop widths, in every language", () =>
 });
 
 test.describe("homepage theme support", () => {
-  test("switching between Light and Dark updates the document, both themes keep the quick-links readable", async ({
+  test("the saved Light and Dark themes update the document, both keep the quick-links readable", async ({
     page,
   }) => {
+    // QR-INT-006: the theme control lives in Settings only, which persists the
+    // choice under "quranroots-theme" (src/lib/theme.tsx). This sets that same
+    // stored value directly, so the homepage's response to it is what's tested.
     await page.goto("/");
-
-    // SiteHeader renders ThemeToggle twice (desktop controls + mobile
-    // controls, one CSS `hidden` depending on viewport) -- both carry the
-    // same data-testid and aria-label, but `hidden` is display:none, which
-    // removes the other one from the accessibility tree entirely. A
-    // role-based locator therefore resolves to exactly the one actually
-    // visible/interactable at this test's viewport; getByTestId does not
-    // filter by visibility and would match both.
-    const themeTrigger = page.getByRole("button", { name: "Change theme" });
-    const lightItem = page.getByRole("menuitem", { name: "Light" });
-    const darkItem = page.getByRole("menuitem", { name: "Dark" });
 
     // Default is the Design Lock v1 Midnight Teal identity (dark).
     await expect(page.locator("html")).toHaveClass(/dark/);
     await expect(quickLinks(page).getByRole("link", { name: "Reflect" })).toBeVisible();
 
-    // Same cold-`vite dev`-compile hydration-remount race as submitLogin in
-    // utils/auth.ts (confirmed via a local trace: the click lands --
-    // Playwright's own accessibility snapshot shows the button in its
-    // transient `:active` state -- but the dropdown never reaches
-    // data-state="open", because the click landed on a trigger instance
-    // React was about to replace). Reproduced locally under repeated runs
-    // and matches CI #190's report exactly (same line, same symptom, both
-    // the initial attempt and Playwright's own retry). Retrying the whole
-    // open-click is the same fix applied there, not an arbitrary wait.
-    await clickAndExpect(themeTrigger, () => expect(lightItem).toBeVisible());
-    await lightItem.click();
+    await page.evaluate(() => window.localStorage.setItem("quranroots-theme", "light"));
+    await page.reload();
     await expect(page.locator("html")).not.toHaveClass(/dark/);
     await expect(quickLinks(page).getByRole("link", { name: "Reflect" })).toBeVisible();
 
-    await clickAndExpect(themeTrigger, () => expect(darkItem).toBeVisible());
-    await darkItem.click();
+    await page.evaluate(() => window.localStorage.setItem("quranroots-theme", "dark"));
+    await page.reload();
     await expect(page.locator("html")).toHaveClass(/dark/);
   });
 });

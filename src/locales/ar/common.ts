@@ -37,11 +37,13 @@ export const common = {
     searchHeading: "السور",
     searchEmpty: "لم يتم العثور على سورة.",
     searchLoading: "جارٍ تحميل السور…",
+    searchError: "تعذّر تحميل السور. يُرجى المحاولة مرة أخرى.",
     searchTitle: "البحث في القرآن",
   },
 
   actions: {
     login: "تسجيل الدخول",
+    createAccount: "إنشاء حساب",
     signup: "إنشاء حساب",
     logout: "تسجيل الخروج",
     startLearning: "ابدأ التعلّم",

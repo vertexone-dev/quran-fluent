@@ -1,11 +1,34 @@
 // QR-INT-002: machine-drafted Arabic -- see note in ar/common.ts. Flag for
 // native-speaker review before treating as final.
 export const home = {
+  understand: {
+    eyebrow: "افهم",
+    title: "افهم هذه الآية",
+    body: "ادرس آية واحدة في كل مرة: النص العربي ومعناه وكلماته ومساحة للتدبّر.",
+    reference: "{surah} · {surahNumber}:{ayah}",
+    tabs: { meaning: "المعنى", words: "كلمة بكلمة", tafsir: "التفسير", reflect: "تدبّر" },
+    wordsUnavailable: "دراسة الكلمات لهذه الآية بانتظار مصدر موثّق.",
+    wordsCta: "تدرّب على مفردات القرآن",
+    tafsirUnavailable: "لن يظهر التفسير هنا إلا من مصدر موثّق ومنسوب راجعه علماء مؤهَّلون.",
+    reflectPrompt: "كيف يمكن لهذه الآية أن توجّه يومك؟",
+    reflectCta: "اكتب تأمّلًا",
+    openReader: "افتح في القارئ",
+    loading: "جارٍ تحميل الآية…",
+    error: "تعذّر تحميل هذه الآية الآن. تحقّق من الاتصال وحاول مرة أخرى.",
+    retry: "حاول مرة أخرى",
+  },
+  journeys: {
+    eyebrow: "تعلّم",
+    title: "مسارات تعلّم موجَّهة",
+    body: "مستويات متدرّجة من الحروف العربية إلى فهم آيات كاملة.",
+    explore: "استكشف الدورة",
+    continueLearning: "تابع التعلّم",
+  },
   hero: {
     steps: ["اقرأ", "افهم", "تدبّر", "طبّق", "ارتقِ"],
     titleLine1: "رحلة أعمق",
     titleLine2: "مع القرآن",
-    subtitle: "بناء مهاراتك في العربية القرآنية كلمة، وآية، ودرسًا في كل مرة.",
+    subtitle: "اقرأ القرآن وافهمه وتدبّره واعمل بتعاليمه.",
     note: "نص القرآن وترجماته مأخوذة من مصادر موثّقة فقط.",
     continueReading: "تابع القراءة",
     continuingFrom: "المتابعة من {surah}، الآية {ayah}",

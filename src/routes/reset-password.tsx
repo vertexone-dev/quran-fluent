@@ -1,8 +1,8 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { Logo } from "@/components/brand/Logo";
+import { AuthShell, AUTH_CARD } from "@/design/AuthShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,11 +51,8 @@ function ResetPassword() {
   }
 
   return (
-    <div className="surface-hero flex min-h-screen flex-col items-center justify-center px-4 py-12">
-      <Link to="/" className="mb-8" aria-label={t("common.brand.homeAria")}>
-        <Logo />
-      </Link>
-      <Card className="w-full max-w-md shadow-elevated">
+    <AuthShell>
+      <Card className={AUTH_CARD}>
         <CardHeader>
           <CardTitle className="font-display text-2xl" asChild>
             <h1>{a.reset.title}</h1>
@@ -82,6 +79,6 @@ function ResetPassword() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

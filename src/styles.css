@@ -71,12 +71,13 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
-  /* Editorial serif for headings (Latin/French UI text only -- never
-     applied to Arabic script, which always renders through --font-quran/
-     --font-arabic below, untouched by this). Cairo stays as the fallback
-     for the rare case Playfair Display hasn't loaded yet. */
-  --font-display: "Playfair Display", "Cairo", "Open Sans", ui-serif, serif;
+  --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+  /* QR-INT-006: Emergent Design Lock typography. Cormorant Garamond for
+     Latin/French headings, Nunito Sans for body, Tajawal for Arabic UI
+     text (see [dir="rtl"] below). Quran text keeps --font-quran (Amiri
+     Quran) and --font-arabic, untouched. */
+  --font-display: "Cormorant Garamond", "Tajawal", ui-serif, serif;
+  --font-arabic-ui: "Tajawal", "Nunito Sans", sans-serif;
   --font-quran: "Amiri Quran", "Scheherazade New", serif;
   --font-arabic: "Amiri", "Scheherazade New", serif;
 }
@@ -240,10 +241,17 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    /* Playfair Display reads better at normal tracking than Cairo's
-       geometric sans did -- the old -0.01em was tuned for Cairo and
-       pinches a serif's serifs/counters at larger sizes. */
     letter-spacing: normal;
+  }
+
+  /* Arabic interface text. :where() keeps specificity at element level so
+     .font-quran / .font-arabic on Quran text always wins. */
+  :where([dir="rtl"]) body,
+  :where([dir="rtl"]) h1,
+  :where([dir="rtl"]) h2,
+  :where([dir="rtl"]) h3,
+  :where([dir="rtl"]) h4 {
+    font-family: var(--font-arabic-ui);
   }
 
   :focus-visible {
