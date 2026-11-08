@@ -7,7 +7,17 @@ export const home = {
     titleLine2: "افهم القرآن.",
     subtitle: "بناء مهاراتك في العربية القرآنية كلمة، وآية، ودرسًا في كل مرة.",
     note: "نص القرآن وترجماته مأخوذة من مصادر موثّقة فقط.",
+    continueReading: "تابع القراءة",
+    continuingFrom: "المتابعة من {surah}، الآية {ayah}",
     documentTitle: "QuranRoots — تعلّم العربية. افهم القرآن.",
+  },
+  journey: {
+    title: "رحلتك",
+    emptySignedOut: "أنشئ حسابًا لحفظ موضعك ومتابعة تقدمك الفعلي.",
+    createAccount: "أنشئ حسابًا",
+    emptySignedIn: "أضف آية إلى العلامات أثناء القراءة وسيظهر موضعك هنا.",
+    openReader: "افتح القارئ",
+    resumeCta: "استأنف",
   },
   quickLinks: {
     title: "اكتشف QuranRoots",

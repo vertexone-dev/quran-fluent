@@ -6,9 +6,18 @@ type LogoProps = {
   className?: string;
   showWordmark?: boolean;
   tagline?: boolean;
+  /** Visually hides the wordmark (still read by screen readers) on very
+   * narrow phones, where the header's language switcher, theme toggle and
+   * menu button leave no room for it -- otherwise it's clipped mid-word. */
+  collapseWordmarkOnNarrow?: boolean;
 };
 
-export function Logo({ className, showWordmark = true, tagline = false }: LogoProps) {
+export function Logo({
+  className,
+  showWordmark = true,
+  tagline = false,
+  collapseWordmarkOnNarrow = false,
+}: LogoProps) {
   const { d } = useI18n();
   return (
     <span className={cn("flex items-center gap-3", className)}>
@@ -31,7 +40,12 @@ export function Logo({ className, showWordmark = true, tagline = false }: LogoPr
         height={40}
       />
       {showWordmark && (
-        <span className="flex min-w-0 flex-col leading-none">
+        <span
+          className={cn(
+            "flex min-w-0 flex-col leading-none",
+            collapseWordmarkOnNarrow && "max-[409px]:sr-only",
+          )}
+        >
           <span className="font-display text-xl font-bold tracking-tight text-primary">
             {d.common.brand.name}
           </span>

@@ -172,7 +172,7 @@ export function SiteHeader({ variant = "default" }: { variant?: SiteHeaderVarian
       >
         {/* Brand */}
         <Link to="/" className="min-w-0" aria-label={t("common.brand.homeAria")}>
-          <Logo />
+          <Logo collapseWordmarkOnNarrow />
         </Link>
 
         {/* Desktop navigation */}

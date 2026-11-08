@@ -170,6 +170,7 @@ export default defineConfig({
         "62-premium-checkout.spec.ts",
         "65-reflect.spec.ts",
         "67-dashboard-nav.spec.ts",
+        "68-homepage-resume.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],

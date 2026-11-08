@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { type MouseEvent as ReactMouseEvent, type ReactNode, useRef, useState } from "react";
 import { motion, MotionConfig, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import {
@@ -12,11 +13,16 @@ import {
   LineChart,
   Languages,
   Compass,
+  Play,
+  Sprout,
 } from "lucide-react";
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/lib/auth";
+import { fetchBookmarks } from "@/lib/bookmarks";
+import { fetchSurahs, surahName } from "@/lib/quran";
 import { isRtlLocale, useI18n } from "@/lib/i18n";
 import { useDocumentTitle } from "@/lib/use-document-title";
 
@@ -103,17 +109,17 @@ function HeroTitle({ lines, reduce, delay }: { lines: string[]; reduce: boolean;
 }
 
 // Gold glow CTA with a click ripple -- adapted from the approved Emergent
-// Design Lock v1.0 reference (GoldButton), reimplemented as a real
-// router Link (not a plain button) so navigation, middle-click/open-in-new-
-// tab and screen readers all behave like every other link on the site.
-// Both call sites on this page point to the same signup route, so it's
-// hardcoded here rather than threaded through as generic, loosely-typed
-// `to`/`search` props that would need to bypass TanStack Router's own
+// Design Lock v1.0 reference (GoldButton). Split into a hook + shared
+// className + content wrapper (rather than one wrapper component) so each
+// call site renders its own real, concretely-typed router <Link> -- the two
+// CTAs on this page go to different destinations, and threading `to`/
+// `search` through a generic wrapper would mean bypassing TanStack Router's
 // compile-time route checking.
-function CinematicCtaLink({ children, testId }: { children: ReactNode; testId: string }) {
-  const [ripples, setRipples] = useState<{ id: number; x: number; y: number; size: number }[]>([]);
+type Ripple = { id: number; x: number; y: number; size: number };
 
-  const onClick = (e: ReactMouseEvent<HTMLAnchorElement>) => {
+function useCtaRipple() {
+  const [ripples, setRipples] = useState<Ripple[]>([]);
+  const onClick = (e: ReactMouseEvent<HTMLElement>) => {
     const r = e.currentTarget.getBoundingClientRect();
     const size = Math.max(r.width, r.height) / 2;
     const id = Date.now();
@@ -123,15 +129,15 @@ function CinematicCtaLink({ children, testId }: { children: ReactNode; testId: s
     ]);
     window.setTimeout(() => setRipples((p) => p.filter((x) => x.id !== id)), 700);
   };
+  return { ripples, onClick };
+}
 
+const CTA_CLASSNAME =
+  "group bg-primary text-primary-foreground relative isolate inline-flex h-[60px] items-center justify-center gap-3 overflow-hidden rounded-full px-9 text-lg font-semibold shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_55%,transparent),0_0_26px_color-mix(in_oklab,var(--gold)_45%,transparent)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_75%,transparent),0_0_36px_color-mix(in_oklab,var(--gold)_60%,transparent)] active:scale-[0.97] sm:h-[70px] sm:px-11";
+
+function CtaGlowContent({ ripples, children }: { ripples: Ripple[]; children: ReactNode }) {
   return (
-    <Link
-      to="/auth"
-      search={{ mode: "signup" }}
-      onClick={onClick}
-      data-testid={testId}
-      className="group bg-primary text-primary-foreground relative isolate inline-flex h-[60px] items-center justify-center gap-3 overflow-hidden rounded-full px-9 text-lg font-semibold shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_55%,transparent),0_0_26px_color-mix(in_oklab,var(--gold)_45%,transparent)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_75%,transparent),0_0_36px_color-mix(in_oklab,var(--gold)_60%,transparent)] active:scale-[0.97] sm:h-[70px] sm:px-11"
-    >
+    <>
       <span className="cta-ring" aria-hidden="true" />
       <span className="relative z-10 inline-flex items-center gap-3">{children}</span>
       {ripples.map((r) => (
@@ -141,7 +147,7 @@ function CinematicCtaLink({ children, testId }: { children: ReactNode; testId: s
           style={{ left: r.x, top: r.y, width: r.size, height: r.size }}
         />
       ))}
-    </Link>
+    </>
   );
 }
 
@@ -187,7 +193,30 @@ function CinematicHero({
   home: ReturnType<typeof useI18n>["d"]["home"];
   dir: "ltr" | "rtl";
 }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const { user } = useAuth();
+  const { ripples, onClick: onCtaClick } = useCtaRipple();
+
+  // "Continue Reading" resumes at the learner's most recent bookmark -- the
+  // only genuine saved reading position this app stores (there is no
+  // separate last-read tracker). Signed-out visitors and learners with no
+  // bookmarks get the plain reader (/quran) instead: an honest fallback,
+  // never signup and never an invented position or percentage. Queries are
+  // gated so anonymous visitors trigger no extra requests.
+  const { data: bookmarks } = useQuery({
+    queryKey: ["bookmarks", user?.id],
+    queryFn: () => fetchBookmarks(user!.id),
+    enabled: Boolean(user?.id),
+  });
+  const resumeAt = bookmarks?.[0] ?? null;
+  const { data: surahs } = useQuery({
+    queryKey: ["surahs"],
+    queryFn: ({ signal }) => fetchSurahs(signal),
+    enabled: resumeAt !== null,
+  });
+  const resumeSurah = resumeAt ? surahs?.find((s) => s.number === resumeAt.surah_number) : null;
+  const resumeSearch = resumeAt ? { surah: resumeAt.surah_number, ayah: resumeAt.ayah_number } : {};
+
   const heroRef = useRef<HTMLElement>(null);
   const reduce = useReducedMotion() ?? false;
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
@@ -258,14 +287,22 @@ function CinematicHero({
           {...fadeUp(1.1, reduce)}
           className="mt-7 flex flex-col items-center gap-3 sm:mt-8 sm:flex-row sm:gap-4"
         >
-          <CinematicCtaLink testId="hero-continue-reading-button">
-            <BookOpen className="h-6 w-6" strokeWidth={1.5} aria-hidden />
-            {t("common.actions.startLearning")}
-            <ChevronRight
-              className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"
-              aria-hidden
-            />
-          </CinematicCtaLink>
+          <Link
+            to="/quran"
+            search={resumeSearch}
+            onClick={onCtaClick}
+            data-testid="hero-continue-reading-button"
+            className={CTA_CLASSNAME}
+          >
+            <CtaGlowContent ripples={ripples}>
+              <BookOpen className="h-6 w-6" strokeWidth={1.5} aria-hidden />
+              {home.hero.continueReading}
+              <ChevronRight
+                className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1"
+                aria-hidden
+              />
+            </CtaGlowContent>
+          </Link>
           <Link
             to="/quran"
             className="inline-flex h-[60px] items-center justify-center rounded-full border border-white/40 px-9 text-lg font-semibold text-white transition-colors duration-300 hover:border-gold hover:bg-white/10 sm:h-[70px] sm:px-11"
@@ -277,10 +314,58 @@ function CinematicHero({
           {home.hero.note}
         </motion.p>
       </div>
-      <div className="pb-6 pt-16 sm:pt-20" aria-hidden="true" />
+
+      <div className="mx-auto mt-12 w-full max-w-[1200px] px-4 pb-8 sm:px-6 md:mt-16">
+        <section aria-labelledby="quick-links">
+          <h2 id="quick-links" className="sr-only">
+            {home.quickLinks.title}
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+            {home.quickLinks.items.map((item, index) => {
+              const meta = quickLinkMeta[index];
+              if (!meta) return null;
+              return (
+                <QuickLinkCard
+                  key={item.title}
+                  item={item}
+                  icon={meta.icon}
+                  to={meta.to}
+                  index={index}
+                  reduce={reduce}
+                />
+              );
+            })}
+          </div>
+        </section>
+
+        <JourneyPanel
+          home={home}
+          signedIn={Boolean(user)}
+          reduce={reduce}
+          resume={
+            resumeAt
+              ? {
+                  label: t("home.hero.continuingFrom", {
+                    surah: resumeSurah
+                      ? surahName(resumeSurah, locale)
+                      : String(resumeAt.surah_number),
+                    ayah: String(resumeAt.ayah_number),
+                  }),
+                }
+              : null
+          }
+          resumeSearch={resumeSearch}
+        />
+      </div>
     </section>
   );
 }
+
+// Fixed dark-glass surfaces: these cards sit on the hero's night photo in
+// both site themes, so (like the hero's text) they don't follow the theme
+// toggle.
+const GLASS =
+  "bg-[linear-gradient(180deg,oklch(0.324_0.046_195.1/0.72),oklch(0.2_0.035_195.1/0.82))] backdrop-blur-xl";
 
 function QuickLinkCard({
   item,
@@ -295,25 +380,111 @@ function QuickLinkCard({
   index: number;
   reduce: boolean;
 }) {
+  // The first card is the reference's highlighted "primary" card.
+  const active = index === 0;
+  return (
+    <motion.div
+      initial={reduce ? false : { opacity: 0, y: 32 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: reduce ? 0 : 0.9,
+        ease: EASE_OUT,
+        delay: reduce ? 0 : 1.3 + index * 0.09,
+      }}
+      className="h-full"
+    >
+      <Link to={to} className="group block h-full rounded-[22px]">
+        <div
+          className={`${GLASS} flex h-full flex-col items-center rounded-[22px] border px-3 pb-5 pt-5 text-center transition-[transform,box-shadow,border-color] duration-500 group-hover:-translate-y-1 sm:px-4 sm:pt-6 ${
+            active
+              ? "border-[oklch(0.767_0.139_91.1/0.9)] shadow-[0_0_0_1px_oklch(0.767_0.139_91.1/0.35),0_0_36px_oklch(0.767_0.139_91.1/0.28)]"
+              : "border-[oklch(0.767_0.139_91.1/0.22)] group-hover:border-[oklch(0.767_0.139_91.1/0.7)] group-hover:shadow-[0_0_32px_oklch(0.767_0.139_91.1/0.22)]"
+          }`}
+        >
+          <span
+            style={{ color: HERO_GOLD }}
+            className="mb-3 transition-transform duration-500 group-hover:-translate-y-1 sm:mb-4"
+          >
+            <Icon className="size-8 sm:size-10" strokeWidth={1.3} aria-hidden />
+          </span>
+          <h3 className="font-display text-base font-semibold text-white sm:text-lg">
+            {item.title}
+          </h3>
+          <p className="mt-1.5 max-w-[15rem] text-xs leading-snug text-white/75 sm:text-sm">
+            {item.body}
+          </p>
+        </div>
+      </Link>
+    </motion.div>
+  );
+}
+
+// The reference's "Your Journey" bar -- minus its invented "42%": a real
+// saved position when the learner has one, otherwise an honest empty state
+// that says what to do to get one. No percentages or progress bars are ever
+// shown here; real progress lives on the dashboard.
+function JourneyPanel({
+  home,
+  signedIn,
+  reduce,
+  resume,
+  resumeSearch,
+}: {
+  home: ReturnType<typeof useI18n>["d"]["home"];
+  signedIn: boolean;
+  reduce: boolean;
+  resume: { label: string } | null;
+  resumeSearch: { surah?: number; ayah?: number };
+}) {
+  const j = home.journey;
+  const ctaClass =
+    "inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border px-6 text-sm font-semibold text-white transition-colors duration-300 hover:bg-white/10";
+  const ctaStyle = { borderColor: HERO_GOLD };
   return (
     <motion.div
       initial={reduce ? false : { opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: reduce ? 0 : 0.7, ease: EASE_OUT, delay: reduce ? 0 : index * 0.08 }}
-      className="h-full"
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reduce ? 0 : 0.9, ease: EASE_OUT, delay: reduce ? 0 : 1.7 }}
+      data-testid="hero-journey"
+      className={`${GLASS} mt-5 flex flex-col items-center gap-4 rounded-[26px] border border-[oklch(0.767_0.139_91.1/0.22)] px-5 py-4 text-center sm:flex-row sm:text-start md:px-8`}
     >
-      <Link to={to} className="group block h-full rounded-2xl">
-        <Card className="shadow-soft hover:shadow-elevated border-border/70 bg-card/90 hover:border-gold/60 h-full backdrop-blur transition-all duration-300 group-hover:-translate-y-1">
-          <CardContent className="pt-6">
-            <span className="bg-gold/15 text-gold inline-flex size-10 items-center justify-center rounded-xl transition-transform duration-300 group-hover:-translate-y-0.5">
-              <Icon className="size-5" aria-hidden />
-            </span>
-            <h3 className="mt-4 font-display text-base font-semibold sm:text-lg">{item.title}</h3>
-            <p className="mt-1.5 text-sm text-muted-foreground">{item.body}</p>
-          </CardContent>
-        </Card>
-      </Link>
+      <div className="flex items-center gap-3 sm:border-e sm:border-white/15 sm:pe-6">
+        <Sprout
+          className="size-7 shrink-0"
+          style={{ color: HERO_GOLD }}
+          strokeWidth={1.4}
+          aria-hidden
+        />
+        <h2 className="font-display text-lg font-semibold text-white">{j.title}</h2>
+      </div>
+      {resume ? (
+        <>
+          <p
+            data-testid="hero-resume-position"
+            className="flex-1 text-sm font-medium text-white/90 sm:text-base"
+          >
+            {resume.label}
+          </p>
+          <Link to="/quran" search={resumeSearch} className={ctaClass} style={ctaStyle}>
+            <Play className="size-4" aria-hidden />
+            {j.resumeCta}
+          </Link>
+        </>
+      ) : signedIn ? (
+        <>
+          <p className="flex-1 text-sm text-white/80 sm:text-base">{j.emptySignedIn}</p>
+          <Link to="/quran" className={ctaClass} style={ctaStyle}>
+            {j.openReader}
+          </Link>
+        </>
+      ) : (
+        <>
+          <p className="flex-1 text-sm text-white/80 sm:text-base">{j.emptySignedOut}</p>
+          <Link to="/auth" search={{ mode: "signup" }} className={ctaClass} style={ctaStyle}>
+            {j.createAccount}
+          </Link>
+        </>
+      )}
     </motion.div>
   );
 }
@@ -323,6 +494,7 @@ function Home() {
   const home = d.home;
   const dir = isRtlLocale(locale) ? "rtl" : "ltr";
   const reduce = useReducedMotion() ?? false;
+  const { ripples: footerRipples, onClick: onFooterCtaClick } = useCtaRipple();
   useDocumentTitle(home.hero.documentTitle);
 
   return (
@@ -332,31 +504,6 @@ function Home() {
 
         <main>
           <CinematicHero home={home} dir={dir} />
-
-          <section
-            className="relative mx-auto -mt-10 max-w-6xl px-4 sm:-mt-14"
-            aria-labelledby="quick-links"
-          >
-            <h2 id="quick-links" className="sr-only">
-              {home.quickLinks.title}
-            </h2>
-            <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-              {home.quickLinks.items.map((item, index) => {
-                const meta = quickLinkMeta[index];
-                if (!meta) return null;
-                return (
-                  <QuickLinkCard
-                    key={item.title}
-                    item={item}
-                    icon={meta.icon}
-                    to={meta.to}
-                    index={index}
-                    reduce={reduce}
-                  />
-                );
-              })}
-            </div>
-          </section>
 
           <section
             className="section-py-normal mx-auto max-w-6xl px-4"
@@ -490,9 +637,17 @@ function Home() {
               <h2 className="font-display text-3xl font-bold">{home.cta.title}</h2>
               <p className="mx-auto mt-3 max-w-xl text-muted-foreground">{home.cta.body}</p>
               <div className="mt-8 flex justify-center">
-                <CinematicCtaLink testId="footer-cta-start-learning-button">
-                  {t("common.actions.startLearning")}
-                </CinematicCtaLink>
+                <Link
+                  to="/auth"
+                  search={{ mode: "signup" }}
+                  onClick={onFooterCtaClick}
+                  data-testid="footer-cta-start-learning-button"
+                  className={CTA_CLASSNAME}
+                >
+                  <CtaGlowContent ripples={footerRipples}>
+                    {t("common.actions.startLearning")}
+                  </CtaGlowContent>
+                </Link>
               </div>
             </div>
           </section>

@@ -7,7 +7,17 @@ export const home: typeof EnHome = {
     titleLine2: "Comprenez le Coran.",
     subtitle: "Progressez en arabe coranique, un mot, un verset et une leçon à la fois.",
     note: "Le texte coranique et les traductions proviennent exclusivement de sources vérifiées.",
+    continueReading: "Continuer la lecture",
+    continuingFrom: "Reprise à {surah}, verset {ayah}",
     documentTitle: "QuranRoots — Apprenez l'arabe. Comprenez le Coran.",
+  },
+  journey: {
+    title: "Votre parcours",
+    emptySignedOut: "Créez un compte pour garder votre place et suivre votre progression réelle.",
+    createAccount: "Créer un compte",
+    emptySignedIn: "Ajoutez un verset aux signets pendant la lecture : votre place apparaîtra ici.",
+    openReader: "Ouvrir le lecteur",
+    resumeCta: "Reprendre",
   },
   quickLinks: {
     title: "Découvrir QuranRoots",

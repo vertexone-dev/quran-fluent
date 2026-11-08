@@ -55,6 +55,55 @@ test.describe("homepage quick-links", () => {
   });
 });
 
+test.describe("homepage hero CTA", () => {
+  test("Continue Reading leads to the real Qur'an reader, never signup, when signed out", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const cta = page.getByTestId("hero-continue-reading-button");
+    await expect(cta).toHaveText(/Continue Reading/);
+    await expect(cta).toHaveAttribute("href", "/quran");
+    // No saved position exists for a visitor, so no resume line is invented.
+    await expect(page.getByTestId("hero-resume-position")).toHaveCount(0);
+    await cta.click();
+    await expect(page).toHaveURL(/\/quran$/);
+    await expect(page).not.toHaveURL(/\/auth/);
+  });
+});
+
+test.describe("header wordmark at narrow widths", () => {
+  for (const width of [320, 360, 390, 414, 430]) {
+    test(`the wordmark is never clipped by the header controls at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.goto("/about");
+      const result = await page.evaluate(() => {
+        const link = document.querySelector('header a[href="/"]');
+        const text = [...(link?.querySelectorAll("span") ?? [])].find(
+          (el) => el.textContent?.trim() === "QuranRoots" && el.children.length === 0,
+        );
+        const switcher = [...document.querySelectorAll("header [role=group]")]
+          .map((el) => el.getBoundingClientRect())
+          .find((r) => r.width > 0);
+        if (!text || !switcher) return null;
+        // sr-only collapses to a clipped 1px box: still in the accessibility
+        // tree, intentionally not painted.
+        const painted = text.parentElement!.getBoundingClientRect().width > 2;
+        const range = document.createRange();
+        range.selectNodeContents(text);
+        return {
+          painted,
+          textRight: range.getBoundingClientRect().right,
+          switcherLeft: switcher.left,
+        };
+      });
+      expect(result).not.toBeNull();
+      if (result!.painted) expect(result!.textRight).toBeLessThanOrEqual(result!.switcherLeft);
+      // Either way the brand stays reachable by name.
+      await expect(page.getByRole("link", { name: "QuranRoots home" }).first()).toBeVisible();
+    });
+  }
+});
+
 test.describe("homepage theme support", () => {
   test("switching between Light and Dark updates the document, both themes keep the quick-links readable", async ({
     page,

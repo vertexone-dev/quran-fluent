@@ -5,7 +5,17 @@ export const home = {
     titleLine2: "Understand the Qur'an.",
     subtitle: "Build your Qur'anic Arabic skills one word, one verse, and one lesson at a time.",
     note: "Qur'anic text and translations come from verified sources only.",
+    continueReading: "Continue Reading",
+    continuingFrom: "Continuing from {surah}, Ayah {ayah}",
     documentTitle: "QuranRoots — Learn Arabic. Understand the Qur'an.",
+  },
+  journey: {
+    title: "Your Journey",
+    emptySignedOut: "Create an account to save your place and track real progress.",
+    createAccount: "Create account",
+    emptySignedIn: "Bookmark an ayah while you read and your place will appear here.",
+    openReader: "Open the reader",
+    resumeCta: "Resume",
   },
   quickLinks: {
     title: "Explore QuranRoots",
