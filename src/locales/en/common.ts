@@ -27,6 +27,12 @@ export const common = {
     openMenu: "Open menu",
     navigation: "Navigation",
     accountMenu: "Account menu",
+    search: "Search",
+    searchPlaceholder: "Search for a Surah by name or number",
+    searchHeading: "Surahs",
+    searchEmpty: "No Surah found.",
+    searchLoading: "Loading Surahs…",
+    searchTitle: "Search the Qur'an",
   },
 
   actions: {

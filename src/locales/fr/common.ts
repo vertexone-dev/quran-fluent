@@ -29,6 +29,12 @@ export const common: typeof EnCommon = {
     openMenu: "Ouvrir le menu",
     navigation: "Navigation",
     accountMenu: "Menu du compte",
+    search: "Rechercher",
+    searchPlaceholder: "Rechercher une sourate par nom ou numéro",
+    searchHeading: "Sourates",
+    searchEmpty: "Aucune sourate trouvée.",
+    searchLoading: "Chargement des sourates…",
+    searchTitle: "Rechercher dans le Coran",
   },
 
   actions: {

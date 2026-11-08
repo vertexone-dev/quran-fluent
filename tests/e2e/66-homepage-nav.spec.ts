@@ -135,7 +135,9 @@ test.describe("header wordmark at narrow widths", () => {
         const text = [...(link?.querySelectorAll("span") ?? [])].find(
           (el) => el.textContent?.trim() === "QuranRoots" && el.children.length === 0,
         );
-        const switcher = [...document.querySelectorAll("header [role=group]")]
+        // QR-INT-005: the segmented switcher became the language dropdown;
+        // the control nearest the brand is now the search button.
+        const switcher = [...document.querySelectorAll("header [data-testid=header-search-button]")]
           .map((el) => el.getBoundingClientRect())
           .find((r) => r.width > 0);
         if (!text || !switcher) return null;
@@ -171,9 +173,13 @@ test.describe("header never overlaps at laptop widths, in every language", () =>
           const rtl = document.documentElement.dir === "rtl";
           const brand = header.querySelector('a[href="/"]')!.getBoundingClientRect();
           const nav = header.querySelector("nav")!.getBoundingClientRect();
-          const controls = [...header.querySelectorAll("[role=group]")]
+          // QR-INT-005: below xl the icon-and-label nav is replaced by the
+          // bottom tab bar (zero-size here); the control nearest the nav is
+          // the search button, not the old segmented switcher.
+          const controls = [...header.querySelectorAll("[data-testid=header-search-button]")]
             .map((el) => el.getBoundingClientRect())
             .find((r) => r.width > 0)!;
+          const navShown = nav.width > 0;
           const text = [...header.querySelectorAll("a[href='/'] span")].find(
             (el) => el.children.length === 0,
           )!;
@@ -181,6 +187,13 @@ test.describe("header never overlaps at laptop widths, in every language", () =>
           const range = document.createRange();
           range.selectNodeContents(text);
           const brandBox = painted ? range.getBoundingClientRect() : brand;
+          if (!navShown) {
+            // No inline nav: brand and controls must still not collide.
+            return {
+              brandNav: rtl ? brandBox.left - controls.right : controls.left - brandBox.right,
+              navControls: 0,
+            };
+          }
           return rtl
             ? { brandNav: brandBox.left - nav.right, navControls: nav.left - controls.right }
             : { brandNav: nav.left - brandBox.right, navControls: controls.left - nav.right };

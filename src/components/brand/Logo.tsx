@@ -12,6 +12,10 @@ type LogoProps = {
    * language switcher and sign-in buttons (French labels are the widest).
    * Otherwise it's clipped or overlapped mid-word. */
   collapseWordmark?: boolean;
+  /** "onDark": always render the wordmark in Ivory, for placement on the
+   * theme-independent dark glass navigation bar (the default tone follows
+   * the page theme, which would be dark-on-dark in the light theme). */
+  tone?: "default" | "onDark";
 };
 
 export function Logo({
@@ -19,6 +23,7 @@ export function Logo({
   showWordmark = true,
   tagline = false,
   collapseWordmark = false,
+  tone = "default",
 }: LogoProps) {
   const { d } = useI18n();
   return (
@@ -45,10 +50,17 @@ export function Logo({
         <span
           className={cn(
             "flex min-w-0 flex-col leading-none",
-            collapseWordmark && "max-[409px]:sr-only min-[1024px]:max-[1279px]:sr-only",
+            collapseWordmark && "max-[379px]:sr-only min-[1280px]:max-[1439px]:sr-only",
           )}
         >
-          <span className="font-display text-xl font-bold tracking-tight text-primary dark:text-foreground">
+          <span
+            className={cn(
+              "font-display text-xl font-bold tracking-tight",
+              tone === "onDark"
+                ? "text-[oklch(0.974_0.01_87.5)]"
+                : "text-primary dark:text-foreground",
+            )}
+          >
             {d.common.brand.name}
           </span>
           {tagline && (

@@ -88,6 +88,9 @@ export default defineConfig({
         "66-homepage-nav.spec.ts",
         // QR-INT-005: the /quran study tabs' ?tab= entry point is public too.
         "69-quran-study-tab.spec.ts",
+        // QR-INT-005: the glass nav, language dropdown, search and bottom tab
+        // bar are all signed-out-visible, so this runs without a session.
+        "71-exact-navigation.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },

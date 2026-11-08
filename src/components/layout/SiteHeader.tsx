@@ -1,6 +1,17 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Menu, Moon, Sun, Laptop } from "lucide-react";
+import {
+  BookOpen,
+  CircleDot,
+  Feather,
+  Home,
+  Laptop,
+  Layers,
+  Menu,
+  Moon,
+  Sun,
+  type LucideIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Logo } from "@/components/brand/Logo";
@@ -15,7 +26,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { LanguageMenu } from "@/components/layout/LanguageMenu";
+import { MobileTabBar } from "@/components/layout/MobileTabBar";
+import { SearchDialog } from "@/components/layout/SearchDialog";
+import { ICON_BUTTON, MENU_ITEM, MENU_SURFACE } from "@/components/layout/navMenuStyles";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { isRtlLocale, useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
@@ -27,6 +42,16 @@ import { supabase } from "@/integrations/supabase/client";
 // lands on /auth, same as every other protected link. Features, Premium and
 // About moved to the drawer's secondary list and the footer; their routes
 // are unchanged.
+// QR-INT-005 (Emergent nav): every primary destination carries its reference
+// icon -- Home, open book, layers, feather, ring.
+const NAV_ICONS: Record<"home" | "quran" | "learn" | "reflect" | "memorize", LucideIcon> = {
+  home: Home,
+  quran: BookOpen,
+  learn: Layers,
+  reflect: Feather,
+  memorize: CircleDot,
+};
+
 const publicLinks = [
   { to: "/", key: "home" },
   { to: "/quran", key: "quran" },
@@ -77,27 +102,26 @@ function ThemeToggle() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="min-h-11 min-w-11"
+        <button
+          type="button"
+          className={ICON_BUTTON}
           aria-label={t("common.theme.change")}
           data-testid="theme-menu-trigger"
         >
-          <Icon className="size-5" />
-        </Button>
+          <Icon className="size-5" strokeWidth={1.5} />
+        </button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
+      <DropdownMenuContent align="end" sideOffset={10} className={MENU_SURFACE}>
+        <DropdownMenuItem className={MENU_ITEM} onClick={() => setTheme("light")}>
           {t("common.theme.light")}
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
+        <DropdownMenuItem className={MENU_ITEM} onClick={() => setTheme("dark")}>
           {t("common.theme.dark")}
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={() => setTheme("system")}>
+        <DropdownMenuItem className={MENU_ITEM} onClick={() => setTheme("system")}>
           {t("common.theme.system")}
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -157,250 +181,275 @@ export function SiteHeader({ variant = "default" }: { variant?: SiteHeaderVarian
   const initials = (user?.email ?? "Q").slice(0, 1).toUpperCase();
   const isOverlay = variant === "overlay";
 
-  // Overlay's glass pill always uses the site's own theme background/border
-  // tokens (same bg-background/backdrop-blur the default header already
-  // uses) rather than a forced dark tint -- every existing child control
-  // (ThemeToggle, LanguageSwitcher, account menu, login/signup buttons)
-  // keeps its normal, already-verified theme-adaptive contrast with zero
-  // extra overrides. Only the shape (floating rounded pill vs. full-width
-  // bar) and the shadow (stronger once scrolled past the hero) change.
+  // QR-INT-005 (Emergent nav): the bar is the reference's floating dark-teal
+  // glass pill on EVERY route -- the overlay variant fixed over the cinematic
+  // hero, the default variant sticky in flow -- and is theme-independent
+  // (see nav-glass in styles.css), so every control inside it sets its own
+  // Ivory / Antique Gold colors rather than inheriting theme tokens. The
+  // wrapper ignores pointer events so only the pill itself is clickable.
   return (
-    <header
-      className={
-        isOverlay
-          ? "animate-in fade-in slide-in-from-top-2 fixed inset-x-0 top-0 z-40 px-2 pt-3 duration-700 sm:px-6 sm:pt-4"
-          : "sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur"
-      }
-    >
-      <div
+    <>
+      <header
         className={
           isOverlay
-            ? `mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-[26px] border border-gold/20 bg-background/85 px-3 py-3 backdrop-blur-xl transition-shadow duration-500 sm:gap-4 sm:px-4 lg:flex lg:justify-between ${
-                scrolledPastHero ? "shadow-elevated" : "shadow-none"
-              }`
-            : "mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 lg:flex lg:justify-between"
+            ? "animate-in fade-in slide-in-from-top-2 pointer-events-none fixed inset-x-0 top-0 z-40 px-2 pt-3 duration-700 sm:px-6 sm:pt-4"
+            : "pointer-events-none sticky top-0 z-40 px-2 pt-3 sm:px-6 sm:pt-4"
         }
       >
-        {/* Brand */}
-        <Link to="/" className="min-w-0" aria-label={t("common.brand.homeAria")}>
-          <Logo collapseWordmark />
-        </Link>
+        <div
+          className={cn(
+            isOverlay ? "nav-glass" : "nav-glass-dense",
+            "pointer-events-auto mx-auto flex h-[72px] max-w-[1400px] items-center justify-between gap-2 rounded-[26px] px-3 transition-shadow duration-500 sm:gap-4 sm:px-6 ",
+            scrolledPastHero ? "shadow-elevated" : "shadow-none",
+          )}
+        >
+          {/* Brand */}
+          <Link
+            to="/"
+            className="min-w-0 shrink-0 xl:flex-1"
+            aria-label={t("common.brand.homeAria")}
+          >
+            <Logo collapseWordmark tone="onDark" />
+          </Link>
 
-        {/* Desktop navigation */}
-        <nav className="hidden items-center gap-1 lg:flex" aria-label={t("common.nav.main")}>
-          {links.map((link) => (
-            <Link
-              key={link.to}
-              to={link.to}
-              activeOptions={{
-                exact: link.to === "/",
-              }}
-              className="rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:bg-accent hover:text-accent-foreground"
-              activeProps={{
-                className:
-                  "bg-gold/15 text-foreground shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_55%,transparent),0_0_18px_color-mix(in_oklab,var(--gold)_35%,transparent)]",
-              }}
-            >
-              {t(`common.nav.${link.key}`)}
-            </Link>
-          ))}
-        </nav>
+          {/* Desktop navigation */}
+          <nav className="hidden items-center gap-1 xl:flex" aria-label={t("common.nav.main")}>
+            {links.map((link) => {
+              const Icon = NAV_ICONS[link.key];
+              return (
+                <Link
+                  key={link.to}
+                  to={link.to}
+                  activeOptions={{
+                    exact: link.to === "/",
+                  }}
+                  className="nav-pill-idle inline-flex items-center gap-2 rounded-full px-3.5 py-2.5 text-[0.95rem] whitespace-nowrap transition-[color,box-shadow,background-color] duration-300 focus-visible:outline-2 focus-visible:outline-[oklch(0.767_0.139_91.1)] min-[1440px]:gap-2.5 min-[1440px]:px-4 min-[1440px]:text-[1.02rem]"
+                  activeProps={{ className: "nav-pill-active" }}
+                >
+                  <Icon className="size-5 shrink-0" strokeWidth={1.5} aria-hidden />
+                  {t(`common.nav.${link.key}`)}
+                </Link>
+              );
+            })}
+          </nav>
 
-        {/* Desktop controls */}
-        <div className="hidden items-center gap-2 lg:flex">
-          <LanguageSwitcher />
+          {/* Desktop controls */}
+          <div className="hidden items-center xl:flex-1 xl:justify-end gap-1 xl:flex min-[1440px]:gap-1.5">
+            <SearchDialog />
 
-          <ThemeToggle />
+            <LanguageMenu />
 
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            <ThemeToggle />
+
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="ms-1 inline-flex size-11 items-center justify-center rounded-full border border-[oklch(0.767_0.139_91.1/0.8)] bg-[oklch(0.25_0.04_190)] text-[oklch(0.974_0.01_87.5)] shadow-[0_0_14px_oklch(0.767_0.139_91.1/0.3)] transition-shadow hover:shadow-[0_0_20px_oklch(0.767_0.139_91.1/0.5)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(0.767_0.139_91.1)]"
+                    aria-label={t("common.nav.accountMenu")}
+                    data-testid="account-menu-trigger"
+                  >
+                    <Avatar className="size-8">
+                      <AvatarFallback className="bg-transparent text-[oklch(0.974_0.01_87.5)]">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent
+                  align="end"
+                  sideOffset={10}
+                  className={cn("w-56", MENU_SURFACE)}
+                  data-testid="account-menu-content"
+                >
+                  <DropdownMenuLabel className="truncate px-3 py-2">{user.email}</DropdownMenuLabel>
+
+                  <DropdownMenuSeparator className="bg-[oklch(0.767_0.139_91.1/0.2)]" />
+
+                  {authedSecondaryLinks.map((link) => (
+                    <DropdownMenuItem key={link.to} asChild className={MENU_ITEM}>
+                      <Link to={link.to}>{t(`common.nav.${link.key}`)}</Link>
+                    </DropdownMenuItem>
+                  ))}
+
+                  <DropdownMenuItem asChild className={MENU_ITEM}>
+                    <Link to="/settings">{t("common.nav.settings")}</Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem asChild className={MENU_ITEM}>
+                    <Link to="/settings/billing">{t("common.nav.billing")}</Link>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator className="bg-[oklch(0.767_0.139_91.1/0.2)]" />
+
+                  <DropdownMenuItem
+                    className={MENU_ITEM}
+                    onClick={signOut}
+                    data-testid="logout-menu-item"
+                  >
+                    {t("common.actions.logout")}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
                 <Button
                   variant="ghost"
-                  className="gap-2 px-2"
-                  aria-label={t("common.nav.accountMenu")}
-                  data-testid="account-menu-trigger"
+                  asChild
+                  className="text-[oklch(0.974_0.01_87.5/0.9)] hover:bg-white/5 hover:text-[oklch(0.88_0.1_91)]"
                 >
-                  <Avatar className="size-8">
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-
-              <DropdownMenuContent align="end" className="w-56" data-testid="account-menu-content">
-                <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
-
-                <DropdownMenuSeparator />
-
-                {authedSecondaryLinks.map((link) => (
-                  <DropdownMenuItem key={link.to} asChild>
-                    <Link to={link.to}>{t(`common.nav.${link.key}`)}</Link>
-                  </DropdownMenuItem>
-                ))}
-
-                <DropdownMenuItem asChild>
-                  <Link to="/settings">{t("common.nav.settings")}</Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuItem asChild>
-                  <Link to="/settings/billing">{t("common.nav.billing")}</Link>
-                </DropdownMenuItem>
-
-                <DropdownMenuSeparator />
-
-                <DropdownMenuItem onClick={signOut} data-testid="logout-menu-item">
-                  {t("common.actions.logout")}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <>
-              <Button variant="ghost" asChild>
-                <Link
-                  to="/auth"
-                  search={{
-                    mode: "login",
-                  }}
-                >
-                  {t("common.actions.login")}
-                </Link>
-              </Button>
-
-              <Button asChild>
-                <Link
-                  to="/auth"
-                  search={{
-                    mode: "signup",
-                  }}
-                >
-                  {t("common.actions.startLearning")}
-                </Link>
-              </Button>
-            </>
-          )}
-        </div>
-
-        {/* Mobile controls */}
-        <div className="flex items-center gap-1 lg:hidden">
-          <LanguageSwitcher />
-
-          <ThemeToggle />
-
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="min-h-11 min-w-11"
-                aria-label={t("common.nav.openMenu")}
-                data-testid="mobile-menu-trigger"
-              >
-                <Menu className="size-5" />
-              </Button>
-            </SheetTrigger>
-
-            <SheetContent side={mobileNavSide} className="w-[86vw] max-w-sm">
-              <SheetTitle className="sr-only">{t("common.nav.navigation")}</SheetTitle>
-
-              <div className="mt-2 flex flex-col gap-1">
-                {links.map((link) => (
                   <Link
-                    key={link.to}
-                    to={link.to}
-                    onClick={() => setOpen(false)}
-                    className="rounded-lg px-3 py-3 text-base font-medium text-foreground transition-colors duration-300 hover:bg-accent"
-                    activeProps={{ className: "bg-gold/15 ring-1 ring-gold/50" }}
+                    to="/auth"
+                    search={{
+                      mode: "login",
+                    }}
                   >
-                    {t(`common.nav.${link.key}`)}
+                    {t("common.actions.login")}
                   </Link>
-                ))}
+                </Button>
 
-                <div className="my-3 h-px bg-border" />
+                <Button asChild>
+                  <Link
+                    to="/auth"
+                    search={{
+                      mode: "signup",
+                    }}
+                  >
+                    {t("common.actions.startLearning")}
+                  </Link>
+                </Button>
+              </>
+            )}
+          </div>
 
-                {user ? (
-                  <>
-                    {authedSecondaryLinks.map((link) => (
-                      <Link
-                        key={link.to}
-                        to={link.to}
-                        onClick={() => setOpen(false)}
-                        className="rounded-lg px-3 py-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                      >
-                        {t(`common.nav.${link.key}`)}
-                      </Link>
-                    ))}
+          {/* Mobile controls */}
+          <div className="flex items-center gap-0.5 xl:hidden">
+            <SearchDialog />
 
+            <LanguageMenu />
+
+            <ThemeToggle />
+
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="min-h-11 min-w-11 text-[oklch(0.974_0.01_87.5/0.9)] hover:bg-white/5 hover:text-[oklch(0.88_0.1_91)]"
+                  aria-label={t("common.nav.openMenu")}
+                  data-testid="mobile-menu-trigger"
+                >
+                  <Menu className="size-5" />
+                </Button>
+              </SheetTrigger>
+
+              <SheetContent side={mobileNavSide} className="w-[86vw] max-w-sm">
+                <SheetTitle className="sr-only">{t("common.nav.navigation")}</SheetTitle>
+
+                <div className="mt-2 flex flex-col gap-1">
+                  {links.map((link) => (
                     <Link
-                      to="/settings"
+                      key={link.to}
+                      to={link.to}
                       onClick={() => setOpen(false)}
-                      className="rounded-lg px-3 py-3"
+                      className="rounded-lg px-3 py-3 text-base font-medium text-foreground transition-colors duration-300 hover:bg-accent"
+                      activeProps={{ className: "bg-gold/15 ring-1 ring-gold/50" }}
                     >
-                      {t("common.nav.settings")}
+                      {t(`common.nav.${link.key}`)}
                     </Link>
+                  ))}
 
-                    <Link
-                      to="/settings/billing"
-                      onClick={() => setOpen(false)}
-                      className="rounded-lg px-3 py-3"
-                    >
-                      {t("common.nav.billing")}
-                    </Link>
+                  <div className="my-3 h-px bg-border" />
 
-                    <Button
-                      variant="secondary"
-                      className="mt-2"
-                      data-testid="mobile-logout-button"
-                      onClick={() => {
-                        setOpen(false);
-                        void signOut();
-                      }}
-                    >
-                      {t("common.actions.logout")}
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    {publicSecondaryLinks.map((link) => (
+                  {user ? (
+                    <>
+                      {authedSecondaryLinks.map((link) => (
+                        <Link
+                          key={link.to}
+                          to={link.to}
+                          onClick={() => setOpen(false)}
+                          className="rounded-lg px-3 py-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        >
+                          {t(`common.nav.${link.key}`)}
+                        </Link>
+                      ))}
+
                       <Link
-                        key={link.to}
-                        to={link.to}
+                        to="/settings"
                         onClick={() => setOpen(false)}
-                        className="rounded-lg px-3 py-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        className="rounded-lg px-3 py-3"
                       >
-                        {t(`common.nav.${link.key}`)}
+                        {t("common.nav.settings")}
                       </Link>
-                    ))}
 
-                    <Button variant="secondary" asChild className="mt-1">
                       <Link
-                        to="/auth"
-                        search={{
-                          mode: "login",
+                        to="/settings/billing"
+                        onClick={() => setOpen(false)}
+                        className="rounded-lg px-3 py-3"
+                      >
+                        {t("common.nav.billing")}
+                      </Link>
+
+                      <Button
+                        variant="secondary"
+                        className="mt-2"
+                        data-testid="mobile-logout-button"
+                        onClick={() => {
+                          setOpen(false);
+                          void signOut();
                         }}
-                        onClick={() => setOpen(false)}
                       >
-                        {t("common.actions.login")}
-                      </Link>
-                    </Button>
+                        {t("common.actions.logout")}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      {publicSecondaryLinks.map((link) => (
+                        <Link
+                          key={link.to}
+                          to={link.to}
+                          onClick={() => setOpen(false)}
+                          className="rounded-lg px-3 py-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        >
+                          {t(`common.nav.${link.key}`)}
+                        </Link>
+                      ))}
 
-                    <Button asChild className="mt-2">
-                      <Link
-                        to="/auth"
-                        search={{
-                          mode: "signup",
-                        }}
-                        onClick={() => setOpen(false)}
-                      >
-                        {t("common.actions.startLearning")}
-                      </Link>
-                    </Button>
-                  </>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
+                      <Button variant="secondary" asChild className="mt-1">
+                        <Link
+                          to="/auth"
+                          search={{
+                            mode: "login",
+                          }}
+                          onClick={() => setOpen(false)}
+                        >
+                          {t("common.actions.login")}
+                        </Link>
+                      </Button>
+
+                      <Button asChild className="mt-2">
+                        <Link
+                          to="/auth"
+                          search={{
+                            mode: "signup",
+                          }}
+                          onClick={() => setOpen(false)}
+                        >
+                          {t("common.actions.startLearning")}
+                        </Link>
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      <MobileTabBar />
+    </>
   );
 }

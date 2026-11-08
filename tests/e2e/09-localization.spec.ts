@@ -1,6 +1,20 @@
 import { test, expect } from "@playwright/test";
 
+import { clickAndExpect } from "./utils/auth";
 import { createTestUserClient } from "./utils/db";
+
+// QR-INT-005: the header's EN/FR/AR segmented control became a globe-and-code
+// dropdown. Both the desktop and mobile control rows are in the DOM (one is
+// CSS-hidden), so the trigger is scoped to the visible one; its translated
+// accessible label is still the stable signal that the UI switched language.
+const languageTrigger = (page: import("@playwright/test").Page) =>
+  page.locator("[data-testid=language-menu-trigger]:visible");
+
+async function chooseLanguage(page: import("@playwright/test").Page, code: "en" | "fr" | "ar") {
+  const option = page.getByTestId(`language-option-${code}`);
+  await clickAndExpect(languageTrigger(page), () => expect(option).toBeVisible());
+  await option.click();
+}
 
 test.describe("localization (EN/FR)", () => {
   /**
@@ -48,17 +62,7 @@ test.describe("localization (EN/FR)", () => {
 
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
 
-    const switcher = page
-      .getByRole("group", {
-        name: "Change language",
-      })
-      .first();
-
-    await switcher
-      .getByRole("button", {
-        name: /FR/,
-      })
-      .click();
+    await chooseLanguage(page, "fr");
 
     /*
      * Verify the document locale changed.
@@ -74,13 +78,7 @@ test.describe("localization (EN/FR)", () => {
      * This is more reliable than depending on one specific navigation
      * link such as "Tableau de bord".
      */
-    await expect(
-      page
-        .getByRole("group", {
-          name: "Changer de langue",
-        })
-        .first(),
-    ).toBeVisible();
+    await expect(languageTrigger(page)).toHaveAttribute("aria-label", "Changer de langue");
 
     /*
      * Verify French was persisted to the authenticated user's profile.
@@ -111,13 +109,7 @@ test.describe("localization (EN/FR)", () => {
 
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
 
-    await expect(
-      page
-        .getByRole("group", {
-          name: "Changer de langue",
-        })
-        .first(),
-    ).toBeVisible();
+    await expect(languageTrigger(page)).toHaveAttribute("aria-label", "Changer de langue");
 
     /*
      * We intentionally do NOT reset the profile here.
@@ -151,8 +143,7 @@ test.describe("localization (EN/FR)", () => {
     });
     await expect(page).toHaveTitle("QuranRoots — Learn Arabic. Understand the Qur'an.");
 
-    const switcher = page.getByRole("group", { name: "Change language" }).first();
-    await switcher.getByRole("button", { name: /FR/ }).click();
+    await chooseLanguage(page, "fr");
 
     // Wait for the switch itself to land (same stable signal the sibling
     // test above uses) before checking the title, so this never races the
@@ -210,8 +201,7 @@ test.describe("localization (EN/FR)", () => {
 
     await page.goto("/dashboard");
 
-    const switcher = page.getByRole("group", { name: "Change language" }).first();
-    await switcher.getByRole("button", { name: /FR/ }).click();
+    await chooseLanguage(page, "fr");
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
 
     // Only now let the held-back fetch (still resolving to the stale "en"
@@ -222,7 +212,7 @@ test.describe("localization (EN/FR)", () => {
 
     // The manual choice must survive the stale response landing after it.
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
-    await expect(page.getByRole("group", { name: "Changer de langue" }).first()).toBeVisible();
+    await expect(languageTrigger(page)).toHaveAttribute("aria-label", "Changer de langue");
   });
 
   test("the 404 page and the footer tagline are translated, not hard-coded English", async ({
@@ -235,11 +225,7 @@ test.describe("localization (EN/FR)", () => {
     // unused — a French learner hitting a bad link or seeing the footer
     // saw English regardless of their chosen locale.
     await page.goto("/dashboard");
-    await page
-      .getByRole("group", { name: "Change language" })
-      .first()
-      .getByRole("button", { name: /FR/ })
-      .click();
+    await chooseLanguage(page, "fr");
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
 
     // The locale choice is also written to localStorage (see src/lib/i18n.tsx

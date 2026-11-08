@@ -32,6 +32,12 @@ export const common = {
     openMenu: "فتح القائمة",
     navigation: "التنقل",
     accountMenu: "قائمة الحساب",
+    search: "بحث",
+    searchPlaceholder: "ابحث عن سورة بالاسم أو الرقم",
+    searchHeading: "السور",
+    searchEmpty: "لم يتم العثور على سورة.",
+    searchLoading: "جارٍ تحميل السور…",
+    searchTitle: "البحث في القرآن",
   },
 
   actions: {

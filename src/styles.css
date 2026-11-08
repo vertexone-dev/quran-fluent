@@ -448,3 +448,68 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* QR-INT-005 navigation: the Emergent floating glass bar. Theme-independent
+   dark Midnight Teal glass (literal oklch, like the hero/dashboard banners)
+   so the bar reads the same over the cinematic hero and over light-theme
+   pages; its controls use explicit Ivory/Antique Gold values for that
+   reason instead of theme tokens. Values are the Emergent .qr-glass
+   gradient (#103B3A -> #061E1E at .62/.72 alpha, blur 16 saturate 130%,
+   gold 20% border) expressed in oklch. */
+@utility nav-glass {
+  background: linear-gradient(180deg, oklch(0.34 0.05 190 / 0.66), oklch(0.22 0.035 190 / 0.78));
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid oklch(0.767 0.139 91.1 / 0.22);
+  color: oklch(0.974 0.01 87.5);
+}
+
+/* Denser variant for the fixed bottom tab bar, which scrolls over arbitrary
+   page content and so needs more opacity than the top bar to keep its labels
+   legible. */
+@utility nav-glass-dense {
+  background: linear-gradient(180deg, oklch(0.3 0.045 190 / 0.93), oklch(0.2 0.035 190 / 0.97));
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  border: 1px solid oklch(0.767 0.139 91.1 / 0.25);
+  color: oklch(0.974 0.01 87.5);
+}
+
+@utility nav-pill-idle {
+  color: oklch(0.974 0.01 87.5 / 0.85);
+  &:hover {
+    color: oklch(0.88 0.1 91);
+    box-shadow: 0 0 0 1px oklch(0.767 0.139 91.1 / 0.35);
+  }
+}
+
+/* Active destination: gold ring + soft glow + faint gold wash (Emergent).
+   Declared after nav-pill-idle so it wins when both are applied. */
+@utility nav-pill-active {
+  color: oklch(0.974 0.01 87.5);
+  background: linear-gradient(
+    180deg,
+    oklch(0.767 0.139 91.1 / 0.16),
+    oklch(0.767 0.139 91.1 / 0.04)
+  );
+  box-shadow:
+    0 0 0 1px oklch(0.767 0.139 91.1 / 0.85),
+    0 0 22px oklch(0.767 0.139 91.1 / 0.35);
+  &:hover {
+    color: oklch(0.974 0.01 87.5);
+    box-shadow:
+      0 0 0 1px oklch(0.767 0.139 91.1 / 0.95),
+      0 0 26px oklch(0.767 0.139 91.1 / 0.45);
+  }
+}
+
+/* QR-INT-005: the fixed bottom tab bar (MobileTabBar, below xl) would cover the
+   last ~72px of any page -- including bottom-of-page controls on routes with no
+   footer, such as the lesson player's Next button -- so while it is mounted the
+   body reserves that space and every page can scroll its last content clear of
+   the bar. Scoped with :has() so pages/widths without the bar are unaffected. */
+@media (max-width: 1279.98px) {
+  body:has([data-testid="mobile-tab-bar"]) {
+    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+  }
+}
