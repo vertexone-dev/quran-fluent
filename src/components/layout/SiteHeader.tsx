@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { Menu, Moon, Sun, Laptop } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
@@ -94,7 +94,26 @@ function ThemeToggle() {
   );
 }
 
-export function SiteHeader() {
+// QR-INT-005: "overlay" is the cinematic homepage's floating glass header --
+// fixed over the hero image instead of sitting in normal flow, transparent
+// until the visitor scrolls past the hero. Opt-in and homepage-only (passed
+// explicitly by src/routes/index.tsx): every other route keeps today's
+// plain sticky/solid header untouched, so this never changes how the
+// dashboard, Qur'an reader, settings, etc. look or behave.
+type SiteHeaderVariant = "default" | "overlay";
+
+function useScrolledPast(thresholdPx: number) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > thresholdPx);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [thresholdPx]);
+  return scrolled;
+}
+
+export function SiteHeader({ variant = "default" }: { variant?: SiteHeaderVariant }) {
   const { user } = useAuth();
   const { t, locale } = useI18n();
   // The trigger button sits at the row's trailing edge in both directions
@@ -107,6 +126,7 @@ export function SiteHeader() {
   const queryClient = useQueryClient();
 
   const [open, setOpen] = useState(false);
+  const scrolledPastHero = useScrolledPast(40);
 
   const links = user ? authedLinks : publicLinks;
 
@@ -124,10 +144,32 @@ export function SiteHeader() {
   }
 
   const initials = (user?.email ?? "Q").slice(0, 1).toUpperCase();
+  const isOverlay = variant === "overlay";
 
+  // Overlay's glass pill always uses the site's own theme background/border
+  // tokens (same bg-background/backdrop-blur the default header already
+  // uses) rather than a forced dark tint -- every existing child control
+  // (ThemeToggle, LanguageSwitcher, account menu, login/signup buttons)
+  // keeps its normal, already-verified theme-adaptive contrast with zero
+  // extra overrides. Only the shape (floating rounded pill vs. full-width
+  // bar) and the shadow (stronger once scrolled past the hero) change.
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur">
-      <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 lg:flex lg:justify-between">
+    <header
+      className={
+        isOverlay
+          ? "animate-in fade-in slide-in-from-top-2 fixed inset-x-0 top-0 z-40 px-2 pt-3 duration-700 sm:px-6 sm:pt-4"
+          : "sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur"
+      }
+    >
+      <div
+        className={
+          isOverlay
+            ? `mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-[26px] border border-gold/20 bg-background/85 px-3 py-3 backdrop-blur-xl transition-shadow duration-500 sm:gap-4 sm:px-4 lg:flex lg:justify-between ${
+                scrolledPastHero ? "shadow-elevated" : "shadow-none"
+              }`
+            : "mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 lg:flex lg:justify-between"
+        }
+      >
         {/* Brand */}
         <Link to="/" className="min-w-0" aria-label={t("common.brand.homeAria")}>
           <Logo />
@@ -144,7 +186,8 @@ export function SiteHeader() {
               }}
               className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:bg-accent hover:text-accent-foreground"
               activeProps={{
-                className: "bg-gold/15 text-foreground ring-1 ring-gold/50",
+                className:
+                  "bg-gold/15 text-foreground shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_55%,transparent),0_0_18px_color-mix(in_oklab,var(--gold)_35%,transparent)]",
               }}
             >
               {t(`common.nav.${link.key}`)}

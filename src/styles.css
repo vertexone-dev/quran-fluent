@@ -335,6 +335,109 @@
   font-size: 1.75rem;
 }
 
+/* QR-INT-005: cinematic homepage hero. Deliberately theme-independent (a
+   photographic night scene reads correctly only with light text, regardless
+   of whether the rest of the site is in Ivory or Midnight Teal) -- see
+   surface-hero-cinematic below, which anchors to the site's own approved
+   Midnight Teal oklch values as a literal fallback rather than a
+   theme-variable, so a failed image load still renders the same dark,
+   legible backdrop in either theme. The animated effects below mirror this
+   repo's existing global `prefers-reduced-motion` rule above (all are plain
+   CSS `animation`, already zeroed by that rule's `animation-duration`
+   override) -- no separate override list needed here.  */
+@utility surface-hero-cinematic {
+  background-image: linear-gradient(180deg, oklch(0.28 0.04 195.1), oklch(0.16 0.035 195.1));
+}
+
+@utility hero-grain {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@keyframes hero-flicker {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  20% {
+    opacity: 0.65;
+    transform: scale(0.97);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+  70% {
+    opacity: 0.75;
+  }
+}
+@utility hero-flicker {
+  animation: hero-flicker 4.5s ease-in-out infinite;
+}
+
+/* Rotating gold ring behind the hero CTA. @property lets the conic-gradient
+   angle itself be the animated value (smooth, GPU-friendly) rather than
+   animating the gradient's stop list every frame. */
+@property --cta-ring-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes cta-ring-spin {
+  to {
+    --cta-ring-angle: 360deg;
+  }
+}
+@utility cta-ring {
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--cta-ring-angle, 0deg),
+    color-mix(in oklab, var(--gold) 55%, transparent),
+    var(--gold) 20%,
+    color-mix(in oklab, var(--gold) 55%, transparent) 40%,
+    color-mix(in oklab, var(--gold) 55%, transparent) 60%,
+    var(--gold) 80%,
+    color-mix(in oklab, var(--gold) 55%, transparent)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: cta-ring-spin 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes hero-ripple {
+  from {
+    transform: scale(0);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+.hero-ripple {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  background: color-mix(in oklab, var(--gold) 70%, white);
+  animation: hero-ripple 0.7s ease-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
