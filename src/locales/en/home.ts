@@ -1,8 +1,8 @@
 export const home = {
   hero: {
-    badge: "Qur'anic Arabic, step by step",
-    titleLine1: "Learn Arabic.",
-    titleLine2: "Understand the Qur'an.",
+    steps: ["Read", "Understand", "Reflect", "Practice", "Grow"],
+    titleLine1: "A Deeper Journey",
+    titleLine2: "with the Quran",
     subtitle: "Build your Qur'anic Arabic skills one word, one verse, and one lesson at a time.",
     note: "Qur'anic text and translations come from verified sources only.",
     continueReading: "Continue Reading",
@@ -25,8 +25,8 @@ export const home = {
         body: "Browse by Surah, Ayah or Juz with verified Arabic text.",
       },
       {
-        title: "Learn Arabic",
-        body: "Six structured levels, from the alphabet to full comprehension.",
+        title: "Understand This Ayah",
+        body: "Word meanings, roots and types from verified sources.",
       },
       {
         title: "Reflect",
@@ -35,6 +35,10 @@ export const home = {
       {
         title: "Memorize",
         body: "Listen, repeat and review with spaced repetition.",
+      },
+      {
+        title: "Learn Arabic",
+        body: "Six structured levels, from the alphabet to full comprehension.",
       },
     ],
   },

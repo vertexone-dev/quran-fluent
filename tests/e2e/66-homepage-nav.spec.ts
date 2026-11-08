@@ -18,6 +18,54 @@ function quickLinks(page: import("@playwright/test").Page) {
   return page.getByRole("region", { name: "Explore QuranRoots" });
 }
 
+test.describe("homepage headline, mission eyebrow and public navigation", () => {
+  test("hero shows the approved headline and the Read-to-Grow mission line", async ({ page }) => {
+    await page.goto("/");
+    const h1 = page.getByRole("heading", { level: 1 });
+    await expect(h1).toHaveText(/A Deeper Journey\s*with the Quran/);
+    await expect(page.getByTestId("hero-steps")).toHaveText(
+      /Read\s*→\s*Understand\s*→\s*Reflect\s*→\s*Practice\s*→\s*Grow/,
+    );
+  });
+
+  test("signed-out primary nav is Home, Quran, Learn, Reflect, Memorize, in order", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    const links = page.getByRole("navigation", { name: "Main" }).getByRole("link");
+    await expect(links).toHaveText(["Home", "Qur'an", "Learn", "Reflect", "Memorize"]);
+  });
+
+  test("Features, Premium and About remain reachable from the footer and the mobile drawer", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    const footer = page.getByRole("contentinfo");
+    for (const name of ["Features", "Premium", "About"]) {
+      await expect(footer.getByRole("link", { name })).toBeVisible();
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole("button", { name: "Open menu" }).click();
+    const sheet = page.getByRole("dialog");
+    for (const name of ["Features", "Premium", "About"]) {
+      await expect(sheet.getByRole("link", { name })).toBeVisible();
+    }
+  });
+
+  test("Reflect and Memorize stay behind the sign-in guard for a signed-out visitor", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto("/");
+    await page
+      .getByRole("navigation", { name: "Main" })
+      .getByRole("link", { name: "Reflect" })
+      .click();
+    await expect(page).toHaveURL(/\/auth/);
+  });
+});
+
 test.describe("homepage quick-links", () => {
   test("link to the real destinations, public ones navigate for real", async ({ page }) => {
     await page.goto("/");
@@ -26,6 +74,9 @@ test.describe("homepage quick-links", () => {
     await expect(page).toHaveURL(/\/quran/);
 
     await page.goBack();
+    await expect(
+      quickLinks(page).getByRole("link", { name: "Understand This Ayah" }),
+    ).toHaveAttribute("href", "/quran?tab=vocabulary");
     await quickLinks(page).getByRole("link", { name: "Learn Arabic" }).click();
     await expect(page).toHaveURL(/\/learn/);
 
@@ -49,6 +100,9 @@ test.describe("homepage quick-links", () => {
     await page.goto("/");
 
     await expect(quickLinks(page).getByRole("link", { name: "Read the Qur'an" })).toBeVisible();
+    await expect(
+      quickLinks(page).getByRole("link", { name: "Understand This Ayah" }),
+    ).toBeVisible();
     await expect(quickLinks(page).getByRole("link", { name: "Learn Arabic" })).toBeVisible();
     await expect(quickLinks(page).getByRole("link", { name: "Reflect" })).toBeVisible();
     await expect(quickLinks(page).getByRole("link", { name: "Memorize" })).toBeVisible();
@@ -101,6 +155,42 @@ test.describe("header wordmark at narrow widths", () => {
       // Either way the brand stays reachable by name.
       await expect(page.getByRole("link", { name: "QuranRoots home" }).first()).toBeVisible();
     });
+  }
+});
+
+test.describe("header never overlaps at laptop widths, in every language", () => {
+  for (const locale of ["en", "fr", "ar"]) {
+    for (const width of [1024, 1280, 1440]) {
+      test(`brand, nav and controls do not collide (${locale} at ${width}px)`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto("/");
+        await page.evaluate((l) => localStorage.setItem("quranroots-locale", l), locale);
+        await page.reload();
+        const gaps = await page.evaluate(() => {
+          const header = document.querySelector("header")!;
+          const rtl = document.documentElement.dir === "rtl";
+          const brand = header.querySelector('a[href="/"]')!.getBoundingClientRect();
+          const nav = header.querySelector("nav")!.getBoundingClientRect();
+          const controls = [...header.querySelectorAll("[role=group]")]
+            .map((el) => el.getBoundingClientRect())
+            .find((r) => r.width > 0)!;
+          const text = [...header.querySelectorAll("a[href='/'] span")].find(
+            (el) => el.children.length === 0,
+          )!;
+          const painted = text.parentElement!.getBoundingClientRect().width > 2;
+          const range = document.createRange();
+          range.selectNodeContents(text);
+          const brandBox = painted ? range.getBoundingClientRect() : brand;
+          return rtl
+            ? { brandNav: brandBox.left - nav.right, navControls: nav.left - controls.right }
+            : { brandNav: nav.left - brandBox.right, navControls: controls.left - nav.right };
+        });
+        // Mirrored for rtl above, so "gap" always means the visual space
+        // between neighbours; it must never be negative (overlap).
+        expect(gaps.brandNav).toBeGreaterThanOrEqual(0);
+        expect(gaps.navControls).toBeGreaterThanOrEqual(0);
+      });
+    }
   }
 });
 
@@ -173,6 +263,12 @@ test.describe("homepage Arabic RTL", () => {
     await expect(region.getByRole("link", { name: "اقرأ القرآن" })).toBeVisible();
     await expect(region.getByRole("link", { name: "تدبّر" })).toBeVisible();
     await expect(region.getByRole("link", { name: "احفظ" })).toBeVisible();
+    await expect(region.getByRole("link", { name: "افهم هذه الآية" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(/رحلة أعمق\s*مع القرآن/);
+    // The mission line's arrows point the reading direction (right-to-left).
+    await expect(page.getByTestId("hero-steps")).toHaveText(
+      /اقرأ\s*←\s*افهم\s*←\s*تدبّر\s*←\s*طبّق\s*←\s*ارتقِ/,
+    );
 
     const overflow = await page.evaluate(() => ({
       scrollWidth: document.documentElement.scrollWidth,

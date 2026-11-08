@@ -21,10 +21,21 @@ import { isRtlLocale, useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 import { supabase } from "@/integrations/supabase/client";
 
+// QR-INT-005: the signed-out primary nav mirrors the signed-in one (Design
+// Lock v1: Home, Quran, Learn, Reflect, Memorize). Reflect and Memorize are
+// still behind the existing _authenticated route guard -- a signed-out click
+// lands on /auth, same as every other protected link. Features, Premium and
+// About moved to the drawer's secondary list and the footer; their routes
+// are unchanged.
 const publicLinks = [
   { to: "/", key: "home" },
-  { to: "/learn", key: "learn" },
   { to: "/quran", key: "quran" },
+  { to: "/learn", key: "learn" },
+  { to: "/reflect", key: "reflect" },
+  { to: "/memorize", key: "memorize" },
+] as const;
+
+const publicSecondaryLinks = [
   { to: "/features", key: "features" },
   { to: "/premium", key: "premium" },
   { to: "/about", key: "about" },
@@ -164,15 +175,15 @@ export function SiteHeader({ variant = "default" }: { variant?: SiteHeaderVarian
       <div
         className={
           isOverlay
-            ? `mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-[26px] border border-gold/20 bg-background/85 px-3 py-3 backdrop-blur-xl transition-shadow duration-500 sm:gap-4 sm:px-4 lg:flex lg:justify-between ${
+            ? `mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-[26px] border border-gold/20 bg-background/85 px-3 py-3 backdrop-blur-xl transition-shadow duration-500 sm:gap-4 sm:px-4 lg:flex lg:justify-between ${
                 scrolledPastHero ? "shadow-elevated" : "shadow-none"
               }`
-            : "mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 lg:flex lg:justify-between"
+            : "mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-4 px-4 py-3 lg:flex lg:justify-between"
         }
       >
         {/* Brand */}
         <Link to="/" className="min-w-0" aria-label={t("common.brand.homeAria")}>
-          <Logo collapseWordmarkOnNarrow />
+          <Logo collapseWordmark />
         </Link>
 
         {/* Desktop navigation */}
@@ -184,7 +195,7 @@ export function SiteHeader({ variant = "default" }: { variant?: SiteHeaderVarian
               activeOptions={{
                 exact: link.to === "/",
               }}
-              className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:bg-accent hover:text-accent-foreground"
+              className="rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors duration-300 hover:bg-accent hover:text-accent-foreground"
               activeProps={{
                 className:
                   "bg-gold/15 text-foreground shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_55%,transparent),0_0_18px_color-mix(in_oklab,var(--gold)_35%,transparent)]",
@@ -349,6 +360,17 @@ export function SiteHeader({ variant = "default" }: { variant?: SiteHeaderVarian
                   </>
                 ) : (
                   <>
+                    {publicSecondaryLinks.map((link) => (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        onClick={() => setOpen(false)}
+                        className="rounded-lg px-3 py-3 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      >
+                        {t(`common.nav.${link.key}`)}
+                      </Link>
+                    ))}
+
                     <Button variant="secondary" asChild className="mt-1">
                       <Link
                         to="/auth"

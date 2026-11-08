@@ -7,6 +7,7 @@ import {
   BookOpenText,
   ChevronRight,
   Headphones,
+  Layers,
   Brain,
   Feather,
   GraduationCap,
@@ -180,10 +181,13 @@ const pillarIcons = [GraduationCap, BookOpenText, Brain, Languages, Headphones, 
 // signed-out click lands on /auth, same as every other authenticated link
 // this page already offers (e.g. the hero's "Start Learning" CTA).
 const quickLinkMeta = [
-  { icon: BookOpenText, to: "/quran" as const },
-  { icon: GraduationCap, to: "/learn" as const },
-  { icon: Feather, to: "/reflect" as const },
-  { icon: BookOpen, to: "/memorize" as const },
+  { icon: BookOpenText, to: "/quran" as const, search: {} },
+  // "Understand This Ayah": the reader's real Vocabulary study tab (word
+  // meaning, root and type from verified data) -- URL-addressable via ?tab=.
+  { icon: Layers, to: "/quran" as const, search: { tab: "vocabulary" as const } },
+  { icon: Feather, to: "/reflect" as const, search: {} },
+  { icon: BookOpen, to: "/memorize" as const, search: {} },
+  { icon: GraduationCap, to: "/learn" as const, search: {} },
 ];
 
 function CinematicHero({
@@ -264,10 +268,20 @@ function CinematicHero({
         </motion.div>
         <motion.p
           {...fadeUp(0.3, reduce)}
+          data-testid="hero-steps"
           style={{ color: HERO_GOLD }}
-          className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[11px] font-semibold tracking-[0.3em] uppercase sm:text-xs"
+          className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[11px] font-semibold tracking-[0.3em] uppercase sm:text-xs rtl:text-sm rtl:tracking-normal"
         >
-          {home.hero.badge}
+          {home.hero.steps.map((step, i) => (
+            <span key={step} className="inline-flex items-center gap-2.5">
+              {step}
+              {i < home.hero.steps.length - 1 && (
+                <span aria-hidden="true" className="text-white/70">
+                  {arrow}
+                </span>
+              )}
+            </span>
+          ))}
         </motion.p>
         <motion.div {...fadeUp(0.4, reduce)}>
           <HeroDivider className="my-4" />
@@ -320,19 +334,30 @@ function CinematicHero({
           <h2 id="quick-links" className="sr-only">
             {home.quickLinks.title}
           </h2>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-5">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-5 lg:gap-4 xl:gap-5">
             {home.quickLinks.items.map((item, index) => {
               const meta = quickLinkMeta[index];
               if (!meta) return null;
               return (
-                <QuickLinkCard
+                // An odd fifth card centers on its own row in the two-column
+                // layouts instead of leaving a hole beside it.
+                <div
                   key={item.title}
-                  item={item}
-                  icon={meta.icon}
-                  to={meta.to}
-                  index={index}
-                  reduce={reduce}
-                />
+                  className={
+                    index === 4
+                      ? "col-span-2 mx-auto w-[calc(50%-0.375rem)] sm:w-[calc(50%-0.5rem)] lg:col-span-1 lg:w-auto"
+                      : undefined
+                  }
+                >
+                  <QuickLinkCard
+                    item={item}
+                    icon={meta.icon}
+                    to={meta.to}
+                    search={meta.search}
+                    index={index}
+                    reduce={reduce}
+                  />
+                </div>
               );
             })}
           </div>
@@ -371,12 +396,14 @@ function QuickLinkCard({
   item,
   icon: Icon,
   to,
+  search,
   index,
   reduce,
 }: {
   item: { title: string; body: string };
   icon: typeof BookOpen;
   to: (typeof quickLinkMeta)[number]["to"];
+  search: (typeof quickLinkMeta)[number]["search"];
   index: number;
   reduce: boolean;
 }) {
@@ -393,7 +420,7 @@ function QuickLinkCard({
       }}
       className="h-full"
     >
-      <Link to={to} className="group block h-full rounded-[22px]">
+      <Link to={to} search={search} className="group block h-full rounded-[22px]">
         <div
           className={`${GLASS} flex h-full flex-col items-center rounded-[22px] border px-3 pb-5 pt-5 text-center transition-[transform,box-shadow,border-color] duration-500 group-hover:-translate-y-1 sm:px-4 sm:pt-6 ${
             active

@@ -63,6 +63,11 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
+                <Link to="/premium" className="flex min-h-11 items-center hover:text-foreground">
+                  {t("common.nav.premium")}
+                </Link>
+              </li>
+              <li>
                 <Link to="/about" className="flex min-h-11 items-center hover:text-foreground">
                   {t("common.nav.about")}
                 </Link>

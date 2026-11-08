@@ -2,9 +2,9 @@ import type { home as EnHome } from "../en/home";
 
 export const home: typeof EnHome = {
   hero: {
-    badge: "L'arabe coranique, étape par étape",
-    titleLine1: "Apprenez l'arabe.",
-    titleLine2: "Comprenez le Coran.",
+    steps: ["Lire", "Comprendre", "Méditer", "Pratiquer", "Progresser"],
+    titleLine1: "Un voyage plus profond",
+    titleLine2: "avec le Coran",
     subtitle: "Progressez en arabe coranique, un mot, un verset et une leçon à la fois.",
     note: "Le texte coranique et les traductions proviennent exclusivement de sources vérifiées.",
     continueReading: "Continuer la lecture",
@@ -27,8 +27,8 @@ export const home: typeof EnHome = {
         body: "Parcourez par sourate, verset ou juz avec un texte arabe vérifié.",
       },
       {
-        title: "Apprendre l'arabe",
-        body: "Six niveaux structurés, de l'alphabet à la compréhension complète.",
+        title: "Comprendre ce verset",
+        body: "Sens, racines et types des mots, issus de sources vérifiées.",
       },
       {
         title: "Méditer",
@@ -37,6 +37,10 @@ export const home: typeof EnHome = {
       {
         title: "Mémoriser",
         body: "Écoutez, répétez et révisez avec une répétition espacée.",
+      },
+      {
+        title: "Apprendre l'arabe",
+        body: "Six niveaux structurés, de l'alphabet à la compréhension complète.",
       },
     ],
   },

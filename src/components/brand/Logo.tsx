@@ -6,17 +6,19 @@ type LogoProps = {
   className?: string;
   showWordmark?: boolean;
   tagline?: boolean;
-  /** Visually hides the wordmark (still read by screen readers) on very
-   * narrow phones, where the header's language switcher, theme toggle and
-   * menu button leave no room for it -- otherwise it's clipped mid-word. */
-  collapseWordmarkOnNarrow?: boolean;
+  /** Visually hides the wordmark (still read by screen readers) where the
+   * header's other controls leave no room for it -- very narrow phones, and
+   * mid-width laptops where the full-width nav is showing alongside the
+   * language switcher and sign-in buttons (French labels are the widest).
+   * Otherwise it's clipped or overlapped mid-word. */
+  collapseWordmark?: boolean;
 };
 
 export function Logo({
   className,
   showWordmark = true,
   tagline = false,
-  collapseWordmarkOnNarrow = false,
+  collapseWordmark = false,
 }: LogoProps) {
   const { d } = useI18n();
   return (
@@ -43,7 +45,7 @@ export function Logo({
         <span
           className={cn(
             "flex min-w-0 flex-col leading-none",
-            collapseWordmarkOnNarrow && "max-[409px]:sr-only",
+            collapseWordmark && "max-[409px]:sr-only min-[1024px]:max-[1279px]:sr-only",
           )}
         >
           <span className="font-display text-xl font-bold tracking-tight text-primary">

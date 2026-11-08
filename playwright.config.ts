@@ -86,6 +86,8 @@ export default defineConfig({
         // QR-INT-004: the public homepage's quick-links/theme/RTL/reduced-
         // motion checks are all signed-out-only, same rationale again.
         "66-homepage-nav.spec.ts",
+        // QR-INT-005: the /quran study tabs' ?tab= entry point is public too.
+        "69-quran-study-tab.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },
