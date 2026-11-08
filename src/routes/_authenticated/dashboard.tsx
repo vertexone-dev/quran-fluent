@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, type ReactElement, type ReactNode } from "react";
 import {
   BookMarked,
   Brain,
@@ -70,6 +70,45 @@ const UNDERSTANDING_KEYS = [
   "tajweed",
   "memorization",
 ] as const;
+
+/* Dashboard banner primitives (QR-INT-006). Dark-glass surface: literal
+   Ivory/Sand/Antique Gold, independent of the light/dark theme. */
+function DashBadge({ children }: { children: ReactNode }) {
+  return (
+    <span className="inline-block rounded-full border border-[oklch(0.767_0.139_91.1/0.45)] px-2.5 py-0.5 text-xs font-medium text-[oklch(0.891_0.031_77)]">
+      {children}
+    </span>
+  );
+}
+
+function GoldProgress({ value, className }: { value: number; className?: string }) {
+  const clamped = Math.max(0, Math.min(100, value));
+  return (
+    <div
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(clamped)}
+      className={`h-2 w-full overflow-hidden rounded-full bg-[oklch(0.5_0.08_186/0.35)] ${className ?? ""}`}
+    >
+      <div
+        className="dash-progress-fill h-full rounded-full bg-[linear-gradient(90deg,oklch(0.65_0.12_88),oklch(0.85_0.12_92))]"
+        style={{ width: `${clamped}%` }}
+      />
+    </div>
+  );
+}
+
+function DashCta({ children }: { children: ReactElement }) {
+  return (
+    <Button
+      asChild
+      className="min-h-11 shrink-0 bg-[oklch(0.767_0.139_91.1)] font-semibold text-[oklch(0.2_0.04_190)] shadow-[0_0_20px_oklch(0.767_0.139_91.1/0.35)] hover:bg-[oklch(0.82_0.13_91)]"
+    >
+      {children}
+    </Button>
+  );
+}
 
 function Dashboard() {
   const { user } = useAuth();
@@ -175,134 +214,143 @@ function Dashboard() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-10">
-      {/* flex-col below sm: (not the grid this used to be) -- the greeting
-          ("As-salāmu ʿalaykum, {name}") and the streak badge were forced
-          onto the same row at every width via a 2-column grid, and
-          `truncate` silently ate whatever didn't fit. At 390px that cut
-          the French greeting down to "As-salāmu ʿala…" mid-word. Stacking
-          them below sm: gives the greeting the full row width, so it wraps
-          instead of clipping; sm:flex-row restores the original side-by-side
-          layout once there's room, matching the Continue-learning card's
-          own flex-col/sm:flex-row pattern below. */}
-      <header className="animate-in fade-in slide-in-from-bottom-2 flex flex-col items-start gap-4 duration-500 sm:flex-row sm:items-center sm:justify-between">
-        <div className="min-w-0">
-          <h1 className="font-display text-2xl font-bold sm:text-3xl">
-            {t("dashboard.greeting", { name: firstName })}
-          </h1>
-          <p className="mt-1 text-muted-foreground">{copy.subtitle}</p>
-        </div>
-        <div className="shadow-soft flex shrink-0 items-center gap-2 rounded-2xl border border-gold/30 bg-card px-3 py-2">
-          <Flame className="size-5 text-gold" aria-hidden />
-          <div className="text-sm">
-            <div className="font-semibold">
-              {t("dashboard.streak", { count: data?.streak?.current_streak ?? 0 })}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {t("dashboard.longest", { count: data?.streak?.longest_streak ?? 0 })}
+    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:py-10">
+      {/* QR-INT-006 milestone 1: cinematic banner band. Everything inside is
+          the same real learner data the dashboard already showed (greeting,
+          streak, current lesson + its real completed/total, plan) -- only
+          the presentation changed. Theme-independent dark glass over the
+          Emergent night artwork (see docs/QR-INT-006-ASSET-SOURCES.md).
+          The header keeps its flex-col -> sm:flex-row pattern: stacked
+          below sm: so the greeting wraps instead of clipping at 390px. */}
+      <div className="dash-banner shadow-elevated relative isolate overflow-hidden rounded-3xl border border-gold/30 p-4 sm:p-8 sm:pt-10">
+        <header className="animate-in fade-in slide-in-from-bottom-2 flex flex-col items-start gap-4 duration-700 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl font-bold sm:text-4xl">
+              {t("dashboard.greeting", { name: firstName })}
+            </h1>
+            <p className="mt-1 text-[oklch(0.891_0.031_77)]">{copy.subtitle}</p>
+          </div>
+          <div className="dash-glass flex shrink-0 items-center gap-2 px-3 py-2">
+            <Flame className="size-5 text-[oklch(0.767_0.139_91.1)]" aria-hidden />
+            <div className="text-sm">
+              <div className="font-semibold">
+                {t("dashboard.streak", { count: data?.streak?.current_streak ?? 0 })}
+              </div>
+              <div className="text-xs text-[oklch(0.891_0.031_77)]">
+                {t("dashboard.longest", { count: data?.streak?.longest_streak ?? 0 })}
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
-      <div className="mt-8 grid gap-4 lg:grid-cols-3">
-        <Card className="shadow-elevated border-l-4 border-l-gold lg:col-span-2">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{copy.continueLearning}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="min-w-0">
+        <div className="mt-8 grid gap-4 sm:mt-20 lg:grid-cols-3">
+          <section
+            className="dash-glass animate-in fade-in slide-in-from-bottom-3 border-s-4 border-s-[oklch(0.767_0.139_91.1)] p-5 delay-150 duration-700 fill-mode-backwards lg:col-span-2"
+            aria-labelledby="continue-learning"
+          >
+            <h2 id="continue-learning" className="text-base font-semibold">
+              {copy.continueLearning}
+            </h2>
+            <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0 flex-1">
                 {lessonEntryPoint &&
                 lessonEntryPoint.completedCount < lessonEntryPoint.totalCount ? (
                   <>
-                    <Badge variant="secondary">{pathCopy.nextUp}</Badge>
-                    <h2 className="mt-3 font-display text-xl font-semibold">
+                    <DashBadge>{pathCopy.nextUp}</DashBadge>
+                    <h3 className="mt-3 font-display text-xl font-semibold">
                       {lessonEntryPoint.title}
-                    </h2>
-                    <p className="mt-1 text-sm text-muted-foreground">
+                    </h3>
+                    <p className="mt-1 text-sm text-[oklch(0.891_0.031_77)]">
                       {d.learning.daily.lessonProgress
                         .replace("{completed}", String(lessonEntryPoint.completedCount))
                         .replace("{total}", String(lessonEntryPoint.totalCount))}
                     </p>
-                    <Progress
+                    <GoldProgress
                       value={(lessonEntryPoint.completedCount / lessonEntryPoint.totalCount) * 100}
                       className="mt-4 max-w-sm"
                     />
                   </>
                 ) : lessonEntryPoint ? (
                   <>
-                    <Badge variant="secondary">{copy.today.path.title}</Badge>
-                    <h2 className="mt-3 font-display text-xl font-semibold">
+                    <DashBadge>{copy.today.path.title}</DashBadge>
+                    <h3 className="mt-3 font-display text-xl font-semibold">
                       {d.learning.daily.allLessonsComplete}
-                    </h2>
+                    </h3>
                   </>
                 ) : recommended && recommendedMeta ? (
                   <>
-                    <Badge variant="secondary">{pathCopy.nextUp}</Badge>
-                    <h2 className="mt-3 font-display text-xl font-semibold">
+                    <DashBadge>{pathCopy.nextUp}</DashBadge>
+                    <h3 className="mt-3 font-display text-xl font-semibold">
                       {recommendedMeta.label}
-                    </h2>
-                    <p className="mt-1 text-sm text-muted-foreground">{recommendedMeta.blurb}</p>
-                    <Progress value={recommended.progress} className="mt-4 max-w-sm" />
+                    </h3>
+                    <p className="mt-1 text-sm text-[oklch(0.891_0.031_77)]">
+                      {recommendedMeta.blurb}
+                    </p>
+                    <GoldProgress value={recommended.progress} className="mt-4 max-w-sm" />
                   </>
                 ) : (
                   <>
-                    <Badge variant="secondary">{d.learning.placement.optional}</Badge>
-                    <h2 className="mt-3 font-display text-xl font-semibold">
+                    <DashBadge>{d.learning.placement.optional}</DashBadge>
+                    <h3 className="mt-3 font-display text-xl font-semibold">
                       {d.learning.placement.title}
-                    </h2>
-                    <p className="mt-1 text-sm text-muted-foreground">{pathCopy.noPath}</p>
+                    </h3>
+                    <p className="mt-1 text-sm text-[oklch(0.891_0.031_77)]">{pathCopy.noPath}</p>
                   </>
                 )}
               </div>
               {lessonEntryPoint && lessonEntryPoint.completedCount < lessonEntryPoint.totalCount ? (
-                <Button className="shrink-0" asChild>
+                <DashCta>
                   <Link to="/lesson/$lessonId" params={{ lessonId: lessonEntryPoint.lessonId }}>
                     {lessonEntryPoint.completedCount > 0
                       ? pathCopy.continueLesson
                       : pathCopy.openLesson}
                   </Link>
-                </Button>
+                </DashCta>
               ) : lessonEntryPoint ? (
-                <Button className="shrink-0" asChild>
+                <DashCta>
                   <Link to="/learning-plan">{d.learning.daily.viewLearningPlan}</Link>
-                </Button>
+                </DashCta>
               ) : recommended ? (
-                <Button className="shrink-0" asChild>
+                <DashCta>
                   <Link to="/learning-plan">{pathCopy.viewPath}</Link>
-                </Button>
+                </DashCta>
               ) : (
-                <Button className="shrink-0" asChild>
+                <DashCta>
                   <Link to="/placement">{pathCopy.takeTest}</Link>
-                </Button>
+                </DashCta>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </section>
 
-        <Card className="shadow-soft">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">{copy.yourPlan}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="size-4 text-primary" aria-hidden />
-              <span>{level ? t(`learning.levels.${level}.label`) : copy.levelNotSet}</span>
+          <section
+            className="dash-glass animate-in fade-in slide-in-from-bottom-3 p-5 delay-300 duration-700 fill-mode-backwards"
+            aria-labelledby="your-plan"
+          >
+            <h2 id="your-plan" className="text-base font-semibold">
+              {copy.yourPlan}
+            </h2>
+            <div className="mt-4 space-y-3 text-sm">
+              <div className="flex items-center gap-2">
+                <GraduationCap className="size-4 text-[oklch(0.767_0.139_91.1)]" aria-hidden />
+                <span>{level ? t(`learning.levels.${level}.label`) : copy.levelNotSet}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Target className="size-4 text-[oklch(0.767_0.139_91.1)]" aria-hidden />
+                <span>{goal ? t(`learning.goals.${goal}`) : copy.goalNotSet}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Repeat2 className="size-4 text-[oklch(0.767_0.139_91.1)]" aria-hidden />
+                <span>{t("dashboard.minutesADay", { count: dailyGoal })}</span>
+              </div>
+              <Link
+                to="/learning-plan"
+                className="mt-2 flex min-h-11 w-full items-center justify-center rounded-md border border-[oklch(0.767_0.139_91.1/0.5)] px-4 text-sm font-medium text-[oklch(0.974_0.01_87.5)] transition-colors hover:bg-[oklch(0.767_0.139_91.1/0.14)]"
+              >
+                {t("common.nav.learningPlan")}
+              </Link>
             </div>
-            <div className="flex items-center gap-2">
-              <Target className="size-4 text-primary" aria-hidden />
-              <span>{goal ? t(`learning.goals.${goal}`) : copy.goalNotSet}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Repeat2 className="size-4 text-primary" aria-hidden />
-              <span>{t("dashboard.minutesADay", { count: dailyGoal })}</span>
-            </div>
-            <Button variant="secondary" className="mt-2 w-full" asChild>
-              <Link to="/learning-plan">{t("common.nav.learningPlan")}</Link>
-            </Button>
-          </CardContent>
-        </Card>
+          </section>
+        </div>
       </div>
 
       <section className="mt-8" aria-labelledby="today">

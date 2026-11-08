@@ -162,6 +162,7 @@ export default defineConfig({
         "51-production-quran-smoke.spec.ts",
         "52-production-polish.spec.ts",
         "55-dashboard-mobile-greeting.spec.ts",
+        "70-dashboard-banner.spec.ts",
         "56-premium-motion-interactions.spec.ts",
         "57-settings.spec.ts",
         "58-level6-batch1-al-fatiha-surah-study.spec.ts",

@@ -345,3 +345,42 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* QR-INT-006: signed-in dashboard cinematic banner. Like the homepage hero,
+   the banner is deliberately theme-independent -- it sits over fixed dark
+   artwork, so its text/glass use literal oklch values (Ivory / Sand /
+   Antique Gold) rather than theme tokens that flip in the light theme. */
+@utility dash-banner {
+  background-color: oklch(0.2 0.04 190);
+  background-image:
+    linear-gradient(180deg, oklch(0.16 0.035 190 / 0.12) 0%, oklch(0.14 0.03 190 / 0.35) 55%, oklch(0.14 0.03 190 / 0.72) 100%),
+    url("/quranroots-dashboard-banner.jpg");
+  background-size: cover;
+  background-position: 50% 12%;
+  color: oklch(0.974 0.01 87.5);
+}
+
+@utility dash-glass {
+  background-color: oklch(0.15 0.035 190 / 0.58);
+  border: 1px solid oklch(0.767 0.139 91.1 / 0.32);
+  border-radius: 1.25rem;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px oklch(0.1 0.02 190 / 0.45);
+  color: oklch(0.974 0.01 87.5);
+}
+
+@keyframes dash-fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* Gold progress fill: grows from the inline-start edge once on load. The
+   global prefers-reduced-motion rule collapses its duration. */
+@utility dash-progress-fill {
+  transform-origin: left center;
+  animation: dash-fill 1.4s cubic-bezier(0.22, 1, 0.36, 1) 0.35s backwards;
+  [dir="rtl"] & {
+    transform-origin: right center;
+  }
+}
