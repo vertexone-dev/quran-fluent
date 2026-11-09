@@ -287,7 +287,11 @@ test.describe("Audio Foundation Phase 2 — preferred reciter", () => {
       // still applies), so exactly one "Pause" button exists afterward,
       // not two.
       await page.getByRole("button", { name: "Play recitation" }).nth(1).click();
-      await expect(page.getByRole("button", { name: "Pause recitation" })).toHaveCount(1);
+      // QR-INT-007: count only the Reader's own per-āyah buttons; the sticky
+      // mini-player (outside <main>) mirrors the same player.
+      await expect(
+        page.getByRole("main").getByRole("button", { name: "Pause recitation" }),
+      ).toHaveCount(1);
       expect(requestedIds).toEqual([
         RECITER_PROVIDER_IDS.mishary_alafasy,
         RECITER_PROVIDER_IDS.husary,
