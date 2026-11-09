@@ -61,6 +61,22 @@ test.describe("auth", () => {
     );
   });
 
+  test("signed-out Settings in the profile menu logs in and returns to Settings", async ({
+    page,
+  }) => {
+    test.setTimeout(45_000);
+    await page.goto("/");
+    await clickAndExpect(page.locator("[data-testid=profile-menu-trigger]:visible"), async () => {
+      await expect(page.getByTestId("profile-menu-settings")).toBeVisible();
+    });
+    await page.getByTestId("profile-menu-settings").click();
+    await expect(page).toHaveURL(/\/auth\?mode=login&redirect=%2Fsettings/);
+
+    await loginAndExpect(page, process.env.E2E_TEST_EMAIL!, process.env.E2E_TEST_PASSWORD!, () =>
+      expect(page).toHaveURL(/\/settings$/, { timeout: 10_000 }),
+    );
+  });
+
   test("logging out clears the session and blocks protected routes again", async ({ page }) => {
     test.setTimeout(45_000);
 

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { LogIn, LogOut, Settings, UserPlus, UserRound } from "lucide-react";
+import { BarChart3, LogIn, LogOut, Settings, UserPlus, UserRound } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -16,24 +16,13 @@ import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 
-// QR-INT-006 (Emergent nav): the circular profile control is the single
-// entry point for Log in / Create account (signed out) and for the account
-// pages, Settings, Billing and Log out (signed in). It replaces the header's
-// "Log in" + "Start Learning" buttons and the mobile drawer.
-const authedSecondaryLinks = [
-  { to: "/daily", key: "daily" },
-  { to: "/practice", key: "practice" },
-  { to: "/progress", key: "progress" },
-  { to: "/learning-plan", key: "learningPlan" },
-  { to: "/bookmarks", key: "bookmarks" },
-  { to: "/notes", key: "notes" },
-] as const;
-
-const publicSecondaryLinks = [
-  { to: "/features", key: "features" },
-  { to: "/about", key: "about" },
-  { to: "/premium", key: "premium" },
-] as const;
+// QR-INT-006 (Emergent nav), owner-approved menu contents:
+//   signed out: Log In, Create Account, Settings (the existing sign-in guard
+//               sends visitors to /auth first)
+//   signed in:  My Profile (Settings' profile card), My Progress, Settings,
+//               Sign Out
+// Study pages stay reachable from the dashboard; Billing from Settings;
+// Features / About / Premium from the footer.
 
 const SEPARATOR = "bg-[oklch(0.767_0.139_91.1/0.2)]";
 const TRIGGER =
@@ -83,20 +72,23 @@ export function ProfileMenu() {
           <>
             <DropdownMenuLabel className="truncate px-3 py-2">{user.email}</DropdownMenuLabel>
             <DropdownMenuSeparator className={SEPARATOR} />
-            {authedSecondaryLinks.map((link) => (
-              <DropdownMenuItem key={link.to} asChild className={MENU_ITEM}>
-                <Link to={link.to}>{t(`common.nav.${link.key}`)}</Link>
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator className={SEPARATOR} />
+            <DropdownMenuItem asChild className={MENU_ITEM}>
+              <Link to="/settings" hash="profile" data-testid="profile-menu-my-profile">
+                <UserRound className="size-4" aria-hidden />
+                {t("common.nav.myProfile")}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild className={MENU_ITEM}>
+              <Link to="/progress" data-testid="profile-menu-my-progress">
+                <BarChart3 className="size-4" aria-hidden />
+                {t("common.nav.myProgress")}
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuItem asChild className={MENU_ITEM}>
               <Link to="/settings" data-testid="profile-menu-settings">
                 <Settings className="size-4" aria-hidden />
                 {t("common.nav.settings")}
               </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild className={MENU_ITEM}>
-              <Link to="/settings/billing">{t("common.nav.billing")}</Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator className={SEPARATOR} />
             <DropdownMenuItem
@@ -123,11 +115,16 @@ export function ProfileMenu() {
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator className={SEPARATOR} />
-            {publicSecondaryLinks.map((link) => (
-              <DropdownMenuItem key={link.to} asChild className={MENU_ITEM}>
-                <Link to={link.to}>{t(`common.nav.${link.key}`)}</Link>
-              </DropdownMenuItem>
-            ))}
+            <DropdownMenuItem asChild className={MENU_ITEM}>
+              <Link
+                to="/auth"
+                search={{ mode: "login", redirect: "/settings" }}
+                data-testid="profile-menu-settings"
+              >
+                <Settings className="size-4" aria-hidden />
+                {t("common.nav.settings")}
+              </Link>
+            </DropdownMenuItem>
           </>
         )}
       </DropdownMenuContent>

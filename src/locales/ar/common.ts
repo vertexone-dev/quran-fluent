@@ -32,6 +32,8 @@ export const common = {
     openMenu: "فتح القائمة",
     navigation: "التنقل",
     accountMenu: "قائمة الحساب",
+    myProfile: "ملفي الشخصي",
+    myProgress: "تقدّمي",
     search: "بحث",
     searchPlaceholder: "ابحث عن سورة بالاسم أو الرقم",
     searchHeading: "السور",

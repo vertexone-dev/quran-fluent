@@ -24,6 +24,9 @@ const nameSchema = z.string().trim().min(1).max(80);
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup", "forgot"]).catch("login"),
+  // Where to return after a successful log-in. Allow-listed (never a free
+  // URL) so it can't be used as an open redirect.
+  redirect: z.enum(["/settings"]).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -49,7 +52,8 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { mode } = Route.useSearch();
+  const { mode, redirect } = Route.useSearch();
+  const afterLogin = redirect ?? "/dashboard";
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { t, d } = useI18n();
@@ -67,8 +71,8 @@ function AuthPage() {
   );
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard", replace: true });
-  }, [loading, user, navigate]);
+    if (!loading && user) navigate({ to: afterLogin, replace: true });
+  }, [loading, user, navigate, afterLogin]);
 
   async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
@@ -105,7 +109,7 @@ function AuthPage() {
       } else if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
-        navigate({ to: "/dashboard" });
+        navigate({ to: afterLogin });
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
           redirectTo: `${window.location.origin}/reset-password`,

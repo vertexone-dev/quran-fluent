@@ -29,6 +29,8 @@ export const common: typeof EnCommon = {
     openMenu: "Ouvrir le menu",
     navigation: "Navigation",
     accountMenu: "Menu du compte",
+    myProfile: "Mon profil",
+    myProgress: "Ma progression",
     search: "Rechercher",
     searchPlaceholder: "Rechercher une sourate par nom ou numéro",
     searchHeading: "Sourates",

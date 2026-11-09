@@ -37,7 +37,7 @@ test.describe("homepage headline, mission eyebrow and public navigation", () => 
     await expect(links).toHaveText(["Home", "Qur'an", "Learn", "Reflect", "Memorize"]);
   });
 
-  test("Features, Premium and About remain reachable from the footer and the profile menu", async ({
+  test("Features, Premium and About stay in the footer; the profile menu holds Log In, Create Account and Settings", async ({
     page,
   }) => {
     await page.goto("/");
@@ -54,9 +54,12 @@ test.describe("homepage headline, mission eyebrow and public navigation", () => 
     });
     await page.locator("[data-testid=profile-menu-trigger]:visible").click();
     const menu = page.getByTestId("profile-menu-content");
-    for (const name of ["Features", "Premium", "About"]) {
-      await expect(menu.getByRole("menuitem", { name })).toBeVisible();
-    }
+    const items = menu.getByRole("menuitem");
+    await expect(items).toHaveText(["Log in", "Create account", "Settings"]);
+    await expect(page.getByTestId("profile-menu-settings")).toHaveAttribute(
+      "href",
+      "/auth?mode=login&redirect=%2Fsettings",
+    );
   });
 
   test("Reflect and Memorize stay behind the sign-in guard for a signed-out visitor", async ({
