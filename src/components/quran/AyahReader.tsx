@@ -181,7 +181,9 @@ export function AyahReader({
       </h2>
       <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{r.intro}</p>
 
-      <div className="mt-6">
+      {/* Sticky on this wrapper (a direct child of the reader section) so
+          the toolbar stays under the header while the Surah scrolls. */}
+      <div className="z-20 mt-6 md:sticky md:top-24 xl:top-28">
         <ReaderToolbar
           surahs={surahs ?? []}
           activeSurah={activeSurahRow}

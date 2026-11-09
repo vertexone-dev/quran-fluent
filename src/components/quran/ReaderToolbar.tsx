@@ -53,7 +53,7 @@ export function ReaderToolbar({
     <nav
       aria-label={ui.toolbarLabel}
       data-testid="reader-toolbar"
-      className="nav-glass sticky top-20 z-20 rounded-[22px] p-3 text-white sm:p-4 xl:top-24"
+      className="nav-glass-dense rounded-[22px] p-3 text-white sm:p-4"
     >
       <div className="flex flex-wrap items-center gap-2 sm:gap-3">
         <CinematicButton
