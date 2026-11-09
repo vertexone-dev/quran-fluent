@@ -38,13 +38,14 @@ function TranslationColumn({
       {loading ? (
         <ContentState kind="loading" message={d.quran.reader.loading} className="mt-3" />
       ) : continues !== null ? (
-        <p className="mt-3 text-white/85" lang={lang}>
+        <p className="mt-3 text-white/85" dir="auto">
           {r.translationContinuesFrom.replace("{number}", String(continues))}
         </p>
       ) : ayah?.resolvedTranslation ? (
         <p
           className="mt-3 text-base leading-relaxed text-white/90"
           lang={lang}
+          dir="ltr"
           data-testid={`comparison-${lang}-text`}
         >
           {ayah.resolvedTranslation}

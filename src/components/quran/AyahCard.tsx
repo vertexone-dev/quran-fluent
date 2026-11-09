@@ -85,6 +85,7 @@ export function AyahCard({
           {ayah.arabic_text}
         </p>
         <p
+          dir="auto"
           className={cn(
             "mt-4 text-base leading-relaxed",
             // text-muted-foreground/70 measured at ~3.9:1 against the card
