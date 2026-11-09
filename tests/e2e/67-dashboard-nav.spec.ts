@@ -95,6 +95,35 @@ test.describe("secondary navigation", () => {
   });
 });
 
+// QR-INT-006A: the hamburger drawer and the old account-menu study links are
+// gone by design, so the dashboard is now the one place the secondary study
+// pages are linked from. Guard that they stay discoverable, on desktop and on
+// a phone, without a drawer.
+test.describe("study pages stay discoverable from the dashboard", () => {
+  const studyPages = ["/daily", "/practice", "/learning-plan", "/bookmarks", "/notes"];
+
+  for (const [label, viewport] of [
+    ["desktop", { width: 1440, height: 900 }],
+    ["phone", { width: 390, height: 844 }],
+  ] as const) {
+    test(`Daily, Practice, Learning Plan, Bookmarks and Notes are linked and open (${label})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      for (const href of studyPages) {
+        await page.goto("/dashboard");
+        await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
+        const link = page.locator(`main a[href="${href}"]`).first();
+        await link.scrollIntoViewIfNeeded();
+        await expect(link).toBeVisible();
+        await expect(link).toHaveAccessibleName(/\S/);
+        await link.click();
+        await expect(page).toHaveURL(new RegExp(`${href}$`));
+      }
+    });
+  }
+});
+
 test.describe("dashboard still renders its real widgets", () => {
   test("greeting, streak, continue-learning, today and activity sections are all present", async ({
     page,

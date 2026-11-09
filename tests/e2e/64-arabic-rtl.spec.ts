@@ -159,6 +159,15 @@ test.describe("Arabic locale selection and persistence", () => {
 
     // Focus returns to the trigger (now labelled in Arabic) and the menu
     // reports Arabic as the checked option when reopened.
+    //
+    // Selecting an option flips the Radix menu to "closed" immediately, but
+    // the content stays mounted (and focus stays on the option) until its exit
+    // animation ends. A click on the trigger inside that window is swallowed:
+    // the menu finishes closing and never reopens. So wait for the actual
+    // closed state -- content detached, focus back on the trigger -- before
+    // reopening, instead of racing the animation.
+    await expect(page.getByTestId("language-menu-content")).toHaveCount(0);
+    await expect(visibleTrigger(page)).toBeFocused();
     await expect(visibleTrigger(page)).toHaveAttribute("aria-label", AR_GROUP_LABEL);
     await expect(visibleTrigger(page)).toContainText("AR");
     await visibleTrigger(page).click();
