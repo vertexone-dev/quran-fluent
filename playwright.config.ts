@@ -91,6 +91,12 @@ export default defineConfig({
         // QR-INT-005: the glass nav, language dropdown, search and bottom tab
         // bar are all signed-out-visible, so this runs without a session.
         "71-exact-navigation.spec.ts",
+        // QR-INT-007/008 (Milestone C): the Reader and the public
+        // /quran/understand page are exercised signed-out against route-
+        // intercepted, attributed test-only fixtures (tests/e2e/fixtures),
+        // so they need neither a session nor database content.
+        "72-milestone-c-reader.spec.ts",
+        "73-understand-page.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },
