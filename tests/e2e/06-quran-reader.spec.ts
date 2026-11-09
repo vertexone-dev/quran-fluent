@@ -1,5 +1,7 @@
 import { test, expect } from "@playwright/test";
 
+import { clickAndExpect } from "./utils/auth";
+
 /**
  * Covers the typography preview and data-architecture teaser sections of
  * /quran. The Ayah reader itself (Surah picker, bookmark/note/memorize
@@ -21,8 +23,15 @@ test.describe("Qur'an page (typography preview + data architecture)", () => {
     // Layer names are asserted via role: "heading" rather than getByText,
     // since "Translations" is also the accessible name of its own tab
     // trigger -- getByText would match both and violate strict mode.
-    await page.getByRole("tab", { name: "Sources" }).click();
-    await expect(page.getByRole("heading", { name: "How Qur'an data is handled" })).toBeVisible();
+    //
+    // The first click can land on the server-rendered tab just before React
+    // hydrates it (a cold `vite dev` compile or a slow CI runner), in which
+    // case nothing handles it and the URL-driven tab never changes -- the
+    // hydration race documented in utils/auth.ts. clickAndExpect retries the
+    // click; the assertion itself is unchanged.
+    await clickAndExpect(page.getByRole("tab", { name: "Sources" }), () =>
+      expect(page.getByRole("heading", { name: "How Qur'an data is handled" })).toBeVisible(),
+    );
     await expect(page.getByRole("heading", { name: "Qur'anic Arabic", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Translations", exact: true })).toBeVisible();
     await expect(page.getByRole("heading", { name: "Tafsir", exact: true })).toBeVisible();

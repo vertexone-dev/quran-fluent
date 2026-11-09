@@ -110,13 +110,21 @@ test.describe("Audio Foundation Phase 2 — preferred reciter", () => {
       .update({ preferred_reciter: "husary" })
       .eq("user_id", userId);
 
+    let releasePreferences!: () => void;
+    const preferencesHeld = new Promise<void>((resolve) => {
+      releasePreferences = resolve;
+    });
+
     try {
       const requestedIds = await mockRecitationAudio(page);
-      // Deterministically hold the learner-snapshot fetch open so the
-      // "not yet resolved" window is long enough to observe, instead of
-      // racing real (if fast) network timing.
+      // Hold the learner-snapshot fetch open until the test releases it, so
+      // the "not yet resolved" window lasts exactly as long as the assertions
+      // below need. A fixed timer (this used to be 800ms) raced the Reader's
+      // own surah/ayah loading: the play buttons only mount once those land,
+      // so on a slow runner the preference could resolve before any button
+      // existed and the loading state was never observable.
       await page.route("**/rest/v1/learning_preferences*", async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 800));
+        await preferencesHeld;
         await route.continue();
       });
 
@@ -128,6 +136,8 @@ test.describe("Audio Foundation Phase 2 — preferred reciter", () => {
       await expect(page.getByRole("button", { name: "Loading recitation…" }).first()).toBeVisible();
       expect(requestedIds).toEqual([]);
 
+      releasePreferences();
+
       // Once resolved, playback becomes available and uses the real
       // persisted preference -- never DEFAULT_RECITER's provider id (7).
       await expect(page.getByRole("button", { name: "Play recitation" }).first()).toBeVisible();
@@ -135,6 +145,7 @@ test.describe("Audio Foundation Phase 2 — preferred reciter", () => {
       await expect(page.getByRole("button", { name: "Pause recitation" }).first()).toBeVisible();
       expect(requestedIds).toEqual([RECITER_PROVIDER_IDS.husary]);
     } finally {
+      releasePreferences();
       await client
         .from("learning_preferences")
         .update({ preferred_reciter: "mishary_alafasy" })
