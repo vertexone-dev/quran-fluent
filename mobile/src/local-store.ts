@@ -65,7 +65,7 @@ export function toggleFavoriteSurah(surahNumber: number): Set<number> {
 
 export function getStoredLocale(): Locale | null {
   const value = readJson<string | null>(KEYS.locale, null);
-  return value === "en" || value === "fr" ? value : null;
+  return value === "en" || value === "fr" || value === "ar" ? value : null;
 }
 
 export function setStoredLocale(locale: Locale): void {

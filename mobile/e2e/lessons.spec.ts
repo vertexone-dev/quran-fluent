@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
 
 test.describe("Lessons drill-down", () => {
   test("Levels -> Modules -> Lessons shows real curriculum content", async ({ page }) => {
-    await page.locator(".tab-item", { hasText: "Lessons" }).click();
+    await page.locator(".tab-item", { hasText: "Learn" }).click();
     await expect(page.locator(".list-row")).toHaveCount(6); // 6 real levels
 
     await page.locator(".list-row", { hasText: "Foundations of Arabic Script" }).click();
@@ -28,7 +28,7 @@ test.describe("Lessons drill-down", () => {
   });
 
   test("the Categories tab shows an honest empty state, not invented data", async ({ page }) => {
-    await page.locator(".tab-item", { hasText: "Lessons" }).click();
+    await page.locator(".tab-item", { hasText: "Learn" }).click();
     await page.locator(".chip", { hasText: "Categories" }).click();
     await expect(page.locator("text=aren't part of the offline content bundle")).toBeVisible();
   });
@@ -36,7 +36,7 @@ test.describe("Lessons drill-down", () => {
 
 test.describe("Lesson Player", () => {
   test("renders a real explanation section with a working progress bar", async ({ page }) => {
-    await page.locator(".tab-item", { hasText: "Lessons" }).click();
+    await page.locator(".tab-item", { hasText: "Learn" }).click();
     await page.locator(".list-row", { hasText: "Foundations of Arabic Script" }).click();
     await page.locator(".list-row").first().click();
     await page.locator(".list-row").first().click();
@@ -52,7 +52,7 @@ test.describe("Lesson Player", () => {
     // Practice jumps straight to a lesson's first exercise, which is
     // faster to reach deterministically than walking the full section
     // sequence of an arbitrary lesson.
-    await page.locator(".tab-item", { hasText: "Practice" }).click();
+    await page.getByTestId("home-shortcut-practice").click(); // D-1: Practice lives on Home
     await page.locator(".list-row").first().click();
 
     await expect(page.locator(".card h2")).toBeVisible();
@@ -79,7 +79,7 @@ test.describe("Lesson Player", () => {
       await expect(banner).toContainText("Not quite.");
       // Reload to reset submitted state and try the next choice.
       await page.goto("/");
-      await page.locator(".tab-item", { hasText: "Practice" }).click();
+      await page.getByTestId("home-shortcut-practice").click(); // D-1: Practice lives on Home
       await page.locator(".list-row").first().click();
     }
     expect(foundCorrect, "expected exactly one choice to grade correct").toBe(true);
@@ -133,7 +133,7 @@ test.describe("Lesson completion and accessibility", () => {
   test("completing the lesson shows the completion screen, and Back to Lessons returns to the levels list", async ({
     page,
   }) => {
-    await openAlifLesson(page, "Lessons");
+    await openAlifLesson(page, "Learn");
     await answerLetterRecognitionExercise(page, "Next", "Check Answer");
 
     // Step 5: true_false, the last step -- the primary button should
@@ -155,7 +155,7 @@ test.describe("Lesson completion and accessibility", () => {
   test("exercise choices are a keyboard-operable radiogroup with selected state conveyed beyond color", async ({
     page,
   }) => {
-    await openAlifLesson(page, "Lessons");
+    await openAlifLesson(page, "Learn");
     await page.getByRole("button", { name: "Next", exact: false }).click(); // 0 -> 1
     await page.getByRole("button", { name: "Next", exact: false }).click(); // 1 -> 2
     await expect(page.getByRole("radiogroup")).toBeVisible(); // now on step 2
@@ -190,7 +190,7 @@ test.describe("Lesson completion and accessibility", () => {
     // beforeEach already lands on Home.
     await page.getByRole("button", { name: "Language" }).click();
 
-    await openAlifLesson(page, "Leçons");
+    await openAlifLesson(page, "Apprendre");
     await answerLetterRecognitionExercise(page, "Suivant", "Vérifier");
 
     await expect(page.getByRole("button", { name: "Vrai", exact: true })).toBeVisible();
@@ -200,7 +200,7 @@ test.describe("Lesson completion and accessibility", () => {
 
 test.describe("Practice tab", () => {
   test("lists real lessons with exercise counts, not a placeholder", async ({ page }) => {
-    await page.locator(".tab-item", { hasText: "Practice" }).click();
+    await page.getByTestId("home-shortcut-practice").click(); // D-1: Practice lives on Home
     await expect(page.locator(".list-row").first()).toBeVisible();
     await expect(page.locator(".chip", { hasText: /^\d+$/ }).first()).toBeVisible();
   });

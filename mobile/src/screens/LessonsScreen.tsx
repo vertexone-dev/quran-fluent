@@ -5,6 +5,7 @@ import { useDb } from "../DbContext";
 import { useHistoryStack } from "../HistoryContext";
 import { listLevels, listModules, listLessons } from "../db";
 import { AppBar } from "../AppBar";
+import { art } from "../artwork";
 import type { Route } from "../navigation";
 
 type ViewTab = "levels" | "categories";
@@ -15,7 +16,8 @@ type ViewTab = "levels" | "categories";
  * word_frequency does, for a different screen) -- shown as an honest empty
  * state rather than invented content. */
 export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => void }) {
-  const { d, locale } = useI18n();
+  const { d, locale: uiLocale, contentLocale: locale } = useI18n();
+  const journeys = art("journeys");
   const { db } = useDb();
   const { pushFrame, goBack } = useHistoryStack();
   const [tab, setTab] = useState<ViewTab>("levels");
@@ -93,7 +95,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
               onClick={() => openModule(m.id)}
             >
               <div style={{ fontWeight: 600 }}>{m.title}</div>
-              <ChevronRight size={18} className="text-muted" />
+              <ChevronRight size={18} className="text-muted dir-icon" />
             </button>
           ))}
           {modules.length === 0 && (
@@ -109,6 +111,24 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
   return (
     <div>
       <AppBar title={d.lessons.title} />
+      {journeys && (
+        <img
+          className="learn-banner"
+          src={journeys}
+          alt=""
+          aria-hidden="true"
+          data-testid="learn-banner"
+        />
+      )}
+      {uiLocale === "ar" && (
+        <p
+          className="text-muted small"
+          style={{ marginBottom: 12 }}
+          data-testid="lessons-content-language-notice"
+        >
+          {d.lessons.contentLanguageNotice}
+        </p>
+      )}
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
         <button
           type="button"
@@ -168,7 +188,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
                     </div>
                   </div>
                 </div>
-                <ChevronRight size={18} className="text-muted" />
+                <ChevronRight size={18} className="text-muted dir-icon" />
               </button>
             );
           })}
