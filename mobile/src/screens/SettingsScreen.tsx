@@ -1,4 +1,4 @@
-import { useI18n } from "../i18n";
+import { LANGUAGE_NAMES, nextLocale, useI18n } from "../i18n";
 import { AppBar } from "../AppBar";
 import {
   getStoredTheme,
@@ -57,25 +57,21 @@ export function SettingsScreen({
     <div>
       <AppBar title={d.settings.title} onBack={onBack} />
 
-      <h2
-        className="text-muted"
-        style={{ fontSize: "0.78rem", textTransform: "uppercase", marginBottom: 8 }}
-      >
-        {d.settings.language}
-      </h2>
+      <h2 className="group-label">{d.settings.language}</h2>
       <div className="card" style={{ padding: 0, marginBottom: 20 }}>
         <button
           type="button"
           className="list-row"
           style={{ padding: 14 }}
-          onClick={() => setLocale(locale === "en" ? "fr" : "en")}
+          onClick={() => setLocale(nextLocale(locale))}
+          data-testid="settings-language-row"
         >
           <span style={{ fontWeight: 600 }}>{d.settings.language}</span>
-          <span className="text-muted">{locale === "en" ? "English" : "Français"}</span>
+          <span className="text-muted">{LANGUAGE_NAMES[locale]}</span>
         </button>
         <div className="list-row" style={{ padding: 14, cursor: "default" }}>
           <span style={{ fontWeight: 600 }}>{d.settings.translations}</span>
-          <span className="text-muted" style={{ fontSize: "0.8rem", textAlign: "right" }}>
+          <span className="text-muted" dir="ltr" style={{ fontSize: "0.8rem", textAlign: "end" }}>
             English (Pickthall)
             <br />
             French (Kazimirski)
@@ -83,12 +79,7 @@ export function SettingsScreen({
         </div>
       </div>
 
-      <h2
-        className="text-muted"
-        style={{ fontSize: "0.78rem", textTransform: "uppercase", marginBottom: 8 }}
-      >
-        {d.settings.appearance}
-      </h2>
+      <h2 className="group-label">{d.settings.appearance}</h2>
       <div className="card" style={{ padding: 0 }}>
         <button type="button" className="list-row" style={{ padding: 14 }} onClick={cycleTextSize}>
           <span style={{ fontWeight: 600 }}>{d.settings.textSize}</span>

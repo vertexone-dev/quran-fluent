@@ -102,18 +102,19 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
                 border: "none",
                 color: "inherit",
                 font: "inherit",
-                textAlign: "left",
+                textAlign: "start",
                 cursor: "pointer",
               }}
               onClick={() => onNavigate({ screen: "reading", surahNumber: s.number })}
             >
               <span
                 style={{
-                  width: 28,
-                  height: 28,
+                  width: 30,
+                  height: 30,
                   borderRadius: "50%",
-                  background: "var(--accent)",
-                  color: "var(--accent-foreground)",
+                  background: "color-mix(in oklab, var(--gold) 12%, var(--card))",
+                  color: "var(--gold)",
+                  border: "1.5px solid color-mix(in oklab, var(--gold) 55%, transparent)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",

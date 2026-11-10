@@ -29,12 +29,16 @@ test("no request ever leaves the page's own origin while browsing every main scr
   await page.locator(".list-row", { hasText: "Al-Fatiha" }).click();
   await page.goBack();
 
-  await page.locator(".tab-item", { hasText: "Lessons" }).click();
+  await page.locator(".tab-item", { hasText: "Learn" }).click();
   await page.locator(".list-row").first().click();
   await page.locator(".list-row").first().click();
 
-  await page.locator(".tab-item", { hasText: "Practice" }).click();
-  await page.locator(".tab-item", { hasText: "More" }).click();
+  // D-1: Practice and Profile & More are reached from Home (shortcut row
+  // and profile circle) now that the tab bar holds the 5 primary tabs.
+  await page.locator(".tab-item", { hasText: "Home" }).click();
+  await page.getByTestId("home-shortcut-practice").click();
+  await page.locator(".tab-item", { hasText: "Home" }).click();
+  await page.getByTestId("profile-button").click();
   await page.locator(".list-row", { hasText: "Offline Access" }).click();
   await page.goBack();
   await page.locator(".list-row", { hasText: "Settings" }).click();

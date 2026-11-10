@@ -19,7 +19,7 @@ test.describe("Keyboard accessibility: list rows are real buttons", () => {
   test("a Settings row is a focusable, Enter-activatable <button>, not an inert div", async ({
     page,
   }) => {
-    await page.locator(".tab-item", { hasText: "More" }).click();
+    await page.getByTestId("profile-button").click(); // D-1: Profile & More
     await page.locator(".list-row", { hasText: "Settings" }).click();
     await expect(page.locator(".appbar-title")).toHaveText("Settings");
 
@@ -36,7 +36,7 @@ test.describe("Keyboard accessibility: list rows are real buttons", () => {
   });
 
   test("a Lessons level row and a Surah List row are both real buttons", async ({ page }) => {
-    await page.locator(".tab-item", { hasText: "Lessons" }).click();
+    await page.locator(".tab-item", { hasText: "Learn" }).click();
     await expect(page.locator("button.list-row").first()).toBeVisible();
 
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();
@@ -52,7 +52,7 @@ test.describe("French translations: no hardcoded English left", () => {
   }) => {
     await page.getByRole("button", { name: "Language" }).click();
 
-    await page.locator(".tab-item", { hasText: "Plus" }).click();
+    await page.getByTestId("profile-button").click(); // D-1: Profil et plus
     await page.locator(".list-row", { hasText: "Accès hors ligne" }).click();
     await expect(page.locator(".appbar-title")).toHaveText("Accès hors ligne");
 
@@ -149,7 +149,7 @@ test.describe("Theme default and persistence", () => {
   });
 
   test("switching the theme in Settings persists across a reload", async ({ page }) => {
-    await page.locator(".tab-item", { hasText: "More" }).click();
+    await page.getByTestId("profile-button").click(); // D-1: Profile & More
     await page.locator(".list-row", { hasText: "Settings" }).click();
 
     const themeRow = page.locator("button.list-row", { hasText: "Theme" });
@@ -158,7 +158,7 @@ test.describe("Theme default and persistence", () => {
     await expect(themeRow.locator(".text-muted")).toHaveText("Dark");
 
     await page.reload();
-    await page.locator(".tab-item", { hasText: "More" }).click();
+    await page.getByTestId("profile-button").click(); // D-1: Profile & More
     await page.locator(".list-row", { hasText: "Settings" }).click();
     await expect(
       page.locator("button.list-row", { hasText: "Theme" }).locator(".text-muted"),

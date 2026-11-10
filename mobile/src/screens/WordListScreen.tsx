@@ -16,7 +16,7 @@ export function WordListScreen({
   onNavigate: (route: Route) => void;
   onBack: () => void;
 }) {
-  const { d, locale } = useI18n();
+  const { d, contentLocale: locale } = useI18n();
   const { db } = useDb();
   const [search, setSearch] = useState("");
 
@@ -54,7 +54,7 @@ export function WordListScreen({
                 </div>
               )}
             </div>
-            <div style={{ textAlign: "right" }}>
+            <div style={{ textAlign: "end" }}>
               <div style={{ fontSize: "0.88rem" }}>{w.resolvedMeaning}</div>
             </div>
           </button>
