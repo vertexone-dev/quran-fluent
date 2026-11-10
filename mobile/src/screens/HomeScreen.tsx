@@ -1,14 +1,20 @@
 import {
+  Bookmark,
   BookOpen,
   Brain,
   ChevronRight,
+  CloudOff,
   GraduationCap,
   Languages,
   Moon,
   PenLine,
+  Settings as SettingsIcon,
+  Sparkles,
   Sun,
+  UserRound,
 } from "lucide-react";
-import { useI18n } from "../i18n";
+import { nextLocale, useI18n } from "../i18n";
+import { art } from "../artwork";
 import { useDb } from "../DbContext";
 import { listCourses, listLevels, listModules, listLessons, listSurahs } from "../db";
 import {
@@ -43,7 +49,7 @@ export function HomeScreen({
   onThemeChange: (theme: ThemePreference) => void;
   prefersDark: boolean;
 }) {
-  const { d, locale, setLocale } = useI18n();
+  const { d, locale, contentLocale, setLocale } = useI18n();
   const { db } = useDb();
 
   function cycleTheme() {
@@ -60,16 +66,16 @@ export function HomeScreen({
         ? d.settings.themeDark
         : d.settings.themeSystem;
 
-  const courses = listCourses(db, locale);
+  const courses = listCourses(db, contentLocale);
   const course = courses[0];
-  const levels = listLevels(db, locale);
+  const levels = listLevels(db, contentLocale);
   const firstLevel = levels[0];
-  const firstModule = firstLevel ? listModules(db, firstLevel.id, locale)[0] : undefined;
-  const firstLessons = firstModule ? listLessons(db, firstModule.id, locale) : [];
+  const firstModule = firstLevel ? listModules(db, firstLevel.id, contentLocale)[0] : undefined;
+  const firstLessons = firstModule ? listLessons(db, firstModule.id, contentLocale) : [];
   const firstLesson = firstLessons[0];
   const totalLessonsInLevel = firstLevel
-    ? listModules(db, firstLevel.id, locale).reduce(
-        (sum, m) => sum + listLessons(db, m.id, locale).length,
+    ? listModules(db, firstLevel.id, contentLocale).reduce(
+        (sum, m) => sum + listLessons(db, m.id, contentLocale).length,
         0,
       )
     : 0;
@@ -79,61 +85,110 @@ export function HomeScreen({
     getLastReadSurah(),
   );
 
-  return (
-    <div className="stagger">
-      <div className="appbar">
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Logo showWordmark={false} size={28} />
-          <h1 className="appbar-title">{d.brand.name}</h1>
-        </div>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button
-            type="button"
-            className="icon-btn icon-btn-bordered lang-btn"
-            onClick={() => setLocale(locale === "en" ? "fr" : "en")}
-            aria-label={d.settings.language}
-          >
-            <Languages size={16} />
-            <span>{locale.toUpperCase()}</span>
-          </button>
-          <button
-            type="button"
-            className="icon-btn icon-btn-bordered"
-            onClick={cycleTheme}
-            aria-label={`${d.settings.theme}: ${nextThemeLabel}`}
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-        </div>
-      </div>
+  const heroArt = art("hero");
+  const shortcuts = [
+    {
+      key: "bookmarks",
+      icon: Bookmark,
+      label: d.more.bookmarks,
+      route: { screen: "ayah-bookmarks" },
+    },
+    { key: "practice", icon: PenLine, label: d.more.practice, route: { screen: "practice" } },
+    {
+      key: "offline",
+      icon: CloudOff,
+      label: d.more.offlineAccess,
+      route: { screen: "offline-access" },
+    },
+    { key: "settings", icon: SettingsIcon, label: d.more.settings, route: { screen: "settings" } },
+  ] as const;
 
-      <p className="eyebrow">{d.home.greeting}</p>
-      <p className="tagline">{d.brand.tagline}</p>
+  return (
+    <div className="stagger" data-testid="home-screen">
+      <section className="brand-hero" data-testid="home-brand-hero">
+        {heroArt && <img className="brand-hero-art" src={heroArt} alt="" aria-hidden="true" />}
+        <div className="appbar" style={{ marginBottom: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <Logo showWordmark={false} size={34} />
+            <h1 className="appbar-title">{d.brand.name}</h1>
+          </div>
+          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+            <button
+              type="button"
+              className="icon-btn icon-btn-bordered icon-btn-glass lang-btn"
+              onClick={() => setLocale(nextLocale(locale))}
+              aria-label={d.settings.language}
+              data-testid="home-language-toggle"
+            >
+              <Languages size={16} />
+              <span>{locale.toUpperCase()}</span>
+            </button>
+            <button
+              type="button"
+              className="icon-btn icon-btn-bordered icon-btn-glass"
+              onClick={cycleTheme}
+              aria-label={`${d.settings.theme}: ${nextThemeLabel}`}
+              data-testid="home-theme-toggle"
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <button
+              type="button"
+              className="profile-btn"
+              onClick={() => onNavigate({ screen: "more" })}
+              aria-label={d.more.open}
+              data-testid="profile-button"
+            >
+              <UserRound size={18} />
+            </button>
+          </div>
+        </div>
+
+        <p className="eyebrow">{d.home.greeting}</p>
+        <p className="tagline">{d.brand.tagline}</p>
+      </section>
 
       {readingCardSurah && (
         <button
           type="button"
           className="hero-card"
           onClick={() => onNavigate({ screen: "reading", surahNumber: readingCardSurah.number })}
+          data-testid="home-reading-card"
         >
           <div className="hero-pattern" aria-hidden="true" />
           <div className="hero-top">
             <span className="hero-label">
               {isContinuing ? d.home.continueReading : d.home.startReading}
             </span>
-            <ChevronRight size={20} />
+            <ChevronRight size={20} className="dir-icon" />
           </div>
           <div className="hero-body">
             <div>
               <div className="hero-title">{readingCardSurah.name_en}</div>
               <div className="hero-sub">
-                {readingCardSurah.ayah_count} {locale === "fr" ? "versets" : "ayahs"}
+                {readingCardSurah.ayah_count} {d.offline.unitAyahs}
               </div>
             </div>
             <div className="quran-text hero-ar">{readingCardSurah.name_ar}</div>
           </div>
         </button>
       )}
+
+      <SectionTitle>{d.home.shortcuts}</SectionTitle>
+      <div className="shortcut-row" data-testid="home-shortcuts">
+        {shortcuts.map((s) => (
+          <button
+            key={s.key}
+            type="button"
+            className="shortcut"
+            onClick={() => onNavigate(s.route)}
+            data-testid={`home-shortcut-${s.key}`}
+          >
+            <s.icon size={20} />
+            <span>{s.label}</span>
+          </button>
+        ))}
+      </div>
 
       {/* Always "Start Learning", never "Continue Learning": lesson-player
           position is in-memory only (see LessonPlayerScreen.tsx), so there
@@ -145,6 +200,7 @@ export function HomeScreen({
           type="button"
           className="card card-button"
           onClick={() => onNavigate({ screen: "lesson-player", lessonId: firstLesson.id })}
+          data-testid="home-learning-card"
         >
           <div className="row-between">
             <div className="row" style={{ gap: 12 }}>
@@ -157,11 +213,13 @@ export function HomeScreen({
                 </div>
               </div>
             </div>
-            <ChevronRight size={20} className="text-muted" />
+            <ChevronRight size={20} className="text-muted dir-icon" />
           </div>
         </button>
       ) : (
-        <div className="card text-muted">{d.home.startLearning}</div>
+        <div className="card text-muted" data-testid="home-learning-empty">
+          {d.home.startLearning}
+        </div>
       )}
 
       <SectionTitle>{d.home.explore}</SectionTitle>
@@ -170,6 +228,7 @@ export function HomeScreen({
           className="tile tile-support"
           onClick={() => onNavigate({ screen: "surah-list" })}
           type="button"
+          data-testid="home-tile-quran"
         >
           <BookOpen size={22} />
           <span className="tile-title">{d.nav.quran}</span>
@@ -179,24 +238,31 @@ export function HomeScreen({
           className="tile tile-primary-tint"
           onClick={() => onNavigate({ screen: "lessons" })}
           type="button"
+          data-testid="home-tile-learn"
         >
           <GraduationCap size={22} />
-          <span className="tile-title">{d.nav.lessons}</span>
-          <span className="tile-subtitle">{course?.title ?? ""}</span>
+          <span className="tile-title">{d.nav.learn}</span>
+          <span className="tile-subtitle">{course?.title ?? d.nav.lessons}</span>
         </button>
         <button
           className="tile tile-gold"
-          onClick={() => onNavigate({ screen: "practice" })}
+          onClick={() => onNavigate({ screen: "reflect" })}
           type="button"
+          data-testid="home-tile-reflect"
         >
-          <PenLine size={22} />
-          <span className="tile-title">{d.nav.practice}</span>
-          <span className="tile-subtitle">{d.practice.subtitle}</span>
+          <Sparkles size={22} />
+          <span className="tile-title">{d.nav.reflect}</span>
+          <span className="chip chip-planned">{d.planned.badge}</span>
         </button>
-        <button className="tile tile-rose" disabled type="button">
+        <button
+          className="tile tile-accent"
+          onClick={() => onNavigate({ screen: "memorize" })}
+          type="button"
+          data-testid="home-tile-memorize"
+        >
           <Brain size={22} />
-          <span className="tile-title">{d.more.memorization}</span>
-          <span className="tile-subtitle">{d.more.comingSoon}</span>
+          <span className="tile-title">{d.nav.memorize}</span>
+          <span className="chip chip-planned">{d.planned.badge}</span>
         </button>
       </div>
     </div>

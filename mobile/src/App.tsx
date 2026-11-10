@@ -5,7 +5,7 @@ import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 import { loadContentDb, getContentVersion, type ContentVersion } from "./db";
 import { DbContext } from "./DbContext";
 import { HistoryProvider, useHistoryStack } from "./HistoryContext";
-import { I18nContext, getDictionary, type Locale } from "./i18n";
+import { I18nContext, getDictionary, isRtl, toContentLocale, type Locale } from "./i18n";
 import {
   getStoredLocale,
   setStoredLocale,
@@ -28,6 +28,7 @@ import { PracticeScreen } from "./screens/PracticeScreen";
 import { MoreScreen } from "./screens/MoreScreen";
 import { OfflineAccessScreen } from "./screens/OfflineAccessScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
+import { PlannedScreen } from "./screens/PlannedScreen";
 import { TAB_HOME_ROUTE, type Route, type Tab } from "./navigation";
 
 function useSystemPrefersDark(): boolean {
@@ -86,6 +87,7 @@ export function App() {
   // this, French UI text was always announced as if it were English.
   useEffect(() => {
     document.documentElement.lang = locale;
+    document.documentElement.dir = isRtl(locale) ? "rtl" : "ltr";
   }, [locale]);
 
   function setLocale(next: Locale) {
@@ -98,7 +100,10 @@ export function App() {
     persistTheme(next);
   }
 
-  const i18nValue = useMemo(() => ({ locale, setLocale, d: getDictionary(locale) }), [locale]);
+  const i18nValue = useMemo(
+    () => ({ locale, contentLocale: toContentLocale(locale), setLocale, d: getDictionary(locale) }),
+    [locale],
+  );
 
   if (error) {
     const d = getDictionary(locale);
@@ -211,11 +216,16 @@ function Navigator({
             onBack={goBack}
           />
         )}
-        {route.screen === "practice" && <PracticeScreen onNavigate={handleNavigate} />}
-        {route.screen === "more" && <MoreScreen onNavigate={handleNavigate} />}
+        {route.screen === "practice" && (
+          <PracticeScreen onNavigate={handleNavigate} onBack={goBack} />
+        )}
+        {route.screen === "more" && <MoreScreen onNavigate={handleNavigate} onBack={goBack} />}
         {route.screen === "offline-access" && <OfflineAccessScreen onBack={goBack} />}
         {route.screen === "settings" && (
           <SettingsScreen onBack={goBack} theme={theme} onThemeChange={onThemeChange} />
+        )}
+        {(route.screen === "reflect" || route.screen === "memorize") && (
+          <PlannedScreen feature={route.screen} onNavigate={handleNavigate} />
         )}
       </div>
       <TabBar active={state.tab} onSelect={handleSelectTab} />

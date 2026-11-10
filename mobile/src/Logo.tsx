@@ -1,5 +1,7 @@
 import { useI18n } from "./i18n";
 
+/** Design Lock v1.0 logo -- the exact file the website's
+ * src/components/brand/Logo.tsx renders (public/quranroots-logo.png). */
 export function Logo({
   showWordmark = true,
   size = 40,
@@ -13,18 +15,19 @@ export function Logo({
       <img
         src="/quranroots-logo.png"
         alt={d.brand.logoAlt}
-        width={Math.round(size * 1.75)}
+        width={Math.round((size * 240) / 216)}
         height={size}
-        style={{ height: size, width: "auto", flexShrink: 0 }}
+        style={{ height: size, width: "auto", flexShrink: 0, borderRadius: 8 }}
+        data-testid="brand-logo"
       />
       {showWordmark && (
         <span
           style={{
             fontFamily: "var(--font-display)",
-            fontWeight: 800,
-            fontSize: "1.15rem",
-            color: "var(--primary)",
-            letterSpacing: "-0.01em",
+            fontWeight: 700,
+            fontSize: "1.35rem",
+            color: "var(--gold)",
+            letterSpacing: "0.01em",
           }}
         >
           {d.brand.name}

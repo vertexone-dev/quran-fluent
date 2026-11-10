@@ -1,13 +1,13 @@
 /*
- * Ported verbatim from ../../src/styles.css's :root/.dark oklch token
- * values (per the approved Phase 1 plan: "preserve the original
- * forest-green and ivory palette, typography hierarchy"). Hand-written
- * CSS classes instead of Tailwind utilities -- mobile/ has no Tailwind
- * build step (deliberately minimal Phase 0 dependency set) -- but every
- * color/radius/font value below is copied from the real design system,
- * never re-derived from the mockup's pixels. Dark mode is toggled by a
- * `.dark` class (on <html>), matching the web app's own convention
- * (a manual Settings choice, not prefers-color-scheme).
+ * QuranRoots Design Lock v1.0 (Milestone D-1). Token values are copied
+ * from the web app's ../../src/styles.css: :root is the ivory light theme,
+ * html.dark is the Midnight Teal / Antique Gold theme, and the --qr-*
+ * tokens are the fixed cinematic palette (header, tab bar, hero and splash
+ * stay dark in both themes, exactly like the website's glass nav and hero).
+ * Hand-written CSS classes instead of Tailwind utilities -- mobile/ has no
+ * Tailwind build step. Dark mode is toggled by a `.dark` class on <html>.
+ * Directional rules use logical properties so html[dir="rtl"] (Arabic UI)
+ * mirrors the layout without a second stylesheet.
  */
 
 /* Self-hosted (public/fonts/), not loaded from fonts.googleapis.com --
@@ -18,39 +18,76 @@
  * symbol subsets the web app's own broader CDN request pulls in are
  * dropped as genuine dead weight here, not an oversight). */
 @font-face {
-  font-family: "Open Sans";
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  src: url("/fonts/cormorant-garamond-latin-ext.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url("/fonts/cormorant-garamond-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  src: url("/fonts/nunito-sans-latin-ext.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url("/fonts/nunito-sans-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Tajawal";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/open-sans-400.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFC;
+  src: url("/fonts/tajawal-400-arabic.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Open Sans";
+  font-family: "Tajawal";
   font-style: normal;
-  font-weight: 600;
+  font-weight: 400;
   font-display: swap;
-  src: url("/fonts/open-sans-600.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F;
+  src: url("/fonts/tajawal-400-latin.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Open Sans";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/open-sans-700.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Playfair Display";
+  font-family: "Tajawal";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("/fonts/playfair-display-700.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFC;
+  src: url("/fonts/tajawal-700-arabic.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Playfair Display";
+  font-family: "Tajawal";
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
   font-display: swap;
-  src: url("/fonts/playfair-display-800.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F;
+  src: url("/fonts/tajawal-700-latin.woff2") format("woff2");
 }
 @font-face {
   font-family: "Amiri";
@@ -123,10 +160,21 @@
   --border: oklch(0.886 0.026 87.8);
   --ring: oklch(0.42 0.09 155);
 
-  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Playfair Display", "Cairo", "Open Sans", ui-serif, serif;
+  --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", "Nunito Sans", ui-serif, serif;
+  --font-arabic-ui: "Tajawal", "Nunito Sans", sans-serif;
   --font-quran: "Amiri Quran", "Scheherazade New", serif;
   --font-arabic: "Amiri", "Scheherazade New", serif;
+
+  /* Fixed cinematic palette (Design Lock v1.0): identical in both themes. */
+  --qr-midnight: oklch(0.2 0.035 195.1);
+  --qr-midnight-2: oklch(0.28 0.04 195.1);
+  --qr-midnight-3: oklch(0.324 0.046 195.1);
+  --qr-gold: oklch(0.767 0.139 91.1);
+  --qr-gold-soft: oklch(0.767 0.139 91.1 / 18%);
+  --qr-ivory: oklch(0.97 0.012 85);
+  --qr-ivory-muted: oklch(0.891 0.031 77);
+  --qr-line: oklch(0.974 0.01 87.5 / 14%);
 
   --shadow-soft:
     0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent),
@@ -134,27 +182,47 @@
 }
 
 html.dark {
-  --background: oklch(0.239 0.018 155);
-  --foreground: oklch(0.949 0.02 88);
-  --card: oklch(0.283 0.024 155);
-  --card-foreground: oklch(0.949 0.02 88);
+  --background: oklch(0.28 0.04 195.1);
+  --foreground: oklch(0.974 0.01 87.5);
+  --card: oklch(0.324 0.046 195.1);
+  --card-foreground: oklch(0.974 0.01 87.5);
 
-  --primary: oklch(0.719 0.09 155);
-  --primary-foreground: oklch(0.213 0.02 155);
-  --secondary: oklch(0.325 0.026 155);
-  --secondary-foreground: oklch(0.949 0.02 88);
-  --muted: oklch(0.325 0.026 155);
-  --muted-foreground: oklch(0.76 0.024 100);
-  --accent: oklch(0.355 0.03 155);
-  --accent-foreground: oklch(0.949 0.02 88);
-  --gold: oklch(0.75 0.095 82);
-  --gold-foreground: oklch(0.213 0.02 155);
+  --primary: oklch(0.511 0.086 186.4);
+  --primary-foreground: oklch(0.974 0.01 87.5);
+  --secondary: oklch(0.366 0.048 195.1);
+  --secondary-foreground: oklch(0.974 0.01 87.5);
+  --muted: oklch(0.366 0.048 195.1);
+  --muted-foreground: oklch(0.891 0.031 77);
+  --accent: oklch(0.396 0.052 195.1);
+  --accent-foreground: oklch(0.974 0.01 87.5);
+  --gold: oklch(0.767 0.139 91.1);
+  --gold-foreground: oklch(0.28 0.04 195.1);
   --support: oklch(0.73 0.06 222);
   --support-foreground: oklch(0.213 0.02 155);
   --destructive: oklch(0.65 0.19 25);
   --destructive-foreground: oklch(0.98 0.01 88);
-  --border: oklch(0.949 0.02 88 / 14%);
-  --ring: oklch(0.719 0.09 155);
+  --border: oklch(0.974 0.01 87.5 / 14%);
+  --ring: oklch(0.511 0.086 186.4);
+}
+
+/* Arabic interface: Tajawal for UI text; Qur'an and Arabic names keep
+ * their own fonts (.quran-text / .arabic-text). */
+html[dir="rtl"] {
+  --font-sans: "Tajawal", "Nunito Sans", sans-serif;
+  --font-display: "Tajawal", "Cormorant Garamond", serif;
+}
+
+/* Directional icons (chevrons, back arrows) flip under RTL. */
+html[dir="rtl"] .dir-icon {
+  transform: scaleX(-1);
+}
+
+/* Translations keep their own direction inside the Arabic interface. */
+.translation-text {
+  margin: 0;
+  unicode-bidi: isolate;
+  text-align: start;
+  line-height: 1.6;
 }
 
 * {
@@ -234,8 +302,9 @@ button {
 }
 
 .appbar-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
+  line-height: 1.15;
   color: var(--foreground);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -258,35 +327,70 @@ button {
 
 /* --- Tab bar ------------------------------------------------------------ */
 
+/* Glass bar on the fixed midnight palette -- the mobile twin of the
+ * website's nav-glass bottom tab bar (dark in both themes). */
 .tab-bar {
   display: flex;
-  border-top: 1px solid var(--border);
-  background: var(--card);
+  border-top: 1px solid var(--qr-line);
+  background: color-mix(in oklab, var(--qr-midnight) 88%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
   position: fixed;
-  left: 0;
-  right: 0;
+  inset-inline: 0;
   bottom: 0;
   z-index: 10;
 }
 
 .tab-item {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   background: none;
   border: none;
-  color: var(--muted-foreground);
-  font-size: 0.68rem;
+  color: var(--qr-ivory-muted);
+  font-size: 0.72rem;
   font-weight: 600;
   padding: 6px 2px;
+  min-height: 48px;
   cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
 }
 
 .tab-item.active {
-  color: var(--primary);
+  color: var(--qr-gold);
+}
+
+.tab-item.active::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--qr-gold);
+}
+
+.tab-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-planned-dot {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: calc(50% - 18px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--qr-gold);
+  opacity: 0.7;
 }
 
 .tab-icon {
@@ -330,7 +434,7 @@ button {
   background: none;
   color: inherit;
   font: inherit;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
@@ -449,7 +553,7 @@ button {
   gap: 4px;
   cursor: pointer;
   border: none;
-  text-align: left;
+  text-align: start;
   font-family: inherit;
 }
 
@@ -527,7 +631,7 @@ button {
   background: var(--card);
   color: inherit;
   font: inherit;
-  text-align: left;
+  text-align: start;
 }
 
 .choice-row:disabled {
@@ -583,23 +687,26 @@ button {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  background: color-mix(in oklab, var(--primary) 70%, black);
-  color: var(--primary-foreground);
+  background:
+    radial-gradient(ellipse at 50% 30%, oklch(0.767 0.139 91.1 / 16%), transparent 60%),
+    var(--qr-midnight);
+  color: var(--qr-ivory);
   text-align: center;
   padding: 24px;
 }
 
 .splash-screen .brand-name {
   font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--primary-foreground);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--qr-gold);
+  letter-spacing: 0.01em;
 }
 
 .splash-screen .brand-tagline {
-  color: var(--gold);
+  color: var(--qr-ivory-muted);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   letter-spacing: 0.02em;
 }
 
@@ -620,7 +727,7 @@ button {
 }
 
 .section-title h2 {
-  font-size: 1.05rem;
+  font-size: 1.3rem;
   font-weight: 700;
 }
 
@@ -702,9 +809,9 @@ button {
 
 .tagline {
   font-family: var(--font-display);
-  font-size: 1.55rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
   margin-bottom: 20px;
 }
 
@@ -731,7 +838,7 @@ button {
 
 .card-button {
   width: 100%;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   font: inherit;
   display: block;
@@ -751,21 +858,17 @@ button {
   border: none;
   border-radius: calc(var(--radius) + 6px);
   padding: 20px;
-  text-align: left;
+  text-align: start;
   font: inherit;
-  background: color-mix(in oklab, var(--primary) 82%, black);
-  color: var(--primary-foreground);
-  box-shadow: var(--shadow-soft);
+  background: var(--qr-midnight-2);
+  color: var(--qr-ivory);
+  border: 1px solid var(--qr-gold-soft);
+  box-shadow: 0 24px 60px -30px oklch(0.2 0.035 195.1 / 80%);
   cursor: pointer;
   transition: transform 0.15s ease;
 }
 .hero-card:active {
   transform: scale(0.985);
-}
-html.dark .hero-card {
-  background: var(--card);
-  color: var(--foreground);
-  border: 1px solid var(--border);
 }
 .hero-pattern {
   position: absolute;
@@ -773,8 +876,8 @@ html.dark .hero-card {
   pointer-events: none;
   opacity: 0.16;
   background-image:
-    radial-gradient(circle at 100% 0%, var(--gold) 0 2px, transparent 3px),
-    repeating-conic-gradient(from 45deg at 90% 10%, var(--gold) 0 8deg, transparent 8deg 30deg);
+    radial-gradient(circle at 100% 0%, var(--qr-gold) 0 2px, transparent 3px),
+    repeating-conic-gradient(from 45deg at 90% 10%, var(--qr-gold) 0 8deg, transparent 8deg 30deg);
   mask-image: radial-gradient(circle at 92% 8%, black 0, transparent 70%);
   -webkit-mask-image: radial-gradient(circle at 92% 8%, black 0, transparent 70%);
 }
@@ -795,15 +898,12 @@ html.dark .hero-card {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--gold);
-}
-html:not(.dark) .hero-label {
-  color: oklch(0.82 0.09 82);
+  color: var(--qr-gold);
 }
 .hero-title {
   font-family: var(--font-display);
-  font-size: 1.6rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 700;
 }
 .hero-sub {
   font-size: 0.82rem;
@@ -813,10 +913,7 @@ html:not(.dark) .hero-label {
 .hero-ar {
   font-size: 2rem;
   line-height: 1.2;
-  color: oklch(0.82 0.09 82);
-}
-html.dark .hero-ar {
-  color: var(--gold);
+  color: var(--qr-gold);
 }
 
 /* Continue Learning card */
@@ -985,14 +1082,266 @@ html.dark .hero-ar {
 .ayah-arabic {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 6px;
   padding: 10px 0 14px;
   transition: font-size 0.2s ease;
 }
 .ayah-arabic .quran-text {
-  color: var(--primary);
-  line-height: 1.6;
+  color: var(--foreground);
+  line-height: 1.9;
+  text-align: start;
+}
+
+/* --- Design Lock v1.0 mobile components (Milestone D-1) -------------- */
+
+/* Home brand hero: approved artwork behind a midnight scrim. The text is
+ * readable with or without the image (the scrim alone carries contrast). */
+.brand-hero {
+  position: relative;
+  overflow: hidden;
+  margin: calc(-16px - env(safe-area-inset-top, 0px)) -16px 18px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 22px;
+  background: var(--qr-midnight);
+  color: var(--qr-ivory);
+  border-bottom: 1px solid var(--qr-gold-soft);
+}
+.brand-hero-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  opacity: 0.9;
+}
+.brand-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    oklch(0.2 0.035 195.1 / 45%) 0%,
+    oklch(0.2 0.035 195.1 / 30%) 35%,
+    oklch(0.2 0.035 195.1 / 80%) 75%,
+    var(--qr-midnight) 100%
+  );
+}
+.brand-hero > :not(.brand-hero-art) {
+  position: relative;
+  z-index: 1;
+}
+.brand-hero .appbar-title {
+  color: var(--qr-gold);
+}
+.brand-hero .eyebrow {
+  color: var(--qr-gold);
+  margin-top: 96px;
+}
+.brand-hero .tagline {
+  color: var(--qr-ivory);
+  margin-bottom: 0;
+}
+
+/* Header controls on the midnight surfaces. */
+.icon-btn-glass {
+  border-color: var(--qr-line);
+  background: oklch(0.974 0.01 87.5 / 8%);
+  color: var(--qr-ivory);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.icon-btn-glass:hover:not(:disabled) {
+  background: oklch(0.974 0.01 87.5 / 16%);
+}
+
+/* Profile circle: opens Profile & More. */
+.profile-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--qr-gold);
+  background: var(--qr-midnight-3);
+  color: var(--qr-gold);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background-color 0.2s ease;
+}
+.profile-btn:active {
+  transform: scale(0.94);
+}
+
+/* Home quick shortcuts (Bookmarks, Practice, Offline Access, Settings). */
+.shortcut-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 4px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  min-height: 72px;
+  transition:
+    transform 0.15s ease,
+    border-color 0.2s ease;
+}
+.shortcut svg {
+  color: var(--gold);
+}
+.shortcut:active {
+  transform: scale(0.96);
+}
+
+/* Gold-edged verse container: mobile twin of the website's VerseFrame. */
+.verse-card {
+  position: relative;
+  border-color: color-mix(in oklab, var(--gold) 28%, var(--border));
+}
+.verse-card::before,
+.verse-card::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--gold);
+  border-style: solid;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.verse-card::before {
+  top: 6px;
+  inset-inline-start: 6px;
+  border-width: 1.5px 0 0 1.5px;
+  border-start-start-radius: 4px;
+}
+.verse-card::after {
+  bottom: 6px;
+  inset-inline-end: 6px;
+  border-width: 0 1.5px 1.5px 0;
+  border-end-end-radius: 4px;
+}
+html[dir="rtl"] .verse-card::before {
+  border-width: 1.5px 1.5px 0 0;
+}
+html[dir="rtl"] .verse-card::after {
+  border-width: 0 0 1.5px 1.5px;
+}
+
+/* Planned (D-2) destinations: honest placeholder, no sample content. */
+.planned-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--radius) + 6px);
+  min-height: 200px;
+  background: var(--qr-midnight);
+  color: var(--qr-ivory);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  border: 1px solid var(--qr-gold-soft);
+}
+.planned-hero img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+}
+.planned-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 10%, var(--qr-midnight) 95%);
+}
+.planned-hero > :not(img) {
+  position: relative;
+  z-index: 1;
+}
+.planned-hero h2 {
+  font-size: 1.9rem;
+  color: var(--qr-ivory);
+}
+.chip-planned {
+  background: var(--qr-gold-soft);
+  color: var(--qr-gold);
+  border: 1px solid oklch(0.767 0.139 91.1 / 45%);
+  align-self: flex-start;
+}
+html:not(.dark) .chip-planned {
+  color: oklch(0.45 0.1 80);
+  background: oklch(0.767 0.139 91.1 / 22%);
+}
+html .planned-hero .chip-planned {
+  color: var(--qr-gold);
+  background: oklch(0.2 0.035 195.1 / 70%);
+}
+.planned-list {
+  margin: 0;
+  padding-inline-start: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+/* Dark theme: Explore tiles sit on the midnight card surface with gold
+ * icons (the light-theme tints have too little contrast on teal). */
+html.dark .tile {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+html.dark .tile svg {
+  color: var(--gold);
+}
+
+/* Learn banner: the website's Guided Learning Journeys artwork. */
+.learn-banner {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  border-radius: calc(var(--radius) + 6px);
+  border: 1px solid var(--qr-gold-soft);
+  margin-bottom: 16px;
+}
+
+/* Section label used by Settings and Profile & More. */
+.group-label {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+  margin: 0 0 8px;
+}
+
+.row-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+.row-icon svg:first-child {
+  color: var(--gold);
+  flex-shrink: 0;
 }
 
 /* Respect the OS-level "reduce motion" accessibility setting: disable the
@@ -1006,7 +1355,9 @@ html.dark .hero-ar {
   .card-button:active,
   .hero-card:active,
   .tile:active:not(:disabled),
-  .icon-btn:active:not(:disabled) {
+  .icon-btn:active:not(:disabled),
+  .shortcut:active,
+  .profile-btn:active {
     transform: none;
   }
 }
