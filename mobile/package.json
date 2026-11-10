@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/release-art-guard.mjs --prune dist",
+    "build:review": "vite build --mode art-review && node scripts/release-art-guard.mjs --review dist",
+    "release:check": "node scripts/release-art-guard.mjs dist android/app/src/main/assets/public ios/App/App/public",
     "export-content": "node scripts/export-content-db.mjs",
     "test": "cd .. && npx vitest run --config mobile/vitest.config.ts",
     "test:e2e": "cd .. && npx playwright test --config mobile/playwright.config.ts"
