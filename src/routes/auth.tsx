@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 
-import { Logo } from "@/components/brand/Logo";
+import { AuthShell, AUTH_CARD } from "@/design/AuthShell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,9 @@ const nameSchema = z.string().trim().min(1).max(80);
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup", "forgot"]).catch("login"),
+  // Where to return after a successful log-in. Allow-listed (never a free
+  // URL) so it can't be used as an open redirect.
+  redirect: z.enum(["/settings"]).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -49,7 +52,8 @@ export const Route = createFileRoute("/auth")({
 });
 
 function AuthPage() {
-  const { mode } = Route.useSearch();
+  const { mode, redirect } = Route.useSearch();
+  const afterLogin = redirect ?? "/dashboard";
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { t, d } = useI18n();
@@ -67,8 +71,8 @@ function AuthPage() {
   );
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/dashboard", replace: true });
-  }, [loading, user, navigate]);
+    if (!loading && user) navigate({ to: afterLogin, replace: true });
+  }, [loading, user, navigate, afterLogin]);
 
   async function handleSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
@@ -105,7 +109,7 @@ function AuthPage() {
       } else if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
-        navigate({ to: "/dashboard" });
+        navigate({ to: afterLogin });
       } else {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
           redirectTo: `${window.location.origin}/reset-password`,
@@ -138,12 +142,8 @@ function AuthPage() {
   }
 
   return (
-    <div className="surface-hero flex min-h-screen flex-col items-center justify-center px-4 py-12">
-      <Link to="/" className="mb-8" aria-label="QuranRoots home">
-        <Logo tagline />
-      </Link>
-
-      <Card className="w-full max-w-md shadow-elevated">
+    <AuthShell>
+      <Card className={AUTH_CARD}>
         <CardHeader>
           <CardTitle className="font-display text-2xl" asChild>
             <h1>{copy.title}</h1>
@@ -268,7 +268,7 @@ function AuthPage() {
                       <Link
                         to="/auth"
                         search={{ mode: "signup" }}
-                        className="font-medium text-primary underline underline-offset-4"
+                        className="font-medium text-gold underline underline-offset-4"
                       >
                         {a.createAccount}
                       </Link>
@@ -281,7 +281,7 @@ function AuthPage() {
                     <Link
                       to="/auth"
                       search={{ mode: "login" }}
-                      className="font-medium text-primary underline underline-offset-4"
+                      className="font-medium text-gold underline underline-offset-4"
                     >
                       {a.login.cta}
                     </Link>
@@ -292,6 +292,6 @@ function AuthPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </AuthShell>
   );
 }

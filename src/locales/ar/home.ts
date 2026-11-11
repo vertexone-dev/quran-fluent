@@ -1,14 +1,46 @@
 // QR-INT-002: machine-drafted Arabic -- see note in ar/common.ts. Flag for
 // native-speaker review before treating as final.
 export const home = {
+  understand: {
+    eyebrow: "افهم",
+    title: "افهم هذه الآية",
+    body: "ادرس آية واحدة في كل مرة: النص العربي ومعناه وكلماته ومساحة للتدبّر.",
+    reference: "{surah} · {surahNumber}:{ayah}",
+    tabs: { meaning: "المعنى", words: "كلمة بكلمة", tafsir: "التفسير", reflect: "تدبّر" },
+    wordsUnavailable: "دراسة الكلمات لهذه الآية بانتظار مصدر موثّق.",
+    wordsCta: "تدرّب على مفردات القرآن",
+    tafsirUnavailable: "لن يظهر التفسير هنا إلا من مصدر موثّق ومنسوب راجعه علماء مؤهَّلون.",
+    reflectPrompt: "كيف يمكن لهذه الآية أن توجّه يومك؟",
+    reflectCta: "اكتب تأمّلًا",
+    openReader: "افتح في القارئ",
+    loading: "جارٍ تحميل الآية…",
+    error: "تعذّر تحميل هذه الآية الآن. تحقّق من الاتصال وحاول مرة أخرى.",
+    retry: "حاول مرة أخرى",
+  },
+  journeys: {
+    eyebrow: "تعلّم",
+    title: "مسارات تعلّم موجَّهة",
+    body: "مستويات متدرّجة من الحروف العربية إلى فهم آيات كاملة.",
+    explore: "استكشف الدورة",
+    continueLearning: "تابع التعلّم",
+  },
   hero: {
-    badge: "العربية القرآنية، خطوة بخطوة",
-    titleLine1: "تعلّم العربية.",
-    titleLine2: "افهم القرآن.",
-    subtitle: "بناء مهاراتك في العربية القرآنية كلمة، وآية، ودرسًا في كل مرة.",
+    steps: ["اقرأ", "افهم", "تدبّر", "طبّق", "ارتقِ"],
+    titleLine1: "رحلة أعمق",
+    titleLine2: "مع القرآن",
+    subtitle: "اقرأ القرآن وافهمه وتدبّره واعمل بتعاليمه.",
     note: "نص القرآن وترجماته مأخوذة من مصادر موثّقة فقط.",
-    imageAlt: "مصحف على حامل خشبي في قنطرة مشمسة.",
+    continueReading: "تابع القراءة",
+    continuingFrom: "المتابعة من {surah}، الآية {ayah}",
     documentTitle: "QuranRoots — تعلّم العربية. افهم القرآن.",
+  },
+  journey: {
+    title: "رحلتك",
+    emptySignedOut: "أنشئ حسابًا لحفظ موضعك ومتابعة تقدمك الفعلي.",
+    createAccount: "أنشئ حسابًا",
+    emptySignedIn: "أضف آية إلى العلامات أثناء القراءة وسيظهر موضعك هنا.",
+    openReader: "افتح القارئ",
+    resumeCta: "استأنف",
   },
   quickLinks: {
     title: "اكتشف QuranRoots",
@@ -18,8 +50,8 @@ export const home = {
         body: "تصفّح حسب السورة أو الآية أو الجزء بنص عربي موثّق.",
       },
       {
-        title: "تعلّم العربية",
-        body: "ستة مستويات منظمة، من الأبجدية إلى الفهم الكامل.",
+        title: "افهم هذه الآية",
+        body: "معاني الكلمات وجذورها وأنواعها من مصادر موثّقة.",
       },
       {
         title: "تدبّر",
@@ -28,6 +60,10 @@ export const home = {
       {
         title: "احفظ",
         body: "استمع وكرّر وراجع بتكرار متباعد.",
+      },
+      {
+        title: "تعلّم موجَّه",
+        body: "ستة مستويات منظمة، من الأبجدية إلى الفهم الكامل.",
       },
     ],
   },

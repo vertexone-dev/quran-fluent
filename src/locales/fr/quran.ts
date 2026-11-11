@@ -124,4 +124,68 @@ export const quran: typeof EnQuran = {
     showMore: "Afficher plus de mots",
     showLess: "Afficher moins de mots",
   },
+  // QR-INT-007 (Milestone C). NEEDS NATIVE FRENCH REVIEW before production
+  // (machine-drafted interface copy only -- no Quran or translation text).
+  readerUi: {
+    toolbarLabel: "Navigation du lecteur",
+    prevSurah: "Sourate précédente",
+    nextSurah: "Sourate suivante",
+    jumpLabel: "Aller au verset",
+    jumpGo: "Aller",
+    jumpInvalid: "Saisissez un numéro de verset entre 1 et {max}.",
+    understand: "Comprendre ce verset",
+    offline: "Vous êtes hors ligne. Reconnectez-vous pour charger cette sourate.",
+    empty: "Aucun verset n'est encore disponible pour cette sourate.",
+  },
+  miniPlayer: {
+    label: "Lecteur de récitation",
+    nowPlaying: "{surah} · Verset {ayah}",
+    loading: "Chargement…",
+    playing: "Lecture",
+    paused: "En pause",
+    ended: "Terminé",
+    resume: "Reprendre la récitation",
+    pause: "Mettre la récitation en pause",
+    replay: "Réécouter ce verset",
+    next: "Écouter le verset suivant",
+    close: "Fermer le lecteur",
+    reciter: "Récitateur : {reciter}",
+    changeReciter: "Changer de récitateur dans les Paramètres",
+  },
+  understand: {
+    metaTitle: "Comprendre ce verset — QuranRoots",
+    metaDescription:
+      "Étudier un verset : l'arabe tel qu'enregistré, les traductions anglaise et française vérifiées côte à côte avec leurs sources, et des indications honnêtes sur ce qui attend encore une source vérifiée.",
+    eyebrow: "Comprendre",
+    title: "Comprendre ce verset",
+    intro:
+      "Lire → Comprendre → Méditer. L'arabe est affiché exactement tel qu'enregistré ; chaque traduction indique sa source.",
+    selectSurah: "Choisir une sourate",
+    prev: "Verset précédent",
+    next: "Verset suivant",
+    openReader: "Ouvrir dans le lecteur",
+    reflect: "Méditer sur ce verset",
+    tabs: {
+      translations: "Traductions",
+      words: "Mots",
+      tafsir: "Tafsir",
+      context: "Contexte",
+    },
+    comparisonTitle: "Comparaison des traductions",
+    english: "Anglais",
+    french: "Français",
+    unavailableEn: "Traduction anglaise pas encore disponible pour ce verset.",
+    unavailableFr: "Traduction française pas encore disponible pour ce verset.",
+    wordsUnavailable:
+      "Le sens mot à mot attend une source vérifiée et sous licence, rattachée à ce mot précis dans ce verset. Rien n'est affiché d'ici là.",
+    tafsirUnavailable:
+      "Le tafsir attend une source savante approuvée. QuranRoots ne rédige ni ne génère de tafsir.",
+    contextUnavailable:
+      "Les notes de contexte attendent une source savante approuvée. Rien n'est affiché d'ici là.",
+    notFound:
+      "Ce verset ne fait pas partie de la sourate choisie. Choisissez un autre verset ci-dessous.",
+    error: "Impossible de charger ce verset.",
+    retry: "Réessayer",
+    homeLink: "Étudier ce verset en profondeur",
+  },
 };

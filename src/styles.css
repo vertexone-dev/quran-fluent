@@ -71,12 +71,13 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
-  /* Editorial serif for headings (Latin/French UI text only -- never
-     applied to Arabic script, which always renders through --font-quran/
-     --font-arabic below, untouched by this). Cairo stays as the fallback
-     for the rare case Playfair Display hasn't loaded yet. */
-  --font-display: "Playfair Display", "Cairo", "Open Sans", ui-serif, serif;
+  --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+  /* QR-INT-006: Emergent Design Lock typography. Cormorant Garamond for
+     Latin/French headings, Nunito Sans for body, Tajawal for Arabic UI
+     text (see [dir="rtl"] below). Quran text keeps --font-quran (Amiri
+     Quran) and --font-arabic, untouched. */
+  --font-display: "Cormorant Garamond", "Tajawal", ui-serif, serif;
+  --font-arabic-ui: "Tajawal", "Nunito Sans", sans-serif;
   --font-quran: "Amiri Quran", "Scheherazade New", serif;
   --font-arabic: "Amiri", "Scheherazade New", serif;
 }
@@ -240,10 +241,17 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    /* Playfair Display reads better at normal tracking than Cairo's
-       geometric sans did -- the old -0.01em was tuned for Cairo and
-       pinches a serif's serifs/counters at larger sizes. */
     letter-spacing: normal;
+  }
+
+  /* Arabic interface text. :where() keeps specificity at element level so
+     .font-quran / .font-arabic on Quran text always wins. */
+  :where([dir="rtl"]) body,
+  :where([dir="rtl"]) h1,
+  :where([dir="rtl"]) h2,
+  :where([dir="rtl"]) h3,
+  :where([dir="rtl"]) h4 {
+    font-family: var(--font-arabic-ui);
   }
 
   :focus-visible {
@@ -335,6 +343,109 @@
   font-size: 1.75rem;
 }
 
+/* QR-INT-005: cinematic homepage hero. Deliberately theme-independent (a
+   photographic night scene reads correctly only with light text, regardless
+   of whether the rest of the site is in Ivory or Midnight Teal) -- see
+   surface-hero-cinematic below, which anchors to the site's own approved
+   Midnight Teal oklch values as a literal fallback rather than a
+   theme-variable, so a failed image load still renders the same dark,
+   legible backdrop in either theme. The animated effects below mirror this
+   repo's existing global `prefers-reduced-motion` rule above (all are plain
+   CSS `animation`, already zeroed by that rule's `animation-duration`
+   override) -- no separate override list needed here.  */
+@utility surface-hero-cinematic {
+  background-image: linear-gradient(180deg, oklch(0.28 0.04 195.1), oklch(0.16 0.035 195.1));
+}
+
+@utility hero-grain {
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+@keyframes hero-flicker {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  20% {
+    opacity: 0.65;
+    transform: scale(0.97);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.03);
+  }
+  70% {
+    opacity: 0.75;
+  }
+}
+@utility hero-flicker {
+  animation: hero-flicker 4.5s ease-in-out infinite;
+}
+
+/* Rotating gold ring behind the hero CTA. @property lets the conic-gradient
+   angle itself be the animated value (smooth, GPU-friendly) rather than
+   animating the gradient's stop list every frame. */
+@property --cta-ring-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes cta-ring-spin {
+  to {
+    --cta-ring-angle: 360deg;
+  }
+}
+@utility cta-ring {
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--cta-ring-angle, 0deg),
+    color-mix(in oklab, var(--gold) 55%, transparent),
+    var(--gold) 20%,
+    color-mix(in oklab, var(--gold) 55%, transparent) 40%,
+    color-mix(in oklab, var(--gold) 55%, transparent) 60%,
+    var(--gold) 80%,
+    color-mix(in oklab, var(--gold) 55%, transparent)
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: cta-ring-spin 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes hero-ripple {
+  from {
+    transform: scale(0);
+    opacity: 0.55;
+  }
+  to {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+.hero-ripple {
+  position: absolute;
+  border-radius: 999px;
+  pointer-events: none;
+  background: color-mix(in oklab, var(--gold) 70%, white);
+  animation: hero-ripple 0.7s ease-out forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -343,5 +454,101 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* QR-INT-007 (Milestone C) VerseFrame: CSS-only gold corner ornaments (no
+   artwork). Logical insets so the ornaments mirror under rtl. */
+.verse-frame::before,
+.verse-frame::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  border-color: oklch(0.767 0.139 91.1 / 0.7);
+  border-style: solid;
+}
+.verse-frame::before {
+  inset-block-start: 10px;
+  inset-inline-start: 10px;
+  border-width: 1.5px 0 0 1.5px;
+  border-start-start-radius: 12px;
+}
+.verse-frame::after {
+  inset-block-end: 10px;
+  inset-inline-end: 10px;
+  border-width: 0 1.5px 1.5px 0;
+  border-end-end-radius: 12px;
+}
+[dir="rtl"] .verse-frame::before {
+  border-width: 1.5px 1.5px 0 0;
+}
+[dir="rtl"] .verse-frame::after {
+  border-width: 0 0 1.5px 1.5px;
+}
+
+/* QR-INT-005 navigation: the Emergent floating glass bar. Theme-independent
+   dark Midnight Teal glass (literal oklch, like the hero/dashboard banners)
+   so the bar reads the same over the cinematic hero and over light-theme
+   pages; its controls use explicit Ivory/Antique Gold values for that
+   reason instead of theme tokens. Values are the Emergent .qr-glass
+   gradient (#103B3A -> #061E1E at .62/.72 alpha, blur 16 saturate 130%,
+   gold 20% border) expressed in oklch. */
+@utility nav-glass {
+  background: linear-gradient(180deg, oklch(0.34 0.05 190 / 0.66), oklch(0.22 0.035 190 / 0.78));
+  backdrop-filter: blur(16px) saturate(130%);
+  -webkit-backdrop-filter: blur(16px) saturate(130%);
+  border: 1px solid oklch(0.767 0.139 91.1 / 0.22);
+  color: oklch(0.974 0.01 87.5);
+}
+
+/* Denser variant for the fixed bottom tab bar, which scrolls over arbitrary
+   page content and so needs more opacity than the top bar to keep its labels
+   legible. */
+@utility nav-glass-dense {
+  background: linear-gradient(180deg, oklch(0.3 0.045 190 / 0.93), oklch(0.2 0.035 190 / 0.97));
+  backdrop-filter: blur(18px) saturate(130%);
+  -webkit-backdrop-filter: blur(18px) saturate(130%);
+  border: 1px solid oklch(0.767 0.139 91.1 / 0.25);
+  color: oklch(0.974 0.01 87.5);
+}
+
+@utility nav-pill-idle {
+  color: oklch(0.974 0.01 87.5 / 0.85);
+  &:hover {
+    color: oklch(0.88 0.1 91);
+    box-shadow: 0 0 0 1px oklch(0.767 0.139 91.1 / 0.35);
+  }
+}
+
+/* Active destination: gold ring + soft glow + faint gold wash (Emergent).
+   Declared after nav-pill-idle so it wins when both are applied. */
+@utility nav-pill-active {
+  color: oklch(0.974 0.01 87.5);
+  background: linear-gradient(
+    180deg,
+    oklch(0.767 0.139 91.1 / 0.16),
+    oklch(0.767 0.139 91.1 / 0.04)
+  );
+  box-shadow:
+    0 0 0 1px oklch(0.767 0.139 91.1 / 0.85),
+    0 0 22px oklch(0.767 0.139 91.1 / 0.35);
+  &:hover {
+    color: oklch(0.974 0.01 87.5);
+    box-shadow:
+      0 0 0 1px oklch(0.767 0.139 91.1 / 0.95),
+      0 0 26px oklch(0.767 0.139 91.1 / 0.45);
+  }
+}
+
+/* QR-INT-005: the fixed bottom tab bar (MobileTabBar, below xl) would cover the
+   last ~72px of any page -- including bottom-of-page controls on routes with no
+   footer, such as the lesson player's Next button -- so while it is mounted the
+   body reserves that space and every page can scroll its last content clear of
+   the bar. Scoped with :has() so pages/widths without the bar are unaffected. */
+@media (max-width: 1279.98px) {
+  body:has([data-testid="mobile-tab-bar"]) {
+    padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
   }
 }

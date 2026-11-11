@@ -106,7 +106,12 @@ test.describe("Audio Foundation Phase 1", () => {
     // button must revert to idle "Play", never stay stuck on "Pause".
     const secondPlay = page.getByRole("button", { name: "Play recitation" }).nth(0);
     await secondPlay.click();
-    await expect(page.getByRole("button", { name: "Pause recitation" })).toHaveCount(1);
+    // QR-INT-007: the sticky mini-player (outside <main>) mirrors the same
+    // player with its own "Pause recitation" button, so count only the
+    // Reader's own per-āyah buttons -- still exactly one may be playing.
+    await expect(
+      page.getByRole("main").getByRole("button", { name: "Pause recitation" }),
+    ).toHaveCount(1);
   });
 
   test("a short āyah reaches the ended state and offers replay", async ({ page }) => {

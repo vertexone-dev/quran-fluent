@@ -24,10 +24,19 @@ import { seedVocabularyToReviews, removeVocabularyReviewItem } from "@/lib/study
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AyahReader } from "@/components/quran/AyahReader";
+import { AudioMiniPlayer } from "@/components/quran/AudioMiniPlayer";
+
+// `tab` makes the study tabs below the reader URL-addressable (e.g. the
+// homepage's "Understand This Ayah" card opens /quran?tab=vocabulary). Absent
+// or unrecognised values fall back to the default Vocabulary tab, so every
+// existing /quran link behaves exactly as before.
+const STUDY_TABS = ["vocabulary", "sources", "translations"] as const;
+type StudyTab = (typeof STUDY_TABS)[number];
 
 const searchSchema = z.object({
   surah: z.number().int().positive().optional(),
   ayah: z.number().int().positive().optional(),
+  tab: z.enum(STUDY_TABS).optional().catch(undefined),
 });
 
 export const Route = createFileRoute("/quran")({
@@ -73,6 +82,15 @@ function QuranPage() {
   const vocab = d.quran.vocabulary;
   const wordCopy = d.quran.word;
   useDocumentTitle(`${page.title} — QuranRoots`);
+
+  const activeTab: StudyTab = readerParams.tab ?? "vocabulary";
+
+  // Arriving with an explicit ?tab= means the learner asked for the study
+  // section itself, not the reader above it -- bring it into view.
+  useEffect(() => {
+    if (readerParams.tab == null || readerParams.ayah != null) return;
+    document.getElementById("study-tabs")?.scrollIntoView({ block: "start" });
+  }, [readerParams.tab, readerParams.ayah]);
 
   useEffect(() => {
     if (readerParams.ayah == null) return;
@@ -161,8 +179,23 @@ function QuranPage() {
         <div className="mt-8">
           <AyahReader
             surahNumber={readerParams.surah}
-            onSurahChange={(surah) => void navigate({ search: { surah }, replace: true })}
+            onSurahChange={(surah) =>
+              void navigate({
+                search: (prev) => (prev.tab ? { surah, tab: prev.tab } : { surah }),
+                replace: true,
+              })
+            }
             highlightAyah={readerParams.ayah}
+            onJumpToAyah={(ayah) =>
+              void navigate({
+                search: (prev) => ({
+                  ...(prev.surah != null ? { surah: prev.surah } : {}),
+                  ayah,
+                  ...(prev.tab ? { tab: prev.tab } : {}),
+                }),
+                replace: true,
+              })
+            }
           />
         </div>
 
@@ -176,8 +209,20 @@ function QuranPage() {
             instead of all three stacking. Vocabulary stays the default,
             open tab -- it's the section every existing test and the
             previous design already treated as immediately visible. */}
-        <section className="section-py-compact" aria-label={page.moreTitle}>
-          <Tabs defaultValue="vocabulary">
+        <section id="study-tabs" className="section-py-compact" aria-label={page.moreTitle}>
+          <Tabs
+            value={activeTab}
+            onValueChange={(value) =>
+              void navigate({
+                search: (prev) => ({
+                  ...(prev.surah != null ? { surah: prev.surah } : {}),
+                  ...(prev.ayah != null ? { ayah: prev.ayah } : {}),
+                  tab: value as StudyTab,
+                }),
+                replace: true,
+              })
+            }
+          >
             <TabsList className="grid h-auto w-full grid-cols-3 gap-1 sm:inline-flex sm:w-auto">
               <TabsTrigger value="vocabulary" className="min-h-11">
                 {page.tabs.vocabulary}
@@ -373,6 +418,7 @@ function QuranPage() {
           </Tabs>
         </section>
       </main>
+      <AudioMiniPlayer />
       <SiteFooter />
     </div>
   );

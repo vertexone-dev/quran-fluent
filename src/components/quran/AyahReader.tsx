@@ -1,19 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Bookmark, BookmarkCheck, BookOpen, Check, NotebookPen, Sparkles } from "lucide-react";
+import {
+  Bookmark,
+  BookmarkCheck,
+  BookOpen,
+  Check,
+  Lightbulb,
+  NotebookPen,
+  Sparkles,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ContentState } from "@/design/primitives";
+import { CinematicButton } from "@/design/CinematicButton";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
 import { fetchLearnerSnapshot, LEARNER_SNAPSHOT_STALE_TIME_MS } from "@/lib/learner";
@@ -27,11 +30,14 @@ import { addBookmark, fetchBookmarkedAyahKeys, removeBookmark } from "@/lib/book
 import { AyahCard } from "./AyahCard";
 import { AyahPlayButton } from "./AyahPlayButton";
 import { NoteDialog } from "./NoteDialog";
+import { ReaderToolbar } from "./ReaderToolbar";
 
 type AyahReaderProps = {
   surahNumber: number | undefined;
   onSurahChange: (surahNumber: number) => void;
   highlightAyah?: number | undefined;
+  /** QR-INT-007: "go to Ayah" from the toolbar (the page owns the URL). */
+  onJumpToAyah?: (ayahNumber: number) => void;
 };
 
 // How long the bookmark-confirmation checkmark stays visible before it's
@@ -41,11 +47,18 @@ type AyahReaderProps = {
 // the lesson-completion checkmark and the level-card hover transition use.
 const BOOKMARK_CONFIRM_MS = 1400;
 
-export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahReaderProps) {
+export function AyahReader({
+  surahNumber,
+  onSurahChange,
+  highlightAyah,
+  onJumpToAyah,
+}: AyahReaderProps) {
   const { d, locale } = useI18n();
   const { user } = useAuth();
+  const online = useOnlineStatus();
   const queryClient = useQueryClient();
   const r = d.quran.reader;
+  const ui = d.quran.readerUi;
   const [noteTarget, setNoteTarget] = useState<{ surah: number; ayah: number } | null>(null);
   // "Selected" (a soft highlight on the card the learner just acted on) and
   // "confirmed" (the bookmark checkmark, shown only once the save actually
@@ -168,41 +181,45 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
       </h2>
       <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{r.intro}</p>
 
-      <div className="mt-6 max-w-sm">
-        <Select
-          {...(activeSurah != null ? { value: String(activeSurah) } : {})}
-          onValueChange={(value) => onSurahChange(Number(value))}
-        >
-          <SelectTrigger aria-label={r.selectSurah}>
-            <SelectValue placeholder={r.selectSurah} />
-          </SelectTrigger>
-          <SelectContent>
-            {(surahs ?? []).map((s) => (
-              <SelectItem key={s.number} value={String(s.number)}>
-                {surahName(s, locale)} ({s.ayah_count})
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* Sticky on this wrapper (a direct child of the reader section) so
+          the toolbar stays under the header while the Surah scrolls. */}
+      <div className="z-20 mt-6 md:sticky md:top-24 xl:top-28">
+        <ReaderToolbar
+          surahs={surahs ?? []}
+          activeSurah={activeSurahRow}
+          onSurahChange={onSurahChange}
+          onJumpToAyah={(n) => {
+            onJumpToAyah?.(n);
+            document
+              .getElementById(`ayah-${activeSurah}-${n}`)
+              ?.scrollIntoView({ behavior: "smooth", block: "center" });
+          }}
+        />
       </div>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-5">
         {ayahsLoading && (
-          <div className="space-y-4">
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-32 w-full" />
+          <div className="space-y-4" data-testid="reader-loading">
+            <Skeleton className="h-40 w-full rounded-[28px]" />
+            <Skeleton className="h-40 w-full rounded-[28px]" />
           </div>
         )}
 
         {ayahsError && (
-          <Card className="shadow-soft">
-            <CardContent className="space-y-3 py-8 text-center">
-              <p className="text-muted-foreground">{r.error.title}</p>
-              <Button variant="secondary" onClick={() => void refetchAyahs()}>
+          <ContentState
+            tone="theme"
+            kind={online ? "error" : "offline"}
+            message={online ? r.error.title : ui.offline}
+            action={
+              <CinematicButton variant="gold" size="sm" onClick={() => void refetchAyahs()}>
                 {r.error.retry}
-              </Button>
-            </CardContent>
-          </Card>
+              </CinematicButton>
+            }
+          />
+        )}
+
+        {!ayahsLoading && !ayahsError && activeSurahRow && (ayahs ?? []).length === 0 && (
+          <ContentState tone="theme" kind="empty" message={ui.empty} />
         )}
 
         {!ayahsLoading && !ayahsError && activeSurahRow?.bismillah_pre && bismillahText && (
@@ -224,9 +241,25 @@ export function AyahReader({ surahNumber, onSurahChange, highlightAyah }: AyahRe
                 surahLabel={`${surahName(activeSurahRow, locale)} ${ayah.surah_number}:${ayah.ayah_number}`}
                 highlighted={highlightAyah === ayah.ayah_number}
                 selected={selectedKey === key}
+                onSelect={() => setSelectedKey(key)}
                 actions={
                   <>
                     <AyahPlayButton surahNumber={ayah.surah_number} ayahNumber={ayah.ayah_number} />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={ui.understand}
+                      title={ui.understand}
+                      asChild
+                    >
+                      <Link
+                        to="/quran/understand"
+                        search={{ surah: ayah.surah_number, ayah: ayah.ayah_number }}
+                        data-testid={`understand-link-${ayah.surah_number}-${ayah.ayah_number}`}
+                      >
+                        <Lightbulb className="size-4" aria-hidden />
+                      </Link>
+                    </Button>
                     {user && (
                       <>
                         <div className="relative">

@@ -227,78 +227,59 @@ test.describe("production polish", () => {
     }
   });
 
+  // QR-INT-005: the boxed, side-column hero photo (hidden below `lg:`,
+  // localized alt text, responsive webp srcset) was replaced by a full-bleed
+  // cinematic backdrop that's always visible (a mobile/desktop crop swap via
+  // <picture><source media>, not a show/hide-by-breakpoint one) and is
+  // decorative (alt="", aria-hidden container) since the heading/subtitle/
+  // CTA now carry the hero's real content rather than sharing it with a
+  // meaningful photo. The four tests below replace the previous ones
+  // one-for-one against this real, current behavior rather than the old
+  // boxed-image architecture.
   test.describe("hero image", () => {
-    test("renders, loads successfully, and has localized alt text (English)", async ({ page }) => {
+    test("desktop crop renders and loads successfully", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto("/");
-      const heroImg = page.locator('img[src="/quranroots-hero-premium.png"]');
+      const heroImg = page.locator('img[src="/quranroots-hero-cinematic-desktop.jpg"]');
       await expect(heroImg).toBeVisible();
-      await expect(heroImg).toHaveAttribute(
-        "alt",
-        "A Qur'an on a wooden stand in a sunlit archway.",
-      );
-      // Explicit width/height (not just CSS) so the layout box is reserved
-      // before the image arrives -- prevents layout shift.
-      await expect(heroImg).toHaveAttribute("width", "1122");
-      await expect(heroImg).toHaveAttribute("height", "1402");
-      // Above-the-fold hero: never lazy-loaded.
+      await expect(heroImg).toHaveAttribute("alt", "");
       await expect(heroImg).not.toHaveAttribute("loading", "lazy");
       const naturalWidth = await heroImg.evaluate((el: HTMLImageElement) => el.naturalWidth);
       expect(naturalWidth).toBeGreaterThan(0);
     });
 
-    test("has localized alt text (French)", async ({ page }) => {
-      const { client, userId } = await createTestUserClient();
-      await client.from("profiles").update({ interface_language: "fr" }).eq("id", userId);
-      try {
-        await page.setViewportSize({ width: 1440, height: 900 });
-        await page.goto("/");
-        const heroImg = page.locator('img[src="/quranroots-hero-premium.png"]');
-        await expect(heroImg).toHaveAttribute(
-          "alt",
-          "Un Coran posé sur un lutrin en bois dans une arcade ensoleillée.",
-        );
-      } finally {
-        await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
-      }
+    test("mobile viewport uses the mobile crop instead of the desktop one", async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto("/");
+      const heroImg = page.locator('img[src="/quranroots-hero-cinematic-desktop.jpg"]');
+      // Same <img> element; the browser resolves which <source> wins via the
+      // media query, so its *currentSrc* -- not a different element -- is
+      // what proves the mobile crop was actually selected.
+      await expect(heroImg).toBeVisible();
+      const currentSrc = await heroImg.evaluate((el: HTMLImageElement) => el.currentSrc);
+      expect(currentSrc).toContain("quranroots-hero-cinematic-mobile.jpg");
     });
 
-    test("is hidden and only ever fetched at its smallest size below lg: (never the full-size asset)", async ({
-      page,
-    }) => {
-      await page.setViewportSize({ width: 768, height: 1024 });
-      const heroRequests: string[] = [];
-      page.on("request", (req) => {
-        if (req.url().includes("quranroots-hero-premium")) heroRequests.push(req.url());
-      });
-      await page.goto("/", { waitUntil: "networkidle" });
-      // The <img> stays in the DOM (its parent is CSS `hidden` below lg:,
-      // not removed/unmounted) and must not be visible at this width.
-      await expect(page.locator('img[src="/quranroots-hero-premium.png"]')).toBeHidden();
-      // `loading="eager"` (required for the real desktop hero -- see the
-      // "not lazy" test above) means the browser still fetches *something*
-      // here even though it's hidden; `sizes` correctly steers it to the
-      // smallest ~40KB candidate rather than the ~136KB full-size one, so
-      // this is never a large/unnecessary download.
-      for (const url of heroRequests) {
-        expect(url).not.toMatch(/-(768|1122)w\.webp$/);
-        expect(url).not.toMatch(/quranroots-hero-premium\.png$/);
-      }
+    test("desktop viewport uses the desktop crop", async ({ page }) => {
+      await page.setViewportSize({ width: 1440, height: 900 });
+      await page.goto("/");
+      const heroImg = page.locator('img[src="/quranroots-hero-cinematic-desktop.jpg"]');
+      const currentSrc = await heroImg.evaluate((el: HTMLImageElement) => el.currentSrc);
+      expect(currentSrc).toContain("quranroots-hero-cinematic-desktop.jpg");
     });
 
     test("the rest of the hero remains readable if the image fails to load", async ({ page }) => {
-      await page.route("**/quranroots-hero-premium*", (route) => route.abort());
+      await page.route("**/quranroots-hero-cinematic-*", (route) => route.abort());
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto("/");
-      // Headline, subtitle and both CTAs are unaffected by the image failure.
-      // "Start Learning" also appears in the header nav and footer CTA --
-      // .first() scopes to the hero's own copy. level: 1 scopes the
-      // heading to the hero's real <h1> (QR-INT-004's quick-links grid
-      // below the hero added its own <h3>"Learn Arabic" card, which an
-      // unscoped name match now also resolves to).
-      await expect(page.getByRole("heading", { name: /Learn Arabic/i, level: 1 })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Start Learning" }).first()).toBeVisible();
-      await expect(page.getByRole("link", { name: "Explore the Qur'an" })).toBeVisible();
+      // Headline, subtitle and the single hero CTA are unaffected by the image failure.
+      // level: 1 scopes the heading to the hero's real <h1>.
+      await expect(
+        page.getByRole("heading", { name: /A Deeper Journey/i, level: 1 }),
+      ).toBeVisible();
+      await expect(page.getByRole("link", { name: "Continue Reading" })).toBeVisible();
+      // QR-INT-006 owner decision: Continue Reading is the only hero button.
+      await expect(page.getByRole("link", { name: "Explore the Qur'an" })).toHaveCount(0);
     });
   });
 

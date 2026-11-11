@@ -30,6 +30,7 @@ import { Route as AuthenticatedPracticeRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedProgressRouteImport } from './routes/_authenticated/progress'
 import { Route as AuthenticatedReflectRouteImport } from './routes/_authenticated/reflect'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as QuranUnderstandRouteImport } from './routes/quran_.understand'
 import { Route as AuthenticatedLessonLessonIdRouteImport } from './routes/_authenticated/lesson.$lessonId'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings.index'
 import { Route as AuthenticatedSettingsBillingRouteImport } from './routes/_authenticated/settings.billing'
@@ -139,6 +140,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const QuranUnderstandRoute = QuranUnderstandRouteImport.update({
+  id: '/quran_/understand',
+  path: '/quran/understand',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedLessonLessonIdRoute =
   AuthenticatedLessonLessonIdRouteImport.update({
     id: '/lesson/$lessonId',
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/progress': typeof AuthenticatedProgressRoute
   '/reflect': typeof AuthenticatedReflectRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/quran/understand': typeof QuranUnderstandRoute
   '/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
   '/settings/billing': typeof AuthenticatedSettingsBillingRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/practice': typeof AuthenticatedPracticeRoute
   '/progress': typeof AuthenticatedProgressRoute
   '/reflect': typeof AuthenticatedReflectRoute
+  '/quran/understand': typeof QuranUnderstandRoute
   '/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
   '/settings/billing': typeof AuthenticatedSettingsBillingRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
@@ -230,6 +238,7 @@ export interface FileRoutesById {
   '/_authenticated/progress': typeof AuthenticatedProgressRoute
   '/_authenticated/reflect': typeof AuthenticatedReflectRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/quran_/understand': typeof QuranUnderstandRoute
   '/_authenticated/lesson/$lessonId': typeof AuthenticatedLessonLessonIdRoute
   '/_authenticated/settings/billing': typeof AuthenticatedSettingsBillingRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
@@ -257,6 +266,7 @@ export interface FileRouteTypes {
     | '/progress'
     | '/reflect'
     | '/settings'
+    | '/quran/understand'
     | '/lesson/$lessonId'
     | '/settings/billing'
     | '/settings/'
@@ -281,6 +291,7 @@ export interface FileRouteTypes {
     | '/practice'
     | '/progress'
     | '/reflect'
+    | '/quran/understand'
     | '/lesson/$lessonId'
     | '/settings/billing'
     | '/settings'
@@ -307,6 +318,7 @@ export interface FileRouteTypes {
     | '/_authenticated/progress'
     | '/_authenticated/reflect'
     | '/_authenticated/settings'
+    | '/quran_/understand'
     | '/_authenticated/lesson/$lessonId'
     | '/_authenticated/settings/billing'
     | '/_authenticated/settings/'
@@ -322,6 +334,7 @@ export interface RootRouteChildren {
   PremiumRoute: typeof PremiumRoute
   QuranRoute: typeof QuranRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  QuranUnderstandRoute: typeof QuranUnderstandRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -473,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/quran_/understand': {
+      id: '/quran_/understand'
+      path: '/quran/understand'
+      fullPath: '/quran/understand'
+      preLoaderRoute: typeof QuranUnderstandRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/lesson/$lessonId': {
       id: '/_authenticated/lesson/$lessonId'
       path: '/lesson/$lessonId'
@@ -557,6 +577,7 @@ const rootRouteChildren: RootRouteChildren = {
   PremiumRoute: PremiumRoute,
   QuranRoute: QuranRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  QuranUnderstandRoute: QuranUnderstandRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

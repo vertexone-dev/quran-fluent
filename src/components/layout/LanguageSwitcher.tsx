@@ -23,7 +23,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
           lang={code}
           title={LOCALE_LABELS[code].label}
           className={cn(
-            "min-h-9 rounded-full px-3 text-xs font-semibold uppercase tracking-wide transition-colors",
+            "min-h-9 rounded-full px-2 text-xs sm:px-3 font-semibold uppercase tracking-wide transition-colors",
             locale === code
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground",

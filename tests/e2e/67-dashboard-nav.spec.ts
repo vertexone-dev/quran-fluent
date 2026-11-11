@@ -50,16 +50,9 @@ test.describe("primary navigation", () => {
 });
 
 test.describe("secondary navigation", () => {
-  const secondary = [
-    "Daily study",
-    "Practice",
-    "Progress",
-    "My learning plan",
-    "Bookmarks",
-    "Notes",
-    "Settings",
-    "Billing",
-  ];
+  // Owner-approved account menu (QR-INT-006). Study pages stay reachable
+  // from the dashboard itself; Billing from Settings.
+  const secondary = ["My Profile", "My Progress", "Settings", "Sign Out"];
 
   test("every secondary destination is reachable from the desktop account menu", async ({
     page,
@@ -67,35 +60,68 @@ test.describe("secondary navigation", () => {
     await page.goto("/dashboard");
     await page.getByTestId("account-menu-trigger").click();
     const menu = page.getByTestId("account-menu-content");
-    for (const name of secondary) {
-      await expect(menu.getByRole("menuitem", { name })).toBeVisible();
-    }
-    // "Dashboard" is no longer a separate secondary entry -- it's the
-    // primary "Home" link now, not duplicated here.
-    await expect(menu.getByRole("menuitem", { name: "Dashboard" })).toHaveCount(0);
+    await expect(menu.getByRole("menuitem")).toHaveText(secondary);
   });
 
-  test("every secondary destination is also reachable from the mobile navigation drawer", async ({
-    page,
-  }) => {
+  test("the same account menu opens from the profile circle on a phone", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/dashboard");
-    await page.getByRole("button", { name: "Open menu" }).click();
-    const sheet = page.getByRole("dialog");
-    for (const name of secondary) {
-      await expect(sheet.getByRole("link", { name })).toBeVisible();
-    }
+    await page.locator("[data-testid=account-menu-trigger]:visible").click();
+    await expect(page.getByTestId("account-menu-content").getByRole("menuitem")).toHaveText(
+      secondary,
+    );
   });
 
-  test("Progress actually opens /progress from the account menu", async ({ page }) => {
+  test("My Profile opens the profile card in Settings, and Billing stays reachable there", async ({
+    page,
+  }) => {
+    await page.goto("/dashboard");
+    await page.getByTestId("account-menu-trigger").click();
+    await page.getByTestId("profile-menu-my-profile").click();
+    await expect(page).toHaveURL(/\/settings#profile/);
+    await expect(page.getByTestId("settings-profile-card")).toBeVisible();
+    await page.getByTestId("settings-billing-link").click();
+    await expect(page).toHaveURL(/\/settings\/billing/);
+  });
+
+  test("My Progress actually opens /progress from the account menu", async ({ page }) => {
     await page.goto("/dashboard");
     await page.getByTestId("account-menu-trigger").click();
     await page
       .getByTestId("account-menu-content")
-      .getByRole("menuitem", { name: "Progress" })
+      .getByRole("menuitem", { name: "My Progress" })
       .click();
     await expect(page).toHaveURL(/\/progress/);
   });
+});
+
+// QR-INT-006A: the hamburger drawer and the old account-menu study links are
+// gone by design, so the dashboard is now the one place the secondary study
+// pages are linked from. Guard that they stay discoverable, on desktop and on
+// a phone, without a drawer.
+test.describe("study pages stay discoverable from the dashboard", () => {
+  const studyPages = ["/daily", "/practice", "/learning-plan", "/bookmarks", "/notes"];
+
+  for (const [label, viewport] of [
+    ["desktop", { width: 1440, height: 900 }],
+    ["phone", { width: 390, height: 844 }],
+  ] as const) {
+    test(`Daily, Practice, Learning Plan, Bookmarks and Notes are linked and open (${label})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      for (const href of studyPages) {
+        await page.goto("/dashboard");
+        await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
+        const link = page.locator(`main a[href="${href}"]`).first();
+        await link.scrollIntoViewIfNeeded();
+        await expect(link).toBeVisible();
+        await expect(link).toHaveAccessibleName(/\S/);
+        await link.click();
+        await expect(page).toHaveURL(new RegExp(`${href}$`));
+      }
+    });
+  }
 });
 
 test.describe("dashboard still renders its real widgets", () => {

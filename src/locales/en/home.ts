@@ -1,12 +1,48 @@
 export const home = {
+  // QR-INT-006: homepage "Understand This Ayah" and "Guided Learning Journeys"
+  // sections. Interface copy only -- the ayah, its translation and translator
+  // come from the canonical content tables at runtime, never from here.
+  understand: {
+    eyebrow: "Understand",
+    title: "Understand This Ayah",
+    body: "Study one ayah at a time: the Arabic, its meaning, its words, and space to reflect.",
+    reference: "{surah} · {surahNumber}:{ayah}",
+    tabs: { meaning: "Meaning", words: "Word by Word", tafsir: "Tafsir", reflect: "Reflect" },
+    wordsUnavailable: "Word-by-word study for this ayah is awaiting a verified source.",
+    wordsCta: "Practise Qur'anic vocabulary",
+    tafsirUnavailable:
+      "Tafsir will appear here only from a verified, attributed source reviewed by qualified scholars.",
+    reflectPrompt: "What is one way this ayah can shape your day?",
+    reflectCta: "Write a reflection",
+    openReader: "Open in the reader",
+    loading: "Loading the ayah…",
+    error: "This ayah couldn't be loaded right now. Check your connection and try again.",
+    retry: "Try again",
+  },
+  journeys: {
+    eyebrow: "Learn",
+    title: "Guided Learning Journeys",
+    body: "Step-by-step levels, from the Arabic alphabet to understanding complete ayat.",
+    explore: "Explore the course",
+    continueLearning: "Continue learning",
+  },
   hero: {
-    badge: "Qur'anic Arabic, step by step",
-    titleLine1: "Learn Arabic.",
-    titleLine2: "Understand the Qur'an.",
-    subtitle: "Build your Qur'anic Arabic skills one word, one verse, and one lesson at a time.",
+    steps: ["Read", "Understand", "Reflect", "Practice", "Grow"],
+    titleLine1: "A Deeper Journey",
+    titleLine2: "with the Quran",
+    subtitle: "Read, understand, reflect upon, and live by the teachings of the Quran.",
     note: "Qur'anic text and translations come from verified sources only.",
-    imageAlt: "A Qur'an on a wooden stand in a sunlit archway.",
+    continueReading: "Continue Reading",
+    continuingFrom: "Continuing from {surah}, Ayah {ayah}",
     documentTitle: "QuranRoots — Learn Arabic. Understand the Qur'an.",
+  },
+  journey: {
+    title: "Your Journey",
+    emptySignedOut: "Create an account to save your place and track real progress.",
+    createAccount: "Create account",
+    emptySignedIn: "Bookmark an ayah while you read and your place will appear here.",
+    openReader: "Open the reader",
+    resumeCta: "Resume",
   },
   quickLinks: {
     title: "Explore QuranRoots",
@@ -16,8 +52,8 @@ export const home = {
         body: "Browse by Surah, Ayah or Juz with verified Arabic text.",
       },
       {
-        title: "Learn Arabic",
-        body: "Six structured levels, from the alphabet to full comprehension.",
+        title: "Understand This Ayah",
+        body: "Word meanings, roots and types from verified sources.",
       },
       {
         title: "Reflect",
@@ -26,6 +62,10 @@ export const home = {
       {
         title: "Memorize",
         body: "Listen, repeat and review with spaced repetition.",
+      },
+      {
+        title: "Guided Learning",
+        body: "Six structured levels, from the alphabet to full comprehension.",
       },
     ],
   },
