@@ -12,8 +12,7 @@ import { clickAndExpect } from "./utils/auth";
 
 // Scoped to the quick-links region itself: the footer also has its own
 // "Learn Arabic" link (common.footer.learnArabic) to the same /learn
-// route, so an unscoped getByRole("link", { name: "Learn Arabic" }) is
-// ambiguous on this page.
+// route; the fifth card is labelled "Guided Learning" (QR-WEB-009).
 function quickLinks(page: import("@playwright/test").Page) {
   return page.getByRole("region", { name: "Explore QuranRoots" });
 }
@@ -86,7 +85,14 @@ test.describe("homepage quick-links", () => {
     await expect(
       quickLinks(page).getByRole("link", { name: "Understand This Ayah" }),
     ).toHaveAttribute("href", "/quran?tab=vocabulary");
-    await quickLinks(page).getByRole("link", { name: "Learn Arabic" }).click();
+    // QR-WEB-009: the fifth card is "Guided Learning" and still leads to the
+    // existing /learn course page.
+    await expect(quickLinks(page).getByRole("link", { name: "Guided Learning" })).toHaveAttribute(
+      "href",
+      "/learn",
+    );
+    await expect(quickLinks(page).getByRole("link", { name: "Learn Arabic" })).toHaveCount(0);
+    await quickLinks(page).getByRole("link", { name: "Guided Learning" }).click();
     await expect(page).toHaveURL(/\/learn/);
 
     // Reflect/Memorize are authenticated-only routes -- confirmed wired to
@@ -112,7 +118,7 @@ test.describe("homepage quick-links", () => {
     await expect(
       quickLinks(page).getByRole("link", { name: "Understand This Ayah" }),
     ).toBeVisible();
-    await expect(quickLinks(page).getByRole("link", { name: "Learn Arabic" })).toBeVisible();
+    await expect(quickLinks(page).getByRole("link", { name: "Guided Learning" })).toBeVisible();
     await expect(quickLinks(page).getByRole("link", { name: "Reflect" })).toBeVisible();
     await expect(quickLinks(page).getByRole("link", { name: "Memorize" })).toBeVisible();
   });
