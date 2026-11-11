@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "policy": "Fail closed. An image is only shipped if it is cleared. 'blocked' files must never appear in a release build (owner-approved: the AI-generated cinematic set and the older archway photos, whose provenance is unverified). 'unverified' is a holding category for files awaiting a decision: a release build must not reference them, and they are reported when present. Pinned by SHA-256, so deleting or renaming the source files does not unblock them. The source files stay in the repository for development. See docs/ARTWORK-RELEASE.md.",
+  "namePatterns": [
+    "quranroots-hero-cinematic",
+    "quranroots-journeys-cinematic",
+    "quranroots-hero-premium"
+  ],
+  "blocked": [
+    {
+      "file": "public/quranroots-hero-cinematic-desktop.jpg",
+      "sha256": "26d05c8e7991dbdc830e7b4983975803f59b6c871e6d2e85a59d80c854789b20",
+      "reason": "AI-generated (Emergent/Gemini); no commercial-rights evidence. docs/QR-INT-005-HERO-ASSET-LICENSING.md"
+    },
+    {
+      "file": "public/quranroots-hero-cinematic-mobile.jpg",
+      "sha256": "8844047ff43a16127dd8a7102cd4436b412edf5e2ebca4de66fd3759e931c707",
+      "reason": "AI-generated (Emergent/Gemini); no commercial-rights evidence. docs/QR-INT-005-HERO-ASSET-LICENSING.md"
+    },
+    {
+      "file": "public/quranroots-journeys-cinematic.jpg",
+      "sha256": "e6b09b6333d30113567b4a6102de91d56791abc2d2709a66081d3a4d530c9bf7",
+      "reason": "AI-generated (Emergent set); same rights block as the hero art."
+    },
+    {
+      "file": "public/quranroots-hero-premium-1122w.webp",
+      "sha256": "6661f1378dd7bde54fd881fbb8883dd4fd40ae9af42ce29eedfa5fa7a9e7d0e9",
+      "reason": "Unverified provenance (commit c262d19: could not be independently confirmed); owner-approved as blocked from release builds (QR-WEB-006). Source file stays in the repo. docs/QR-INT-005-HERO-ASSET-LICENSING.md"
+    },
+    {
+      "file": "public/quranroots-hero-premium-768w.webp",
+      "sha256": "5a6817c90278e26c1a0ff6900f73736fb0b64ab0746f4680db0815343d613eb8",
+      "reason": "Unverified provenance (commit c262d19: could not be independently confirmed); owner-approved as blocked from release builds (QR-WEB-006). Source file stays in the repo. docs/QR-INT-005-HERO-ASSET-LICENSING.md"
+    },
+    {
+      "file": "public/quranroots-hero-premium-480w.webp",
+      "sha256": "9052cab04641c32084b9ec99145748dd77ad8c725bc97470c30c5236fe526c58",
+      "reason": "Unverified provenance (commit c262d19: could not be independently confirmed); owner-approved as blocked from release builds (QR-WEB-006). Source file stays in the repo. docs/QR-INT-005-HERO-ASSET-LICENSING.md"
+    },
+    {
+      "file": "public/quranroots-hero-premium.png",
+      "sha256": "6f448b19502d0022a51185e1777c6775cf1bda2991b136f42610abf9c5b85e2e",
+      "reason": "Unverified provenance (commit c262d19: could not be independently confirmed); owner-approved as blocked from release builds (QR-WEB-006). Source file stays in the repo. docs/QR-INT-005-HERO-ASSET-LICENSING.md"
+    }
+  ],
+  "unverified": [],
+  "approved": [
+    {
+      "file": "public/quranroots-logo.png",
+      "note": "Approved Design Lock logo."
+    },
+    {
+      "file": "public/favicon.png",
+      "note": "Brand favicon."
+    }
+  ]
+}

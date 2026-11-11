@@ -29,6 +29,7 @@ import { fetchSurahs, surahName } from "@/lib/quran";
 import { isRtlLocale, useI18n } from "@/lib/i18n";
 import { useDocumentTitle } from "@/lib/use-document-title";
 import { heroArt } from "@/design/artwork";
+import { CssArtBackdrop } from "@/design/CssArtBackdrop";
 
 // QR-INT-005: shared easing/duration for the hero's entrance choreography,
 // reused across every staggered element below so they read as one
@@ -250,16 +251,21 @@ function CinematicHero({
           daytime photo. */}
       <div className="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
         <motion.div style={{ y, scale }} className="absolute inset-0 origin-top">
-          <picture>
-            <source media="(max-width: 767px)" srcSet={heroArt.mobile} />
-            <img
-              src={heroArt.desktop}
-              alt=""
-              fetchPriority="high"
-              decoding="async"
-              className="h-full w-full object-cover object-[50%_42%] md:object-[50%_58%]"
-            />
-          </picture>
+          {heroArt ? (
+            <picture>
+              <source media="(max-width: 767px)" srcSet={heroArt.mobile} />
+              <img
+                src={heroArt.desktop}
+                alt=""
+                fetchPriority="high"
+                decoding="async"
+                className="h-full w-full object-cover object-[50%_42%] md:object-[50%_58%]"
+              />
+            </picture>
+          ) : (
+            // Production default (QR-WEB-006): CSS-only, no image.
+            <CssArtBackdrop variant="hero" />
+          )}
         </motion.div>
         <div className="from-background/90 absolute inset-x-0 top-0 h-32 bg-gradient-to-b to-transparent" />
         <div className="from-background/95 via-background/50 absolute inset-x-0 bottom-0 h-[38%] bg-gradient-to-t to-transparent md:h-[32%]" />

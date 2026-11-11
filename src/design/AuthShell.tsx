@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { Logo } from "@/components/brand/Logo";
 import { heroArt } from "@/design/artwork";
+import { CssArtBackdrop } from "@/design/CssArtBackdrop";
 import { useI18n } from "@/lib/i18n";
 
 /** Card classes for forms placed inside AuthShell (theme-aware card, cinematic edge). */
@@ -21,15 +22,21 @@ export function AuthShell({ children }: { children: ReactNode }) {
       className="relative isolate flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[oklch(0.2_0.035_195.1)] px-4 py-12"
       data-testid="auth-shell"
     >
-      <picture aria-hidden="true">
-        <source media="(max-width: 767px)" srcSet={heroArt.mobile} />
-        <img
-          src={heroArt.desktop}
-          alt=""
-          decoding="async"
-          className="absolute inset-0 -z-20 h-full w-full object-cover object-[50%_45%]"
-        />
-      </picture>
+      {heroArt ? (
+        <picture aria-hidden="true">
+          <source media="(max-width: 767px)" srcSet={heroArt.mobile} />
+          <img
+            src={heroArt.desktop}
+            alt=""
+            decoding="async"
+            className="absolute inset-0 -z-20 h-full w-full object-cover object-[50%_45%]"
+          />
+        </picture>
+      ) : (
+        <div className="absolute inset-0 -z-20" aria-hidden="true">
+          <CssArtBackdrop variant="auth" />
+        </div>
+      )}
       <div
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,oklch(0.2_0.035_195.1/0.55),oklch(0.2_0.035_195.1/0.85))]"

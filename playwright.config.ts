@@ -24,6 +24,14 @@ const baseURL = externalBaseURL ?? `http://localhost:${PORT}`;
 const CHECKOUT_ENABLED_PORT = 4301;
 const checkoutEnabledBaseURL = `http://localhost:${CHECKOUT_ENABLED_PORT}`;
 
+// QR-WEB-006: the CSS-only artwork treatment (what every release build
+// ships) needs its own dev server, started with VITE_ART_MODE=css, because
+// the artwork mode is a build-time value (src/design/artwork.ts). The override
+// only exists on the dev server -- release builds ignore it. Only meaningful
+// for a local run; against a real deployed target the build itself decides.
+const CSS_ART_PORT = 4302;
+const cssArtBaseURL = `http://localhost:${CSS_ART_PORT}`;
+
 /**
  * A single shared E2E_TEST_EMAIL account is reused across every spec, so
  * specs must not mutate that account's data concurrently. fullyParallel is
@@ -100,6 +108,16 @@ export default defineConfig({
       ],
       use: { ...devices["Desktop Chrome"] },
     },
+    // QR-WEB-006: signed-out only, against the CSS-only-art dev server above.
+    ...(externalBaseURL
+      ? []
+      : [
+          {
+            name: "css-art",
+            testMatch: ["74-css-art-fallback.spec.ts"],
+            use: { ...devices["Desktop Chrome"], baseURL: cssArtBaseURL },
+          },
+        ]),
     { name: "setup", testMatch: /auth\.setup\.ts/, dependencies: ["public"] },
     // Only meaningful for a local run against the checkout-enabled server
     // above -- omitted entirely when targeting an external deployment (see
@@ -216,6 +234,14 @@ export default defineConfig({
         {
           command: `npm run dev -- --port ${PORT} --strictPort`,
           url: baseURL,
+          reuseExistingServer: !process.env.CI,
+          timeout: 60_000,
+          stdout: "pipe",
+        },
+        {
+          command: `npm run dev -- --port ${CSS_ART_PORT} --strictPort`,
+          url: cssArtBaseURL,
+          env: { VITE_ART_MODE: "css" },
           reuseExistingServer: !process.env.CI,
           timeout: 60_000,
           stdout: "pipe",
