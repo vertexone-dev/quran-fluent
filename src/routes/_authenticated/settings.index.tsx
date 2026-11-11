@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -200,7 +200,7 @@ function Settings() {
       <h1 className="font-display text-3xl font-bold">{t("learning.settings.title")}</h1>
 
       <div className="mt-8 space-y-6">
-        <Card className="shadow-soft">
+        <Card id="profile" className="shadow-soft scroll-mt-28" data-testid="settings-profile-card">
           <CardHeader>
             <CardTitle className="text-base">{t("learning.settings.profile")}</CardTitle>
             <CardDescription>{user?.email}</CardDescription>
@@ -345,6 +345,13 @@ function Settings() {
               }}
             >
               {t("learning.settings.sendReset")}
+            </Button>
+            {/* Billing moved out of the profile menu (owner-approved menu:
+                My Profile / My Progress / Settings / Sign Out). */}
+            <Button asChild variant="outline" className="ms-0 mt-3 sm:ms-3 sm:mt-0">
+              <Link to="/settings/billing" data-testid="settings-billing-link">
+                {t("common.nav.billing")}
+              </Link>
             </Button>
           </CardContent>
         </Card>

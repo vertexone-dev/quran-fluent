@@ -132,18 +132,34 @@ test.describe("desktop glass navigation", () => {
     await expect(page.getByText("No Surah found.")).toBeVisible();
   });
 
-  test("the theme menu still switches between light and dark", async ({ page }) => {
+  test("the header has no theme control -- theme lives in Settings only (QR-INT-006)", async ({
+    page,
+  }) => {
     await page.goto("/");
     await hydrated(page);
-    const themeTrigger = page.getByRole("button", { name: "Change theme" });
-    const lightItem = page.getByRole("menuitem", { name: "Light" });
-    const darkItem = page.getByRole("menuitem", { name: "Dark" });
-    await clickAndExpect(themeTrigger, () => expect(lightItem).toBeVisible());
-    await lightItem.click();
-    await expect(page.locator("html")).not.toHaveClass(/dark/);
-    await clickAndExpect(themeTrigger, () => expect(darkItem).toBeVisible());
-    await darkItem.click();
-    await expect(page.locator("html")).toHaveClass(/dark/);
+    await expect(page.getByRole("button", { name: "Change theme" })).toHaveCount(0);
+    await expect(page.getByTestId("theme-menu-trigger")).toHaveCount(0);
+  });
+
+  test("the circular profile control offers Log in and Create account when signed out", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await hydrated(page);
+    const profile = page.locator("[data-testid=profile-menu-trigger]:visible");
+    await clickAndExpect(profile, () =>
+      expect(page.getByTestId("profile-menu-content")).toBeVisible(),
+    );
+    await expect(page.getByTestId("profile-menu-login")).toHaveAttribute(
+      "href",
+      /\/auth\?mode=login/,
+    );
+    await expect(page.getByTestId("profile-menu-signup")).toHaveAttribute(
+      "href",
+      /\/auth\?mode=signup/,
+    );
+    await page.getByTestId("profile-menu-login").click();
+    await expect(page).toHaveURL(/\/auth\?mode=login/);
   });
 });
 
@@ -179,17 +195,20 @@ test.describe("bottom tab bar (phones and tablets)", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto("/about");
     await hydrated(page);
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    const gap = await page.evaluate(() => {
-      const bar = document.querySelector("[data-testid=mobile-tab-bar]")!.getBoundingClientRect();
-      const lastVisible = [...document.querySelectorAll("footer a, footer p, footer button")]
-        .filter((e) => (e as HTMLElement).offsetParent !== null)
-        .map((e) => e.getBoundingClientRect().bottom)
-        .reduce((a, b) => Math.max(a, b), 0);
-      return bar.top - lastVisible;
-    });
+    // Re-scroll on every poll: the router's scroll restoration can reset the
+    // position right after hydration, which a single scrollTo would race.
+    const measureGap = () =>
+      page.evaluate(() => {
+        window.scrollTo(0, document.documentElement.scrollHeight);
+        const bar = document.querySelector("[data-testid=mobile-tab-bar]")!.getBoundingClientRect();
+        const lastVisible = [...document.querySelectorAll("footer a, footer p, footer button")]
+          .filter((e) => (e as HTMLElement).offsetParent !== null)
+          .map((e) => e.getBoundingClientRect().bottom)
+          .reduce((a, b) => Math.max(a, b), 0);
+        return bar.top - lastVisible;
+      });
     // Nothing at the very end of the page is hidden underneath the bar.
-    expect(gap).toBeGreaterThanOrEqual(0);
+    await expect.poll(measureGap, { timeout: 10_000 }).toBeGreaterThanOrEqual(0);
   });
 
   test("a tab navigates, and the destination becomes the current page", async ({ page }) => {
@@ -201,7 +220,7 @@ test.describe("bottom tab bar (phones and tablets)", () => {
     await expect(page.getByTestId("tab-quran")).toHaveAttribute("aria-current", "page");
   });
 
-  test("at 390px the header keeps logo, wordmark, search, language, theme and menu without clipping", async ({
+  test("at 390px the header keeps logo, wordmark, search, language and profile without clipping", async ({
     page,
   }) => {
     await page.setViewportSize({ width: 390, height: 844 });
@@ -210,7 +229,7 @@ test.describe("bottom tab bar (phones and tablets)", () => {
     await expect(page.getByText("QuranRoots", { exact: true }).first()).toBeVisible();
     await expect(page.locator("[data-testid=header-search-button]:visible")).toBeVisible();
     await expect(trigger(page)).toBeVisible();
-    await expect(page.getByTestId("mobile-menu-trigger")).toBeVisible();
+    await expect(page.locator("[data-testid=profile-menu-trigger]:visible")).toBeVisible();
     const clipped = await page.evaluate(() => {
       const bar = document.querySelector("header > div")!.getBoundingClientRect();
       return [...document.querySelectorAll("header > div a, header > div button")]

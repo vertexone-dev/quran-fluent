@@ -24,6 +24,7 @@ import { seedVocabularyToReviews, removeVocabularyReviewItem } from "@/lib/study
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AyahReader } from "@/components/quran/AyahReader";
+import { AudioMiniPlayer } from "@/components/quran/AudioMiniPlayer";
 
 // `tab` makes the study tabs below the reader URL-addressable (e.g. the
 // homepage's "Understand This Ayah" card opens /quran?tab=vocabulary). Absent
@@ -185,6 +186,16 @@ function QuranPage() {
               })
             }
             highlightAyah={readerParams.ayah}
+            onJumpToAyah={(ayah) =>
+              void navigate({
+                search: (prev) => ({
+                  ...(prev.surah != null ? { surah: prev.surah } : {}),
+                  ayah,
+                  ...(prev.tab ? { tab: prev.tab } : {}),
+                }),
+                replace: true,
+              })
+            }
           />
         </div>
 
@@ -407,6 +418,7 @@ function QuranPage() {
           </Tabs>
         </section>
       </main>
+      <AudioMiniPlayer />
       <SiteFooter />
     </div>
   );

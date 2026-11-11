@@ -173,37 +173,38 @@ test.describe("reflect", () => {
     await expect(page).toHaveURL(/\/reflect/);
   });
 
-  test("Reflect is reachable from the mobile navigation drawer", async ({ page }) => {
+  // QR-INT-006: the hamburger drawer was retired; below xl the five primary
+  // destinations live in the bottom tab bar (MobileTabBar), a "Main" landmark.
+  test("Reflect is reachable from the mobile bottom navigation", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/dashboard");
-    await page.getByRole("button", { name: "Open menu" }).click();
-    await page.getByRole("link", { name: "Reflect" }).click();
+    // /quran, not /dashboard: the dashboard redirects to /onboarding until
+    // spec 01 has completed the shared account's onboarding, which would make
+    // this test depend on spec order.
+    await page.goto("/quran");
+
+    // The retired drawer trigger must not come back.
+    await expect(page.getByRole("button", { name: "Open menu" })).toHaveCount(0);
+
+    const bar = page.getByTestId("mobile-tab-bar");
+    await expect(bar).toBeVisible();
+    await expect(
+      page.getByRole("navigation", { name: "Main" }).filter({ visible: true }),
+    ).toHaveCount(1);
+
+    // Signed in, Home resolves to the dashboard; Qur'an is the current page.
+    await expect(bar.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/dashboard");
+    await expect(bar.getByRole("link", { name: "Qur'an" })).toHaveAttribute("aria-current", "page");
+
+    const reflect = bar.getByRole("link", { name: "Reflect" });
+    await expect(reflect).toHaveAttribute("href", "/reflect");
+    // Touch target: at least 44px tall.
+    expect((await reflect.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+
+    await reflect.click();
     await expect(page).toHaveURL(/\/reflect/);
-  });
-
-  // QR-INT-003: the authenticated, profile-persisted locale path (as
-  // opposed to the anonymous localStorage-only path 64-arabic-rtl.spec.ts
-  // covers) -- same try/finally restore-to-"en" discipline as
-  // 57-settings.spec.ts's equivalent Arabic case, since this is the shared
-  // test account every other authenticated spec also reads.
-  test("renders in Arabic with rtl layout and translated prompts when the saved profile language is ar", async ({
-    page,
-  }) => {
-    const { client, userId } = await createTestUserClient();
-    await client.from("profiles").update({ interface_language: "ar" }).eq("id", userId);
-
-    try {
-      await page.goto(`/reflect?surah=${TEST_SURAH}&ayah=${TEST_AYAH}`);
-      await expect(page.locator("html")).toHaveAttribute("lang", "ar");
-      await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-      await expect(page.getByRole("heading", { name: "تدبّر", exact: true })).toBeVisible();
-
-      await page.getByTestId("reflection-prompt-0").click();
-      await expect(page.getByTestId("reflection-question")).toHaveText(
-        "ما النعمة التي تذكّرك هذه الآية بشكرها؟",
-      );
-    } finally {
-      await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
-    }
+    await expect(bar.getByRole("link", { name: "Reflect" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   });
 });

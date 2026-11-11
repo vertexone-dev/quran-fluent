@@ -1,9 +1,36 @@
 export const home = {
+  // QR-INT-006: homepage "Understand This Ayah" and "Guided Learning Journeys"
+  // sections. Interface copy only -- the ayah, its translation and translator
+  // come from the canonical content tables at runtime, never from here.
+  understand: {
+    eyebrow: "Understand",
+    title: "Understand This Ayah",
+    body: "Study one ayah at a time: the Arabic, its meaning, its words, and space to reflect.",
+    reference: "{surah} · {surahNumber}:{ayah}",
+    tabs: { meaning: "Meaning", words: "Word by Word", tafsir: "Tafsir", reflect: "Reflect" },
+    wordsUnavailable: "Word-by-word study for this ayah is awaiting a verified source.",
+    wordsCta: "Practise Qur'anic vocabulary",
+    tafsirUnavailable:
+      "Tafsir will appear here only from a verified, attributed source reviewed by qualified scholars.",
+    reflectPrompt: "What is one way this ayah can shape your day?",
+    reflectCta: "Write a reflection",
+    openReader: "Open in the reader",
+    loading: "Loading the ayah…",
+    error: "This ayah couldn't be loaded right now. Check your connection and try again.",
+    retry: "Try again",
+  },
+  journeys: {
+    eyebrow: "Learn",
+    title: "Guided Learning Journeys",
+    body: "Step-by-step levels, from the Arabic alphabet to understanding complete ayat.",
+    explore: "Explore the course",
+    continueLearning: "Continue learning",
+  },
   hero: {
     steps: ["Read", "Understand", "Reflect", "Practice", "Grow"],
     titleLine1: "A Deeper Journey",
     titleLine2: "with the Quran",
-    subtitle: "Build your Qur'anic Arabic skills one word, one verse, and one lesson at a time.",
+    subtitle: "Read, understand, reflect upon, and live by the teachings of the Quran.",
     note: "Qur'anic text and translations come from verified sources only.",
     continueReading: "Continue Reading",
     continuingFrom: "Continuing from {surah}, Ayah {ayah}",
@@ -37,7 +64,7 @@ export const home = {
         body: "Listen, repeat and review with spaced repetition.",
       },
       {
-        title: "Learn Arabic",
+        title: "Guided Learning",
         body: "Six structured levels, from the alphabet to full comprehension.",
       },
     ],

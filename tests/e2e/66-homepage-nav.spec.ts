@@ -12,8 +12,7 @@ import { clickAndExpect } from "./utils/auth";
 
 // Scoped to the quick-links region itself: the footer also has its own
 // "Learn Arabic" link (common.footer.learnArabic) to the same /learn
-// route, so an unscoped getByRole("link", { name: "Learn Arabic" }) is
-// ambiguous on this page.
+// route; the fifth card is labelled "Guided Learning" (QR-WEB-009).
 function quickLinks(page: import("@playwright/test").Page) {
   return page.getByRole("region", { name: "Explore QuranRoots" });
 }
@@ -37,7 +36,7 @@ test.describe("homepage headline, mission eyebrow and public navigation", () => 
     await expect(links).toHaveText(["Home", "Qur'an", "Learn", "Reflect", "Memorize"]);
   });
 
-  test("Features, Premium and About remain reachable from the footer and the mobile drawer", async ({
+  test("Features, Premium and About stay in the footer; the profile menu holds Log In, Create Account and Settings", async ({
     page,
   }) => {
     await page.goto("/");
@@ -45,12 +44,21 @@ test.describe("homepage headline, mission eyebrow and public navigation", () => 
     for (const name of ["Features", "Premium", "About"]) {
       await expect(footer.getByRole("link", { name })).toBeVisible();
     }
+    // QR-INT-006: the circular profile control replaces the mobile drawer.
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole("button", { name: "Open menu" }).click();
-    const sheet = page.getByRole("dialog");
-    for (const name of ["Features", "Premium", "About"]) {
-      await expect(sheet.getByRole("link", { name })).toBeVisible();
-    }
+    // A click before hydration lands on an inert, server-rendered trigger.
+    await page.waitForFunction(() => {
+      const tsr = (window as unknown as { $_TSR?: { hydrated?: boolean } }).$_TSR;
+      return !tsr || tsr.hydrated === true;
+    });
+    await page.locator("[data-testid=profile-menu-trigger]:visible").click();
+    const menu = page.getByTestId("profile-menu-content");
+    const items = menu.getByRole("menuitem");
+    await expect(items).toHaveText(["Log in", "Create account", "Settings"]);
+    await expect(page.getByTestId("profile-menu-settings")).toHaveAttribute(
+      "href",
+      "/auth?mode=login&redirect=%2Fsettings",
+    );
   });
 
   test("Reflect and Memorize stay behind the sign-in guard for a signed-out visitor", async ({
@@ -77,7 +85,14 @@ test.describe("homepage quick-links", () => {
     await expect(
       quickLinks(page).getByRole("link", { name: "Understand This Ayah" }),
     ).toHaveAttribute("href", "/quran?tab=vocabulary");
-    await quickLinks(page).getByRole("link", { name: "Learn Arabic" }).click();
+    // QR-WEB-009: the fifth card is "Guided Learning" and still leads to the
+    // existing /learn course page.
+    await expect(quickLinks(page).getByRole("link", { name: "Guided Learning" })).toHaveAttribute(
+      "href",
+      "/learn",
+    );
+    await expect(quickLinks(page).getByRole("link", { name: "Learn Arabic" })).toHaveCount(0);
+    await quickLinks(page).getByRole("link", { name: "Guided Learning" }).click();
     await expect(page).toHaveURL(/\/learn/);
 
     // Reflect/Memorize are authenticated-only routes -- confirmed wired to
@@ -103,7 +118,7 @@ test.describe("homepage quick-links", () => {
     await expect(
       quickLinks(page).getByRole("link", { name: "Understand This Ayah" }),
     ).toBeVisible();
-    await expect(quickLinks(page).getByRole("link", { name: "Learn Arabic" })).toBeVisible();
+    await expect(quickLinks(page).getByRole("link", { name: "Guided Learning" })).toBeVisible();
     await expect(quickLinks(page).getByRole("link", { name: "Reflect" })).toBeVisible();
     await expect(quickLinks(page).getByRole("link", { name: "Memorize" })).toBeVisible();
   });
@@ -208,42 +223,25 @@ test.describe("header never overlaps at laptop widths, in every language", () =>
 });
 
 test.describe("homepage theme support", () => {
-  test("switching between Light and Dark updates the document, both themes keep the quick-links readable", async ({
+  test("the saved Light and Dark themes update the document, both keep the quick-links readable", async ({
     page,
   }) => {
+    // QR-INT-006: the theme control lives in Settings only, which persists the
+    // choice under "quranroots-theme" (src/lib/theme.tsx). This sets that same
+    // stored value directly, so the homepage's response to it is what's tested.
     await page.goto("/");
-
-    // SiteHeader renders ThemeToggle twice (desktop controls + mobile
-    // controls, one CSS `hidden` depending on viewport) -- both carry the
-    // same data-testid and aria-label, but `hidden` is display:none, which
-    // removes the other one from the accessibility tree entirely. A
-    // role-based locator therefore resolves to exactly the one actually
-    // visible/interactable at this test's viewport; getByTestId does not
-    // filter by visibility and would match both.
-    const themeTrigger = page.getByRole("button", { name: "Change theme" });
-    const lightItem = page.getByRole("menuitem", { name: "Light" });
-    const darkItem = page.getByRole("menuitem", { name: "Dark" });
 
     // Default is the Design Lock v1 Midnight Teal identity (dark).
     await expect(page.locator("html")).toHaveClass(/dark/);
     await expect(quickLinks(page).getByRole("link", { name: "Reflect" })).toBeVisible();
 
-    // Same cold-`vite dev`-compile hydration-remount race as submitLogin in
-    // utils/auth.ts (confirmed via a local trace: the click lands --
-    // Playwright's own accessibility snapshot shows the button in its
-    // transient `:active` state -- but the dropdown never reaches
-    // data-state="open", because the click landed on a trigger instance
-    // React was about to replace). Reproduced locally under repeated runs
-    // and matches CI #190's report exactly (same line, same symptom, both
-    // the initial attempt and Playwright's own retry). Retrying the whole
-    // open-click is the same fix applied there, not an arbitrary wait.
-    await clickAndExpect(themeTrigger, () => expect(lightItem).toBeVisible());
-    await lightItem.click();
+    await page.evaluate(() => window.localStorage.setItem("quranroots-theme", "light"));
+    await page.reload();
     await expect(page.locator("html")).not.toHaveClass(/dark/);
     await expect(quickLinks(page).getByRole("link", { name: "Reflect" })).toBeVisible();
 
-    await clickAndExpect(themeTrigger, () => expect(darkItem).toBeVisible());
-    await darkItem.click();
+    await page.evaluate(() => window.localStorage.setItem("quranroots-theme", "dark"));
+    await page.reload();
     await expect(page.locator("html")).toHaveClass(/dark/);
   });
 });

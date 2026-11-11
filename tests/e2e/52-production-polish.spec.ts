@@ -272,13 +272,14 @@ test.describe("production polish", () => {
       await page.route("**/quranroots-hero-cinematic-*", (route) => route.abort());
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto("/");
-      // Headline, subtitle and both CTAs are unaffected by the image failure.
+      // Headline, subtitle and the single hero CTA are unaffected by the image failure.
       // level: 1 scopes the heading to the hero's real <h1>.
       await expect(
         page.getByRole("heading", { name: /A Deeper Journey/i, level: 1 }),
       ).toBeVisible();
       await expect(page.getByRole("link", { name: "Continue Reading" })).toBeVisible();
-      await expect(page.getByRole("link", { name: "Explore the Qur'an" })).toBeVisible();
+      // QR-INT-006 owner decision: Continue Reading is the only hero button.
+      await expect(page.getByRole("link", { name: "Explore the Qur'an" })).toHaveCount(0);
     });
   });
 

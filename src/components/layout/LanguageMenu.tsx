@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
  * the trigger) and RTL alignment come from the library rather than
  * hand-rolled handlers.
  */
-export function LanguageMenu() {
+export function LanguageMenu({ testIdPrefix = "language-menu" }: { testIdPrefix?: string }) {
   const { locale, setLocale, t } = useI18n();
 
   return (
@@ -33,7 +33,7 @@ export function LanguageMenu() {
         <button
           type="button"
           aria-label={t("common.language.change")}
-          data-testid="language-menu-trigger"
+          data-testid={`${testIdPrefix}-trigger`}
           className="inline-flex h-11 items-center gap-2 rounded-full px-3 text-[oklch(0.974_0.01_87.5/0.9)] transition-colors hover:bg-white/5 hover:text-[oklch(0.88_0.1_91)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[oklch(0.767_0.139_91.1)] data-[state=open]:bg-white/5"
         >
           <Globe className="size-5" strokeWidth={1.5} aria-hidden />
@@ -47,7 +47,7 @@ export function LanguageMenu() {
         align="end"
         sideOffset={10}
         className={cn("min-w-[170px]", MENU_SURFACE)}
-        data-testid="language-menu-content"
+        data-testid={`${testIdPrefix}-content`}
       >
         <DropdownMenuPrimitive.RadioGroup
           value={locale}

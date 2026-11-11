@@ -20,12 +20,16 @@ import {
 
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SiteFooter } from "@/components/layout/SiteFooter";
+import { UnderstandAyahSection } from "@/components/home/UnderstandAyahSection";
+import { GuidedJourneysSection } from "@/components/home/GuidedJourneysSection";
 import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 import { fetchBookmarks } from "@/lib/bookmarks";
 import { fetchSurahs, surahName } from "@/lib/quran";
 import { isRtlLocale, useI18n } from "@/lib/i18n";
 import { useDocumentTitle } from "@/lib/use-document-title";
+import { heroArt } from "@/design/artwork";
+import { CssArtBackdrop } from "@/design/CssArtBackdrop";
 
 // QR-INT-005: shared easing/duration for the hero's entrance choreography,
 // reused across every staggered element below so they read as one
@@ -135,6 +139,15 @@ function useCtaRipple() {
 
 const CTA_CLASSNAME =
   "group bg-primary text-primary-foreground relative isolate inline-flex h-[60px] items-center justify-center gap-3 overflow-hidden rounded-full px-9 text-lg font-semibold shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_55%,transparent),0_0_26px_color-mix(in_oklab,var(--gold)_45%,transparent)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_75%,transparent),0_0_36px_color-mix(in_oklab,var(--gold)_60%,transparent)] active:scale-[0.97] sm:h-[70px] sm:px-11";
+
+// QR-WEB-009: the hero's "Continue Reading" button, matching the approved
+// Design Lock v1.0 reference: a dark glass pill with a refined Antique Gold
+// outline and soft gold glow (the rotating gold ring from CtaGlowContent
+// stays as the outline). The hero is always dark, so the gold is pinned to
+// the literal Antique Gold rather than the theme's --gold. Contrast: ivory
+// text on a near-black teal fill. The footer CTA keeps CTA_CLASSNAME.
+const HERO_CTA_CLASSNAME =
+  "group relative isolate inline-flex h-[60px] items-center justify-center gap-3 overflow-hidden rounded-full bg-[oklch(0.19_0.04_192/0.62)] px-9 text-lg font-semibold text-[#F9F6EF] backdrop-blur-md [--gold:oklch(0.767_0.139_91.1)] shadow-[inset_0_0_18px_color-mix(in_oklab,var(--gold)_14%,transparent),0_0_0_1px_color-mix(in_oklab,var(--gold)_45%,transparent),0_0_28px_color-mix(in_oklab,var(--gold)_32%,transparent)] transition-[transform,box-shadow,background-color] duration-300 hover:-translate-y-0.5 hover:bg-[oklch(0.24_0.05_192/0.74)] hover:shadow-[inset_0_0_22px_color-mix(in_oklab,var(--gold)_22%,transparent),0_0_0_1px_color-mix(in_oklab,var(--gold)_75%,transparent),0_0_40px_color-mix(in_oklab,var(--gold)_48%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.767_0.139_91.1)] focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(0.16_0.035_190)] active:scale-[0.97] sm:h-[70px] sm:px-11";
 
 function CtaGlowContent({ ripples, children }: { ripples: Ripple[]; children: ReactNode }) {
   return (
@@ -247,16 +260,21 @@ function CinematicHero({
           daytime photo. */}
       <div className="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
         <motion.div style={{ y, scale }} className="absolute inset-0 origin-top">
-          <picture>
-            <source media="(max-width: 767px)" srcSet="/quranroots-hero-cinematic-mobile.jpg" />
-            <img
-              src="/quranroots-hero-cinematic-desktop.jpg"
-              alt=""
-              fetchPriority="high"
-              decoding="async"
-              className="h-full w-full object-cover object-[50%_42%] md:object-[50%_58%]"
-            />
-          </picture>
+          {heroArt ? (
+            <picture>
+              <source media="(max-width: 767px)" srcSet={heroArt.mobile} />
+              <img
+                src={heroArt.desktop}
+                alt=""
+                fetchPriority="high"
+                decoding="async"
+                className="h-full w-full object-cover object-[50%_42%] md:object-[50%_58%]"
+              />
+            </picture>
+          ) : (
+            // Production default (QR-WEB-006): CSS-only, no image.
+            <CssArtBackdrop variant="hero" />
+          )}
         </motion.div>
         <div className="from-background/90 absolute inset-x-0 top-0 h-32 bg-gradient-to-b to-transparent" />
         <div className="from-background/95 via-background/50 absolute inset-x-0 bottom-0 h-[38%] bg-gradient-to-t to-transparent md:h-[32%]" />
@@ -306,7 +324,7 @@ function CinematicHero({
             search={resumeSearch}
             onClick={onCtaClick}
             data-testid="hero-continue-reading-button"
-            className={CTA_CLASSNAME}
+            className={HERO_CTA_CLASSNAME}
           >
             <CtaGlowContent ripples={ripples}>
               <BookOpen className="h-6 w-6" strokeWidth={1.5} aria-hidden />
@@ -316,12 +334,6 @@ function CinematicHero({
                 aria-hidden
               />
             </CtaGlowContent>
-          </Link>
-          <Link
-            to="/quran"
-            className="inline-flex h-[60px] items-center justify-center rounded-full border border-white/40 px-9 text-lg font-semibold text-white transition-colors duration-300 hover:border-gold hover:bg-white/10 sm:h-[70px] sm:px-11"
-          >
-            {t("common.actions.exploreQuran")}
           </Link>
         </motion.div>
         <motion.p
@@ -534,6 +546,10 @@ function Home() {
 
         <main>
           <CinematicHero home={home} dir={dir} />
+
+          <UnderstandAyahSection />
+
+          <GuidedJourneysSection />
 
           <section
             className="section-py-normal mx-auto max-w-6xl px-4"

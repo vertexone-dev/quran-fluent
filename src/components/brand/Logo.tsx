@@ -64,7 +64,12 @@ export function Logo({
             {d.common.brand.name}
           </span>
           {tagline && (
-            <span className="mt-1 text-[0.68rem] text-muted-foreground">
+            <span
+              className={cn(
+                "mt-1 text-[0.68rem]",
+                tone === "onDark" ? "text-[oklch(0.974_0.01_87.5/0.75)]" : "text-muted-foreground",
+              )}
+            >
               {d.common.brand.tagline}
             </span>
           )}
