@@ -20,7 +20,7 @@ export const common: typeof EnCommon = {
     memorize: "Mémoriser",
     practice: "S'entraîner",
     progress: "Progression",
-    learningPlan: "Mon parcours d'apprentissage",
+    learningPlan: "Mon plan d'apprentissage",
     bookmarks: "Favoris",
     notes: "Notes",
     settings: "Paramètres",

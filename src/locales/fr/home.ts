@@ -39,7 +39,7 @@ export const home: typeof EnHome = {
     title: "Votre parcours",
     emptySignedOut: "Créez un compte pour garder votre place et suivre votre progression réelle.",
     createAccount: "Créer un compte",
-    emptySignedIn: "Ajoutez un verset aux signets pendant la lecture : votre place apparaîtra ici.",
+    emptySignedIn: "Ajoutez un verset aux favoris pendant la lecture : votre place apparaîtra ici.",
     openReader: "Ouvrir le lecteur",
     resumeCta: "Reprendre",
   },
@@ -76,7 +76,7 @@ export const home: typeof EnHome = {
         body: "Dites-nous où vous en êtes, de l'alphabet à la lecture fluide.",
       },
       {
-        title: "Suivez votre parcours",
+        title: "Suivez votre plan",
         body: "De courtes leçons quotidiennes bâties sur le vocabulaire réel du Coran.",
       },
       {
@@ -155,7 +155,7 @@ export const home: typeof EnHome = {
           "Système de design de marque, thèmes clair et sombre, et interface entièrement responsive",
           "Comptes, vérification de l'e-mail et connexion Google",
           "Intégration de l'apprenant : niveau, objectif, temps quotidien, langue",
-          "Interface complète en français et en anglais",
+          "Interface en anglais, en français et en arabe, avec affichage de droite à gauche pour l'arabe (textes français et arabes en attente de relecture par des locuteurs natifs)",
           "Tableau de bord personnalisé avec suivi des compétences en vocabulaire, grammaire, compréhension, tajwid et mémorisation",
           "Niveaux 1 à 5 du cours d'arabe en six niveaux : vraies leçons, lecteur de leçons, entraîneur de vocabulaire, quiz et suivi de la progression",
           "Fondations de racines et de grammaire intégrées au programme",
@@ -190,8 +190,8 @@ export const home: typeof EnHome = {
         body: "Le texte arabe, les traductions, la translittération, la morphologie mot à mot et l'audio sont stockés séparément et servis depuis des sources vérifiées et documentées. Nous ne générons ni ne modifions jamais le texte coranique, et nous ne produisons pas automatiquement de tafsir, de hadith ni d'avis juridique. Lorsqu'un contenu validé par des experts n'est pas encore disponible, l'interface le dit clairement.",
       },
       {
-        title: "Deux expériences complètes",
-        body: "Le français et l'anglais sont deux interfaces soignées et à part entière — jamais de traduction automatique. Changer de langue change les mots à l'écran, jamais votre compte, votre progression, votre vocabulaire, vos favoris ni votre série.",
+        title: "Trois langues",
+        body: "QuranRoots est disponible en anglais, en français et en arabe (affichage de droite à gauche). Les textes de l'interface en français et en arabe sont encore en cours d'amélioration et attendent la relecture de locuteurs natifs qualifiés. Les traductions du Coran sont distinctes des textes de l'interface : elles proviennent uniquement des sources attribuées, indiquées à côté de chaque verset. Changer de langue change les mots à l'écran, jamais votre compte, votre progression, votre vocabulaire, vos favoris ni votre série.",
       },
       {
         title: "Une progression honnête",

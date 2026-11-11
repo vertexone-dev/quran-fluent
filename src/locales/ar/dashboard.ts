@@ -25,7 +25,7 @@ export const dashboard = {
   today: {
     review: { title: "قائمة المراجعة", cta: "راجع الآن" },
     weak: { title: "نقطة ضعف", cta: "تركيز", none: "لا توجد نقاط ضعف بعد" },
-    path: { title: "الخطوة التالية", cta: "استمرار", none: "أدِّ اختبار تحديد المستوى" },
+    path: { title: "الخطوة التالية", cta: "متابعة", none: "أدِّ اختبار تحديد المستوى" },
     goal: { title: "الهدف اليومي", cta: "استمر" },
   },
   weakAreas: {
