@@ -203,7 +203,14 @@ test.describe("Qur'an Reader: selection highlight and bookmark confirmation", ()
     const bookmarkBtn = card.getByRole("button", { name: "Bookmark Ayah" });
 
     await expect(confirmBadge).not.toBeVisible();
-    const before = await card.evaluate((el) => getComputedStyle(el).backgroundColor);
+    // QR-INT-007: the āyah frame (VerseFrame) has a constant gradient
+    // background; selection is shown by its gold border and glow instead.
+    const frameLook = () =>
+      card.evaluate((el) => {
+        const cs = getComputedStyle(el);
+        return `${cs.borderTopColor}|${cs.boxShadow}`;
+      });
+    const before = await frameLook();
 
     await bookmarkBtn.click();
 
@@ -214,10 +221,9 @@ test.describe("Qur'an Reader: selection highlight and bookmark confirmation", ()
     await expect(card.getByRole("button", { name: "Remove Bookmark" })).toBeVisible();
     await expect(confirmBadge).toBeVisible();
 
-    // The card's own background actually changed (the selection highlight),
+    // The card's own frame actually changed (the selection highlight),
     // not just an attribute flip with no visual effect.
-    const after = await card.evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(after).not.toBe(before);
+    await expect.poll(frameLook).not.toBe(before);
 
     // And the confirmation is transient -- it clears on its own rather than
     // permanently decorating the button.

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { AlertCircle, Hourglass, Loader2, ShieldCheck } from "lucide-react";
+import { AlertCircle, Hourglass, Loader2, ShieldCheck, WifiOff } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -63,12 +63,14 @@ export function SectionHeading({
   );
 }
 
-type StateKind = "loading" | "error" | "empty" | "unavailable";
+type StateKind = "loading" | "error" | "empty" | "unavailable" | "offline";
 const STATE_ICON = {
   loading: Loader2,
   error: AlertCircle,
   empty: Hourglass,
   unavailable: ShieldCheck,
+  // QR-INT-007: the device has no connection (see useOnlineStatus).
+  offline: WifiOff,
 } as const;
 
 /**
@@ -91,7 +93,7 @@ export function ContentState({
   const Icon = STATE_ICON[kind];
   return (
     <div
-      role={kind === "error" ? "alert" : "status"}
+      role={kind === "error" || kind === "offline" ? "alert" : "status"}
       aria-live="polite"
       data-testid={`content-state-${kind}`}
       className={cn(

@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronRight, MountainSnow } from "lucide-react";
 
 import { journeysArt } from "@/design/artwork";
+import { CssArtBackdrop } from "@/design/CssArtBackdrop";
 import { GlassPanel, GOLD, SectionHeading } from "@/design/primitives";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
@@ -25,8 +26,10 @@ export function GuidedJourneysSection() {
     >
       <SectionHeading id="guided-journeys" eyebrow={j.eyebrow} title={j.title} body={j.body} />
       <GlassPanel className="mt-8 grid overflow-hidden lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        {journeysArt ? (
-          <div className="relative min-h-[220px] lg:min-h-full">
+        <div
+          className={`relative lg:min-h-full ${journeysArt ? "min-h-[220px]" : "min-h-[260px]"}`}
+        >
+          {journeysArt ? (
             <img
               src={journeysArt}
               alt=""
@@ -34,9 +37,12 @@ export function GuidedJourneysSection() {
               decoding="async"
               className="absolute inset-0 h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.2_0.035_195.1/0.85)] via-transparent to-transparent lg:bg-gradient-to-r rtl:lg:bg-gradient-to-l" />
-          </div>
-        ) : null}
+          ) : (
+            // Production default (QR-WEB-006): CSS-only, no image.
+            <CssArtBackdrop variant="journeys" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-[oklch(0.2_0.035_195.1/0.85)] via-transparent to-transparent lg:bg-gradient-to-r rtl:lg:bg-gradient-to-l" />
+        </div>
         <div className="p-5 sm:p-8">
           <ol className="space-y-3">
             {levels.map((level) => (

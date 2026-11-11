@@ -64,7 +64,7 @@ export const home = {
         body: "Listen, repeat and review with spaced repetition.",
       },
       {
-        title: "Learn Arabic",
+        title: "Guided Learning",
         body: "Six structured levels, from the alphabet to full comprehension.",
       },
     ],

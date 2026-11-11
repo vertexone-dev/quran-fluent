@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { BookOpen, Feather } from "lucide-react";
+import { BookOpen, Feather, Lightbulb } from "lucide-react";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ContentState, GlassPanel, GOLD, SectionHeading } from "@/design/primitives";
@@ -139,6 +139,18 @@ export function UnderstandAyahSection() {
             >
               <BookOpen className="size-4" aria-hidden />
               {u.openReader}
+            </Link>
+            {/* QR-INT-007: deeper study of the same āyah on the public
+                Understand page. */}
+            <Link
+              to="/quran/understand"
+              search={{ surah: SURAH, ayah: AYAH }}
+              className={`${LINK} mt-5 ms-2`}
+              style={{ borderColor: GOLD }}
+              data-testid="understand-study-link"
+            >
+              <Lightbulb className="size-4" aria-hidden />
+              {d.quran.understand.homeLink}
             </Link>
           </TabsContent>
 

@@ -121,4 +121,68 @@ export const quran = {
     showMore: "Show more words",
     showLess: "Show fewer words",
   },
+  // QR-INT-007 (Milestone C): Reader toolbar, audio mini-player and the
+  // Understand This Ayah page. Interface copy only -- never Quran text,
+  // translation, tafsir or explanations.
+  readerUi: {
+    toolbarLabel: "Reader navigation",
+    prevSurah: "Previous Surah",
+    nextSurah: "Next Surah",
+    jumpLabel: "Go to Ayah",
+    jumpGo: "Go",
+    jumpInvalid: "Enter an Ayah number between 1 and {max}.",
+    understand: "Understand this Ayah",
+    offline: "You're offline. Reconnect to load this Surah.",
+    empty: "No Ayahs are available for this Surah yet.",
+  },
+  miniPlayer: {
+    label: "Recitation player",
+    nowPlaying: "{surah} · Ayah {ayah}",
+    loading: "Loading…",
+    playing: "Playing",
+    paused: "Paused",
+    ended: "Finished",
+    resume: "Resume recitation",
+    pause: "Pause recitation",
+    replay: "Replay this Ayah",
+    next: "Play next Ayah",
+    close: "Close player",
+    reciter: "Reciter: {reciter}",
+    changeReciter: "Change reciter in Settings",
+  },
+  understand: {
+    metaTitle: "Understand this Ayah — QuranRoots",
+    metaDescription:
+      "Study one Ayah: the Arabic as stored, verified English and French translations side by side with their sources, and honest notes on what is still awaiting a verified source.",
+    eyebrow: "Understand",
+    title: "Understand this Ayah",
+    intro:
+      "Read → Understand → Reflect. The Arabic is shown exactly as stored; every translation names its source.",
+    selectSurah: "Choose a Surah",
+    prev: "Previous Ayah",
+    next: "Next Ayah",
+    openReader: "Open in the reader",
+    reflect: "Reflect on this Ayah",
+    tabs: {
+      translations: "Translations",
+      words: "Words",
+      tafsir: "Tafsir",
+      context: "Context",
+    },
+    comparisonTitle: "Translation comparison",
+    english: "English",
+    french: "French",
+    unavailableEn: "English translation not available yet for this Ayah.",
+    unavailableFr: "French translation not available yet for this Ayah.",
+    wordsUnavailable:
+      "Word-by-word meanings are awaiting a verified, licensed source matched to this exact word and Ayah. Nothing is shown until then.",
+    tafsirUnavailable:
+      "Tafsir is awaiting an approved scholarly source. QuranRoots does not write or generate tafsir.",
+    contextUnavailable:
+      "Context notes are awaiting an approved scholarly source. Nothing is shown until then.",
+    notFound: "This Ayah isn't part of the Surah you chose. Pick another Ayah below.",
+    error: "Couldn't load this Ayah.",
+    retry: "Retry",
+    homeLink: "Study this Ayah in depth",
+  },
 };

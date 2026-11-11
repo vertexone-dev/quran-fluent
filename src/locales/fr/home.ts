@@ -63,7 +63,7 @@ export const home: typeof EnHome = {
         body: "Écoutez, répétez et révisez avec une répétition espacée.",
       },
       {
-        title: "Apprendre l'arabe",
+        title: "Apprentissage guidé",
         body: "Six niveaux structurés, de l'alphabet à la compréhension complète.",
       },
     ],

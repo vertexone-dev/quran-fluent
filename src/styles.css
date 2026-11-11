@@ -457,6 +457,37 @@
   }
 }
 
+/* QR-INT-007 (Milestone C) VerseFrame: CSS-only gold corner ornaments (no
+   artwork). Logical insets so the ornaments mirror under rtl. */
+.verse-frame::before,
+.verse-frame::after {
+  content: "";
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  border-color: oklch(0.767 0.139 91.1 / 0.7);
+  border-style: solid;
+}
+.verse-frame::before {
+  inset-block-start: 10px;
+  inset-inline-start: 10px;
+  border-width: 1.5px 0 0 1.5px;
+  border-start-start-radius: 12px;
+}
+.verse-frame::after {
+  inset-block-end: 10px;
+  inset-inline-end: 10px;
+  border-width: 0 1.5px 1.5px 0;
+  border-end-end-radius: 12px;
+}
+[dir="rtl"] .verse-frame::before {
+  border-width: 1.5px 1.5px 0 0;
+}
+[dir="rtl"] .verse-frame::after {
+  border-width: 0 0 1.5px 1.5px;
+}
+
 /* QR-INT-005 navigation: the Emergent floating glass bar. Theme-independent
    dark Midnight Teal glass (literal oklch, like the hero/dashboard banners)
    so the bar reads the same over the cinematic hero and over light-theme
