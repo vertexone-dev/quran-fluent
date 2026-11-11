@@ -140,6 +140,15 @@ function useCtaRipple() {
 const CTA_CLASSNAME =
   "group bg-primary text-primary-foreground relative isolate inline-flex h-[60px] items-center justify-center gap-3 overflow-hidden rounded-full px-9 text-lg font-semibold shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_55%,transparent),0_0_26px_color-mix(in_oklab,var(--gold)_45%,transparent)] transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-[0_0_0_1px_color-mix(in_oklab,var(--gold)_75%,transparent),0_0_36px_color-mix(in_oklab,var(--gold)_60%,transparent)] active:scale-[0.97] sm:h-[70px] sm:px-11";
 
+// QR-WEB-009: the hero's "Continue Reading" button, matching the approved
+// Design Lock v1.0 reference: a dark glass pill with a refined Antique Gold
+// outline and soft gold glow (the rotating gold ring from CtaGlowContent
+// stays as the outline). The hero is always dark, so the gold is pinned to
+// the literal Antique Gold rather than the theme's --gold. Contrast: ivory
+// text on a near-black teal fill. The footer CTA keeps CTA_CLASSNAME.
+const HERO_CTA_CLASSNAME =
+  "group relative isolate inline-flex h-[60px] items-center justify-center gap-3 overflow-hidden rounded-full bg-[oklch(0.19_0.04_192/0.62)] px-9 text-lg font-semibold text-[#F9F6EF] backdrop-blur-md [--gold:oklch(0.767_0.139_91.1)] shadow-[inset_0_0_18px_color-mix(in_oklab,var(--gold)_14%,transparent),0_0_0_1px_color-mix(in_oklab,var(--gold)_45%,transparent),0_0_28px_color-mix(in_oklab,var(--gold)_32%,transparent)] transition-[transform,box-shadow,background-color] duration-300 hover:-translate-y-0.5 hover:bg-[oklch(0.24_0.05_192/0.74)] hover:shadow-[inset_0_0_22px_color-mix(in_oklab,var(--gold)_22%,transparent),0_0_0_1px_color-mix(in_oklab,var(--gold)_75%,transparent),0_0_40px_color-mix(in_oklab,var(--gold)_48%,transparent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[oklch(0.767_0.139_91.1)] focus-visible:ring-offset-2 focus-visible:ring-offset-[oklch(0.16_0.035_190)] active:scale-[0.97] sm:h-[70px] sm:px-11";
+
 function CtaGlowContent({ ripples, children }: { ripples: Ripple[]; children: ReactNode }) {
   return (
     <>
@@ -315,7 +324,7 @@ function CinematicHero({
             search={resumeSearch}
             onClick={onCtaClick}
             data-testid="hero-continue-reading-button"
-            className={CTA_CLASSNAME}
+            className={HERO_CTA_CLASSNAME}
           >
             <CtaGlowContent ripples={ripples}>
               <BookOpen className="h-6 w-6" strokeWidth={1.5} aria-hidden />

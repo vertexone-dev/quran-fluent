@@ -26,7 +26,9 @@ export function GuidedJourneysSection() {
     >
       <SectionHeading id="guided-journeys" eyebrow={j.eyebrow} title={j.title} body={j.body} />
       <GlassPanel className="mt-8 grid overflow-hidden lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="relative min-h-[220px] lg:min-h-full">
+        <div
+          className={`relative lg:min-h-full ${journeysArt ? "min-h-[220px]" : "min-h-[260px]"}`}
+        >
           {journeysArt ? (
             <img
               src={journeysArt}
