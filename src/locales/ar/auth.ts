@@ -28,7 +28,7 @@ export const auth = {
     newPassword: "كلمة المرور الجديدة",
   },
   or: "أو",
-  google: "الاستمرار باستخدام Google",
+  google: "المتابعة عبر Google",
   googleError: "فشل تسجيل الدخول عبر Google. يُرجى المحاولة مرة أخرى.",
   forgotLink: "نسيت كلمة المرور؟",
   newHere: "جديد هنا؟",

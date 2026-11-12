@@ -22,7 +22,7 @@ export const billing = {
       features: [
         "Le lecteur du Coran complet — les 114 sourates, arabe et traduction",
         "Niveaux 1 à 2 du parcours d'apprentissage",
-        "Signets et notes",
+        "Favoris et notes",
         "Suivi de progression de base",
       ],
       cta: "Votre offre actuelle",

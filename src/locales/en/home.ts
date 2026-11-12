@@ -156,7 +156,7 @@ export const home = {
           "Brand design system with light and dark themes, and a responsive application shell",
           "Accounts, email verification and Google sign-in",
           "Learner onboarding: level, goal, daily target, language",
-          "Full English and French interface",
+          "English, French and Arabic interface, with right-to-left layout for Arabic (French and Arabic wording awaiting native-speaker review)",
           "Personalized dashboard with skill tracking across vocabulary, grammar, comprehension, tajweed and memorization",
           "Levels 1–5 of the six-level Arabic course: real lessons, a lesson player, vocabulary trainer, quizzes and progress tracking",
           "Root and grammar foundations built into the curriculum",
@@ -191,8 +191,8 @@ export const home = {
         body: "Qur'anic Arabic, translations, transliteration, word-level morphology and audio are stored separately and served from verified, documented sources. We never generate or alter Qur'anic text, and we do not produce tafsir, hadith, fatwas or rulings automatically. Where expert-reviewed content is not yet available, the interface says so plainly.",
       },
       {
-        title: "Two complete experiences",
-        body: "English and French are curated, first-class interfaces — not machine translations. Switching language changes the words on screen, never your account, progress, vocabulary, bookmarks or streak.",
+        title: "Three languages",
+        body: "QuranRoots is available in English, French and Arabic (right-to-left). The French and Arabic interface wording is still being refined and awaits review by qualified native speakers. Qur'an translations are separate from the interface wording: they come only from the attributed sources named next to each verse. Switching language changes the words on screen, never your account, progress, vocabulary, bookmarks or streak.",
       },
       {
         title: "Honest progress",

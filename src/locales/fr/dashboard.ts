@@ -12,7 +12,7 @@ export const dashboard: typeof EnDashboard = {
   lessonBadge: "Niveau 1 · Fondations de l'arabe",
   lessonMeta: "Environ 8 minutes · Apprendre → Exemple → Écouter → S'entraîner → Quiz",
   opensPhase2: "Disponible en phase 2",
-  yourPlan: "Mon parcours",
+  yourPlan: "Mon plan",
   levelNotSet: "Niveau non défini",
   goalNotSet: "Objectif non défini",
   minutesADay: "{count} minutes par jour",
