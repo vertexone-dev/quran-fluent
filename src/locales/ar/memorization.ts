@@ -2,7 +2,7 @@
 // native-speaker review before treating as final.
 export const memorization = {
   title: "الحفظ",
-  intro: "اختر سورة، وكرّر كل آية بالسرعة التي تناسبك، ثم ضعها علامة محفوظة للمراجعة.",
+  intro: "اختر سورة، وكرّر كل آية بالسرعة التي تناسبك، ثم حدّدها كمحفوظة لإضافتها إلى المراجعة.",
   status: {
     not_started: "لم يبدأ",
     learning: "قيد التعلّم",
@@ -14,7 +14,7 @@ export const memorization = {
     continueEmpty: "اختر سورة وابدأ حفظ آية في كل مرة.",
     continueCta: "متابعة {surah}",
     dueTitle: "تستحق المراجعة",
-    dueEmpty: "أنت على اطّلاع كامل. استمر في التعلّم أو ادرس سورة.",
+    dueEmpty: "لقد أنجزت جميع مراجعاتك. استمر في التعلّم أو ادرس سورة.",
     dueCount:
       "one:آية واحدة مستحقة|two:آيتان مستحقتان|few:{count} آيات مستحقة|many:{count} آية مستحقة|other:{count} آية مستحقة",
     memorizedTitle: "محفوظة",
@@ -40,17 +40,17 @@ export const memorization = {
     showArabic: "إظهار النص العربي",
     hideTranslation: "إخفاء الترجمة",
     showTranslation: "إظهار الترجمة",
-    markLearning: "وضع علامة قيد التعلّم",
-    markMemorized: "وضع علامة محفوظة",
+    markLearning: "وضع الآية قيد التعلّم",
+    markMemorized: "تحديد الآية كمحفوظة",
     addToReview: "إضافة إلى المراجعة",
   },
   toast: {
-    memorized: "تم وضع علامة محفوظة.",
+    memorized: "تم تحديد الآية كمحفوظة.",
     memorizedNoTranslation:
-      "تم وضع علامة محفوظة. ستبدأ تذكيرات المراجعة بمجرد توفّر ترجمة لهذه الآية.",
+      "تم تحديد الآية كمحفوظة. ستبدأ تذكيرات المراجعة بمجرد توفّر ترجمة لهذه الآية.",
     addedToReview: "تمت الإضافة إلى قائمة المراجعة.",
     addedToReviewNoTranslation:
-      "تم وضع علامة قيد التعلّم. ستبدأ تذكيرات المراجعة بمجرد توفّر ترجمة لهذه الآية.",
+      "تم وضع الآية قيد التعلّم. ستبدأ تذكيرات المراجعة بمجرد توفّر ترجمة لهذه الآية.",
     actionFailed: "لم يُحفظ ذلك. حاول مرة أخرى.",
   },
   review: {

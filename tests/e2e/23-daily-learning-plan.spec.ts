@@ -418,9 +418,16 @@ test.describe("daily plan / learning plan integration", () => {
 
     try {
       await page.goto("/daily");
-      // "Leçon du jour" also matches the nav link to this same page — scope
-      // to the lesson card itself to avoid the strict-mode collision.
-      await expect(page.getByRole("main").getByText("Leçon du jour")).toBeVisible();
+      // QR-WEB-015B: the page's sr-only h1 now reads "Leçon du jour" (it used
+      // to be the typo "Leçon du jou"), so the same words also appear as the
+      // lesson card's title. Assert each one precisely instead of by loose
+      // substring: the h1 by role, and the card title as the exact-text <div>
+      // (getByText returns the smallest matching element, so combining it
+      // with a div selector excludes the sr-only h1 without a looser match).
+      await expect(page.getByRole("heading", { level: 1, name: "Leçon du jour" })).toBeAttached();
+      await expect(
+        page.getByRole("main").getByText("Leçon du jour", { exact: true }).and(page.locator("div")),
+      ).toBeVisible();
       await expect(page.getByText("Alif")).toBeVisible();
 
       await page.goto("/dashboard");

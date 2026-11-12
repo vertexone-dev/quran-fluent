@@ -6,7 +6,7 @@ export const learning: typeof EnLearning = {
     intro:
       "Chaque leçon suit le même rythme : Apprendre → Exemple → Écouter → S'entraîner → Quiz → Réviser.",
     ctaNote:
-      "Les niveaux 1 à 5 sont disponibles dès maintenant, avec de vraies leçons, exercices et audio — créez votre compte pour obtenir votre niveau, votre objectif et votre parcours, puis commencez votre première leçon aujourd'hui.",
+      "Les niveaux 1 à 5 sont disponibles dès maintenant, avec de vraies leçons, exercices et audio — créez votre compte pour obtenir votre niveau, votre objectif et votre plan, puis commencez votre première leçon aujourd'hui.",
     goToDashboard: "Aller au tableau de bord",
     comingSoonLabel: "Bientôt disponible",
     levels: [
@@ -115,13 +115,13 @@ export const learning: typeof EnLearning = {
     custom: "Personnalisé (minutes)",
     customPlaceholder: "ex. 20",
     finish: "Terminer la configuration",
-    saved: "Votre parcours d'apprentissage est prêt",
-    error: "Nous n'avons pas pu enregistrer votre parcours. Veuillez réessayer.",
+    saved: "Votre plan d'apprentissage est prêt",
+    error: "Nous n'avons pas pu enregistrer votre plan. Veuillez réessayer.",
   },
   plan: {
-    title: "Mon parcours d'apprentissage",
+    title: "Mon plan d'apprentissage",
     intro:
-      "Votre parcours détermine les leçons, la charge de révision et les rappels que vous recevez.",
+      "Votre plan détermine les leçons, la charge de révision et les rappels que vous recevez.",
     current: "Réglages actuels",
     arabicLevel: "Niveau d'arabe",
     primaryGoal: "Objectif principal",
@@ -131,7 +131,7 @@ export const learning: typeof EnLearning = {
     preferredTranslation: "Traduction préférée",
     preferredReciter: "Récitateur préféré",
     notSet: "Non défini",
-    update: "Modifier mon parcours",
+    update: "Modifier mon plan",
   },
   settings: {
     title: "Paramètres",
@@ -224,7 +224,7 @@ export const learning: typeof EnLearning = {
       q3: "Quelle est la forme initiale (de début) de cette lettre ?",
       q4: "Quel mot est écrit avec des lettres attachées ?",
       q5: "Quelle syllabe porte une Damma (le son « ou ») ?",
-      q6: "Que signifie la Shaddah sur ce mot ?",
+      q6: "Que signifie la Chadda sur ce mot ?",
       q7: "Comment se lit ce mot ?",
       q8: "Que signifie ce mot ?",
       q9: "Que signifie ce mot ?",
@@ -268,7 +268,7 @@ export const learning: typeof EnLearning = {
       },
       beginner_reader: {
         label: "Lecteur débutant",
-        blurb: "Travaillez les lettres attachées, la Shaddah et la lecture de mots entiers.",
+        blurb: "Travaillez les lettres attachées, la Chadda et la lecture de mots entiers.",
       },
       developing_reader: {
         label: "Lecteur en progression",
@@ -301,7 +301,7 @@ export const learning: typeof EnLearning = {
     },
     steps: {
       alphabet: { label: "Alphabet arabe", blurb: "Noms, sons et formes des lettres." },
-      harakat: { label: "Harakat", blurb: "Fatha, Kasra, Damma, Soukoun, Shaddah, Tanwin." },
+      harakat: { label: "Harakat", blurb: "Fatha, Kasra, Damma, Soukoun, Chadda, Tanwin." },
       connected_letters: {
         label: "Lettres attachées",
         blurb: "Formes initiale, médiane et finale dans de vrais mots.",
@@ -327,7 +327,7 @@ export const learning: typeof EnLearning = {
     },
   },
   daily: {
-    title: "Leçon du jou",
+    title: "Leçon du jour",
     loading: "Préparation de votre session quotidienne…",
     empty: "Votre file d'apprentissage est vide. Passez le test de niveau pour commencer.",
     allLessonsComplete: "Vous avez terminé toutes les leçons actuellement disponibles.",
@@ -340,7 +340,7 @@ export const learning: typeof EnLearning = {
     takePlacement: "Passer le test de niveau",
     itemOf: "Élément {current} sur {total}",
     reveal: "Afficher la réponse",
-    tapReveal: "Tapez la carte pour afficher la réponse",
+    tapReveal: "Appuyez sur la carte pour afficher la réponse",
     weakAreaTitle: "Zone de concentration",
     weakAreaStrength: "Force : {strength}%",
     weakAreaNote: "Prenez un moment pour revoir ce sujet, puis indiquez que vous l'avez pratiqué.",
@@ -358,7 +358,7 @@ export const learning: typeof EnLearning = {
     notFound: {
       title: "Leçon introuvable",
       body: "Cette leçon n'existe pas ou a peut-être été supprimée.",
-      backToLearningPlan: "Retour au parcours d'apprentissage",
+      backToLearningPlan: "Retour au plan d'apprentissage",
     },
     empty: "Cette leçon ne contient pas encore de contenu.",
     placeholderBadge: "Contenu de test — pas une vraie leçon",
@@ -374,7 +374,7 @@ export const learning: typeof EnLearning = {
     completion: {
       title: "Leçon terminée !",
       body: "Excellent travail — votre progression a été enregistrée.",
-      backToLearningPlan: "Retour au parcours d'apprentissage",
+      backToLearningPlan: "Retour au plan d'apprentissage",
     },
     exercise: {
       submit: "Vérifier la réponse",

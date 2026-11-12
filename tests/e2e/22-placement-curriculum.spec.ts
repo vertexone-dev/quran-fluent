@@ -368,13 +368,15 @@ test.describe("placement -> curriculum integration", () => {
     try {
       await retakePlacement(page, (correct) => (correct + 1) % 4, "fr");
       await page.goto("/learning-plan");
-      // level: 1 — the page's own French translation for the h1 title and
-      // the h2 "path" section heading happen to be the same string
-      // ("Mon parcours d'apprentissage"), a pre-existing content overlap
-      // unrelated to this sub-phase; scoping by level avoids the
-      // ambiguity rather than asserting on either heading's uniqueness.
+      // QR-WEB-015B: the h1 is the learning *plan* ("Mon plan d'apprentissage")
+      // and the h2 section is the learning *path* ("Mon parcours
+      // d'apprentissage"). They used to be the same string; each is now
+      // asserted by its own heading level.
       await expect(
-        page.getByRole("heading", { level: 1, name: "Mon parcours d'apprentissage" }),
+        page.getByRole("heading", { level: 1, name: "Mon plan d'apprentissage" }),
+      ).toBeVisible();
+      await expect(
+        page.getByRole("heading", { level: 2, name: "Mon parcours d'apprentissage" }),
       ).toBeVisible();
       await expect(page.getByRole("link", { name: "Commencer la leçon" }).first()).toBeVisible();
     } finally {

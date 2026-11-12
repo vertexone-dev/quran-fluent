@@ -104,7 +104,7 @@ export const quran = {
     searchPlaceholder: "ابحث عن كلمات…",
     filterAll: "الكل",
     frequencyRank: "الترتيب #{rank}",
-    occurrences: "{count} مرة ورود",
+    occurrences: "مرات الورود: {count}",
     save: "حفظ للمراجعة",
     saved: "محفوظة",
     remove: "إزالة",

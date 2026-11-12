@@ -50,7 +50,7 @@ export const common = {
     logout: "تسجيل الخروج",
     startLearning: "ابدأ التعلّم",
     exploreQuran: "استكشف القرآن",
-    continue: "استمرار",
+    continue: "متابعة",
     back: "رجوع",
     open: "فتح",
     save: "حفظ التغييرات",
