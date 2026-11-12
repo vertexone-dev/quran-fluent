@@ -16,7 +16,7 @@ export function CinematicTabsList({
   return (
     <TabsList
       className={cn(
-        "h-auto w-full flex-wrap justify-start gap-1 rounded-full border border-white/12 bg-white/5 p-1 sm:w-auto",
+        "grid h-auto w-full grid-cols-2 justify-stretch gap-1 rounded-2xl border border-white/12 bg-white/5 p-1 sm:inline-flex sm:w-auto sm:justify-start sm:rounded-full",
         className,
       )}
       {...props}
@@ -31,7 +31,7 @@ export function CinematicTabsTrigger({
   return (
     <TabsTrigger
       className={cn(
-        "min-h-10 rounded-full px-4 text-sm font-semibold text-white/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[oklch(0.767_0.139_91.1)] data-[state=active]:bg-[oklch(0.767_0.139_91.1)] data-[state=active]:text-[oklch(0.2_0.035_195.1)] data-[state=active]:shadow-none",
+        "min-h-11 rounded-full px-2 text-sm sm:min-h-10 sm:px-4 font-semibold text-white/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[oklch(0.767_0.139_91.1)] data-[state=active]:bg-[oklch(0.767_0.139_91.1)] data-[state=active]:text-[oklch(0.2_0.035_195.1)] data-[state=active]:shadow-none",
         className,
       )}
       {...props}

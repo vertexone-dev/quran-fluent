@@ -11,6 +11,8 @@ import {
 
 import { DirectionProvider } from "@radix-ui/react-direction";
 
+import { formatPlural, isPluralTemplate } from "@/lib/plural";
+
 import { dictionaries, isLocale, SUPPORTED_LOCALES, type Dictionary, type Locale } from "@/locales";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
@@ -77,8 +79,12 @@ function lookup(dict: Dictionary, key: string): unknown {
   }, dict);
 }
 
-function interpolate(value: string, vars?: Vars) {
+function interpolate(value: string, vars?: Vars, locale: string = "en") {
   if (!vars) return value;
+  // Plural-category templates (see plural.ts) resolve off the numeric `count`.
+  if (isPluralTemplate(value) && typeof vars["count"] === "number") {
+    value = formatPlural(value, vars["count"], locale);
+  }
   return value.replace(/\{(\w+)\}/g, (match, name: string) =>
     name in vars ? String(vars[name]) : match,
   );
@@ -169,7 +175,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       d: dict,
       t: (key, vars) => {
         const found = lookup(dict, key) ?? lookup(dictionaries.en, key);
-        if (typeof found === "string") return interpolate(found, vars);
+        if (typeof found === "string") return interpolate(found, vars, locale);
         if (typeof found === "number") return String(found);
         return key;
       },

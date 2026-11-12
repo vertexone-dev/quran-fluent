@@ -5,7 +5,8 @@ export const dashboard = {
   documentTitle: "لوحة التحكم — QuranRoots",
   friend: "صديقي",
   subtitle: "استمر في رحلتك مع القرآن اليوم.",
-  streak: "سلسلة {count} يوم",
+  streak:
+    "one:سلسلة يوم واحد|two:سلسلة يومين|few:سلسلة {count} أيام|many:سلسلة {count} يومًا|other:سلسلة {count} يوم",
   longest: "الأطول {count}",
   continueLearning: "متابعة التعلّم",
   todayLesson: "الدرس 1 — الأبجدية العربية",
@@ -15,10 +16,12 @@ export const dashboard = {
   yourPlan: "خطتك",
   levelNotSet: "المستوى غير محدد",
   goalNotSet: "الهدف غير محدد",
-  minutesADay: "{count} دقيقة يوميًا",
+  minutesADay:
+    "one:دقيقة واحدة يوميًا|two:دقيقتان يوميًا|few:{count} دقائق يوميًا|many:{count} دقيقة يوميًا|other:{count} دقيقة يوميًا",
   todayTitle: "تعلّم اليوم",
   startDaily: "ابدأ الجلسة اليومية",
-  reviewsDue: "{count} مراجعة مستحقة",
+  reviewsDue:
+    "one:مراجعة واحدة مستحقة|two:مراجعتان مستحقتان|few:{count} مراجعات مستحقة|many:{count} مراجعة مستحقة|other:{count} مراجعة مستحقة",
   // ⁦/⁩ (LRI/PDI) isolate "42/100" as one left-to-right run so the
   // slash-joined numbers can't be bidi-reordered inside this rtl sentence.
   goalProgress: "⁦{minutes}/{target}⁩ دقيقة",
@@ -53,7 +56,8 @@ export const dashboard = {
   activityLabel: "نشاطك",
   memorizationCard: {
     title: "الحفظ",
-    memorizedCount: "{count} آية محفوظة",
+    memorizedCount:
+      "one:آية واحدة محفوظة|two:آيتان محفوظتان|few:{count} آيات محفوظة|many:{count} آية محفوظة|other:{count} آية محفوظة",
     dueCount: "{count} مستحقة للمراجعة",
     empty: "ابدأ بحفظ أول آية لك.",
   },

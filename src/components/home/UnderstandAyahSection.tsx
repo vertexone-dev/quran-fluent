@@ -15,7 +15,7 @@ const SURAH = 1;
 const AYAH = 2;
 
 const TAB =
-  "rounded-full px-4 py-2 text-sm text-white/80 data-[state=active]:bg-[oklch(0.767_0.139_91.1)] data-[state=active]:text-[oklch(0.2_0.035_195.1)] data-[state=active]:shadow-none";
+  "min-h-11 rounded-full px-2 py-2 text-sm text-white/80 sm:min-h-9 sm:px-4 data-[state=active]:bg-[oklch(0.767_0.139_91.1)] data-[state=active]:text-[oklch(0.2_0.035_195.1)] data-[state=active]:shadow-none";
 const LINK =
   "inline-flex min-h-11 items-center gap-2 rounded-full border px-5 text-sm font-semibold text-white transition-colors duration-300 hover:bg-white/10";
 
@@ -92,7 +92,7 @@ export function UnderstandAyahSection() {
         </div>
 
         <Tabs defaultValue="meaning" className="min-w-0">
-          <TabsList className="h-auto flex-wrap gap-1 rounded-full bg-white/10 p-1">
+          <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-2xl bg-white/10 p-1 sm:inline-flex sm:w-auto sm:rounded-full">
             <TabsTrigger value="meaning" className={TAB} data-testid="understand-tab-meaning">
               {u.tabs.meaning}
             </TabsTrigger>

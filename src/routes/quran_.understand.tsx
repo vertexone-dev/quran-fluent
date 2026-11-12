@@ -182,7 +182,7 @@ function UnderstandPage() {
 
           <nav
             aria-label={d.quran.readerUi.toolbarLabel}
-            className="flex items-center justify-between gap-3"
+            className="flex flex-wrap items-center justify-between gap-3"
           >
             <CinematicButton
               variant="ghost"

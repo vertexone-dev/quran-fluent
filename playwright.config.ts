@@ -105,6 +105,7 @@ export default defineConfig({
         // so they need neither a session nor database content.
         "72-milestone-c-reader.spec.ts",
         "73-understand-page.spec.ts",
+        "75-arabic-names-responsive-tabs.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },

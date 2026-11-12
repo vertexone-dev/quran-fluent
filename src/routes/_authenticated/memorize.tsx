@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/select";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { formatPlural } from "@/lib/plural";
 import { ayahAudioPlayer } from "@/lib/audio";
 import { useAyahAudioState, usePreferredReciter } from "@/components/quran/AyahPlayButton";
 import {
@@ -166,7 +167,7 @@ function MemorizeOverview({ userId }: { userId: string }) {
                 {dueCount ? (
                   <>
                     <p className="text-2xl font-bold">
-                      {m.overview.dueCount.replace("{count}", String(dueCount))}
+                      {formatPlural(m.overview.dueCount, dueCount, locale)}
                     </p>
                     <Button variant="secondary" size="sm" asChild>
                       <Link to="/practice">{d.learning.practice.today.start}</Link>
@@ -184,7 +185,7 @@ function MemorizeOverview({ userId }: { userId: string }) {
               </CardHeader>
               <CardContent>
                 <p className="text-2xl font-bold">
-                  {m.overview.memorizedCount.replace("{count}", String(memorizedTotal))}
+                  {formatPlural(m.overview.memorizedCount, memorizedTotal, locale)}
                 </p>
               </CardContent>
             </Card>

@@ -37,5 +37,5 @@ export const progress = {
   today: "اليوم",
   level: "المستوى الحالي",
   goal: "الهدف اليومي",
-  minutes: "{count} دقيقة",
+  minutes: "one:دقيقة واحدة|two:دقيقتان|few:{count} دقائق|many:{count} دقيقة|other:{count} دقيقة",
 };

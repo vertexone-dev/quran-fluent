@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { formatPlural } from "@/lib/plural";
 import { fetchPracticeQueue, fetchPracticeSummary } from "@/lib/practice";
 import {
   recordPracticeAttempt,
@@ -49,7 +50,7 @@ function Practice() {
 }
 
 function PracticeHome({ userId, onStart }: { userId: string; onStart: () => void }) {
-  const { d } = useI18n();
+  const { d, locale } = useI18n();
   const p = d.learning.practice;
 
   const {
@@ -104,19 +105,19 @@ function PracticeHome({ userId, onStart }: { userId: string; onStart: () => void
               <div className="flex items-center justify-between text-sm">
                 <span>{p.today.vocabulary}</span>
                 <span className="font-medium">
-                  {p.today.dueCount.replace("{count}", String(summary.vocabularyDue))}
+                  {formatPlural(p.today.dueCount, summary.vocabularyDue, locale)}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span>{p.today.weakAreas}</span>
                 <span className="font-medium">
-                  {p.today.topicsCount.replace("{count}", String(summary.weakAreaCount))}
+                  {formatPlural(p.today.topicsCount, summary.weakAreaCount, locale)}
                 </span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span>{p.today.memorization}</span>
                 <span className="font-medium">
-                  {p.today.ayatCount.replace("{count}", String(summary.memorizationDue))}
+                  {formatPlural(p.today.ayatCount, summary.memorizationDue, locale)}
                 </span>
               </div>
 
