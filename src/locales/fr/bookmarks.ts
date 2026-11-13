@@ -3,7 +3,7 @@ import type { bookmarks as EnBookmarks } from "../en/bookmarks";
 export const bookmarks: typeof EnBookmarks = {
   title: "Favoris",
   intro: "Les versets que vous avez enregistrés pendant votre lecture.",
-  count: "{count} enregistrés",
+  count: "one:{count} enregistré|other:{count} enregistrés",
   add: "Ajouter aux favoris",
   remove: "Retirer des favoris",
   addedToast: "Verset ajouté aux favoris.",

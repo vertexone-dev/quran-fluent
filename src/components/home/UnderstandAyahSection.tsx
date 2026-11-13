@@ -15,7 +15,7 @@ const SURAH = 1;
 const AYAH = 2;
 
 const TAB =
-  "min-h-11 rounded-full px-2 py-2 text-sm text-white/80 sm:min-h-9 sm:px-4 data-[state=active]:bg-[oklch(0.767_0.139_91.1)] data-[state=active]:text-[oklch(0.2_0.035_195.1)] data-[state=active]:shadow-none";
+  "min-h-11 rounded-full px-2 py-2 text-sm text-white/80 sm:px-4 data-[state=active]:bg-[oklch(0.767_0.139_91.1)] data-[state=active]:text-[oklch(0.2_0.035_195.1)] data-[state=active]:shadow-none";
 const LINK =
   "inline-flex min-h-11 items-center gap-2 rounded-full border px-5 text-sm font-semibold text-white transition-colors duration-300 hover:bg-white/10";
 

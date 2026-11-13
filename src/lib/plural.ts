@@ -20,8 +20,17 @@ export function isPluralTemplate(template: string): boolean {
   return CATEGORY_LIST.test(template);
 }
 
-export function formatPlural(template: string, count: number, locale: string): string {
-  const fill = (s: string) => s.replace(/\{count\}/g, String(count));
+export function formatPlural(
+  template: string,
+  count: number,
+  locale: string,
+  /** Extra named placeholders to fill after the form is chosen, e.g. {completed}/{total}. */
+  vars: Record<string, string | number> = {},
+): string {
+  const fill = (s: string) =>
+    s
+      .replace(/\{count\}/g, String(count))
+      .replace(/\{(\w+)\}/g, (m, name: string) => (name in vars ? String(vars[name]) : m));
   if (!isPluralTemplate(template)) return fill(template);
   const forms: Partial<Record<Category, string>> = {};
   for (const part of template.split("|")) {

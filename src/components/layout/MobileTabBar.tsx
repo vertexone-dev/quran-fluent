@@ -45,7 +45,7 @@ export function MobileTabBar() {
               to={to}
               activeOptions={{ exact: to === "/" }}
               data-testid={`tab-${key}`}
-              className="flex min-h-12 w-full flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-1.5 text-[11px] font-semibold text-[oklch(0.974_0.01_87.5/0.8)] transition-colors hover:text-[oklch(0.88_0.1_91)] focus-visible:outline-2 focus-visible:outline-[oklch(0.767_0.139_91.1)] [&.is-active]:text-[oklch(0.767_0.139_91.1)]"
+              className="flex min-h-12 w-full flex-col items-center justify-center gap-1 rounded-2xl px-0.5 py-1.5 text-[11px] max-[359px]:text-[10px] font-semibold text-[oklch(0.974_0.01_87.5/0.8)] transition-colors hover:text-[oklch(0.88_0.1_91)] focus-visible:outline-2 focus-visible:outline-[oklch(0.767_0.139_91.1)] [&.is-active]:text-[oklch(0.767_0.139_91.1)]"
               activeProps={{ className: "is-active" }}
             >
               <Icon className="size-5" strokeWidth={1.5} aria-hidden />

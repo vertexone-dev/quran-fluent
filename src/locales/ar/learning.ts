@@ -144,7 +144,8 @@ export const learning = {
       vocabulary: "المفردات",
       weakAreas: "نقاط الضعف",
       memorization: "الحفظ",
-      dueCount: "{count} مستحقة",
+      dueCount:
+        "one:مراجعة واحدة مستحقة|two:مراجعتان مستحقتان|few:{count} مراجعات مستحقة|many:{count} مراجعة مستحقة|other:{count} مراجعة مستحقة",
       topicsCount:
         "one:موضوع واحد|two:موضوعان|few:{count} مواضيع|many:{count} موضوعًا|other:{count} موضوع",
       ayatCount: "one:آية واحدة|two:آيتان|few:{count} آيات|many:{count} آية|other:{count} آية",

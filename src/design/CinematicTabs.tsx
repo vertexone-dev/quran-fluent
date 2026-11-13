@@ -31,7 +31,7 @@ export function CinematicTabsTrigger({
   return (
     <TabsTrigger
       className={cn(
-        "min-h-11 rounded-full px-2 text-sm sm:min-h-10 sm:px-4 font-semibold text-white/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[oklch(0.767_0.139_91.1)] data-[state=active]:bg-[oklch(0.767_0.139_91.1)] data-[state=active]:text-[oklch(0.2_0.035_195.1)] data-[state=active]:shadow-none",
+        "min-h-11 rounded-full px-2 text-sm sm:px-4 font-semibold text-white/80 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-[oklch(0.767_0.139_91.1)] data-[state=active]:bg-[oklch(0.767_0.139_91.1)] data-[state=active]:text-[oklch(0.2_0.035_195.1)] data-[state=active]:shadow-none",
         className,
       )}
       {...props}

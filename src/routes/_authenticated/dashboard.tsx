@@ -222,9 +222,15 @@ function Dashboard() {
                       {lessonEntryPoint.title}
                     </h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {d.learning.daily.lessonProgress
-                        .replace("{completed}", String(lessonEntryPoint.completedCount))
-                        .replace("{total}", String(lessonEntryPoint.totalCount))}
+                      {formatPlural(
+                        d.learning.daily.lessonProgress,
+                        lessonEntryPoint.completedCount,
+                        locale,
+                        {
+                          completed: lessonEntryPoint.completedCount,
+                          total: lessonEntryPoint.totalCount,
+                        },
+                      )}
                     </p>
                     <Progress
                       value={(lessonEntryPoint.completedCount / lessonEntryPoint.totalCount) * 100}

@@ -102,3 +102,34 @@ test("tab keyboard navigation and visible focus survive the grid layout (RTL)", 
     .evaluate((e) => getComputedStyle(e).boxShadow);
   expect(ring).not.toBe("none");
 });
+
+// QR-WEB-015E: bottom-nav labels must not be ellipsised at 320px in any
+// language (French "Apprendre" used to render as "Apprend…"), and the home
+// "Understand an Ayah" tab strip keeps >=44px touch targets at every width.
+test.describe("QR-WEB-015E accessibility corrections", () => {
+  for (const locale of ["en", "fr", "ar"] as const) {
+    test(`320px bottom navigation shows every label in full (${locale})`, async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 800 });
+      await open(page, "/quran/understand?surah=1&ayah=2", locale);
+      const labels = page.locator("nav[aria-label] li a span.truncate");
+      await expect(labels).toHaveCount(5);
+      const clipped = await labels.evaluateAll((els) =>
+        els.filter((e) => e.scrollWidth > e.clientWidth).map((e) => e.textContent),
+      );
+      expect(clipped).toEqual([]);
+    });
+  }
+
+  for (const width of [390, 768, 1440]) {
+    test(`home tab strip targets are at least 44px tall at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await open(page, "/", "en");
+      const tabs = page.getByTestId(/^understand-tab-/);
+      expect(await tabs.count()).toBeGreaterThanOrEqual(4);
+      const heights = await tabs.evaluateAll((els) =>
+        els.map((e) => Math.round(e.getBoundingClientRect().height)),
+      );
+      for (const h of heights) expect(h).toBeGreaterThanOrEqual(44);
+    });
+  }
+});

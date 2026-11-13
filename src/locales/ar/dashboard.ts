@@ -7,7 +7,8 @@ export const dashboard = {
   subtitle: "استمر في رحلتك مع القرآن اليوم.",
   streak:
     "one:سلسلة يوم واحد|two:سلسلة يومين|few:سلسلة {count} أيام|many:سلسلة {count} يومًا|other:سلسلة {count} يوم",
-  longest: "الأطول {count}",
+  longest:
+    "one:الأطول: يوم واحد|two:الأطول: يومان|few:الأطول: {count} أيام|many:الأطول: {count} يومًا|other:الأطول: {count} يوم",
   continueLearning: "متابعة التعلّم",
   todayLesson: "الدرس 1 — الأبجدية العربية",
   lessonBadge: "المستوى 1 · أساسيات العربية",
@@ -58,7 +59,8 @@ export const dashboard = {
     title: "الحفظ",
     memorizedCount:
       "one:آية واحدة محفوظة|two:آيتان محفوظتان|few:{count} آيات محفوظة|many:{count} آية محفوظة|other:{count} آية محفوظة",
-    dueCount: "{count} مستحقة للمراجعة",
+    dueCount:
+      "one:آية واحدة مستحقة للمراجعة|two:آيتان مستحقتان للمراجعة|few:{count} آيات مستحقة للمراجعة|many:{count} آية مستحقة للمراجعة|other:{count} آية مستحقة للمراجعة",
     empty: "ابدأ بحفظ أول آية لك.",
   },
   bookmarksCard: {
