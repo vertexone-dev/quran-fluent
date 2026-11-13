@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { formatPlural } from "@/lib/plural";
 import { findLevel1EntryPoint, type CurriculumEntryPoint } from "@/lib/curriculum";
 import { fetchLearningPath, nextStep } from "@/lib/placement";
 import {
@@ -420,6 +421,7 @@ function LessonCard({
   copy: ReturnType<typeof useI18n>["d"]["learning"]["daily"];
   d: ReturnType<typeof useI18n>["d"];
 }) {
+  const { locale } = useI18n();
   const title = lesson.title;
   const inProgress = lesson.completedCount > 0;
   return (
@@ -430,9 +432,10 @@ function LessonCard({
       <CardContent className="space-y-4">
         <p className="text-lg font-semibold text-foreground">{title}</p>
         <p className="text-sm text-muted-foreground">
-          {copy.lessonProgress
-            .replace("{completed}", String(lesson.completedCount))
-            .replace("{total}", String(lesson.totalCount))}
+          {formatPlural(copy.lessonProgress, lesson.completedCount, locale, {
+            completed: lesson.completedCount,
+            total: lesson.totalCount,
+          })}
         </p>
         <Button asChild>
           <Link to="/lesson/$lessonId" params={{ lessonId: lesson.lessonId }}>

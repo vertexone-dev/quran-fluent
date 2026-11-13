@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ProgressRing } from "@/components/common/ProgressRing";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/lib/i18n";
+import { formatPlural } from "@/lib/plural";
 import { findLevel1EntryPoint } from "@/lib/curriculum";
 import {
   fetchLearnerSnapshot,
@@ -221,9 +222,15 @@ function Dashboard() {
                       {lessonEntryPoint.title}
                     </h2>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {d.learning.daily.lessonProgress
-                        .replace("{completed}", String(lessonEntryPoint.completedCount))
-                        .replace("{total}", String(lessonEntryPoint.totalCount))}
+                      {formatPlural(
+                        d.learning.daily.lessonProgress,
+                        lessonEntryPoint.completedCount,
+                        locale,
+                        {
+                          completed: lessonEntryPoint.completedCount,
+                          total: lessonEntryPoint.totalCount,
+                        },
+                      )}
                     </p>
                     <Progress
                       value={(lessonEntryPoint.completedCount / lessonEntryPoint.totalCount) * 100}
@@ -406,13 +413,14 @@ function Dashboard() {
             {memorizationProgress && memorizationProgress.some((p) => p.status === "memorized") ? (
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {copy.memorizationCard.memorizedCount.replace(
-                    "{count}",
-                    String(memorizationProgress.filter((p) => p.status === "memorized").length),
+                  {formatPlural(
+                    copy.memorizationCard.memorizedCount,
+                    memorizationProgress.filter((p) => p.status === "memorized").length,
+                    locale,
                   )}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {copy.memorizationCard.dueCount.replace("{count}", String(memorizationDue ?? 0))}
+                  {formatPlural(copy.memorizationCard.dueCount, memorizationDue ?? 0, locale)}
                 </p>
               </>
             ) : (
@@ -432,7 +440,7 @@ function Dashboard() {
             </h3>
             {bookmarks && bookmarks.length > 0 ? (
               <p className="mt-1 text-sm text-muted-foreground">
-                {d.bookmarks.count.replace("{count}", String(bookmarks.length))}
+                {formatPlural(d.bookmarks.count, bookmarks.length, locale)}
               </p>
             ) : (
               <p className="mt-1 text-sm text-muted-foreground">{copy.bookmarksCard.empty}</p>

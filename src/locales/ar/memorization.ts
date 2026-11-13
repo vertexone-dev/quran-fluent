@@ -15,9 +15,11 @@ export const memorization = {
     continueCta: "متابعة {surah}",
     dueTitle: "تستحق المراجعة",
     dueEmpty: "لقد أنجزت جميع مراجعاتك. استمر في التعلّم أو ادرس سورة.",
-    dueCount: "{count} آية مستحقة",
+    dueCount:
+      "one:آية واحدة مستحقة|two:آيتان مستحقتان|few:{count} آيات مستحقة|many:{count} آية مستحقة|other:{count} آية مستحقة",
     memorizedTitle: "محفوظة",
-    memorizedCount: "{count} آية محفوظة",
+    memorizedCount:
+      "one:آية واحدة محفوظة|two:آيتان محفوظتان|few:{count} آيات محفوظة|many:{count} آية محفوظة|other:{count} آية محفوظة",
     surahProgressTitle: "تقدّم السورة",
     // ⁦/⁩ (LRI/PDI) isolate "3 / 10" as one left-to-right run so
     // the slash-joined numbers can't be bidi-reordered inside this rtl

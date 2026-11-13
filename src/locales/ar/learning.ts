@@ -89,7 +89,8 @@ export const learning = {
       "كم تريد أن تدرس كل يوم؟",
       "لغة الواجهة",
     ],
-    minutesPerDay: "{count} دقيقة يوميًا",
+    minutesPerDay:
+      "one:دقيقة واحدة يوميًا|two:دقيقتان يوميًا|few:{count} دقائق يوميًا|many:{count} دقيقة يوميًا|other:{count} دقيقة يوميًا",
     custom: "مخصص (دقائق)",
     customPlaceholder: "مثلًا 20",
     finish: "إنهاء الإعداد",
@@ -103,7 +104,7 @@ export const learning = {
     arabicLevel: "المستوى في العربية",
     primaryGoal: "الهدف الرئيسي",
     dailyGoal: "الهدف اليومي",
-    minutes: "{count} دقيقة",
+    minutes: "one:دقيقة واحدة|two:دقيقتان|few:{count} دقائق|many:{count} دقيقة|other:{count} دقيقة",
     interfaceLanguage: "لغة الواجهة",
     preferredTranslation: "الترجمة المفضّلة",
     preferredReciter: "القارئ المفضّل",
@@ -143,9 +144,11 @@ export const learning = {
       vocabulary: "المفردات",
       weakAreas: "نقاط الضعف",
       memorization: "الحفظ",
-      dueCount: "{count} مستحقة",
-      topicsCount: "{count} موضوع",
-      ayatCount: "{count} آية",
+      dueCount:
+        "one:مراجعة واحدة مستحقة|two:مراجعتان مستحقتان|few:{count} مراجعات مستحقة|many:{count} مراجعة مستحقة|other:{count} مراجعة مستحقة",
+      topicsCount:
+        "one:موضوع واحد|two:موضوعان|few:{count} مواضيع|many:{count} موضوعًا|other:{count} موضوع",
+      ayatCount: "one:آية واحدة|two:آيتان|few:{count} آيات|many:{count} آية|other:{count} آية",
       start: "ابدأ جلسة المراجعة",
     },
     session: {
@@ -300,7 +303,7 @@ export const learning = {
     allLessonsComplete: "لقد أكملت جميع الدروس المتاحة حاليًا.",
     viewLearningPlan: "عرض مساري التعليمي",
     lessonCardTitle: "درس اليوم",
-    lessonProgress: "{completed} من {total} درسًا مكتملًا",
+    lessonProgress: "الدروس المكتملة: {completed} من {total}",
     back: "العودة إلى لوحة التحكم",
     backToDashboard: "العودة إلى لوحة التحكم",
     morePractice: "تمرين إضافي",

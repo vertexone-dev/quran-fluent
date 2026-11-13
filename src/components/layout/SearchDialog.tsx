@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/command";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
-import { fetchSurahs, surahName } from "@/lib/quran";
+import { fetchSurahs, foldArabicForSearch, surahName } from "@/lib/quran";
 import { cn } from "@/lib/utils";
 
 /**
@@ -86,7 +86,7 @@ export function SearchDialog({ className }: { className?: string }) {
                   {surahs.map((s) => (
                     <CommandItem
                       key={s.number}
-                      value={`${s.number} ${s.name_en} ${s.transliteration ?? ""} ${s.name_fr ?? ""} ${s.name_ar}`}
+                      value={`${s.number} ${s.name_en} ${s.transliteration ?? ""} ${s.name_fr ?? ""} ${s.name_ar} ${foldArabicForSearch(s.name_ar)}`}
                       onSelect={() => {
                         setOpen(false);
                         void navigate({ to: "/quran", search: { surah: s.number } });

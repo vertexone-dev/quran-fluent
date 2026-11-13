@@ -207,11 +207,27 @@ export async function fetchAyah(surahNumber: number, ayahNumber: number): Promis
  * resort. name_en itself is never null.
  */
 export function surahName(
-  surah: Pick<Surah, "name_en" | "name_fr" | "transliteration">,
+  surah: Pick<Surah, "name_en" | "name_fr" | "transliteration"> & { name_ar?: string | null },
   locale: Locale,
 ): string {
+  // Arabic shows the canonical name_ar already stored in the surahs table
+  // (Tanzil-sourced); never a transliteration or a hand-built name.
+  if (locale === "ar") return surah.name_ar?.trim() || surah.name_en;
   if (locale === "fr") return surah.name_fr ?? surah.transliteration ?? surah.name_en;
   return surah.name_en;
+}
+
+/**
+ * Search-matching helper only (never used for display): strips Arabic
+ * diacritics/Quranic marks and tatweel and folds alef wasla/hamza forms, so a
+ * plain "الفاتحة" query matches the stored "سُورَةُ ٱلْفَاتِحَةِ".
+ */
+export function foldArabicForSearch(text: string): string {
+  return text
+    .normalize("NFKD")
+    .replace(/[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u0640]/g, "")
+    .replace(/[\u0671\u0622\u0623\u0625]/g, "\u0627")
+    .replace(/\u0649/g, "\u064A");
 }
 
 /**
