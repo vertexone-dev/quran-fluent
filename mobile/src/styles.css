@@ -1350,7 +1350,10 @@ html.dark .tile svg {
  * functionality -- everything still renders, just without movement. */
 @media (prefers-reduced-motion: reduce) {
   .stagger > * {
-    animation: none;
+    /* Instantaneous, not removed: `animation: none` corrupted the Home
+     * screen's rendering in the Android WebView (QR-DESIGN-004A). */
+    animation-duration: 0.01ms;
+    animation-delay: 0s;
   }
   .card-button:active,
   .hero-card:active,
@@ -1495,14 +1498,38 @@ html[data-text-size="large"] {
   cursor: pointer;
 }
 
-/* In-app "Reduce motion" (the OS-level preference is honoured separately by
- * the prefers-reduced-motion block above). */
-html.reduce-motion *,
-html.reduce-motion *::before,
-html.reduce-motion *::after {
-  animation: none !important;
-  transition: none !important;
-  scroll-behavior: auto !important;
+/* In-app "Reduce motion". Deliberately narrow and mirroring the OS-level
+ * prefers-reduced-motion block above: it names the elements that actually
+ * animate. A blanket `* { animation: none !important; transition: none
+ * !important }` rule corrupted the Home screen's rendering in the Android
+ * WebView (found on-device in QR-DESIGN-004A), so it must not come back. */
+html.reduce-motion .stagger > * {
+  /* Keep the animation (so the element keeps its compositing layer and
+   * end-state) but make it instantaneous, rather than removing it. */
+  animation-duration: 0.01ms;
+  animation-delay: 0s;
+}
+html.reduce-motion .tab-item,
+html.reduce-motion .progress-fill,
+html.reduce-motion .seg,
+html.reduce-motion .card-button,
+html.reduce-motion .hero-card,
+html.reduce-motion .tile,
+html.reduce-motion .icon-btn,
+html.reduce-motion .ayah-arabic,
+html.reduce-motion .profile-btn,
+html.reduce-motion .shortcut,
+html.reduce-motion .switch,
+html.reduce-motion .switch-knob {
+  transition: none;
+}
+html.reduce-motion .card-button:active,
+html.reduce-motion .hero-card:active,
+html.reduce-motion .tile:active:not(:disabled),
+html.reduce-motion .icon-btn:active:not(:disabled),
+html.reduce-motion .shortcut:active,
+html.reduce-motion .profile-btn:active {
+  transform: none;
 }
 
 /* ---- QR-DESIGN-002 Stage 3: onboarding, progress ring, reflect ---- */
