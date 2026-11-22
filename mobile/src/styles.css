@@ -1630,3 +1630,7 @@ html.reduce-motion *::after {
 .reflect-entry {
   align-items: flex-start;
 }
+
+.translation-text + .group-label {
+  margin-top: 18px;
+}

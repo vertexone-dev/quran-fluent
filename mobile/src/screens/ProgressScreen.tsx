@@ -70,15 +70,17 @@ export function ProgressScreen({ onNavigate }: { onNavigate: (route: Route) => v
           }
         >
           <circle cx="66" cy="66" r={R} className="ring-track" />
-          <circle
-            cx="66"
-            cy="66"
-            r={R}
-            className="ring-fill"
-            strokeDasharray={C}
-            strokeDashoffset={C * (1 - fraction)}
-            transform="rotate(-90 66 66)"
-          />
+          {percent > 0 && (
+            <circle
+              cx="66"
+              cy="66"
+              r={R}
+              className="ring-fill"
+              strokeDasharray={C}
+              strokeDashoffset={C * (1 - fraction)}
+              transform="rotate(-90 66 66)"
+            />
+          )}
           <text x="66" y="72" textAnchor="middle" className="ring-text">
             {hasPosition ? `${percent}%` : "—"}
           </text>
