@@ -379,9 +379,10 @@ export function ReadingScreen({
     <div ref={rootRef}>
       <div className="reader-sticky">
         <AppBar
+          centered
           title={surah?.name_en ?? ""}
           onBack={onBack}
-          right={surah && <span className="arabic-text reader-ar-title">{surah.name_ar}</span>}
+          subtitle={surah && <span className="arabic-text reader-ar-title">{surah.name_ar}</span>}
         />
         {surah && (
           <div className="row-between small text-muted" style={{ marginBottom: 6 }}>

@@ -1,4 +1,4 @@
-import { BookOpen, GraduationCap, Languages, Layers } from "lucide-react";
+import { ArrowRight, BookOpen, GraduationCap, Languages, Layers } from "lucide-react";
 import { EMBLEM_LARGE_SRC } from "../artwork";
 import { nextLocale, useI18n } from "../i18n";
 
@@ -53,7 +53,8 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
         onClick={onDone}
         data-testid="onboarding-start"
       >
-        {d.onboarding.getStarted}
+        <span>{d.onboarding.getStarted}</span>
+        <ArrowRight size={18} className="dir-icon" aria-hidden="true" />
       </button>
       <button
         type="button"

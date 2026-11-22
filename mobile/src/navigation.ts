@@ -17,6 +17,7 @@ export type Route =
   | { screen: "more" }
   | { screen: "offline-access" }
   | { screen: "settings" }
+  | { screen: "about" }
   | { screen: "progress" }
   | { screen: "understand"; surahNumber: number; ayahNumber: number }
   | { screen: "reflect"; surahNumber?: number; ayahNumber?: number }

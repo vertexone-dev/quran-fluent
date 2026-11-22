@@ -21,6 +21,24 @@ log() { echo "[$(date +%H:%M:%S)] $*" >&2; }
 # a tab switch, before content paints -- a fixed sleep is not reliable here.
 # An empty/loading dump is ~2.6KB; every populated screen observed so far is
 # 7KB or larger, so 4000 bytes is used as the "still loading" threshold.
+# wait_for_app_ui [timeout_s]: after `am start`, block until the app's own UI
+# (package $PKG, with its "QuranRoots" title) is in the window dump. A fixed
+# sleep is not enough on a slow or memory-pressured emulator: a cold start can
+# take 6s+, and a dump taken earlier captures the launcher instead of the app.
+wait_for_app_ui() {
+  local timeout="${1:-30}" waited=0
+  while [ "$waited" -lt "$timeout" ]; do
+    adb shell uiautomator dump /sdcard/window_dump_wait.xml >/dev/null 2>&1
+    if adb shell cat /sdcard/window_dump_wait.xml 2>/dev/null | grep -q "package=\"$PKG\".*QuranRoots\|QuranRoots.*package=\"$PKG\""; then
+      return 0
+    fi
+    sleep 1
+    waited=$((waited + 1))
+  done
+  log "WARNING: app UI not seen within ${timeout}s of launch"
+  return 1
+}
+
 dump_ui() {
   local label="$1" out_dir="$2"
   local dest="$out_dir/${label}.xml"

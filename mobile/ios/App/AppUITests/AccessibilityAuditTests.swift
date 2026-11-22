@@ -34,7 +34,14 @@ final class AccessibilityAuditTests: XCTestCase {
     }
 
     private func tab(_ label: String) -> XCUIElement {
-        app.buttons.matching(NSPredicate(format: "label == %@", label)).firstMatch
+        // Home tiles/shortcuts can carry the same label as a tab (e.g. "Learn",
+        // "Settings"). The tab bar is the lowest such button, so pick that one.
+        let q = app.buttons.matching(NSPredicate(format: "label == %@", label))
+        _ = q.firstMatch.waitForExistence(timeout: 8)
+        let all = q.allElementsBoundByIndex.filter { $0.exists }
+        // A tile scrolled under the tab bar is not hittable; the tab bar button is.
+        let hittable = all.filter { $0.isHittable }
+        return (hittable.isEmpty ? all : hittable).max(by: { $0.frame.minY < $1.frame.minY }) ?? q.firstMatch
     }
 
     private func start() {
@@ -215,5 +222,33 @@ final class AccessibilityAuditTests: XCTestCase {
         tab("Home").tap(); sleep(1)
         app.swipeUp(); sleep(1)
         shot("cmp-home-scrolled")
+    }
+
+    /// QR-DESIGN-007A: Settings -> About & Sources credits the three text sources
+    /// with the database's own review statuses, and Home shows six real tiles.
+    func testHomeSixTilesAndAboutSources() {
+        start()
+        for name in ["Qur'an", "Understand This Ayah", "Learn", "Reflect", "Memorize", "Bookmarks"] {
+            let b = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", name)).firstMatch
+            XCTAssertTrue(b.waitForExistence(timeout: 5), "Home tile '\(name)' missing")
+            if b.exists { XCTAssertGreaterThanOrEqual(b.frame.height, 44, "tile '\(name)' under 44pt") }
+        }
+        shot("007a-home")
+        tab("Settings").tap(); sleep(1)
+        app.swipeUp(); sleep(1)
+        let about = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "About & Sources")).firstMatch
+        XCTAssertTrue(about.waitForExistence(timeout: 6), "About & Sources row missing")
+        shot("007a-settings-bottom")
+        about.tap(); sleep(1)
+        for needle in ["Tanzil Project", "Marmaduke Pickthall", "Kazimirski", "Verified", "Candidate"] {
+            let t = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", needle)).firstMatch
+            XCTAssertTrue(t.waitForExistence(timeout: 4), "About is missing '\(needle)'")
+        }
+        shot("007a-about-top")
+        app.swipeUp(); sleep(1)
+        let notice = app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "Copyright")).firstMatch
+        XCTAssertTrue(notice.exists, "Tanzil copyright notice not shown")
+        shot("007a-about-bottom")
+        XCTAssertTrue(app.buttons["Back"].exists, "About has no labelled Back control")
     }
 }
