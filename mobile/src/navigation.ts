@@ -19,7 +19,7 @@ export type Route =
   | { screen: "settings" }
   | { screen: "progress" }
   | { screen: "understand"; surahNumber: number; ayahNumber: number }
-  | { screen: "reflect" }
+  | { screen: "reflect"; surahNumber?: number; ayahNumber?: number }
   | { screen: "memorize" };
 
 export const TAB_HOME_ROUTE: Record<Tab, Route> = {

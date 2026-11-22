@@ -27,6 +27,7 @@ const KEYS = {
   reduceMotion: "qr.settings.reduceMotion",
   startScreen: "qr.settings.startScreen",
   onboardingDone: "qr.onboarding.done",
+  reflections: "qr.reflections",
 } as const;
 
 export type ThemePreference = "light" | "dark" | "system";
@@ -345,4 +346,70 @@ export function resetPreferences(): void {
       // storage unavailable: nothing to reset
     }
   }
+}
+
+// ---------------------------------------------------------------------------
+// QR-DESIGN-002 Stage 3: private reflections. The user's own words about an
+// ayah, stored only on this device. No prompts, interpretations or sample
+// entries are ever generated or pre-filled.
+// ---------------------------------------------------------------------------
+
+export type Reflection = {
+  id: string;
+  surahNumber: number;
+  ayahNumber: number;
+  text: string;
+  createdAt: string;
+};
+
+export const MAX_REFLECTION_LENGTH = 2000;
+
+function isReflection(value: unknown): value is Reflection {
+  const v = value as Partial<Reflection> | null;
+  return (
+    !!v &&
+    typeof v.id === "string" &&
+    Number.isInteger(v.surahNumber) &&
+    v.surahNumber! > 0 &&
+    Number.isInteger(v.ayahNumber) &&
+    v.ayahNumber! > 0 &&
+    typeof v.text === "string" &&
+    v.text.length > 0 &&
+    typeof v.createdAt === "string"
+  );
+}
+
+/** Newest first. Malformed stored entries are ignored, never thrown on. */
+export function getReflections(): Reflection[] {
+  const raw = readJson<unknown>(KEYS.reflections, []);
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter(isReflection)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : a.createdAt > b.createdAt ? -1 : 0));
+}
+
+export function addReflection(
+  surahNumber: number,
+  ayahNumber: number,
+  text: string,
+  now: () => Date = () => new Date(),
+): Reflection | null {
+  const trimmed = text.trim().slice(0, MAX_REFLECTION_LENGTH);
+  if (!trimmed || !Number.isInteger(surahNumber) || !Number.isInteger(ayahNumber)) return null;
+  const entry: Reflection = {
+    id: `${now().getTime()}-${Math.random().toString(36).slice(2, 8)}`,
+    surahNumber,
+    ayahNumber,
+    text: trimmed,
+    createdAt: now().toISOString(),
+  };
+  writeJson(KEYS.reflections, [entry, ...getReflections()]);
+  return entry;
+}
+
+export function deleteReflection(id: string): void {
+  writeJson(
+    KEYS.reflections,
+    getReflections().filter((r) => r.id !== id),
+  );
 }

@@ -26,28 +26,29 @@ test.describe("Five primary destinations", () => {
     await expect(page.locator(".tab-item")).toHaveCount(5);
   });
 
-  for (const [tab, title] of [
-    ["reflect", "Reflect"],
-    ["memorize", "Memorize"],
-  ] as const) {
-    test(`${title} (opened from Home) is clearly marked Planned and shows no sample content`, async ({
-      page,
-    }) => {
-      await page.getByTestId(`home-tile-${tab}`).click();
-      const screen = page.getByTestId(`planned-screen-${tab}`);
-      await expect(screen).toBeVisible();
-      await expect(page.locator(".appbar-title")).toHaveText(title);
-      await expect(screen.getByTestId("planned-badge")).toHaveText("Planned");
-      await expect(screen.getByTestId("planned-body")).toContainText(
-        "not available in this version",
-      );
-      await expect(screen.locator(".quran-text")).toHaveCount(0);
-    });
-  }
+  test("Reflect (opened from Home) is a real screen, not a Planned placeholder", async ({
+    page,
+  }) => {
+    await page.getByTestId("home-tile-reflect").click();
+    await expect(page.getByTestId("reflect-screen")).toBeVisible();
+    await expect(page.locator(".appbar-title")).toHaveText("Reflect");
+    await expect(page.getByTestId("reflect-screen")).not.toContainText("Planned");
+  });
 
-  test("Planned screen links to features that work now", async ({ page }) => {
+  test("Memorize (opened from Home) says plainly it is not available and shows no sample data", async ({
+    page,
+  }) => {
     await page.getByTestId("home-tile-memorize").click();
-    await page.getByTestId("planned-open-quran").click();
+    await expect(page.locator(".appbar-title")).toHaveText("Memorize");
+    await expect(page.getByTestId("memorize-badge")).toHaveText("Not available yet");
+    await expect(page.getByTestId("memorize-body")).toContainText("not available in this version");
+    await expect(page.getByTestId("memorize-screen")).not.toContainText("%");
+    await expect(page.getByTestId("memorize-screen").locator(".quran-text")).toHaveCount(0);
+  });
+
+  test("Memorize links to features that work now", async ({ page }) => {
+    await page.getByTestId("home-tile-memorize").click();
+    await page.getByTestId("memorize-open-quran").click();
     await expect(page.locator(".appbar-title")).toHaveText("Surahs");
     await expect(page.locator(".tab-item.active")).toContainText("Qur'an");
   });
@@ -108,10 +109,10 @@ test.describe("Profile & More and Home shortcuts keep every secondary feature", 
     });
   }
 
-  test("Profile & More lists Reflect and Memorization as Planned", async ({ page }) => {
+  test("Profile & More lists Reflect, and Memorization as not available yet", async ({ page }) => {
     await page.getByTestId("profile-button").click();
-    await expect(page.getByTestId("more-row-reflect")).toContainText("Planned");
-    await expect(page.getByTestId("more-row-memorize")).toContainText("Planned");
+    await expect(page.getByTestId("more-row-reflect")).not.toContainText("Not available");
+    await expect(page.getByTestId("more-row-memorize")).toContainText("Not available yet");
   });
 });
 

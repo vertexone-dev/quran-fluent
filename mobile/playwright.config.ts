@@ -23,6 +23,17 @@ export default defineConfig({
   timeout: 30_000,
   use: {
     baseURL: `http://localhost:${PORT}`,
+    // Every spec except onboarding.spec.ts runs as a returning user: the
+    // first-launch welcome screen has its own spec, which clears this.
+    storageState: {
+      cookies: [],
+      origins: [
+        {
+          origin: `http://localhost:${PORT}`,
+          localStorage: [{ name: "qr.onboarding.done", value: "true" }],
+        },
+      ],
+    },
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },

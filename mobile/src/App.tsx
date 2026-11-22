@@ -16,6 +16,8 @@ import {
   getReduceMotion,
   setReduceMotion as persistReduceMotion,
   getStartScreen,
+  getOnboardingDone,
+  setOnboardingDone,
   getReadingPosition,
   resolveIsDark,
   type TextSize,
@@ -35,7 +37,11 @@ import { PracticeScreen } from "./screens/PracticeScreen";
 import { MoreScreen } from "./screens/MoreScreen";
 import { OfflineAccessScreen } from "./screens/OfflineAccessScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
-import { PlannedScreen } from "./screens/PlannedScreen";
+import { OnboardingScreen } from "./screens/OnboardingScreen";
+import { UnderstandScreen } from "./screens/UnderstandScreen";
+import { ProgressScreen } from "./screens/ProgressScreen";
+import { ReflectScreen } from "./screens/ReflectScreen";
+import { MemorizeScreen } from "./screens/MemorizeScreen";
 import type { PrefsControls } from "./screens/SettingsScreen";
 import { TAB_HOME_ROUTE, type Route, type Tab } from "./navigation";
 
@@ -62,6 +68,7 @@ export function App() {
   const [theme, setTheme] = useState<ThemePreference>(() => getStoredTheme());
   const [textSize, setTextSizeState] = useState<TextSize>(() => getStoredTextSize());
   const [reduceMotion, setReduceMotionState] = useState<boolean>(() => getReduceMotion());
+  const [onboarded, setOnboarded] = useState<boolean>(() => getOnboardingDone());
   const prefersDark = useSystemPrefersDark();
 
   useEffect(() => {
@@ -160,12 +167,21 @@ export function App() {
           <SplashScreen />
         ) : (
           <DbContext.Provider value={{ db, version }}>
-            <Navigator
-              theme={theme}
-              onThemeChange={handleThemeChange}
-              prefersDark={prefersDark}
-              prefs={prefs}
-            />
+            {!onboarded ? (
+              <OnboardingScreen
+                onDone={() => {
+                  setOnboardingDone();
+                  setOnboarded(true);
+                }}
+              />
+            ) : (
+              <Navigator
+                theme={theme}
+                onThemeChange={handleThemeChange}
+                prefersDark={prefersDark}
+                prefs={prefs}
+              />
+            )}
           </DbContext.Provider>
         )}
       </HistoryProvider>
@@ -293,11 +309,25 @@ function Navigator({
             prefs={prefs}
           />
         )}
-        {(route.screen === "reflect" ||
-          route.screen === "memorize" ||
-          route.screen === "progress") && (
-          <PlannedScreen feature={route.screen} onNavigate={handleNavigate} />
+        {route.screen === "progress" && <ProgressScreen onNavigate={handleNavigate} />}
+        {route.screen === "understand" && (
+          <UnderstandScreen
+            surahNumber={route.surahNumber}
+            ayahNumber={route.ayahNumber}
+            onNavigate={handleNavigate}
+            onBack={goBack}
+          />
         )}
+        {route.screen === "reflect" && (
+          <ReflectScreen
+            key={`${route.surahNumber ?? ""}:${route.ayahNumber ?? ""}`}
+            surahNumber={route.surahNumber}
+            ayahNumber={route.ayahNumber}
+            onNavigate={handleNavigate}
+            onBack={goBack}
+          />
+        )}
+        {route.screen === "memorize" && <MemorizeScreen onNavigate={handleNavigate} />}
       </div>
       <TabBar active={state.tab} onSelect={handleSelectTab} />
     </div>

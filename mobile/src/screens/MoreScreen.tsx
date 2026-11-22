@@ -13,7 +13,7 @@ import { useI18n } from "../i18n";
 import { AppBar } from "../AppBar";
 import type { Route } from "../navigation";
 
-type Row = { key: string; icon: LucideIcon; label: string; route: Route };
+type Row = { key: string; icon: LucideIcon; label: string; route: Route; badge?: string };
 
 /** Profile & More (opened from the profile circle on Home). Keeps every
  * secondary feature one tap away now that the tab bar carries the five
@@ -35,6 +35,14 @@ export function MoreScreen({
       route: { screen: "ayah-bookmarks" },
     },
     { key: "practice", icon: PenLine, label: d.more.practice, route: { screen: "practice" } },
+    { key: "reflect", icon: Sparkles, label: d.nav.reflect, route: { screen: "reflect" } },
+    {
+      key: "memorize",
+      icon: Brain,
+      label: d.more.memorization,
+      route: { screen: "memorize" },
+      badge: d.memorizeUi.badge,
+    },
   ];
   const app: Row[] = [
     {
@@ -45,11 +53,6 @@ export function MoreScreen({
     },
     { key: "settings", icon: SettingsIcon, label: d.more.settings, route: { screen: "settings" } },
   ];
-  const planned: { key: "reflect" | "memorize"; icon: LucideIcon; label: string }[] = [
-    { key: "reflect", icon: Sparkles, label: d.nav.reflect },
-    { key: "memorize", icon: Brain, label: d.more.memorization },
-  ];
-
   const renderRows = (rows: Row[]) =>
     rows.map((r) => (
       <button
@@ -64,7 +67,11 @@ export function MoreScreen({
           <r.icon size={18} />
           {r.label}
         </span>
-        <ChevronRight size={18} className="text-muted dir-icon" />
+        {r.badge ? (
+          <span className="chip chip-planned">{r.badge}</span>
+        ) : (
+          <ChevronRight size={18} className="text-muted dir-icon" />
+        )}
       </button>
     ));
 
@@ -96,26 +103,6 @@ export function MoreScreen({
       <h2 className="group-label">{d.more.app}</h2>
       <div className="card" style={{ padding: 0, marginBottom: 20 }}>
         {renderRows(app)}
-      </div>
-
-      <h2 className="group-label">{d.more.planned}</h2>
-      <div className="card" style={{ padding: 0 }}>
-        {planned.map((p) => (
-          <button
-            key={p.key}
-            type="button"
-            className="list-row"
-            style={{ padding: 14 }}
-            onClick={() => onNavigate({ screen: p.key })}
-            data-testid={`more-row-${p.key}`}
-          >
-            <span className="row-icon">
-              <p.icon size={18} />
-              {p.label}
-            </span>
-            <span className="chip chip-planned">{d.planned.badge}</span>
-          </button>
-        ))}
       </div>
     </div>
   );

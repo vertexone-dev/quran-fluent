@@ -1504,3 +1504,129 @@ html.reduce-motion *::after {
   transition: none !important;
   scroll-behavior: auto !important;
 }
+
+/* ---- QR-DESIGN-002 Stage 3: onboarding, progress ring, reflect ---- */
+.onboarding {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 24px calc(24px + env(safe-area-inset-bottom));
+  background: var(--qr-midnight, oklch(0.28 0.04 195.1));
+  color: oklch(0.974 0.01 87.5);
+  box-sizing: border-box;
+  text-align: center;
+}
+.onboarding-top {
+  align-self: stretch;
+  display: flex;
+  justify-content: flex-end;
+}
+.onboarding-emblem {
+  width: min(46vw, 180px);
+  height: auto;
+  margin-top: 8px;
+}
+.onboarding-title {
+  margin: 14px 0 6px;
+  font-family: var(--font-display, inherit);
+  font-size: 1.9rem;
+  color: var(--qr-gold);
+}
+.onboarding-subtitle {
+  margin: 0 0 20px;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+.onboarding-list {
+  align-self: stretch;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.onboarding-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid oklch(0.974 0.01 87.5 / 16%);
+  border-radius: var(--radius);
+  background: oklch(0.974 0.01 87.5 / 6%);
+  text-align: start;
+}
+.onboarding-note {
+  margin: 4px 0 18px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+.onboarding-cta {
+  align-self: stretch;
+  min-height: 52px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--qr-gold);
+  color: oklch(0.25 0.04 195);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.onboarding-skip {
+  margin-top: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  opacity: 0.8;
+  cursor: pointer;
+}
+.onboarding .setting-title,
+.onboarding .setting-hint {
+  color: inherit;
+}
+
+.journey-ring-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.ring-track {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 10;
+}
+.ring-fill {
+  fill: none;
+  stroke: var(--qr-gold);
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+.ring-text {
+  fill: var(--foreground);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.reflect-input {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.reflect-input:focus-visible {
+  outline: 2px solid var(--qr-gold);
+  outline-offset: 2px;
+}
+.reflect-entry {
+  align-items: flex-start;
+}

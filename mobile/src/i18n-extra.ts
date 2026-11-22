@@ -11,9 +11,6 @@
  */
 export const extraEn = {
   tabs: { progress: "Progress", settings: "Settings" },
-  plannedMore: {
-    progressBody: "Progress is being built. It is not available in this version of the app.",
-  },
   prefs: {
     general: "General",
     startScreen: "Start screen",
@@ -127,10 +124,6 @@ export const extraEn = {
 
 export const extraFr: typeof extraEn = {
   tabs: { progress: "Progrès", settings: "Réglages" },
-  plannedMore: {
-    progressBody:
-      "Le suivi des progrès est en préparation. Il n'est pas disponible dans cette version.",
-  },
   prefs: {
     general: "Général",
     startScreen: "Écran de démarrage",
@@ -246,9 +239,6 @@ export const extraFr: typeof extraEn = {
 
 export const extraAr: typeof extraEn = {
   tabs: { progress: "التقدّم", settings: "الإعدادات" },
-  plannedMore: {
-    progressBody: "قسم التقدّم قيد الإعداد وغير متاح في هذا الإصدار من التطبيق.",
-  },
   prefs: {
     general: "عام",
     startScreen: "شاشة البداية",

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } fro
 import {
   BookmarkCheck,
   BookmarkPlus,
+  Layers,
   Minus,
   Plus,
   Play,
@@ -445,21 +446,38 @@ export function ReadingScreen({
               <span className="ayah-marker" aria-label={`${d.reader.ayah} ${ayah.ayah_number}`}>
                 {ayah.ayah_number}
               </span>
-              <button
-                type="button"
-                className="icon-btn"
-                aria-label={bookmarked ? d.bookmarks.remove : d.bookmarks.add}
-                onClick={() => {
-                  toggleAyahBookmark(surahNumber, ayah.ayah_number);
-                  forceRender((n) => n + 1);
-                }}
-              >
-                {bookmarked ? (
-                  <BookmarkCheck size={18} className="text-gold" />
-                ) : (
-                  <BookmarkPlus size={18} />
-                )}
-              </button>
+              <div style={{ display: "flex", gap: 4 }}>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label={d.understand.understandAction}
+                  onClick={() =>
+                    onNavigate({
+                      screen: "understand",
+                      surahNumber,
+                      ayahNumber: ayah.ayah_number,
+                    })
+                  }
+                  data-testid={`ayah-understand-${ayah.ayah_number}`}
+                >
+                  <Layers size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label={bookmarked ? d.bookmarks.remove : d.bookmarks.add}
+                  onClick={() => {
+                    toggleAyahBookmark(surahNumber, ayah.ayah_number);
+                    forceRender((n) => n + 1);
+                  }}
+                >
+                  {bookmarked ? (
+                    <BookmarkCheck size={18} className="text-gold" />
+                  ) : (
+                    <BookmarkPlus size={18} />
+                  )}
+                </button>
+              </div>
             </div>
             <div className="ayah-arabic">
               <p className="quran-text" style={{ fontSize: FONT_SIZES[sizeIdx], margin: 0 }}>

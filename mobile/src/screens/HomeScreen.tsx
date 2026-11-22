@@ -6,6 +6,7 @@ import {
   CloudOff,
   GraduationCap,
   Languages,
+  Layers,
   Moon,
   PenLine,
   Settings as SettingsIcon,
@@ -19,6 +20,7 @@ import { useDb } from "../DbContext";
 import { listCourses, listLevels, listModules, listLessons, listSurahs } from "../db";
 import {
   getLastReadSurah,
+  getReadingPosition,
   nextThemePreference,
   resolveIsDark,
   setStoredTheme,
@@ -235,6 +237,21 @@ export function HomeScreen({
           <span className="tile-subtitle">{d.reader.tileSubtitle}</span>
         </button>
         <button
+          className="tile tile-support"
+          onClick={() =>
+            onNavigate({
+              screen: "understand",
+              surahNumber: getReadingPosition()?.surahNumber ?? 1,
+              ayahNumber: getReadingPosition()?.ayahNumber ?? 1,
+            })
+          }
+          type="button"
+          data-testid="home-tile-understand"
+        >
+          <Layers size={22} />
+          <span className="tile-title">{d.understand.title}</span>
+        </button>
+        <button
           className="tile tile-primary-tint"
           onClick={() => onNavigate({ screen: "lessons" })}
           type="button"
@@ -252,7 +269,6 @@ export function HomeScreen({
         >
           <Sparkles size={22} />
           <span className="tile-title">{d.nav.reflect}</span>
-          <span className="chip chip-planned">{d.planned.badge}</span>
         </button>
         <button
           className="tile tile-accent"
@@ -262,7 +278,7 @@ export function HomeScreen({
         >
           <Brain size={22} />
           <span className="tile-title">{d.nav.memorize}</span>
-          <span className="chip chip-planned">{d.planned.badge}</span>
+          <span className="chip chip-planned">{d.memorizeUi.badge}</span>
         </button>
       </div>
     </div>
