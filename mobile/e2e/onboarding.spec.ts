@@ -42,4 +42,43 @@ test.describe("Onboarding (first launch)", () => {
     await expect(page.getByTestId("onboarding-screen")).toBeVisible({ timeout: 15_000 });
     await expect(page.locator("html")).toHaveClass(/dark/);
   });
+
+  test("language button is legible (>= 4.5:1 against the Midnight screen)", async ({ page }) => {
+    await page.goto("/");
+    const lang = page.getByTestId("onboarding-language");
+    await expect(lang).toBeVisible({ timeout: 15_000 });
+    const ratio = await page.evaluate(() => {
+      const rgb = (css: string) => {
+        const c = document.createElement("canvas");
+        c.width = c.height = 1;
+        const ctx = c.getContext("2d")!;
+        ctx.fillStyle = "#000";
+        ctx.fillStyle = css;
+        ctx.fillRect(0, 0, 1, 1);
+        return Array.from(ctx.getImageData(0, 0, 1, 1).data).slice(0, 3);
+      };
+      const lum = ([r, g, b]: number[]) => {
+        const f = (v: number) => ((v /= 255) <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+        return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+      };
+      const fg = rgb(
+        getComputedStyle(document.querySelector('[data-testid="onboarding-language"]')!).color,
+      );
+      const bg = rgb(getComputedStyle(document.querySelector(".onboarding")!).backgroundColor);
+      const [a, b] = [lum(fg), lum(bg)].sort((x, y) => y - x);
+      return (a + 0.05) / (b + 0.05);
+    });
+    expect(ratio).toBeGreaterThanOrEqual(4.5);
+  });
+
+  test("on a short phone (375x667) Get started and Skip fit without scrolling", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto("/");
+    const skip = page.getByTestId("onboarding-skip");
+    await expect(skip).toBeVisible({ timeout: 15_000 });
+    const box = await skip.boundingBox();
+    expect(box!.y + box!.height).toBeLessThanOrEqual(667);
+  });
 });
