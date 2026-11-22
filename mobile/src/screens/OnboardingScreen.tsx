@@ -19,7 +19,7 @@ export function OnboardingScreen({ onDone }: { onDone: () => void }) {
       <div className="onboarding-top">
         <button
           type="button"
-          className="icon-btn icon-btn-bordered"
+          className="icon-btn icon-btn-bordered icon-btn-glass"
           onClick={() => setLocale(nextLocale(locale))}
           aria-label={d.settings.language}
           data-testid="onboarding-language"

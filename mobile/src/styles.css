@@ -1613,6 +1613,35 @@ html.reduce-motion .profile-btn:active {
   opacity: 0.8;
   cursor: pointer;
 }
+
+/* Short phones (iPhone SE class, ~667pt): keep the CTA and Skip on screen
+ * without scrolling by tightening the emblem and vertical rhythm. */
+@media (max-height: 700px) {
+  .onboarding {
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+  }
+  .onboarding-emblem {
+    width: min(30vw, 104px);
+    margin-top: 0;
+  }
+  .onboarding-title {
+    font-size: 1.6rem;
+    margin: 8px 0 4px;
+  }
+  .onboarding-subtitle {
+    margin-bottom: 12px;
+  }
+  .onboarding-list {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .onboarding-row {
+    padding: 8px 12px;
+  }
+  .onboarding-note {
+    margin: 0 0 10px;
+  }
+}
 .onboarding .setting-title,
 .onboarding .setting-hint {
   color: inherit;
