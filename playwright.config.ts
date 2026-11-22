@@ -194,6 +194,7 @@ export default defineConfig({
         "55-dashboard-mobile-greeting.spec.ts",
         "56-premium-motion-interactions.spec.ts",
         "57-settings.spec.ts",
+        "76-settings-display-preferences.spec.ts",
         "58-level6-batch1-al-fatiha-surah-study.spec.ts",
         "60-level6-production-validation.spec.ts",
         "61-settings-billing-routing.spec.ts",
