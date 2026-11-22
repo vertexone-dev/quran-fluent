@@ -87,6 +87,7 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
         <>
           <input
             className="input"
+            aria-label={d.reader.search}
             placeholder={d.reader.search}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -123,6 +124,7 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
                     alignItems: "center",
                     gap: 12,
                     minWidth: 0,
+                    minHeight: 44,
                     flex: 1,
                     background: "none",
                     border: "none",
@@ -158,6 +160,7 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
                 </span>
                 <button
                   type="button"
+                  className="hit-44"
                   aria-label={favorites.has(s.number) ? d.reader.unfavorite : d.reader.favorite}
                   style={{
                     background: "none",

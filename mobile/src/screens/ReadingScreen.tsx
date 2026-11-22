@@ -386,9 +386,8 @@ export function ReadingScreen({
         {surah && (
           <div className="row-between small text-muted" style={{ marginBottom: 6 }}>
             <span>{d.reader.progress}</span>
-            <span>
-              {d.reader.ayah} {currentAyah} {d.reader.of} {surah.ayah_count}
-            </span>
+            {/* One string = one text node, so VoiceOver reads it in a single swipe. */}
+            <span>{`${d.reader.ayah} ${currentAyah} ${d.reader.of} ${surah.ayah_count}`}</span>
           </div>
         )}
         <ProgressBar value={progress} label={d.reader.progress} />
