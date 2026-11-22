@@ -1,0 +1,175 @@
+name: QuranRoots Mobile CI
+
+# Mobile (Capacitor) checks, QR-DESIGN-005. Deliberately a SEPARATE workflow
+# from "QuranRoots CI" (ci.yml): production-deploy.yml is triggered only by the
+# completion of a workflow named exactly "QuranRoots CI", so nothing here can
+# start, gate or approve a production deployment. It uses no Supabase or
+# production secrets, no billing secrets, and has read-only repo permissions.
+#
+# Two jobs:
+#   static   - needs nothing but the repo. Always runs.
+#   content  - needs the approved bundled Quran database, which is NOT in git.
+#              Runs only when the repo variable MOBILE_CONTENT_DB_URL is set;
+#              otherwise it is skipped and `content-status` prints a warning so
+#              the gap is visible instead of silently green. See mobile/README.md.
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-ci.yml"
+      - "package.json"
+      - "package-lock.json"
+  push:
+    branches: [main]
+    paths:
+      - "mobile/**"
+      - ".github/workflows/mobile-ci.yml"
+      - "package.json"
+      - "package-lock.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  static:
+    name: mobile static checks (no database)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mobile/package-lock.json
+
+      # vitest and Playwright come from the repo root; the app's own deps
+      # (React, sql.js, Capacitor, vite, typescript) from mobile/.
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install mobile dependencies
+        run: npm ci
+        working-directory: mobile
+
+      - name: TypeScript
+        run: npx tsc --noEmit -p .
+        working-directory: mobile
+
+      # The two *-export tests read the bundled database, so they run in the
+      # `content` job. Everything else (incl. the artwork release guard tests
+      # and the DB-verifier tests) runs here.
+      - name: Unit tests (database-independent)
+        run: >
+          npx vitest run --config mobile/vitest.config.ts
+          --exclude '**/curriculum-export.test.ts'
+          --exclude '**/kazimirski-export.test.ts'
+
+      - name: Build (prunes artwork) and release artwork guard
+        run: |
+          npm run build
+          npx cap copy android
+          npx cap copy ios
+          npm run release:check
+        working-directory: mobile
+
+  content:
+    name: mobile content checks (approved Quran database)
+    if: ${{ vars.MOBILE_CONTENT_DB_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mobile/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install mobile dependencies
+        run: npm ci
+        working-directory: mobile
+
+      # The database is an owner-supplied artifact (provenance: export of the
+      # certified content; see mobile/README.md). It is fetched over HTTPS and
+      # must match the pinned hashes in mobile/content-db.expected.json, or the
+      # job fails before anything else runs. The token is optional and is never
+      # printed.
+      - name: Fetch approved Quran database
+        env:
+          DB_URL: ${{ vars.MOBILE_CONTENT_DB_URL }}
+          DB_TOKEN: ${{ secrets.MOBILE_CONTENT_DB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p mobile/content-db mobile/public
+          args=(--fail --silent --show-error --location --proto '=https' --max-filesize 20000000)
+          if [ -n "${DB_TOKEN:-}" ]; then args+=(-H "Authorization: Bearer ${DB_TOKEN}"); fi
+          curl "${args[@]}" -o mobile/content-db/quran-content.sqlite "$DB_URL"
+
+      - name: Verify Quran database integrity (counts, content fingerprint, file hash)
+        run: node mobile/scripts/verify-content-db.mjs mobile/content-db/quran-content.sqlite --file-hash
+
+      - name: Place database and sql.js WASM (as the app expects them)
+        run: |
+          cp mobile/content-db/quran-content.sqlite mobile/public/quran-content.sqlite
+          cp mobile/node_modules/sql.js/dist/sql-wasm.wasm mobile/public/sql-wasm.wasm
+
+      - name: Unit tests (all, including database-backed)
+        run: npx vitest run --config mobile/vitest.config.ts
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Playwright (mobile app)
+        run: npx playwright test --config mobile/playwright.config.ts
+
+      - name: Build (prunes artwork) and release artwork guard
+        run: |
+          npm run build
+          npx cap copy android
+          npx cap copy ios
+          npm run release:check
+          node scripts/verify-content-db.mjs public/quran-content.sqlite --file-hash
+        working-directory: mobile
+
+      - name: Upload Playwright report on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-playwright-report
+          path: |
+            mobile/playwright-report
+            mobile/test-results
+          retention-days: 7
+
+  content-status:
+    name: mobile content checks status
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Report whether the database-backed checks ran
+        env:
+          DB_CONFIGURED: ${{ vars.MOBILE_CONTENT_DB_URL != '' }}
+        run: |
+          if [ "$DB_CONFIGURED" = "true" ]; then
+            echo "Database-backed mobile checks are configured; see the 'content' job."
+          else
+            echo "::warning title=Mobile database-backed checks did NOT run::MOBILE_CONTENT_DB_URL is not set, so Playwright, the database-backed unit tests and the Quran integrity check were skipped. Only the static checks ran. See mobile/README.md."
+          fi
