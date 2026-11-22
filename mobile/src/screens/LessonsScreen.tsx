@@ -149,7 +149,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
       </div>
 
       {tab === "levels" ? (
-        <div className="card" style={{ padding: 0 }}>
+        <div className="level-list" data-testid="level-list">
           {levels.map((level) => {
             const levelModules = listModules(db, level.id, locale);
             const lessonCount = levelModules.reduce(
@@ -160,25 +160,11 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
               <button
                 key={level.id}
                 type="button"
-                className="list-row"
-                style={{ padding: 14 }}
+                className="list-row level-card"
                 onClick={() => openLevel(level.id)}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <span
-                    style={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: "50%",
-                      background: "var(--primary)",
-                      color: "var(--primary-foreground)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: "0.8rem",
-                      fontWeight: 700,
-                    }}
-                  >
+                  <span className="level-badge" aria-hidden="true">
                     {level.number}
                   </span>
                   <div>

@@ -107,7 +107,7 @@ export function UnderstandScreen({
         </button>
       </div>
 
-      <div className="card verse-card">
+      <div className="card verse-card parchment">
         <div className="ayah-arabic">
           <p className="quran-text" lang="ar" dir="rtl" data-testid="understand-arabic">
             {ayah.arabic_text}

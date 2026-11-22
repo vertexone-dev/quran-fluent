@@ -1350,8 +1350,8 @@ html.dark .tile svg {
  * functionality -- everything still renders, just without movement. */
 @media (prefers-reduced-motion: reduce) {
   .stagger > * {
-    /* Instantaneous, not removed: `animation: none` corrupted the Home
-     * screen's rendering in the Android WebView (QR-DESIGN-004A). */
+    /* Instantaneous, not removed (QR-DESIGN-004A: `animation: none` coincided
+     * with garbled Home rendering on a software-GPU Android emulator). */
     animation-duration: 0.01ms;
     animation-delay: 0s;
   }
@@ -1502,7 +1502,8 @@ html[data-text-size="large"] {
  * prefers-reduced-motion block above: it names the elements that actually
  * animate. A blanket `* { animation: none !important; transition: none
  * !important }` rule corrupted the Home screen's rendering in the Android
- * WebView (found on-device in QR-DESIGN-004A), so it must not come back. */
+ * WebView on a software-GPU emulator (QR-DESIGN-004A; cause not proven, may
+ * be emulator-only), so keep the rules scoped. */
 html.reduce-motion .stagger > * {
   /* Keep the animation (so the element keeps its compositing layer and
    * end-state) but make it instantaneous, rather than removing it. */
@@ -1660,4 +1661,150 @@ html.reduce-motion .profile-btn:active {
 
 .translation-text + .group-label {
   margin-top: 18px;
+}
+
+/* ======================================================================
+ * QR-DESIGN-004A: parchment Reader card, Home journey card, Surah list
+ * (hexagon badges, last-read highlight), Learn level cards.
+ * Tokens only (--qr-ivory, --qr-ivory-muted, --qr-gold, --qr-midnight);
+ * no new artwork. The parchment stays parchment in both themes, like the
+ * Design Lock reference's verse card.
+ * ==================================================================== */
+
+/* Parchment verse card: ivory ink-on-paper with a double gold edge. */
+.verse-card.parchment {
+  background: linear-gradient(180deg, var(--qr-ivory) 0%, var(--qr-ivory-muted) 100%);
+  color: oklch(0.27 0.04 195.1);
+  border-color: color-mix(in oklab, var(--qr-gold) 75%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--qr-gold) 16%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--qr-gold) 35%, transparent),
+    var(--shadow-soft);
+}
+.verse-card.parchment .quran-text {
+  color: oklch(0.2 0.04 195.1);
+}
+.verse-card.parchment .translation-text {
+  color: oklch(0.3 0.03 195.1);
+}
+.verse-card.parchment .ayah-marker {
+  color: oklch(0.45 0.1 85);
+  border-color: oklch(0.6 0.12 85 / 70%);
+  box-shadow:
+    inset 0 0 0 3px var(--qr-ivory),
+    inset 0 0 0 4px oklch(0.6 0.12 85 / 35%);
+}
+.verse-card.parchment .icon-btn {
+  color: oklch(0.32 0.05 195.1);
+}
+.verse-card.parchment .text-gold {
+  color: oklch(0.5 0.12 85);
+}
+
+/* Home: compact hero when there is no artwork (production builds). */
+.brand-hero:not(:has(.brand-hero-art)) .eyebrow {
+  margin-top: 36px;
+}
+
+/* Home: Your Journey card (real reading position only). */
+.journey-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin: 12px 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+.journey-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Surah list: hexagon number badge + last-read highlight. */
+.surah-hex {
+  position: relative;
+  width: 34px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+.surah-hex::before,
+.surah-hex::after {
+  content: "";
+  position: absolute;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+.surah-hex::before {
+  inset: 0;
+  background: var(--qr-gold);
+  opacity: 0.85;
+}
+.surah-hex::after {
+  inset: 1.5px;
+  background: var(--card);
+}
+.surah-hex > span {
+  position: relative;
+  z-index: 1;
+}
+.list-row.row-last-read {
+  background: color-mix(in oklab, var(--qr-gold) 14%, var(--card));
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--qr-gold) 80%, transparent);
+  border-radius: 12px;
+}
+.chip-gold {
+  background: var(--qr-gold-soft);
+  color: var(--qr-gold);
+  border: 1px solid oklch(0.767 0.139 91.1 / 45%);
+  font-size: 0.65rem;
+}
+html:not(.dark) .chip-gold {
+  color: oklch(0.45 0.1 85);
+}
+
+/* Learn: levels as individual cards (existing curriculum, unchanged). */
+.level-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.level-card {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  box-sizing: border-box;
+}
+.level-badge {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in oklab, var(--qr-gold) 70%, transparent);
+  background: color-mix(in oklab, var(--qr-gold) 12%, var(--card));
+  color: var(--gold);
+  font-weight: 700;
 }

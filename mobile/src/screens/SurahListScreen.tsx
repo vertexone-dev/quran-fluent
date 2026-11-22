@@ -3,12 +3,14 @@ import { Bookmark, BookmarkCheck } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { listSurahs } from "../db";
-import { getFavoriteSurahs, toggleFavoriteSurah } from "../local-store";
+import { getFavoriteSurahs, getReadingPosition, toggleFavoriteSurah } from "../local-store";
+import { AyahBookmarksScreen } from "./AyahBookmarksScreen";
 import { Logo } from "../Logo";
 import { Segmented } from "../components/ui";
 import type { Route } from "../navigation";
 
 type Filter = "all" | "meccan" | "medinan" | "favorites";
+type View = "surah" | "bookmarks";
 
 /** Mockup panel 3: Surah List. The real `surahs` table has no separate
  * English-meaning gloss column (name_en is already a transliteration, e.g.
@@ -20,6 +22,8 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
   const { db } = useDb();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [view, setView] = useState<View>("surah");
+  const lastReadSurah = getReadingPosition()?.surahNumber ?? null;
   const [, forceRender] = useState(0);
 
   const allSurahs = useMemo(() => listSurahs(db), [db]);
@@ -64,104 +68,122 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
         </div>
       </div>
 
-      <input
-        className="input"
-        placeholder={d.reader.search}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        style={{ marginBottom: 12 }}
-      />
-
-      <div style={{ marginBottom: 12, overflowX: "auto" }}>
+      <div style={{ marginBottom: 12 }}>
         <Segmented
-          label={d.reader.surahs}
-          testId="surah-filter"
-          value={filter}
-          onChange={setFilter}
+          label={d.surahList.viewSwitch}
+          testId="surah-view"
+          value={view}
+          onChange={setView}
           options={[
-            { value: "all", label: d.reader.filterAll },
-            { value: "meccan", label: d.reader.filterMakki },
-            { value: "medinan", label: d.reader.filterMadani },
-            { value: "favorites", label: d.reader.favoritesOnly },
+            { value: "surah", label: d.surahList.surahTab },
+            { value: "bookmarks", label: d.surahList.bookmarksTab },
           ]}
         />
       </div>
 
-      <div className="card" style={{ padding: 0 }}>
-        {filtered.map((s) => (
-          <div key={s.number} className="list-row" style={{ padding: "12px 12px" }}>
-            <button
-              type="button"
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                minWidth: 0,
-                flex: 1,
-                background: "none",
-                border: "none",
-                color: "inherit",
-                font: "inherit",
-                textAlign: "start",
-                cursor: "pointer",
-              }}
-              onClick={() => onNavigate({ screen: "reading", surahNumber: s.number })}
-            >
-              <span
-                style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: "50%",
-                  background: "color-mix(in oklab, var(--gold) 12%, var(--card))",
-                  color: "var(--gold)",
-                  border: "1.5px solid color-mix(in oklab, var(--gold) 55%, transparent)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "0.75rem",
-                  fontWeight: 700,
-                  flexShrink: 0,
-                }}
+      {view === "bookmarks" ? (
+        <AyahBookmarksScreen embedded onNavigate={onNavigate} onBack={() => setView("surah")} />
+      ) : (
+        <>
+          <input
+            className="input"
+            placeholder={d.reader.search}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{ marginBottom: 12 }}
+          />
+
+          <div style={{ marginBottom: 12, overflowX: "auto" }}>
+            <Segmented
+              label={d.reader.surahs}
+              testId="surah-filter"
+              value={filter}
+              onChange={setFilter}
+              options={[
+                { value: "all", label: d.reader.filterAll },
+                { value: "meccan", label: d.reader.filterMakki },
+                { value: "medinan", label: d.reader.filterMadani },
+                { value: "favorites", label: d.reader.favoritesOnly },
+              ]}
+            />
+          </div>
+
+          <div className="card" style={{ padding: 0 }}>
+            {filtered.map((s) => (
+              <div
+                key={s.number}
+                className={`list-row${s.number === lastReadSurah ? " row-last-read" : ""}`}
+                style={{ padding: "12px 12px" }}
+                data-last-read={s.number === lastReadSurah ? "true" : undefined}
               >
-                {s.number}
-              </span>
-              <div style={{ minWidth: 0 }}>
-                <div style={{ fontWeight: 700, fontSize: "0.92rem" }}>{s.name_en}</div>
-                <div className="text-muted" style={{ fontSize: "0.75rem" }}>
-                  {s.ayah_count} ·{" "}
-                  {s.revelation_type === "meccan" ? d.reader.filterMakki : d.reader.filterMadani}
-                </div>
+                <button
+                  type="button"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                    minWidth: 0,
+                    flex: 1,
+                    background: "none",
+                    border: "none",
+                    color: "inherit",
+                    font: "inherit",
+                    textAlign: "start",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => onNavigate({ screen: "reading", surahNumber: s.number })}
+                >
+                  <span className="surah-hex" aria-hidden="true">
+                    <span>{s.number}</span>
+                  </span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: "0.92rem" }}>
+                      {s.name_en}
+                      {s.number === lastReadSurah && (
+                        <span className="chip chip-gold" style={{ marginInlineStart: 8 }}>
+                          {d.surahList.lastRead}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-muted" style={{ fontSize: "0.75rem" }}>
+                      {s.ayah_count} ·{" "}
+                      {s.revelation_type === "meccan"
+                        ? d.reader.filterMakki
+                        : d.reader.filterMadani}
+                    </div>
+                  </div>
+                </button>
+                <span className="arabic-text" style={{ fontSize: "1.1rem", flexShrink: 0 }}>
+                  {s.name_ar}
+                </span>
+                <button
+                  type="button"
+                  aria-label={favorites.has(s.number) ? d.reader.unfavorite : d.reader.favorite}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    display: "flex",
+                    color: favorites.has(s.number) ? "var(--gold)" : "var(--muted-foreground)",
+                    flexShrink: 0,
+                  }}
+                  onClick={() => {
+                    toggleFavoriteSurah(s.number);
+                    forceRender((n) => n + 1);
+                  }}
+                >
+                  <Bookmark size={18} fill={favorites.has(s.number) ? "currentColor" : "none"} />
+                </button>
               </div>
-            </button>
-            <span className="arabic-text" style={{ fontSize: "1.1rem", flexShrink: 0 }}>
-              {s.name_ar}
-            </span>
-            <button
-              type="button"
-              aria-label={favorites.has(s.number) ? d.reader.unfavorite : d.reader.favorite}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                display: "flex",
-                color: favorites.has(s.number) ? "var(--gold)" : "var(--muted-foreground)",
-                flexShrink: 0,
-              }}
-              onClick={() => {
-                toggleFavoriteSurah(s.number);
-                forceRender((n) => n + 1);
-              }}
-            >
-              <Bookmark size={18} fill={favorites.has(s.number) ? "currentColor" : "none"} />
-            </button>
+            ))}
+            {filtered.length === 0 && (
+              <div className="text-muted" style={{ padding: 16, textAlign: "center" }}>
+                {d.reader.noResults}
+              </div>
+            )}
           </div>
-        ))}
-        {filtered.length === 0 && (
-          <div className="text-muted" style={{ padding: 16, textAlign: "center" }}>
-            {d.reader.noResults}
-          </div>
-        )}
-      </div>
+        </>
+      )}
     </div>
   );
 }
