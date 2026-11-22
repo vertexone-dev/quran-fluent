@@ -12,6 +12,12 @@ name: QuranRoots Mobile CI
 #              Runs only when the repo variable MOBILE_CONTENT_DB_URL is set;
 #              otherwise it is skipped and `content-status` prints a warning so
 #              the gap is visible instead of silently green. See mobile/README.md.
+#   release-gate - FAILS CLOSED on pushes to main, `mobile-v*` tags and manual
+#              runs: it succeeds only if static AND content both succeeded (a
+#              skipped content job is a failure there), so a release can never
+#              ship on skipped Quran-integrity tests. On pull requests it is
+#              not run: they only warn. Make "mobile release gate" a required
+#              check in branch protection to enforce it.
 
 on:
   pull_request:
@@ -23,11 +29,15 @@ on:
       - "package-lock.json"
   push:
     branches: [main]
+    # Release tags always run, whatever they touched (see release-gate).
+    tags: ["mobile-v*"]
     paths:
       - "mobile/**"
       - ".github/workflows/mobile-ci.yml"
       - "package.json"
       - "package-lock.json"
+  # Manual release check: runs everything and the release gate on any branch.
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -131,14 +141,26 @@ jobs:
           cp mobile/content-db/quran-content.sqlite mobile/public/quran-content.sqlite
           cp mobile/node_modules/sql.js/dist/sql-wasm.wasm mobile/public/sql-wasm.wasm
 
-      - name: Unit tests (all, including database-backed)
-        run: npx vitest run --config mobile/vitest.config.ts
+      # REQUIRE_CONTENT_DB=1 turns "database missing" from a skip into a failure,
+      # and assert-no-skips fails the job if ANY test was skipped or none ran.
+      - name: Unit tests (all, including database-backed; none may be skipped)
+        env:
+          REQUIRE_CONTENT_DB: "1"
+        run: |
+          npx vitest run --config mobile/vitest.config.ts \
+            --reporter=default --reporter=json --outputFile.json=vitest-report.json
+          node mobile/scripts/assert-no-skips.mjs vitest vitest-report.json
 
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Playwright (mobile app)
-        run: npx playwright test --config mobile/playwright.config.ts
+      - name: Playwright (mobile app; none may be skipped)
+        env:
+          # Absolute: Playwright resolves a relative name against the config dir.
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/playwright-report.json
+        run: |
+          npx playwright test --config mobile/playwright.config.ts --forbid-only --reporter=list,json
+          node mobile/scripts/assert-no-skips.mjs playwright "$GITHUB_WORKSPACE/playwright-report.json"
 
       - name: Build (prunes artwork) and release artwork guard
         run: |
@@ -173,3 +195,29 @@ jobs:
           else
             echo "::warning title=Mobile database-backed checks did NOT run::MOBILE_CONTENT_DB_URL is not set, so Playwright, the database-backed unit tests and the Quran integrity check were skipped. Only the static checks ran. See mobile/README.md."
           fi
+
+  release-gate:
+    name: mobile release gate
+    # Runs on release-relevant events only. `always()` so it still runs (and
+    # fails) when `content` was skipped; a skipped dependency is NOT success here.
+    if: ${{ always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
+    needs: [static, content]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require static AND database-backed checks to have passed
+        env:
+          STATIC_RESULT: ${{ needs.static.result }}
+          CONTENT_RESULT: ${{ needs.content.result }}
+        run: |
+          echo "static=$STATIC_RESULT content=$CONTENT_RESULT"
+          if [ "$STATIC_RESULT" != "success" ]; then
+            echo "::error title=Mobile release gate::static checks did not succeed ($STATIC_RESULT)."
+            exit 1
+          fi
+          if [ "$CONTENT_RESULT" != "success" ]; then
+            echo "::error title=Mobile release gate::database-backed checks did not succeed ($CONTENT_RESULT). 'skipped' means MOBILE_CONTENT_DB_URL is not set. A release is blocked until the approved Quran database is supplied and every integrity, unit and Playwright test passes with none skipped."
+            exit 1
+          fi
+          echo "Release gate passed."
+
