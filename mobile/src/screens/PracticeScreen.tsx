@@ -12,8 +12,14 @@ import type { Route } from "../navigation";
  * not an invented review-queue algorithm (which would need the Class-D
  * read-modify-write review_items logic the Phase 0 audit flagged as unsafe
  * to build offline yet). */
-export function PracticeScreen({ onNavigate }: { onNavigate: (route: Route) => void }) {
-  const { d, locale } = useI18n();
+export function PracticeScreen({
+  onNavigate,
+  onBack,
+}: {
+  onNavigate: (route: Route) => void;
+  onBack: () => void;
+}) {
+  const { d, contentLocale: locale } = useI18n();
   const { db } = useDb();
 
   const entries = useMemo(() => {
@@ -41,7 +47,7 @@ export function PracticeScreen({ onNavigate }: { onNavigate: (route: Route) => v
 
   return (
     <div>
-      <AppBar title={d.practice.title} />
+      <AppBar title={d.practice.title} onBack={onBack} />
       <p className="text-muted" style={{ marginBottom: 16 }}>
         {d.practice.subtitle}
       </p>

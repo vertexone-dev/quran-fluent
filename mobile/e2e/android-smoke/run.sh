@@ -60,30 +60,46 @@ assert_text_present "$home_dump" "Home" "launch: home tab"
 assert_text_present "$home_dump" "Qur'an" "launch: quran tab"
 
 # ---------------------------------------------------------------------------
-# 2. Bottom navigation (Lessons, Practice, More, back to Home)
+# 2. Five primary destinations + hardware back (Milestone D-1)
 # ---------------------------------------------------------------------------
-log "--- 2. Bottom navigation ---"
-tap_on_text "$home_dump" "Lessons"
-lessons_dump=$(dump_ui "02_lessons" "$OUT_DIR")
-assert_text_present "$lessons_dump" "Levels" "nav: Lessons shows Levels"
-assert_changed "$home_dump" "$lessons_dump" "nav: Home -> Lessons changed screen"
+log "--- 2. Bottom navigation and hardware back ---"
+press_back() { adb shell input keyevent KEYCODE_BACK; sleep 1; }
 
-tap_on_text "$lessons_dump" "Practice"
-practice_dump=$(dump_ui "03_practice" "$OUT_DIR")
-assert_text_present "$practice_dump" "Practice" "nav: Practice tab loaded"
-assert_changed "$lessons_dump" "$practice_dump" "nav: Lessons -> Practice changed screen"
+tap_on_text "$home_dump" "Learn"
+lessons_dump=$(dump_ui "02_learn" "$OUT_DIR")
+assert_text_present "$lessons_dump" "Levels" "nav: Learn shows Levels"
+assert_changed "$home_dump" "$lessons_dump" "nav: Home -> Learn changed screen"
 
-tap_on_text "$practice_dump" "More"
-more_dump=$(dump_ui "04_more" "$OUT_DIR")
-assert_text_present "$more_dump" "Settings" "nav: More shows Settings row"
-# Memorization is a deliberately deferred feature (confirmed in
-# mobile/src/screens/MoreScreen.tsx), not a bug -- asserting its
-# "Coming Soon" label present is itself the correct expectation today.
-assert_text_present "$more_dump" "Coming Soon" "nav: Memorization marked Coming Soon (expected, not implemented yet)"
+tap_on_text "$lessons_dump" "Reflect"
+reflect_dump=$(dump_ui "03_reflect" "$OUT_DIR")
+assert_text_present "$reflect_dump" "Planned" "nav: Reflect is marked Planned (D-2)"
 
-tap_on_text "$more_dump" "Home"
+tap_on_text "$reflect_dump" "Memorize"
+memorize_dump=$(dump_ui "04_memorize" "$OUT_DIR")
+assert_text_present "$memorize_dump" "Memorize is planned" "nav: Memorize is marked Planned (D-2)"
+
+press_back
+back1_dump=$(dump_ui "04b_back_to_reflect" "$OUT_DIR")
+assert_text_present "$back1_dump" "Reflect is planned" "hardware back: Memorize -> Reflect"
+press_back
+back2_dump=$(dump_ui "04c_back_to_learn" "$OUT_DIR")
+assert_text_present "$back2_dump" "Levels" "hardware back: Reflect -> Learn"
+press_back
+back3_dump=$(dump_ui "04d_back_to_home" "$OUT_DIR")
+assert_text_present "$back3_dump" "QuranRoots" "hardware back: Learn -> Home (app not exited)"
+
+# Secondary features stay one tap from Home (shortcut row).
+tap_on_text "$back3_dump" "Practice"
+practice_dump=$(dump_ui "04e_practice" "$OUT_DIR")
+assert_text_present "$practice_dump" "Review exercises" "nav: Practice opens from Home shortcut"
+press_back
+home_after_practice=$(dump_ui "04f_home" "$OUT_DIR")
+tap_on_text "$home_after_practice" "Settings"
+more_dump=$(dump_ui "04g_settings" "$OUT_DIR")
+assert_text_present "$more_dump" "Theme" "nav: Settings opens from Home shortcut"
+press_back
 home_dump_2=$(dump_ui "05_home_again" "$OUT_DIR")
-assert_text_present "$home_dump_2" "Qur'an" "nav: back to Home"
+assert_text_present "$home_dump_2" "Qur'an" "hardware back: Settings -> Home"
 
 # ---------------------------------------------------------------------------
 # 3. Surah browsing and reading (Arabic / English / French)

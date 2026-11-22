@@ -1,4 +1,8 @@
-export type Tab = "home" | "quran" | "lessons" | "practice" | "more";
+/** The five primary destinations (Design Lock v1.0 mobile reference and the
+ * Settings reference: Home, Quran, Learn, Progress, Settings -- QR-DESIGN-002
+ * decision). Reflect, Memorize and Understand This Ayah are reached from
+ * Home, the reader and Profile & More, not from the tab bar. */
+export type Tab = "home" | "quran" | "learn" | "progress" | "settings";
 
 export type Route =
   | { screen: "home" }
@@ -12,12 +16,16 @@ export type Route =
   | { screen: "practice" }
   | { screen: "more" }
   | { screen: "offline-access" }
-  | { screen: "settings" };
+  | { screen: "settings" }
+  | { screen: "progress" }
+  | { screen: "understand"; surahNumber: number; ayahNumber: number }
+  | { screen: "reflect"; surahNumber?: number; ayahNumber?: number }
+  | { screen: "memorize" };
 
 export const TAB_HOME_ROUTE: Record<Tab, Route> = {
   home: { screen: "home" },
   quran: { screen: "surah-list" },
-  lessons: { screen: "lessons" },
-  practice: { screen: "practice" },
-  more: { screen: "more" },
+  learn: { screen: "lessons" },
+  progress: { screen: "progress" },
+  settings: { screen: "settings" },
 };
