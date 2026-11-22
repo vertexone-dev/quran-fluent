@@ -552,3 +552,15 @@
     padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
   }
 }
+
+/* QR-DESIGN-002 Stage 4: in-app "Reduce motion" (Settings). The OS-level
+ * prefers-reduced-motion preference is honoured separately by framer-motion's
+ * MotionConfig and the media queries above. */
+html[data-qr-motion="reduce"] *,
+html[data-qr-motion="reduce"] *::before,
+html[data-qr-motion="reduce"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}

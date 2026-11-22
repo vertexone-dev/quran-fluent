@@ -19,6 +19,25 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 import { useTheme, type ThemeMode } from "@/lib/theme";
+import { usePreferences } from "@/lib/preferences-context";
+import {
+  START_SCREENS,
+  TEXT_SIZES,
+  buildPreferencesExport,
+  type StartScreen,
+  type TextSize,
+} from "@/lib/preferences";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useI18n, LOCALE_LABELS, SUPPORTED_LOCALES, type Locale } from "@/lib/i18n";
 import { fetchLearnerSnapshot, LEARNER_SNAPSHOT_STALE_TIME_MS } from "@/lib/learner";
 import { KAZIMIRSKI_EDITION_ID } from "@/lib/kazimirski";
@@ -65,6 +84,7 @@ function Settings() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const { theme, setTheme } = useTheme();
+  const { prefs, setPref, reset: resetPrefs } = usePreferences();
   const { t, locale, setLocale } = useI18n();
 
   const { data, isLoading, isError, refetch } = useQuery({
@@ -306,11 +326,12 @@ function Settings() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft">
+        <Card className="shadow-soft" data-testid="settings-appearance-card">
           <CardHeader>
             <CardTitle className="text-base">{t("learning.settings.appearance")}</CardTitle>
+            <CardDescription>{t("learning.settings.deviceOnly")}</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="theme">{t("common.theme.label")}</Label>
               <Select value={theme} onValueChange={(value) => setTheme(value as ThemeMode)}>
@@ -318,12 +339,137 @@ function Settings() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="light">{t("common.theme.light")}</SelectItem>
-                  <SelectItem value="dark">{t("common.theme.dark")}</SelectItem>
-                  <SelectItem value="system">{t("common.theme.system")}</SelectItem>
+                  <SelectItem value="dark">{t("learning.settings.themeMidnight")}</SelectItem>
+                  <SelectItem value="light">{t("learning.settings.themeIvory")}</SelectItem>
+                  <SelectItem value="system">{t("learning.settings.themeDevice")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="text-size">{t("learning.settings.textSize")}</Label>
+              <Select
+                value={prefs.textSize}
+                onValueChange={(value) => setPref("textSize", value as TextSize)}
+              >
+                <SelectTrigger id="text-size" data-testid="settings-text-size">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TEXT_SIZES.map((size) => (
+                    <SelectItem key={size} value={size}>
+                      {t(
+                        size === "small"
+                          ? "learning.settings.textSizeSmall"
+                          : size === "large"
+                            ? "learning.settings.textSizeLarge"
+                            : "learning.settings.textSizeMedium",
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-4 rounded-xl border border-border p-4">
+                <Label htmlFor="reduce-motion" className="cursor-pointer">
+                  {t("learning.settings.reduceMotion")}
+                </Label>
+                <Switch
+                  id="reduce-motion"
+                  data-testid="settings-reduce-motion"
+                  checked={prefs.reduceMotion}
+                  onCheckedChange={(value) => setPref("reduceMotion", value)}
+                />
+              </div>
+              <p className="text-sm text-muted-foreground">
+                {t("learning.settings.reduceMotionHint")}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="start-screen">{t("learning.settings.startScreen")}</Label>
+              <Select
+                value={prefs.startScreen}
+                onValueChange={(value) => setPref("startScreen", value as StartScreen)}
+              >
+                <SelectTrigger id="start-screen" data-testid="settings-start-screen">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {START_SCREENS.map((screen) => (
+                    <SelectItem key={screen} value={screen}>
+                      {t(
+                        screen === "quran"
+                          ? "learning.settings.startQuran"
+                          : screen === "learn"
+                            ? "learning.settings.startLearn"
+                            : "learning.settings.startHome",
+                      )}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                {t("learning.settings.startScreenHint")}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-soft" data-testid="settings-preferences-card">
+          <CardHeader>
+            <CardTitle className="text-base">{t("learning.settings.preferencesTitle")}</CardTitle>
+            <CardDescription>{t("learning.settings.preferencesDesc")}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <Button
+              variant="secondary"
+              data-testid="settings-export-preferences"
+              onClick={() => {
+                const blob = new Blob(
+                  [JSON.stringify(buildPreferencesExport(prefs, theme), null, 2)],
+                  { type: "application/json" },
+                );
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.href = url;
+                link.download = "quranroots-preferences.json";
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                toast.success(t("learning.settings.exportDone"));
+              }}
+            >
+              {t("learning.settings.exportPrefs")}
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" data-testid="settings-reset-preferences">
+                  {t("learning.settings.resetPrefs")}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{t("learning.settings.resetTitle")}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t("learning.settings.resetBody")}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>{t("learning.settings.resetCancel")}</AlertDialogCancel>
+                  <AlertDialogAction
+                    data-testid="settings-reset-confirm"
+                    onClick={() => {
+                      resetPrefs();
+                      setTheme("dark");
+                      toast.success(t("learning.settings.resetDone"));
+                    }}
+                  >
+                    {t("learning.settings.resetConfirm")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardContent>
         </Card>
 
