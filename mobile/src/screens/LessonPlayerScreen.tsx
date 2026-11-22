@@ -40,7 +40,7 @@ export function LessonPlayerScreen({
   startAtFirstExercise?: boolean;
   onBack: () => void;
 }) {
-  const { d, locale } = useI18n();
+  const { d, contentLocale: locale } = useI18n();
   const { db } = useDb();
 
   const lesson = useMemo(() => getLessonForPlayer(db, lessonId, locale), [db, lessonId, locale]);
@@ -154,7 +154,7 @@ export function LessonPlayerScreen({
       <div className="appbar">
         <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
           <button className="icon-btn" onClick={onBack} type="button" aria-label={d.common.back}>
-            <ChevronLeft size={22} />
+            <ChevronLeft size={22} className="dir-icon" />
           </button>
           <h1 className="appbar-title" style={{ fontSize: "1rem" }}>
             {d.lessons.level} {lesson.level.number} · {lesson.title}
@@ -177,19 +177,23 @@ export function LessonPlayerScreen({
         <div className="progress-fill" style={{ width: `${progress}%` }} />
       </div>
 
-      {step.type === "section" ? (
-        <SectionView section={step.section} db={db} />
-      ) : (
-        <ExerciseView
-          exercise={step.exercise}
-          response={response}
-          submitted={submitted}
-          correct={correct}
-          onChange={setResponse}
-          onCheck={handleCheckAnswer}
-          d={d}
-        />
-      )}
+      {/* Lesson content is English/French (contentLocale), so it keeps its
+          own left-to-right direction inside the Arabic interface. */}
+      <div dir="ltr" lang={locale}>
+        {step.type === "section" ? (
+          <SectionView section={step.section} db={db} />
+        ) : (
+          <ExerciseView
+            exercise={step.exercise}
+            response={response}
+            submitted={submitted}
+            correct={correct}
+            onChange={setResponse}
+            onCheck={handleCheckAnswer}
+            d={d}
+          />
+        )}
+      </div>
 
       <div style={{ display: "flex", gap: 12, marginTop: 20 }}>
         <button
@@ -199,7 +203,7 @@ export function LessonPlayerScreen({
           onClick={() => goTo(index - 1)}
           disabled={index === 0}
         >
-          <ChevronLeft size={16} /> {d.player.previous}
+          <ChevronLeft size={16} className="dir-icon" /> {d.player.previous}
         </button>
         <button
           type="button"
@@ -209,7 +213,7 @@ export function LessonPlayerScreen({
           disabled={!canAdvance}
         >
           {atEnd ? d.player.finish : d.player.next}{" "}
-          {atEnd ? <Check size={16} /> : <ChevronRight size={16} />}
+          {atEnd ? <Check size={16} /> : <ChevronRight size={16} className="dir-icon" />}
         </button>
       </div>
     </div>
@@ -346,7 +350,7 @@ function ExerciseView({
           {correct ? <Check size={16} /> : <X size={16} />}
           {correct ? d.player.correct : d.player.incorrect}
           {exercise.explanation && (
-            <span style={{ fontWeight: 400, marginLeft: 6 }}>{exercise.explanation}</span>
+            <span style={{ fontWeight: 400, marginInlineStart: 6 }}>{exercise.explanation}</span>
           )}
         </div>
       )}

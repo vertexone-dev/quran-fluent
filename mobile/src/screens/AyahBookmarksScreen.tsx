@@ -52,7 +52,7 @@ export function AyahBookmarksScreen({
                   border: "none",
                   color: "inherit",
                   font: "inherit",
-                  textAlign: "left",
+                  textAlign: "start",
                 }}
                 onClick={() =>
                   onNavigate({

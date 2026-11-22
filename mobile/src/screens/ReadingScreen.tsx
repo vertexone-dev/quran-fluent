@@ -466,9 +466,13 @@ export function ReadingScreen({
                 {ayah.arabic_text}
               </p>
             </div>
-            {translation === "en" && <p style={{ margin: 0 }}>{ayah.english ?? "—"}</p>}
+            {translation === "en" && (
+              <p className="translation-text" dir="ltr" lang="en">
+                {ayah.english ?? "—"}
+              </p>
+            )}
             {translation === "fr" && (
-              <p style={{ margin: 0 }}>
+              <p className="translation-text" dir="ltr" lang="fr">
                 {fr?.text ??
                   (fr?.continuesFromAyah ? `(suite du verset ${fr.continuesFromAyah})` : "—")}
               </p>

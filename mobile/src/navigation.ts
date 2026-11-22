@@ -1,4 +1,8 @@
-export type Tab = "home" | "quran" | "lessons" | "practice" | "more";
+/** The five primary destinations (Design Lock v1.0, same order as the
+ * website's primary nav). Reflect and Memorize are Planned until D-2. */
+export type Tab = "home" | "quran" | "learn" | "reflect" | "memorize";
+
+export const PLANNED_TABS: ReadonlySet<Tab> = new Set(["reflect", "memorize"]);
 
 export type Route =
   | { screen: "home" }
@@ -12,12 +16,14 @@ export type Route =
   | { screen: "practice" }
   | { screen: "more" }
   | { screen: "offline-access" }
-  | { screen: "settings" };
+  | { screen: "settings" }
+  | { screen: "reflect" }
+  | { screen: "memorize" };
 
 export const TAB_HOME_ROUTE: Record<Tab, Route> = {
   home: { screen: "home" },
   quran: { screen: "surah-list" },
-  lessons: { screen: "lessons" },
-  practice: { screen: "practice" },
-  more: { screen: "more" },
+  learn: { screen: "lessons" },
+  reflect: { screen: "reflect" },
+  memorize: { screen: "memorize" },
 };
