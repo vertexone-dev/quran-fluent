@@ -1539,7 +1539,8 @@ html.reduce-motion .profile-btn:active {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 24px calc(24px + env(safe-area-inset-bottom));
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 24px
+    calc(24px + env(safe-area-inset-bottom, 0px));
   background: var(--qr-midnight, oklch(0.28 0.04 195.1));
   color: oklch(0.974 0.01 87.5);
   box-sizing: border-box;
