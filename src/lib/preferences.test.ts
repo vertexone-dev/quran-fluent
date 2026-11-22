@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   DEFAULT_PREFERENCES,
@@ -105,4 +106,58 @@ describe("display preferences", () => {
       preferences: { textSize: "large", reduceMotion: true, startScreen: "quran", theme: "dark" },
     });
   });
+});
+
+describe("preferences never touch account or learning data (QR-DESIGN-005)", () => {
+  // Keys the app and its auth/theme layers keep in the browser. A preference
+  // change, an export, or a reset must leave every one of them exactly as is.
+  const OTHER_DATA: Record<string, string> = {
+    "sb-localhost-auth-token": '{"access_token":"t","user":{"id":"u1"}}',
+    "quranroots-theme": "light",
+    "quranroots-bookmarks": '[{"surah":2,"ayah":255}]',
+    "quranroots-notes": '[{"id":"n1","text":"private note"}]',
+    "quranroots-progress": '{"lessonsCompleted":12}',
+    "quranroots-subscription": '{"plan":"free"}',
+  };
+
+  it("write, rewrite and reset leave bookmarks, notes, progress, subscription and auth untouched", () => {
+    const s = memoryStorage({ ...OTHER_DATA });
+    writePreferences(s, { textSize: "large", reduceMotion: true, startScreen: "quran" });
+    writePreferences(s, { textSize: "small", reduceMotion: false, startScreen: "learn" });
+    s.setItem(START_SESSION_KEY, "1");
+    clearPreferences(s);
+    expect(Object.fromEntries(s.map)).toEqual(OTHER_DATA);
+  });
+
+  it("only writes its own keys", () => {
+    const s = memoryStorage({ ...OTHER_DATA });
+    writePreferences(s, { textSize: "large", reduceMotion: true, startScreen: "quran" });
+    const added = [...s.map.keys()].filter((k) => !(k in OTHER_DATA));
+    expect(added).toEqual([PREFERENCES_STORAGE_KEY]);
+  });
+
+  it("the export is built from preferences and theme only (no storage, no account fields)", () => {
+    const out = buildPreferencesExport(
+      { textSize: "medium", reduceMotion: false, startScreen: "home" },
+      "system",
+    );
+    const text = JSON.stringify(out);
+    for (const secret of ["token", "email", "note", "bookmark", "progress", "subscription"]) {
+      expect(text.toLowerCase()).not.toContain(secret);
+    }
+  });
+
+  // Structural guard: these two modules are pure browser-storage/DOM code. If one
+  // ever imports a server client, fetches, or mentions billing, preferences could
+  // start reaching account data, so fail loudly and force a review.
+  it.each(["preferences.ts", "preferences-context.tsx"])(
+    "%s has no server, network or billing dependency",
+    (file) => {
+      const src = readFileSync(new URL(`./${file}`, import.meta.url), "utf8");
+      expect(src).not.toMatch(
+        /integrations\/supabase|@supabase|\bfetch\s*\(|XMLHttpRequest|sendBeacon/,
+      );
+      expect(src).not.toMatch(/billing|checkout|subscription|stripe|paddle/i);
+    },
+  );
 });
