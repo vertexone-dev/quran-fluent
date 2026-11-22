@@ -141,7 +141,7 @@ final class AccessibilityAuditTests: XCTestCase {
 
     /// Landscape on a Dynamic Island iPhone: nothing within the camera/curve inset
     /// on either side, and everything still inside the window.
-    func testLandscapeKeepsContentInsideSafeArea() {
+    func testLandscapeKeepsContentInsideSafeArea() throws {
         start()
         XCUIDevice.shared.orientation = .landscapeLeft
         sleep(2)
