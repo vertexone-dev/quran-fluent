@@ -62,6 +62,25 @@ test.describe("Settings (Design Lock v1.0)", () => {
     await expect(page.locator("html")).toHaveClass(/reduce-motion/);
   });
 
+  test("reduce motion keeps the entrance animation (instant), never removes it", async ({
+    page,
+  }) => {
+    // Regression: `animation: none` corrupted Home rendering in the Android
+    // WebView. The animation must stay attached, with a ~zero duration.
+    await openSettings(page);
+    await page.getByTestId("setting-reduce-motion").click();
+    await page.getByTestId("tab-home").click();
+    const style = await page
+      .locator(".stagger > *")
+      .first()
+      .evaluate((el) => {
+        const cs = getComputedStyle(el);
+        return { name: cs.animationName, duration: parseFloat(cs.animationDuration) };
+      });
+    expect(style.name).not.toBe("none");
+    expect(style.duration).toBeLessThan(0.001);
+  });
+
   test("start screen: Qur'an opens the surah list on launch", async ({ page }) => {
     await openSettings(page);
     await page.getByTestId("setting-start-screen").selectOption("quran");

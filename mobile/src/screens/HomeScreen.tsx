@@ -28,7 +28,7 @@ import {
 } from "../local-store";
 import { pickReadingCardSurah } from "../home-dashboard";
 import { Logo } from "../Logo";
-import { SectionTitle } from "../components/ui";
+import { ProgressBar, SectionTitle } from "../components/ui";
 import type { Route } from "../navigation";
 
 /** Home Dashboard, Phase 1 of the Emergent UI integration. Reuses the real
@@ -87,6 +87,11 @@ export function HomeScreen({
     getLastReadSurah(),
   );
 
+  const position = getReadingPosition();
+  const allSurahs = listSurahs(db);
+  const positionSurah = position
+    ? allSurahs.find((x) => x.number === position.surahNumber)
+    : undefined;
   const heroArt = art("hero");
   const shortcuts = [
     {
@@ -173,6 +178,36 @@ export function HomeScreen({
             </div>
             <div className="quran-text hero-ar">{readingCardSurah.name_ar}</div>
           </div>
+        </button>
+      )}
+
+      {position && positionSurah && (
+        <button
+          type="button"
+          className="journey-card"
+          onClick={() => onNavigate({ screen: "progress" })}
+          data-testid="home-journey-card"
+        >
+          <div className="journey-card-head">
+            <span className="setting-title">{d.homeJourney.title}</span>
+            <span className="setting-hint">{d.homeJourney.viewJourney}</span>
+          </div>
+          <div className="setting-hint">
+            {d.homeJourney.continueLabel}:{" "}
+            {locale === "ar"
+              ? positionSurah.name_ar
+              : locale === "fr"
+                ? (positionSurah.name_fr ?? positionSurah.name_en)
+                : positionSurah.name_en}{" "}
+            {position.surahNumber}:{position.ayahNumber}
+          </div>
+          <ProgressBar
+            value={Math.min(1, position.ayahNumber / positionSurah.ayah_count)}
+            label={d.homeJourney.ayahOf
+              .replace("{n}", String(position.ayahNumber))
+              .replace("{total}", String(positionSurah.ayah_count))}
+            testId="home-journey-progress"
+          />
         </button>
       )}
 

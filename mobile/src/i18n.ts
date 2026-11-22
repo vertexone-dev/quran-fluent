@@ -81,7 +81,7 @@ const dictionaries = {
       openLearn: "Open lessons",
     },
     home: {
-      greeting: "Welcome back",
+      greeting: "As-Salāmu ʿAlaykum",
       continueReading: "Continue Reading",
       startReading: "Start Reading",
       continueLearning: "Continue Learning",
@@ -252,7 +252,7 @@ const dictionaries = {
       openLearn: "Ouvrir les leçons",
     },
     home: {
-      greeting: "Bon retour",
+      greeting: "As-Salāmu ʿAlaykum",
       continueReading: "Continuer la lecture",
       startReading: "Commencer la lecture",
       continueLearning: "Continuer l'apprentissage",
@@ -420,7 +420,7 @@ const dictionaries = {
       openLearn: "فتح الدروس",
     },
     home: {
-      greeting: "مرحبًا بعودتك",
+      greeting: "السلام عليكم",
       continueReading: "متابعة القراءة",
       startReading: "ابدأ القراءة",
       continueLearning: "متابعة التعلّم",

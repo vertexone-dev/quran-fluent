@@ -10,6 +10,18 @@
  * only ever come from the bundled, verified content database.
  */
 export const extraEn = {
+  surahList: {
+    surahTab: "Surah",
+    bookmarksTab: "Bookmarks",
+    lastRead: "Last read",
+    viewSwitch: "Surah list view",
+  },
+  homeJourney: {
+    title: "Your Journey",
+    continueLabel: "Continue",
+    ayahOf: "Ayah {n} of {total}",
+    viewJourney: "View your journey",
+  },
   tabs: { progress: "Progress", settings: "Settings" },
   prefs: {
     general: "General",
@@ -123,6 +135,18 @@ export const extraEn = {
 };
 
 export const extraFr: typeof extraEn = {
+  surahList: {
+    surahTab: "Sourates",
+    bookmarksTab: "Signets",
+    lastRead: "Dernière lecture",
+    viewSwitch: "Vue de la liste des sourates",
+  },
+  homeJourney: {
+    title: "Votre parcours",
+    continueLabel: "Reprendre",
+    ayahOf: "Verset {n} sur {total}",
+    viewJourney: "Voir votre parcours",
+  },
   tabs: { progress: "Progrès", settings: "Réglages" },
   prefs: {
     general: "Général",
@@ -238,6 +262,18 @@ export const extraFr: typeof extraEn = {
 };
 
 export const extraAr: typeof extraEn = {
+  surahList: {
+    surahTab: "السور",
+    bookmarksTab: "الإشارات المرجعية",
+    lastRead: "آخر قراءة",
+    viewSwitch: "عرض قائمة السور",
+  },
+  homeJourney: {
+    title: "رحلتك",
+    continueLabel: "متابعة",
+    ayahOf: "الآية {n} من {total}",
+    viewJourney: "عرض رحلتك",
+  },
   tabs: { progress: "التقدّم", settings: "الإعدادات" },
   prefs: {
     general: "عام",

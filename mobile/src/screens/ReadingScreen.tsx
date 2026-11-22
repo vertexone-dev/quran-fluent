@@ -441,7 +441,11 @@ export function ReadingScreen({
         const fr = kazimirskiRender.get(ayah.ayah_number);
         const bookmarked = isAyahBookmarked(surahNumber, ayah.ayah_number);
         return (
-          <div key={ayah.ayah_number} className="card verse-card" data-ayah={ayah.ayah_number}>
+          <div
+            key={ayah.ayah_number}
+            className="card verse-card parchment"
+            data-ayah={ayah.ayah_number}
+          >
             <div className="row-between" style={{ marginBottom: 10 }}>
               <span className="ayah-marker" aria-label={`${d.reader.ayah} ${ayah.ayah_number}`}>
                 {ayah.ayah_number}
