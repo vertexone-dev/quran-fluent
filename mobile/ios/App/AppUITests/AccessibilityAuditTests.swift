@@ -198,4 +198,22 @@ final class AccessibilityAuditTests: XCTestCase {
         app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] %@", "Al-Fatiha")).firstMatch.tap(); sleep(2)
         XCTAssertTrue(app.staticTexts["Ayah 1 of 7"].waitForExistence(timeout: 5), "'Ayah 1 of 7' is split into fragments")
     }
+
+    /// Captures screens for the design-fidelity comparison (screenshots only).
+    func testCaptureComparisonScreens() {
+        start()
+        func openFromHome(_ needle: String, _ name: String) {
+            tab("Home").tap(); sleep(1)
+            let b = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", needle)).firstMatch
+            XCTAssertTrue(b.waitForExistence(timeout: 8), "\(needle) tile missing")
+            b.tap(); sleep(2)
+            shot(name)
+        }
+        openFromHome("Understand This Ayah", "cmp-understand")
+        openFromHome("Reflect", "cmp-reflect")
+        openFromHome("Memorize", "cmp-memorize")
+        tab("Home").tap(); sleep(1)
+        app.swipeUp(); sleep(1)
+        shot("cmp-home-scrolled")
+    }
 }
