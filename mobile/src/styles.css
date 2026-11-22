@@ -1838,3 +1838,45 @@ html:not(.dark) .chip-gold {
   color: var(--gold);
   font-weight: 700;
 }
+
+/* --- QR-DESIGN-005: touch targets and landscape safe areas ----------------
+ * Interactive controls are at least 44x44 CSS px (Apple HIG; WCAG 2.5.8 asks
+ * for 24). Small, background-less controls grow their box with padding and an
+ * equal negative margin, so nothing around them moves. Pills and bordered
+ * buttons simply get the larger size. */
+.icon-btn {
+  min-width: 44px;
+  height: 44px;
+}
+.back-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+button.chip {
+  min-height: 44px;
+  justify-content: center;
+}
+.profile-btn,
+.audio-play {
+  width: 44px;
+  height: 44px;
+}
+.hit-44 {
+  padding: 13px;
+  margin: -13px;
+}
+
+/* Landscape on notched iPhones: keep content out of the Dynamic Island / curved
+ * corners. Insets are physical (left/right), also in RTL. They are 0 elsewhere. */
+.app-shell {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.tab-bar {
+  padding-left: calc(4px + env(safe-area-inset-left, 0px));
+  padding-right: calc(4px + env(safe-area-inset-right, 0px));
+}
+.onboarding {
+  padding-left: calc(24px + env(safe-area-inset-left, 0px));
+  padding-right: calc(24px + env(safe-area-inset-right, 0px));
+}
