@@ -24,6 +24,9 @@ const KEYS = {
   ayahBookmarks: "qr.bookmarks.ayahs",
   readerTranslation: "qr.reader.translation",
   readerFontSizeIndex: "qr.reader.fontSizeIndex",
+  reduceMotion: "qr.settings.reduceMotion",
+  startScreen: "qr.settings.startScreen",
+  onboardingDone: "qr.onboarding.done",
 } as const;
 
 export type ThemePreference = "light" | "dark" | "system";
@@ -74,19 +77,21 @@ export function setStoredLocale(locale: Locale): void {
 
 const VALID_THEMES: readonly ThemePreference[] = ["light", "dark", "system"];
 
-/** "light" is the default for a brand-new install (Sprint 4 decision) or
+/** "dark" (Midnight Teal, the Design Lock v1.0 identity) is the default for a
+ * brand-new install (QR-DESIGN-002; previously "light", Sprint 4) and for
  * any stored value that isn't one of the three valid preferences (a
  * missing key, corrupted JSON, or a foreign/legacy value all collapse to
  * the same "no valid saved preference" case) -- never "system", so a new
  * user's first screen is never silently decided by their OS appearance
- * setting. An existing install that has a real, valid "system" (or
- * "light"/"dark") choice already saved keeps it exactly as-is: this only
- * changes what happens when there is nothing valid to read back. */
+ * setting. An install that already has a valid "light", "dark" or "system"
+ * choice saved keeps it exactly as-is: only the nothing-valid-to-read-back
+ * case changed. Stored values keep their old names; the UI labels them
+ * Ivory Light (light), Midnight (dark) and Match device (system). */
 export function getStoredTheme(): ThemePreference {
   const value = readJson<string | null>(KEYS.theme, null);
   return (VALID_THEMES as readonly string[]).includes(value as string)
     ? (value as ThemePreference)
-    : "light";
+    : "dark";
 }
 
 export function setStoredTheme(theme: ThemePreference): void {
@@ -109,8 +114,13 @@ export function resolveIsDark(theme: ThemePreference, prefersDark: boolean): boo
   return theme === "dark" || (theme === "system" && prefersDark);
 }
 
+const VALID_TEXT_SIZES: readonly TextSize[] = ["small", "medium", "large"];
+
 export function getStoredTextSize(): TextSize {
-  return readJson<TextSize>(KEYS.textSize, "medium");
+  const value = readJson<string | null>(KEYS.textSize, null);
+  return (VALID_TEXT_SIZES as readonly string[]).includes(value as string)
+    ? (value as TextSize)
+    : "medium";
 }
 
 export function setStoredTextSize(size: TextSize): void {
@@ -257,4 +267,82 @@ export function getReaderFontSizeIndex(maxIndex: number, fallbackIndex: number):
 
 export function setReaderFontSizeIndex(index: number): void {
   writeJson(KEYS.readerFontSizeIndex, index);
+}
+
+// ---------------------------------------------------------------------------
+// QR-DESIGN-002 Stage 2: reduced motion, start screen, onboarding, and
+// preference export/reset. All local-only, like every other setting here.
+// ---------------------------------------------------------------------------
+
+export type StartScreen = "home" | "quran" | "continue";
+export const START_SCREENS: readonly StartScreen[] = ["home", "quran", "continue"];
+
+export function getReduceMotion(): boolean {
+  return readJson<unknown>(KEYS.reduceMotion, false) === true;
+}
+
+export function setReduceMotion(value: boolean): void {
+  writeJson(KEYS.reduceMotion, value);
+}
+
+export function getStartScreen(): StartScreen {
+  const value = readJson<string | null>(KEYS.startScreen, null);
+  return (START_SCREENS as readonly string[]).includes(value as string)
+    ? (value as StartScreen)
+    : "home";
+}
+
+export function setStartScreen(value: StartScreen): void {
+  writeJson(KEYS.startScreen, value);
+}
+
+export function getOnboardingDone(): boolean {
+  return readJson<unknown>(KEYS.onboardingDone, false) === true;
+}
+
+export function setOnboardingDone(): void {
+  writeJson(KEYS.onboardingDone, true);
+}
+
+export type PreferencesExport = {
+  app: "QuranRoots";
+  kind: "preferences";
+  version: 1;
+  preferences: {
+    locale: Locale | null;
+    theme: ThemePreference;
+    textSize: TextSize;
+    reduceMotion: boolean;
+    startScreen: StartScreen;
+  };
+};
+
+/** Preferences only. Bookmarks, favorites and reading position are the
+ * user's data, not preferences, and are deliberately not included. */
+export function exportPreferences(): PreferencesExport {
+  return {
+    app: "QuranRoots",
+    kind: "preferences",
+    version: 1,
+    preferences: {
+      locale: getStoredLocale(),
+      theme: getStoredTheme(),
+      textSize: getStoredTextSize(),
+      reduceMotion: getReduceMotion(),
+      startScreen: getStartScreen(),
+    },
+  };
+}
+
+/** Restores default preferences by removing only the preference keys.
+ * Bookmarks, favorites, reading position, the reader's own translation and
+ * font choices, and the onboarding flag are left untouched. */
+export function resetPreferences(): void {
+  for (const key of [KEYS.locale, KEYS.theme, KEYS.textSize, KEYS.reduceMotion, KEYS.startScreen]) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // storage unavailable: nothing to reset
+    }
+  }
 }

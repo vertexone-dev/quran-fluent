@@ -15,13 +15,13 @@ async function home(page: Page) {
 test.describe("Five primary destinations", () => {
   test.beforeEach(async ({ page }) => home(page));
 
-  test("tab bar shows Home, Qur'an, Learn, Reflect, Memorize in order", async ({ page }) => {
+  test("tab bar shows Home, Qur'an, Learn, Progress, Settings in order", async ({ page }) => {
     await expect(page.locator(".tab-item .tab-label")).toHaveText([
       "Home",
       "Qur'an",
       "Learn",
-      "Reflect",
-      "Memorize",
+      "Progress",
+      "Settings",
     ]);
     await expect(page.locator(".tab-item")).toHaveCount(5);
   });
@@ -30,8 +30,10 @@ test.describe("Five primary destinations", () => {
     ["reflect", "Reflect"],
     ["memorize", "Memorize"],
   ] as const) {
-    test(`${title} is clearly marked Planned and shows no sample content`, async ({ page }) => {
-      await page.getByTestId(`tab-${tab}`).click();
+    test(`${title} (opened from Home) is clearly marked Planned and shows no sample content`, async ({
+      page,
+    }) => {
+      await page.getByTestId(`home-tile-${tab}`).click();
       const screen = page.getByTestId(`planned-screen-${tab}`);
       await expect(screen).toBeVisible();
       await expect(page.locator(".appbar-title")).toHaveText(title);
@@ -40,28 +42,32 @@ test.describe("Five primary destinations", () => {
         "not available in this version",
       );
       await expect(screen.locator(".quran-text")).toHaveCount(0);
-      await expect(page.getByTestId(`tab-${tab}`)).toHaveAttribute(
-        "aria-label",
-        `${title} (Planned)`,
-      );
     });
   }
 
   test("Planned screen links to features that work now", async ({ page }) => {
-    await page.getByTestId("tab-memorize").click();
+    await page.getByTestId("home-tile-memorize").click();
     await page.getByTestId("planned-open-quran").click();
     await expect(page.locator(".appbar-title")).toHaveText("Surahs");
     await expect(page.locator(".tab-item.active")).toContainText("Qur'an");
   });
 
-  test("back unwinds Planned tab switches one at a time", async ({ page }) => {
-    await page.getByTestId("tab-reflect").click();
-    await page.getByTestId("tab-memorize").click();
-    await page.goBack();
-    await expect(page.locator(".tab-item.active")).toContainText("Reflect");
+  test("back from a Home-opened screen returns Home", async ({ page }) => {
+    await page.getByTestId("home-tile-reflect").click();
     await page.goBack();
     await expect(page.locator(".tab-item.active")).toContainText("Home");
     await expect(page.locator(".appbar-title")).toHaveText("QuranRoots");
+  });
+
+  test("Progress and Settings are real tabs that back unwinds one at a time", async ({ page }) => {
+    await page.getByTestId("tab-progress").click();
+    await expect(page.locator(".tab-item.active")).toContainText("Progress");
+    await page.getByTestId("tab-settings").click();
+    await expect(page.getByTestId("settings-screen")).toBeVisible();
+    await page.goBack();
+    await expect(page.locator(".tab-item.active")).toContainText("Progress");
+    await page.goBack();
+    await expect(page.locator(".tab-item.active")).toContainText("Home");
   });
 });
 
@@ -125,13 +131,13 @@ test.describe("Arabic RTL interface", () => {
       "الرئيسية",
       "القرآن",
       "التعلّم",
-      "تدبّر",
-      "الحفظ",
+      "التقدّم",
+      "الإعدادات",
     ]);
     // Home is the first tab, so under RTL it sits at the right edge.
     const homeBox = await page.getByTestId("tab-home").boundingBox();
-    const memBox = await page.getByTestId("tab-memorize").boundingBox();
-    expect(homeBox!.x).toBeGreaterThan(memBox!.x);
+    const lastBox = await page.getByTestId("tab-settings").boundingBox();
+    expect(homeBox!.x).toBeGreaterThan(lastBox!.x);
     await toggle.click();
     await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
@@ -201,10 +207,9 @@ test.describe("Design Lock v1.0 assets and tokens are bundled", () => {
     const bg = () =>
       page.getByTestId("tab-bar").evaluate((el) => getComputedStyle(el).backgroundColor);
     const light = await bg();
-    await page.getByTestId("home-theme-toggle").click(); // light -> dark
-    await expect(page.locator("html")).toHaveClass(/dark/);
+    await page.getByTestId("home-theme-toggle").click(); // Midnight -> Match device (OS is light here)
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
     expect(await bg()).toBe(light);
-    await page.getByTestId("home-theme-toggle").click(); // back toward system/light
   });
 
   test("no request leaves the app's origin on the new screens", async ({ page }) => {
@@ -214,8 +219,8 @@ test.describe("Design Lock v1.0 assets and tokens are bundled", () => {
       if (u.origin !== new URL(page.url()).origin && !u.protocol.startsWith("data"))
         external.push(r.url());
     });
-    await page.getByTestId("tab-reflect").click();
-    await page.getByTestId("tab-memorize").click();
+    await page.getByTestId("tab-progress").click();
+    await page.getByTestId("tab-settings").click();
     await page.getByTestId("tab-home").click();
     await page.getByTestId("profile-button").click();
     await page.getByTestId("tab-home").click();

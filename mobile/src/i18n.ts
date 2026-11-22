@@ -10,6 +10,7 @@
  * lesson/word queries receive -- Arabic UI shows English lesson content and
  * says so. New French/Arabic interface copy is marked NEEDS NATIVE REVIEW.
  */
+import { extraAr, extraEn, extraFr } from "./i18n-extra";
 import { createContext, useContext } from "react";
 
 export type Locale = "en" | "fr" | "ar";
@@ -35,6 +36,7 @@ export function nextLocale(locale: Locale): Locale {
 
 const dictionaries = {
   en: {
+    ...extraEn,
     brand: {
       name: "QuranRoots",
       tagline: "Trace the Language. Uncover the Meaning.",
@@ -204,6 +206,7 @@ const dictionaries = {
     },
   },
   fr: {
+    ...extraFr,
     brand: {
       name: "QuranRoots",
       tagline: "Remontez à la langue. Découvrez le sens.",
@@ -376,6 +379,7 @@ const dictionaries = {
   // Arabic interface (Milestone D-1). brand + nav copied verbatim from
   // ../../src/locales/ar/common.ts; everything else NEEDS NATIVE REVIEW.
   ar: {
+    ...extraAr,
     brand: {
       name: "QuranRoots",
       tagline: "تتبّع اللغة. اكتشف المعنى.",

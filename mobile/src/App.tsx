@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Database } from "sql.js";
 import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 
@@ -11,7 +11,14 @@ import {
   setStoredLocale,
   getStoredTheme,
   setStoredTheme as persistTheme,
+  getStoredTextSize,
+  setStoredTextSize as persistTextSize,
+  getReduceMotion,
+  setReduceMotion as persistReduceMotion,
+  getStartScreen,
+  getReadingPosition,
   resolveIsDark,
+  type TextSize,
   type ThemePreference,
 } from "./local-store";
 import { TabBar } from "./TabBar";
@@ -29,6 +36,7 @@ import { MoreScreen } from "./screens/MoreScreen";
 import { OfflineAccessScreen } from "./screens/OfflineAccessScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import { PlannedScreen } from "./screens/PlannedScreen";
+import type { PrefsControls } from "./screens/SettingsScreen";
 import { TAB_HOME_ROUTE, type Route, type Tab } from "./navigation";
 
 function useSystemPrefersDark(): boolean {
@@ -52,6 +60,8 @@ export function App() {
 
   const [locale, setLocaleState] = useState<Locale>(() => getStoredLocale() ?? "en");
   const [theme, setTheme] = useState<ThemePreference>(() => getStoredTheme());
+  const [textSize, setTextSizeState] = useState<TextSize>(() => getStoredTextSize());
+  const [reduceMotion, setReduceMotionState] = useState<boolean>(() => getReduceMotion());
   const prefersDark = useSystemPrefersDark();
 
   useEffect(() => {
@@ -83,6 +93,13 @@ export function App() {
     }
   }, [theme, prefersDark]);
 
+  // Interface text size scales every rem-based size; reduced motion is an
+  // explicit in-app choice on top of the OS-level prefers-reduced-motion.
+  useEffect(() => {
+    document.documentElement.dataset.textSize = textSize;
+    document.documentElement.classList.toggle("reduce-motion", reduceMotion);
+  }, [textSize, reduceMotion]);
+
   // Screen readers use <html lang> to pick pronunciation rules; without
   // this, French UI text was always announced as if it were English.
   useEffect(() => {
@@ -99,6 +116,27 @@ export function App() {
     setTheme(next);
     persistTheme(next);
   }
+
+  const prefs: PrefsControls = {
+    textSize,
+    onTextSizeChange: (next) => {
+      setTextSizeState(next);
+      persistTextSize(next);
+    },
+    reduceMotion,
+    onReduceMotionChange: (next) => {
+      setReduceMotionState(next);
+      persistReduceMotion(next);
+    },
+    // After "Reset preferences" the stored values are gone: re-read them so
+    // the screen reflects the real defaults without a reload.
+    onPreferencesReset: () => {
+      setTheme(getStoredTheme());
+      setTextSizeState(getStoredTextSize());
+      setReduceMotionState(getReduceMotion());
+      setLocaleState(getStoredLocale() ?? "en");
+    },
+  };
 
   const i18nValue = useMemo(
     () => ({ locale, contentLocale: toContentLocale(locale), setLocale, d: getDictionary(locale) }),
@@ -122,7 +160,12 @@ export function App() {
           <SplashScreen />
         ) : (
           <DbContext.Provider value={{ db, version }}>
-            <Navigator theme={theme} onThemeChange={handleThemeChange} prefersDark={prefersDark} />
+            <Navigator
+              theme={theme}
+              onThemeChange={handleThemeChange}
+              prefersDark={prefersDark}
+              prefs={prefs}
+            />
           </DbContext.Provider>
         )}
       </HistoryProvider>
@@ -148,13 +191,34 @@ function Navigator({
   theme,
   onThemeChange,
   prefersDark,
+  prefs,
 }: {
   theme: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
   prefersDark: boolean;
+  prefs: PrefsControls;
 }) {
   const { pushFrame, goBack } = useHistoryStack();
-  const [state, setState] = useState<AppState>(INITIAL_STATE);
+  const [state, setState] = useState<AppState>(() =>
+    getStartScreen() === "quran" ? { tab: "quran", stack: [TAB_HOME_ROUTE.quran] } : INITIAL_STATE,
+  );
+
+  // "Continue reading" starts on Home and pushes the reader, so back returns
+  // Home. With no saved reading position it simply stays on Home.
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    if (getStartScreen() !== "continue") return;
+    const position = getReadingPosition();
+    if (position) {
+      handleNavigate({
+        screen: "reading",
+        surahNumber: position.surahNumber,
+        targetAyahNumber: position.ayahNumber,
+      });
+    }
+  }, []);
 
   function transition(next: AppState) {
     const previous = state;
@@ -222,9 +286,16 @@ function Navigator({
         {route.screen === "more" && <MoreScreen onNavigate={handleNavigate} onBack={goBack} />}
         {route.screen === "offline-access" && <OfflineAccessScreen onBack={goBack} />}
         {route.screen === "settings" && (
-          <SettingsScreen onBack={goBack} theme={theme} onThemeChange={onThemeChange} />
+          <SettingsScreen
+            onBack={goBack}
+            theme={theme}
+            onThemeChange={onThemeChange}
+            prefs={prefs}
+          />
         )}
-        {(route.screen === "reflect" || route.screen === "memorize") && (
+        {(route.screen === "reflect" ||
+          route.screen === "memorize" ||
+          route.screen === "progress") && (
           <PlannedScreen feature={route.screen} onNavigate={handleNavigate} />
         )}
       </div>

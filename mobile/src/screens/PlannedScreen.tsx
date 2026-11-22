@@ -11,12 +11,22 @@ export function PlannedScreen({
   feature,
   onNavigate,
 }: {
-  feature: "reflect" | "memorize";
+  feature: "reflect" | "memorize" | "progress";
   onNavigate: (route: Route) => void;
 }) {
   const { d } = useI18n();
-  const title = feature === "reflect" ? d.nav.reflect : d.nav.memorize;
-  const body = feature === "reflect" ? d.planned.reflectBody : d.planned.memorizeBody;
+  const title =
+    feature === "reflect"
+      ? d.nav.reflect
+      : feature === "memorize"
+        ? d.nav.memorize
+        : d.tabs.progress;
+  const body =
+    feature === "reflect"
+      ? d.planned.reflectBody
+      : feature === "memorize"
+        ? d.planned.memorizeBody
+        : d.plannedMore.progressBody;
   const image = art(feature === "reflect" ? "night" : "mosque");
   return (
     <div className="stagger" data-testid={`planned-screen-${feature}`}>
