@@ -161,13 +161,32 @@ set_airplane_mode() {
 }
 
 require_device() {
-  local line
-  line=$(adb devices -l | sed -n '2p')
-  if [ -z "$line" ]; then
-    log "No device/emulator attached. Start the Pixel_9 (API 35) AVD first."
+  # `adb` honours ANDROID_SERIAL for every call below. With more than one
+  # device attached this suite refuses to guess: it would otherwise risk
+  # driving (force-stopping, toggling airplane mode on) someone's existing
+  # emulator. Set ANDROID_SERIAL to the device you intend to test.
+  local count
+  count=$(adb devices | sed '1d' | awk 'NF && $2=="device"' | wc -l | tr -d ' ')
+  if [ "$count" -eq 0 ]; then
+    log "No device/emulator attached. Start a test AVD first."
     exit 1
   fi
-  log "device: $line"
+  if [ "$count" -gt 1 ] && [ -z "${ANDROID_SERIAL:-}" ]; then
+    log "$count devices attached and ANDROID_SERIAL is not set. Refusing to guess."
+    log "Re-run with e.g.: ANDROID_SERIAL=emulator-5560 ./run.sh"
+    exit 1
+  fi
+  if [ -n "${ANDROID_SERIAL:-}" ] && ! adb devices | awk 'NF && $2=="device"{print $1}' | grep -qx "$ANDROID_SERIAL"; then
+    log "ANDROID_SERIAL=$ANDROID_SERIAL is not an attached, ready device."
+    exit 1
+  fi
+  log "device: ${ANDROID_SERIAL:-$(adb devices -l | sed -n '2p')}"
+}
+
+# swipe_up: scroll the WebView content down by one screenful-ish.
+swipe_up() {
+  adb shell input swipe 540 1500 540 600 300
+  sleep 1
 }
 
 require_app_installed() {
