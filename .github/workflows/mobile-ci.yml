@@ -6,8 +6,14 @@ name: QuranRoots Mobile CI
 # start, gate or approve a production deployment. It uses no Supabase or
 # production secrets, no billing secrets, and has read-only repo permissions.
 #
-# Two jobs:
+# Jobs:
 #   static   - needs nothing but the repo. Always runs.
+#   content-integrity - QR-DESIGN-007D. Rebuilds the Quran content core (Arabic,
+#              Pickthall, Kazimirski segments and mappings) from files committed to
+#              this repository, hash-pinned in mobile/content-sources.lock.json, and
+#              fails unless the recomputed content fingerprint equals the approved one.
+#              Needs no database, no variable and no secret, so it runs on every
+#              event including pull requests from forks. It cannot be skipped.
 #   content  - needs the approved bundled Quran database, which is NOT in git.
 #              Runs only when the repo variable MOBILE_CONTENT_DB_URL is set;
 #              otherwise it is skipped and `content-status` prints a warning so
@@ -24,6 +30,8 @@ on:
     branches: [main]
     paths:
       - "mobile/**"
+      - "supabase/migrations/**"
+      - "scripts/quran-import/kazimirski/**"
       - ".github/workflows/mobile-ci.yml"
       - "package.json"
       - "package-lock.json"
@@ -33,6 +41,8 @@ on:
     tags: ["mobile-v*"]
     paths:
       - "mobile/**"
+      - "supabase/migrations/**"
+      - "scripts/quran-import/kazimirski/**"
       - ".github/workflows/mobile-ci.yml"
       - "package.json"
       - "package-lock.json"
@@ -92,6 +102,38 @@ jobs:
           npx cap copy ios
           npm run release:check
         working-directory: mobile
+
+  content-integrity:
+    name: Quran content integrity (rebuilt from repository sources)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      # No database, network, secret or production access: only files in this
+      # checkout. Fails if a pinned input changed, a count or text hash is wrong,
+      # or the recomputed content fingerprint differs from the approved one. The
+      # output goes to the runner's temp dir and is discarded with the job.
+      - name: Rebuild the Quran content core and compare its fingerprint
+        run: node mobile/scripts/rebuild-content-core.mjs --out "$RUNNER_TEMP/content-core"
+
+      # These tests are not database-gated, so they cannot silently skip.
+      - name: Rebuild tests (none may be skipped)
+        run: |
+          npx vitest run --config mobile/vitest.config.ts mobile/scripts/rebuild-content-core.test.ts \
+            --reporter=default --reporter=json --outputFile.json=vitest-integrity.json
+          node mobile/scripts/assert-no-skips.mjs vitest vitest-integrity.json
 
   content:
     name: mobile content checks (approved Quran database)
@@ -201,16 +243,21 @@ jobs:
     # Runs on release-relevant events only. `always()` so it still runs (and
     # fails) when `content` was skipped; a skipped dependency is NOT success here.
     if: ${{ always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
-    needs: [static, content]
+    needs: [static, content-integrity, content]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Require static AND database-backed checks to have passed
+      - name: Require static, content-integrity AND database-backed checks to have passed
         env:
           STATIC_RESULT: ${{ needs.static.result }}
+          INTEGRITY_RESULT: ${{ needs.content-integrity.result }}
           CONTENT_RESULT: ${{ needs.content.result }}
         run: |
-          echo "static=$STATIC_RESULT content=$CONTENT_RESULT"
+          echo "static=$STATIC_RESULT content-integrity=$INTEGRITY_RESULT content=$CONTENT_RESULT"
+          if [ "$INTEGRITY_RESULT" != "success" ]; then
+            echo "::error title=Mobile release gate::Quran content integrity (rebuild from repository sources) did not succeed ($INTEGRITY_RESULT)."
+            exit 1
+          fi
           if [ "$STATIC_RESULT" != "success" ]; then
             echo "::error title=Mobile release gate::static checks did not succeed ($STATIC_RESULT)."
             exit 1
