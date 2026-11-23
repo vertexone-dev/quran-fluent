@@ -28,7 +28,15 @@
  */
 import { DatabaseSync } from "node:sqlite";
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, readdirSync, existsSync, rmSync, statSync } from "node:fs";
+import {
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  existsSync,
+  rmSync,
+  statSync,
+  realpathSync,
+} from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { computeFingerprint, countRows } from "./verify-content-db.mjs";
@@ -422,7 +430,24 @@ function main() {
   process.exit(result.ok ? 0 : 1);
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+/**
+ * True when this module is the script Node was started with. Both sides are resolved
+ * through symlinks: on macOS /var is a symlink to /private/var, so comparing a logical
+ * path with the resolved module path made `main()` silently NOT run, and a verification
+ * script exited 0 having verified nothing (found by QR-DESIGN-007E).
+ */
+function isEntrypoint(moduleUrl) {
+  try {
+    return (
+      Boolean(process.argv[1]) &&
+      realpathSync(process.argv[1]) === realpathSync(fileURLToPath(moduleUrl))
+    );
+  } catch {
+    return false;
+  }
+}
+
+if (isEntrypoint(import.meta.url)) {
   try {
     main();
   } catch (e) {

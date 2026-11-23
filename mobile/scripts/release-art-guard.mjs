@@ -23,7 +23,15 @@
 // No dependencies; Node >= 18.
 
 import { createHash } from "node:crypto";
-import { existsSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+  realpathSync,
+} from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -149,6 +157,23 @@ function main(argv) {
   return 0;
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+/**
+ * True when this module is the script Node was started with. Both sides are resolved
+ * through symlinks: on macOS /var is a symlink to /private/var, so comparing a logical
+ * path with the resolved module path made `main()` silently NOT run, and a verification
+ * script exited 0 having verified nothing (found by QR-DESIGN-007E).
+ */
+function isEntrypoint(moduleUrl) {
+  try {
+    return (
+      Boolean(process.argv[1]) &&
+      realpathSync(process.argv[1]) === realpathSync(fileURLToPath(moduleUrl))
+    );
+  } catch {
+    return false;
+  }
+}
+
+if (isEntrypoint(import.meta.url)) {
   process.exitCode = main(process.argv.slice(2));
 }
