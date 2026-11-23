@@ -9,7 +9,7 @@
  * green. This reads the JSON report and exits 1 unless at least one test ran,
  * none failed, and none was skipped, pending or todo.
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -64,4 +64,21 @@ function main() {
   console.log(`assert-no-skips (${kind}): OK`);
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) main();
+/**
+ * True when this module is the script Node was started with. Both sides are resolved
+ * through symlinks: on macOS /var is a symlink to /private/var, so comparing a logical
+ * path with the resolved module path made `main()` silently NOT run, and a verification
+ * script exited 0 having verified nothing (found by QR-DESIGN-007E).
+ */
+function isEntrypoint(moduleUrl) {
+  try {
+    return (
+      Boolean(process.argv[1]) &&
+      realpathSync(process.argv[1]) === realpathSync(fileURLToPath(moduleUrl))
+    );
+  } catch {
+    return false;
+  }
+}
+
+if (isEntrypoint(import.meta.url)) main();

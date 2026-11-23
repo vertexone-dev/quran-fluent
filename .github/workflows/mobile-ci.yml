@@ -14,6 +14,12 @@ name: QuranRoots Mobile CI
 #              fails unless the recomputed content fingerprint equals the approved one.
 #              Needs no database, no variable and no secret, so it runs on every
 #              event including pull requests from forks. It cannot be skipped.
+#   content-full - QR-DESIGN-007E. Rebuilds the FULL database (Quran text, translations,
+#              Kazimirski segments, curriculum) in disposable Docker containers from the
+#              repository's own migrations and committed Kazimirski manifest, then requires
+#              both pinned fingerprints (Quran content and every-table content) to equal
+#              the approved ones, and runs the unit and Playwright suites on it with none
+#              skipped. No external database, variable, secret or production access.
 #   content  - needs the approved bundled Quran database, which is NOT in git.
 #              Runs only when the repo variable MOBILE_CONTENT_DB_URL is set;
 #              otherwise it is skipped and `content-status` prints a warning so
@@ -135,6 +141,77 @@ jobs:
             --reporter=default --reporter=json --outputFile.json=vitest-integrity.json
           node mobile/scripts/assert-no-skips.mjs vitest vitest-integrity.json
 
+  content-full:
+    name: Full Quran database rebuilt from repository sources
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mobile/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install mobile dependencies
+        run: npm ci
+        working-directory: mobile
+
+      # Disposable Postgres and PostgREST containers (public.ecr.aws, anonymous pull) on
+      # loopback ports; no secret other than a random per-run JWT secret. Fails unless the
+      # rebuilt database matches both pinned fingerprints.
+      - name: Rebuild the full database and verify both pinned fingerprints
+        run: bash mobile/scripts/full-rebuild/rebuild-full-database.sh "$RUNNER_TEMP/full-db"
+
+      - name: Place database and sql.js WASM (as the app expects them)
+        run: |
+          mkdir -p mobile/public
+          cp "$RUNNER_TEMP/full-db/quran-content.sqlite" mobile/public/quran-content.sqlite
+          cp mobile/node_modules/sql.js/dist/sql-wasm.wasm mobile/public/sql-wasm.wasm
+
+      - name: Unit tests (all, including database-backed; none may be skipped)
+        env:
+          REQUIRE_CONTENT_DB: "1"
+        run: |
+          npx vitest run --config mobile/vitest.config.ts \
+            --reporter=default --reporter=json --outputFile.json=vitest-full-report.json
+          node mobile/scripts/assert-no-skips.mjs vitest vitest-full-report.json
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Playwright (mobile app; none may be skipped)
+        env:
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/playwright-full-report.json
+        run: |
+          npx playwright test --config mobile/playwright.config.ts --forbid-only --reporter=list,json
+          node mobile/scripts/assert-no-skips.mjs playwright "$GITHUB_WORKSPACE/playwright-full-report.json"
+
+      - name: Build (prunes artwork) and release artwork guard
+        run: |
+          npm run build
+          npx cap copy android
+          npx cap copy ios
+          npm run release:check
+        working-directory: mobile
+
+      - name: Upload Playwright report on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-full-playwright-report
+          path: |
+            mobile/playwright-report
+            mobile/test-results
+          retention-days: 7
+
   content:
     name: mobile content checks (approved Quran database)
     if: ${{ vars.MOBILE_CONTENT_DB_URL != '' }}
@@ -243,7 +320,7 @@ jobs:
     # Runs on release-relevant events only. `always()` so it still runs (and
     # fails) when `content` was skipped; a skipped dependency is NOT success here.
     if: ${{ always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
-    needs: [static, content-integrity, content]
+    needs: [static, content-integrity, content-full]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -251,9 +328,9 @@ jobs:
         env:
           STATIC_RESULT: ${{ needs.static.result }}
           INTEGRITY_RESULT: ${{ needs.content-integrity.result }}
-          CONTENT_RESULT: ${{ needs.content.result }}
+          CONTENT_RESULT: ${{ needs.content-full.result }}
         run: |
-          echo "static=$STATIC_RESULT content-integrity=$INTEGRITY_RESULT content=$CONTENT_RESULT"
+          echo "static=$STATIC_RESULT content-integrity=$INTEGRITY_RESULT content-full=$CONTENT_RESULT"
           if [ "$INTEGRITY_RESULT" != "success" ]; then
             echo "::error title=Mobile release gate::Quran content integrity (rebuild from repository sources) did not succeed ($INTEGRITY_RESULT)."
             exit 1
@@ -263,7 +340,7 @@ jobs:
             exit 1
           fi
           if [ "$CONTENT_RESULT" != "success" ]; then
-            echo "::error title=Mobile release gate::database-backed checks did not succeed ($CONTENT_RESULT). 'skipped' means MOBILE_CONTENT_DB_URL is not set. A release is blocked until the approved Quran database is supplied and every integrity, unit and Playwright test passes with none skipped."
+            echo "::error title=Mobile release gate::database-backed checks on the rebuilt full database did not succeed ($CONTENT_RESULT). A release is blocked until the full database rebuilt from repository sources matches both pinned fingerprints and every unit and Playwright test passes with none skipped."
             exit 1
           fi
           echo "Release gate passed."
