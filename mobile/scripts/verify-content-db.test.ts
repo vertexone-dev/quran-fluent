@@ -99,10 +99,29 @@ describe("verify-content-db", () => {
     const tmp: string[] = [];
     afterEach(() => tmp.splice(0).forEach((d) => rmSync(d, { recursive: true, force: true })));
 
-    it("passes for the approved artifact, including its file hash", () => {
-      const r = spawnSync(process.execPath, [SCRIPT, REAL_DB, "--file-hash"], { encoding: "utf8" });
-      expect(r.status, r.stderr).toBe(0);
-    });
+    // A database rebuilt from repository sources (CI content-full job) has the same content
+    // fingerprint but not the same file bytes (generated timestamps, random ids), so there
+    // the file-hash check must FAIL, and fail for exactly that reason, while the content
+    // check passes. Set QR_REBUILT_DB=1 only in that job.
+    if (process.env.QR_REBUILT_DB === "1") {
+      it("rebuilt database: content fingerprint passes; file hash differs, and only that", () => {
+        const content = spawnSync(process.execPath, [SCRIPT, REAL_DB], { encoding: "utf8" });
+        expect(content.status, content.stderr).toBe(0);
+        const file = spawnSync(process.execPath, [SCRIPT, REAL_DB, "--file-hash"], {
+          encoding: "utf8",
+        });
+        expect(file.status).not.toBe(0);
+        expect(file.stderr).toMatch(/file sha256/);
+        expect(file.stderr).not.toMatch(/content fingerprint|count/i);
+      });
+    } else {
+      it("passes for the approved artifact, including its file hash", () => {
+        const r = spawnSync(process.execPath, [SCRIPT, REAL_DB, "--file-hash"], {
+          encoding: "utf8",
+        });
+        expect(r.status, r.stderr).toBe(0);
+      });
+    }
 
     it("leaves no -shm/-wal files next to the database it checks", () => {
       const dir = mkdtempSync(path.join(tmpdir(), "qr-db-"));

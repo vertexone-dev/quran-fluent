@@ -172,13 +172,15 @@ jobs:
 
       - name: Place database and sql.js WASM (as the app expects them)
         run: |
-          mkdir -p mobile/public
+          mkdir -p mobile/public mobile/content-db
           cp "$RUNNER_TEMP/full-db/quran-content.sqlite" mobile/public/quran-content.sqlite
+          cp "$RUNNER_TEMP/full-db/quran-content.sqlite" mobile/content-db/quran-content.sqlite
           cp mobile/node_modules/sql.js/dist/sql-wasm.wasm mobile/public/sql-wasm.wasm
 
       - name: Unit tests (all, including database-backed; none may be skipped)
         env:
           REQUIRE_CONTENT_DB: "1"
+          QR_REBUILT_DB: "1"
         run: |
           npx vitest run --config mobile/vitest.config.ts \
             --reporter=default --reporter=json --outputFile.json=vitest-full-report.json
