@@ -1,4 +1,40 @@
-# QR-DESIGN-007E: Full database integrity and source-verification preparation
+# QR-DESIGN-007E: Finalization (second approval)
+
+Written for the project owner. This section supersedes the "not pushed", "CI not run" and stash statements below. Nothing was merged or deployed; no ruleset, billing, production database or artwork was touched; no source status or Quran content changed.
+
+| Item                         | Result                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Draft PR, CI                 | [#92](https://github.com/vertexone-dev/quran-fluent/pull/92), `ci/qr-design-007e-full-db-rebuild`, base `ci/qr-design-007d-reproducible-content` (#90). Pushed as a new branch; existing PR heads (`5ad2a0f`, `77f45f9`) unchanged, no force push                                                                                                                                                                                                             |
+| Draft PR, docs               | [#93](https://github.com/vertexone-dev/quran-fluent/pull/93), `docs/qr-design-007e-verification-materials`, base `docs/qr-design-007d-verification-packets` (#91)                                                                                                                                                                                                                                                                                             |
+| Stash recovery               | Backups made first: branch `backup/007e-original-stash` (local) at the stash commit `bf8bd4b3…`, the patch of the accidental pop, and a copy of the conflicted file, in the session scratchpad. Then the three affected files were restored from HEAD. The worktree is clean and the original stash is still present. No conflict was resolved by guessing: the stash contents were not applied                                                               |
+| Pre-push checks              | remote heads unchanged; ancestry confirmed; clean trees; diff scanned for secrets (only local disposable `postgres` passwords and a per-run random JWT secret) and for database or image files (none); three "wip" commits squashed before first push                                                                                                                                                                                                         |
+| GitHub run of `content-full` | Throwaway branch `ci/qr-design-007e-content-full-run` (temporary push trigger; **not** in #92; contains no production access). Run [45172445848](https://github.com/vertexone-dev/quran-fluent/actions/runs/45172445848): **all jobs green**, `content-full` about 4 minutes, both pinned fingerprints matched on the runner, 121 unit tests in 12 files none skipped, Playwright, release gate passed. `QuranRoots CI` and Production Deployment did not run |
+| First attempt                | Run 45171604352 failed: the rebuild and both fingerprints passed, but the unit-test step failed because the approved-file-hash test cannot pass for a rebuilt file, and two export tests looked in `mobile/content-db/`. This was my test setup, not a content problem. Fixed (the test now requires that a rebuilt file's content check passes and its file-hash check fails for exactly that reason) and the DB is also placed in `mobile/content-db/`      |
+| Symlink fix                  | five scripts in #92 (`assert-no-skips`, `verify-content-db`, `release-art-guard`, `rebuild-content-core`, `full-content-fingerprint`) plus `draw-review-sample` in #93. All five run when started through a symlink; the new tests fail without the fix                                                                                                                                                                                                       |
+| Local tests                  | 70/70 script tests with the rebuilt DB; 7/7 sample-script tests                                                                                                                                                                                                                                                                                                                                                                                               |
+
+## Official Tanzil comparison (read-only)
+
+Downloaded once from the official download URL to the scratchpad (not in any repository, not redistributed). The file's SHA-256 equals the checksum pinned in migration `20260820160000` (`6933e133…`); it is headed "Tanzil Quran Text (Uthmani, Version 1.1), Copyright (C) 2007-2026 Tanzil Project, License: Creative Commons Attribution 3.0".
+
+- Terms in the file: verbatim copies only ("changing it is not allowed"), credit Tanzil Project with a link to tanzil.net, and reproduce the copyright block in derived files.
+- 58 bootstrap ayahs: 21 byte-identical; 31 differ only by tatweel and small marks; 6 differ because the Bismillah was removed from ayah 1 (surahs 67, 103, 108, 112, 113, 114). Letter skeleton identical in 52 of 58, and in the other 6 the only difference is that prefix. **No wording difference.**
+- Rights finding: the 58 are not Tanzil's text as distributed, and the Bismillah removal is an edit relative to the "no changes" term. Migration `20260820160000` does not reproduce Tanzil's copyright block.
+
+## Remaining source-review blockers
+
+1. Legal: "no changes" term against the Bismillah split and removal, attribution of the 58 (api.alquran.cloud text credited to Tanzil), the missing copyright block in the public migration, Wikisource licence, Pickthall scope (US only).
+2. Arabic reviewer must still judge the mark and tatweel differences for the 58 and compare against a non-Tanzil reference (KFGQPC); not done.
+3. French and Arabic native review: not done. The 58 Hamidullah French rows remain disputed and excluded.
+4. Named reviewers and a second approver; Kazimirski and Tanzil remain Candidate.
+5. #85, #90, #91 still contain the old entrypoint guard until #92 and #93 are merged into them.
+6. Not done: real devices, TalkBack, VoiceOver; artwork rights; iOS bundle ID and signing.
+
+The throwaway branch `ci/qr-design-007e-content-full-run` should be deleted after you have looked at the run (not deleted by me).
+
+---
+
+# Earlier report (before the second approval)
 
 Written for the project owner. Nothing was merged, deployed, or changed in production, and no source status was changed. The only publications were the two draft PRs you authorised. Everything else is local.
 
