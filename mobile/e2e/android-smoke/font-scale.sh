@@ -30,6 +30,17 @@ connect() {
 }
 eval_js() { node "$SCRIPT_DIR/cdp-eval.mjs" "$1"; }
 
+# Top of the app's WebView on screen, in device px. The page reports positions inside the
+# WebView; adding this gives screen coordinates at any density or status-bar height.
+webview_top() {
+  adb shell uiautomator dump /sdcard/window_dump_fs.xml >/dev/null 2>&1
+  adb shell cat /sdcard/window_dump_fs.xml | python3 -I -c '
+import re, sys
+d = sys.stdin.read()
+m = re.search(r"class=\"android.webkit.WebView\"[^>]*bounds=\"\[(\d+),(\d+)\]", d) or re.search(r"bounds=\"\[(\d+),(\d+)\]\[\d+,\d+\]\"[^>]*class=\"android.webkit.WebView\"", d)
+print(m.group(2) if m else 0)'
+}
+
 for scale in 1.0 1.3 1.5 2.0; do
   log "--- font scale $scale ---"
   adb shell settings put system font_scale "$scale" >/dev/null
@@ -53,12 +64,13 @@ else: print("PASS|5 tabs, none clipped, smallest %dx%d CSS px, text zoom %s" % (
   if [ "${verdict%%|*}" = PASS ]; then PASS_COUNT=$((PASS_COUNT + 1)); else FAIL_COUNT=$((FAIL_COUNT + 1)); fi
   log "${verdict%%|*} [font scale $scale: tab bar layout]: ${verdict#*|}"
   # Tap every tab and read back which one is current.
+  top=$(webview_top)
   for id in tab-quran tab-learn tab-progress tab-settings tab-home; do
     xy=$(python3 -I -c '
 import json, sys
 d = json.loads(sys.argv[1]); t = [x for x in d["tabs"] if x["id"] == sys.argv[2]][0]
-print(t["cx"], t["cy"] + (2254 - d["tabs"][0]["cy"]))
-' "$json" "$id")
+print(t["cx"], t["cy"] + int(sys.argv[3]))
+' "$json" "$id" "$top")
     # shellcheck disable=SC2086
     adb shell input tap $xy
     sleep 2
