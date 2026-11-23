@@ -1367,12 +1367,18 @@ html.dark .tile svg {
 
 /* ---- QR-DESIGN-002: Settings rows, switch, dialog, text size, reduce motion ---- */
 
-/* Interface text size: every rem-based size scales with the root. */
+/* Interface text size: every rem-based size scales with the root.
+ * The in-app choice and the iOS system text size (Dynamic Type, published by
+ * src/dynamic-type.ts as --qr-system-text-scale; 1 elsewhere) are multiplied
+ * here and ONLY here, so they combine exactly once. */
+html {
+  font-size: calc(100% * var(--qr-system-text-scale, 1));
+}
 html[data-text-size="small"] {
-  font-size: 93.75%;
+  font-size: calc(93.75% * var(--qr-system-text-scale, 1));
 }
 html[data-text-size="large"] {
-  font-size: 112.5%;
+  font-size: calc(112.5% * var(--qr-system-text-scale, 1));
 }
 
 .setting-row {
@@ -1879,4 +1885,51 @@ button.chip {
 .onboarding {
   padding-left: calc(24px + env(safe-area-inset-left, 0px));
   padding-right: calc(24px + env(safe-area-inset-right, 0px));
+}
+
+/* --- QR-DESIGN-006: large text (iOS Dynamic Type) ---------------------------
+ * Content text scales fully with the system text size (see dynamic-type.ts).
+ * Chrome (tab bar labels, app bar titles, header buttons) is capped at 1.3x,
+ * the way UITabBar / navigation bars cap theirs, so five tab labels and the
+ * header still fit. --qr-chrome is the factor that undoes the root scaling
+ * above 1.3x; it is exactly 1 at or below 1.3x and on non-iOS. Grids reflow to
+ * fewer columns instead of overflowing. */
+:root {
+  --qr-chrome: calc(min(var(--qr-system-text-scale, 1), 1.3) / var(--qr-system-text-scale, 1));
+}
+.tab-item {
+  font-size: calc(0.72rem * var(--qr-chrome));
+}
+.appbar-title {
+  font-size: calc(1.5rem * var(--qr-chrome));
+}
+.lang-btn {
+  font-size: calc(0.72rem * var(--qr-chrome));
+}
+.tile-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+}
+.shortcut-row {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.5rem), 1fr));
+}
+.tile,
+.shortcut {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.list-row > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* A single long word (the brand name) must wrap rather than leave the screen
+ * at the largest system text sizes. */
+h1,
+h2,
+h3,
+.onboarding-title {
+  overflow-wrap: anywhere;
+}
+.setting-row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
