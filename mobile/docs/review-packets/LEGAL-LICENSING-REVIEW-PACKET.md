@@ -41,3 +41,12 @@ For each source: the licence text archived with URL and date of retrieval; the e
 ## 6. What the reviewer returns
 
 The completed [findings log](FINDINGS-LOG-TEMPLATE.md) with categories L1 to L5 and a signed recommendation. Wording or notice changes are made only by a separate, owner-approved change.
+
+## 7. Addendum (QR-DESIGN-007E): additional questions
+
+1. Credit for the 58 bootstrap ayahs: they came from api.alquran.cloud but are attributed to Tanzil. No api.alquran.cloud licence text is in the repository.
+2. The Tanzil migration `20260820160000` carries checksums but no copyright or licence line, in a public repository.
+3. The rebuild keeps all Quran text in the public repository's migrations, so the licence question covers redistribution there as well as in the app.
+4. Wikisource transcription licence (Kazimirski) and Pickthall's scope (recorded for the United States only) remain unreviewed.
+
+Full detail: [BOOTSTRAP-58-AYAH-PROVENANCE.md](BOOTSTRAP-58-AYAH-PROVENANCE.md).

@@ -43,3 +43,9 @@ The completed [findings log](FINDINGS-LOG-TEMPLATE.md) with the full difference 
 ## 6. Out of scope
 
 Tafsir, translation meaning, recitation rules (tajwid colouring), word-by-word data, audio, and any change to the stored text.
+
+## 7. Addendum (QR-DESIGN-007E): the 58 bootstrap ayahs
+
+These 58 rows came from a different digitisation (api.alquran.cloud) than the other 6,178 (Tanzil), and differ in tatweel and annotation marks. Please compare all 58 with the Tanzil file and a non-Tanzil reference and log every difference. Details: [BOOTSTRAP-58-AYAH-PROVENANCE.md](BOOTSTRAP-58-AYAH-PROVENANCE.md).
+
+The whole database can now be rebuilt from repository files without production access, so the text you review is reproducible: see `mobile/scripts/full-rebuild/`. The rebuilt content matches the approved fingerprints.

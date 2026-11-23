@@ -47,3 +47,7 @@ Three completed [findings logs](FINDINGS-LOG-TEMPLATE.md) (two readers, one bili
 ## 6. Out of scope
 
 Choosing a different French translation, modernising language, tafsir, and any change to the stored text.
+
+## Addendum (QR-DESIGN-007E)
+
+The 58 Hamidullah French ayahs (surahs 1, 67, 103, 108, 112, 113, 114) are recorded as `disputed` and are never selected by the app. See [BOOTSTRAP-58-AYAH-PROVENANCE.md](BOOTSTRAP-58-AYAH-PROVENANCE.md). The French reviewer need not review them unless the owner decides to keep them.

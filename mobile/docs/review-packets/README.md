@@ -36,3 +36,5 @@ QR-DESIGN-007D. Three packets, one per independent role, for the source-verifica
 | Major    | Unexplained difference or missing evidence that could hide a blocker          | Must be resolved before promotion                 |
 | Minor    | Formatting-only or documentation gap with no effect on meaning                | Recorded; may be accepted by the owner            |
 | Info     | Observation                                                                   | Recorded                                          |
+
+- [BOOTSTRAP-58-AYAH-PROVENANCE.md](BOOTSTRAP-58-AYAH-PROVENANCE.md): where the 58 early ayahs came from and what is unresolved (007E).
