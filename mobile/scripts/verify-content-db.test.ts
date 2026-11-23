@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdtempSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -87,6 +87,14 @@ describe("verify-content-db", () => {
     expect(compare(state(db, { fileSha256: "z" }), exp, false)).toEqual([]);
   });
 
+  // Fail closed: with REQUIRE_CONTENT_DB=1 (set by the release-gate runs) a missing
+  // database is a failure, never a silent skip.
+  if (process.env.REQUIRE_CONTENT_DB === "1") {
+    it("the bundled Quran database is present (REQUIRE_CONTENT_DB=1)", () => {
+      expect(existsSync(REAL_DB), `missing ${REAL_DB}`).toBe(true);
+    });
+  }
+
   describe.skipIf(!existsSync(REAL_DB))("against the real bundled database", () => {
     const tmp: string[] = [];
     afterEach(() => tmp.splice(0).forEach((d) => rmSync(d, { recursive: true, force: true })));
@@ -94,6 +102,16 @@ describe("verify-content-db", () => {
     it("passes for the approved artifact, including its file hash", () => {
       const r = spawnSync(process.execPath, [SCRIPT, REAL_DB, "--file-hash"], { encoding: "utf8" });
       expect(r.status, r.stderr).toBe(0);
+    });
+
+    it("leaves no -shm/-wal files next to the database it checks", () => {
+      const dir = mkdtempSync(path.join(tmpdir(), "qr-db-"));
+      tmp.push(dir);
+      const copy = path.join(dir, "q.sqlite");
+      copyFileSync(REAL_DB, copy);
+      const r = spawnSync(process.execPath, [SCRIPT, copy], { encoding: "utf8" });
+      expect(r.status, r.stderr).toBe(0);
+      expect(readdirSync(dir)).toEqual(["q.sqlite"]);
     });
 
     it("fails when one Arabic character is altered", () => {

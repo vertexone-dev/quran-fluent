@@ -20,7 +20,8 @@
  */
 import { DatabaseSync } from "node:sqlite";
 import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
+import { copyFileSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -84,7 +85,13 @@ function main() {
     args.find((a) => !a.startsWith("--")) ?? path.join(HERE, "../public/quran-content.sqlite"),
   );
   const expected = JSON.parse(readFileSync(path.join(HERE, "../content-db.expected.json"), "utf8"));
-  const db = new DatabaseSync(file, { readOnly: true });
+  // The bundled file may be in WAL mode, and even a read-only open then creates
+  // -shm/-wal files next to it. Verify a temporary copy so the source file and
+  // its directory are never touched.
+  const tmp = mkdtempSync(path.join(tmpdir(), "qr-verify-"));
+  const copy = path.join(tmp, "content.sqlite");
+  copyFileSync(file, copy);
+  const db = new DatabaseSync(copy, { readOnly: true });
   const stored = db.prepare("SELECT overall_sha256 FROM content_version").get().overall_sha256;
   const problems = compare(
     {
@@ -97,6 +104,7 @@ function main() {
     checkFile,
   );
   db.close();
+  rmSync(tmp, { recursive: true, force: true });
   if (problems.length) {
     console.error(`verify-content-db: FAILED for ${file}`);
     for (const p of problems) console.error(`  - ${p}`);
