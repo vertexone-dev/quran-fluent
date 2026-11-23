@@ -91,9 +91,60 @@ assert_text_present "$progress_dump" "Not tracked yet" "progress: untracked rows
 
 tap_on_text "$progress_dump" "Settings"
 settings_dump=$(dump_ui "04_settings" "$OUT_DIR")
-assert_text_present "$settings_dump" "Start screen" "nav: Settings tab shows Start screen"
-assert_text_present "$settings_dump" "Reduce motion" "settings: Reduce motion present"
-assert_text_present "$settings_dump" "Export preferences" "settings: Export preferences present"
+# QR-DESIGN-007B: Settings is a category list; each category opens a sub-page.
+# (UI Automator XML-escapes "&" as "&amp;", so the labels below use that form.)
+for row in "General" "Quran &amp; Reading" "Language" "Appearance" "Offline access" "Privacy &amp; Data" "About &amp; Sources"; do
+  assert_text_present "$settings_dump" "$row" "nav: Settings lists '$row'"
+done
+tap_on_text "$settings_dump" "Appearance"
+appearance_dump=$(dump_ui "04a_settings_appearance" "$OUT_DIR")
+assert_text_present "$appearance_dump" "Reduce motion" "settings: Appearance page shows Reduce motion"
+assert_text_present "$appearance_dump" "Text Size" "settings: Appearance page shows Text Size"
+press_back
+settings_dump=$(dump_ui "04b_settings_list_again" "$OUT_DIR")
+assert_text_present "$settings_dump" "Privacy &amp; Data" "hardware back: Appearance -> Settings list"
+tap_on_text "$settings_dump" "General"
+general_dump=$(dump_ui "04c_settings_general" "$OUT_DIR")
+assert_text_present "$general_dump" "Start screen" "settings: General page shows Start screen"
+press_back
+settings_dump=$(dump_ui "04d_settings_list_again" "$OUT_DIR")
+tap_on_text "$settings_dump" "Privacy &amp; Data"
+privacy_dump=$(dump_ui "04e_settings_privacy" "$OUT_DIR")
+assert_text_present "$privacy_dump" "Export preferences" "settings: Privacy page shows Export preferences"
+assert_text_present "$privacy_dump" "Reset preferences" "settings: Privacy page shows Reset preferences"
+press_back
+settings_dump=$(dump_ui "04f_settings_list_again" "$OUT_DIR")
+
+# About & Sources and the Tanzil link: opens in the system browser, leaves the app intact.
+tap_on_text "$settings_dump" "About &amp; Sources"
+about_dump=$(dump_ui "04g_about" "$OUT_DIR")
+assert_text_present "$about_dump" "Tanzil Project" "about: Tanzil source credited"
+assert_text_present "$about_dump" "Candidate" "about: Candidate status shown"
+# The link is below the fold and UI Automator bounds inside this WebView are offset
+# (by hundreds of px after scrolling), so tapping by bounds is unreliable. Keyboard
+# focus does not depend on geometry: DOM order is back button, then the Tanzil link.
+about_dump=$(dump_ui "04h_about" "$OUT_DIR")
+assert_text_present "$about_dump" "Open tanzil.net" "about: Tanzil link present"
+adb shell input keyevent KEYCODE_TAB
+adb shell input keyevent KEYCODE_TAB
+sleep 1
+adb shell input keyevent KEYCODE_ENTER
+sleep 5
+focus=$(adb shell dumpsys window | grep -m1 mCurrentFocus)
+if echo "$focus" | grep -q "$PKG"; then
+  log "FAIL [about: Tanzil link opens the system browser]: focus still in the app: $focus"
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+else
+  log "PASS [about: Tanzil link opens the system browser]: $focus"
+  PASS_COUNT=$((PASS_COUNT + 1))
+fi
+# Return to the app the way a user would (task switch); its state must be intact.
+adb shell am start -n "$ACTIVITY" >/dev/null
+sleep 2
+wait_for_app_ui 20 || true
+back_dump=$(dump_ui "04i_back_from_browser" "$OUT_DIR")
+assert_text_present "$back_dump" "Tanzil Project" "about: app state preserved after the browser (About screen still shown)"
+press_back
 
 press_back
 back1_dump=$(dump_ui "04b_back_to_progress" "$OUT_DIR")

@@ -2141,3 +2141,71 @@ html.dark .tile.tile-outline {
   margin: 0;
   overflow-wrap: anywhere;
 }
+
+/* ======================================================================
+ * QR-DESIGN-007B: Settings category list and sub-pages (Design Lock
+ * "Mobile App - Settings"): gold outline icon, title, hint, chevron.
+ * ==================================================================== */
+.settings-nav {
+  padding: 0;
+  overflow: hidden;
+}
+.settings-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 14px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.settings-nav-row:last-child {
+  border-bottom: 0;
+}
+.settings-nav-row:active {
+  background: color-mix(in oklab, var(--gold) 8%, transparent);
+}
+.settings-nav-row:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+.settings-nav-icon {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.settings-nav-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Safe external link (About & Sources): a gold pill with an icon, 44pt tall. */
+.external-link {
+  /* Block-level so the accessibility frame is the whole padded 44pt box, not
+   * just the text line (WebKit reports inline links by their text rects). */
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid color-mix(in oklab, var(--gold) 60%, transparent);
+  border-radius: 999px;
+  color: var(--gold);
+  font-weight: 700;
+  text-decoration: none;
+}
+.external-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}

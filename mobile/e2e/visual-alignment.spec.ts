@@ -217,11 +217,15 @@ test.describe("About & Sources", () => {
   test("renders right-to-left in Arabic and in French", async ({ page }) => {
     await openAbout(page);
     await page.getByTestId("appbar-back").click();
-    await page.getByTestId("settings-language-row").click(); // EN -> FR
+    await page.getByTestId("settings-language-row").click();
+    await page.getByTestId("language-option-fr").click();
+    await page.getByTestId("appbar-back").click();
     await page.getByTestId("setting-about").click();
     await expect(page.getByTestId("about-screen")).toContainText("À propos et sources");
     await page.getByTestId("appbar-back").click();
-    await page.getByTestId("settings-language-row").click(); // FR -> AR
+    await page.getByTestId("settings-language-row").click();
+    await page.getByTestId("language-option-ar").click();
+    await page.getByTestId("appbar-back").click();
     await page.getByTestId("setting-about").click();
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByTestId("about-screen")).toContainText("حول التطبيق والمصادر");

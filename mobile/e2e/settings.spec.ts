@@ -9,9 +9,24 @@ async function boot(page: Page) {
   await page.goto("/");
   await expect(page.locator(".appbar-title")).toHaveText("QuranRoots", { timeout: 15_000 });
 }
-async function openSettings(page: Page) {
+type SettingsKey = "general" | "reading" | "language" | "appearance" | "privacy";
+
+/** Opens the Settings tab, then (optionally) one category page. */
+async function openSettings(page: Page, key?: SettingsKey) {
   await page.getByTestId("tab-settings").click();
   await expect(page.getByTestId("settings-screen")).toBeVisible();
+  if (key) await gotoSettingsPage(page, key);
+}
+/** From the category list (or any category page) to another category page. */
+async function gotoSettingsPage(page: Page, key: SettingsKey) {
+  if ((await page.getByTestId("settings-screen").count()) === 0) {
+    await page.getByTestId("appbar-back").click();
+    await expect(page.getByTestId("settings-screen")).toBeVisible();
+  }
+  await page
+    .getByTestId(key === "language" ? "settings-language-row" : `settings-nav-${key}`)
+    .click();
+  await expect(page.getByTestId(`settings-page-${key}`)).toBeVisible();
 }
 
 test.describe("Settings (Design Lock v1.0)", () => {
@@ -19,14 +34,14 @@ test.describe("Settings (Design Lock v1.0)", () => {
   test.beforeEach(async ({ page }) => boot(page));
 
   test("theme choices are named Midnight, Ivory Light and Match device", async ({ page }) => {
-    await openSettings(page);
+    await openSettings(page, "appearance");
     const options = page.getByTestId("setting-theme").locator("option");
     await expect(options).toHaveText(["Midnight", "Ivory Light", "Match device"]);
     await expect(page.getByTestId("setting-theme")).toHaveValue("dark");
   });
 
   test("Match device follows the OS colour scheme", async ({ page }) => {
-    await openSettings(page);
+    await openSettings(page, "appearance");
     await page.getByTestId("setting-theme").selectOption("system");
     await expect(page.locator("html")).not.toHaveClass(/dark/); // OS pinned light
     await page.emulateMedia({ colorScheme: "dark" });
@@ -37,7 +52,7 @@ test.describe("Settings (Design Lock v1.0)", () => {
     const rootPx = () =>
       page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize));
     const base = await rootPx();
-    await openSettings(page);
+    await openSettings(page, "appearance");
     await page.getByTestId("setting-text-size").selectOption("large");
     await expect(page.locator("html")).toHaveAttribute("data-text-size", "large");
     expect(await rootPx()).toBeGreaterThan(base);
@@ -51,7 +66,7 @@ test.describe("Settings (Design Lock v1.0)", () => {
   test("reduce motion toggles an in-app class, is a real switch, and persists", async ({
     page,
   }) => {
-    await openSettings(page);
+    await openSettings(page, "appearance");
     const sw = page.getByTestId("setting-reduce-motion");
     await expect(sw).toHaveAttribute("role", "switch");
     await expect(sw).toHaveAttribute("aria-checked", "false");
@@ -67,7 +82,7 @@ test.describe("Settings (Design Lock v1.0)", () => {
   }) => {
     // Regression: `animation: none` corrupted Home rendering in the Android
     // WebView. The animation must stay attached, with a ~zero duration.
-    await openSettings(page);
+    await openSettings(page, "appearance");
     await page.getByTestId("setting-reduce-motion").click();
     await page.getByTestId("tab-home").click();
     const style = await page
@@ -82,7 +97,7 @@ test.describe("Settings (Design Lock v1.0)", () => {
   });
 
   test("start screen: Qur'an opens the surah list on launch", async ({ page }) => {
-    await openSettings(page);
+    await openSettings(page, "general");
     await page.getByTestId("setting-start-screen").selectOption("quran");
     await page.reload();
     await expect(page.locator(".appbar-title")).toHaveText("Surahs", { timeout: 15_000 });
@@ -96,7 +111,7 @@ test.describe("Settings (Design Lock v1.0)", () => {
     await page.locator(".list-row").nth(1).click(); // Al-Baqara, records a reading position
     await expect(page.locator("h1")).toHaveText("Al-Baqara");
     await page.goto("/");
-    await openSettings(page);
+    await openSettings(page, "general");
     await page.getByTestId("setting-start-screen").selectOption("continue");
     await page.reload();
     await expect(page.locator("h1")).toHaveText("Al-Baqara", { timeout: 15_000 });
@@ -105,15 +120,16 @@ test.describe("Settings (Design Lock v1.0)", () => {
   });
 
   test("start screen: Continue reading with no saved position stays on Home", async ({ page }) => {
-    await openSettings(page);
+    await openSettings(page, "general");
     await page.getByTestId("setting-start-screen").selectOption("continue");
     await page.reload();
     await expect(page.locator(".appbar-title")).toHaveText("QuranRoots", { timeout: 15_000 });
   });
 
   test("export downloads preferences only", async ({ page }) => {
-    await openSettings(page);
+    await openSettings(page, "appearance");
     await page.getByTestId("setting-theme").selectOption("light");
+    await gotoSettingsPage(page, "privacy");
     const [download] = await Promise.all([
       page.waitForEvent("download"),
       page.getByTestId("setting-export").click(),
@@ -136,19 +152,23 @@ test.describe("Settings (Design Lock v1.0)", () => {
     await page.locator(".list-row").nth(1).click();
     await expect(page.locator("h1")).toHaveText("Al-Baqara");
     await page.goto("/");
-    await openSettings(page);
+    await openSettings(page, "appearance");
     await page.getByTestId("setting-theme").selectOption("light");
     await page.getByTestId("setting-text-size").selectOption("large");
     await page.getByTestId("setting-reduce-motion").click();
 
+    await gotoSettingsPage(page, "privacy");
     await page.getByTestId("setting-reset").click();
     await expect(page.getByTestId("reset-dialog")).toBeVisible();
     await page.getByTestId("reset-cancel").click();
     await expect(page.getByTestId("reset-dialog")).toHaveCount(0);
+    await gotoSettingsPage(page, "appearance");
     await expect(page.getByTestId("setting-theme")).toHaveValue("light");
 
+    await gotoSettingsPage(page, "privacy");
     await page.getByTestId("setting-reset").click();
     await page.getByTestId("reset-confirm").click();
+    await gotoSettingsPage(page, "appearance");
     await expect(page.getByTestId("setting-theme")).toHaveValue("dark");
     await expect(page.getByTestId("setting-text-size")).toHaveValue("medium");
     await expect(page.getByTestId("setting-reduce-motion")).toHaveAttribute(
@@ -169,8 +189,9 @@ test.describe("Settings localisation and RTL", () => {
 
   test("French labels", async ({ page }) => {
     await page.getByTestId("home-language-toggle").click(); // FR
-    await openSettings(page);
+    await openSettings(page, "general");
     await expect(page.getByText("Écran de démarrage")).toBeVisible();
+    await gotoSettingsPage(page, "appearance");
     await expect(page.getByTestId("setting-theme").locator("option")).toHaveText([
       "Minuit",
       "Ivoire clair",
@@ -181,9 +202,10 @@ test.describe("Settings localisation and RTL", () => {
   test("Arabic labels render right-to-left", async ({ page }) => {
     await page.getByTestId("home-language-toggle").click();
     await page.getByTestId("home-language-toggle").click(); // AR
-    await openSettings(page);
+    await openSettings(page, "general");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.getByText("شاشة البداية")).toBeVisible();
+    await gotoSettingsPage(page, "appearance");
     await expect(page.getByTestId("setting-theme").locator("option")).toHaveText([
       "منتصف الليل",
       "عاجي فاتح",

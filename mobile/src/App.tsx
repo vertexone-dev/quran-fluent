@@ -38,6 +38,7 @@ import { MoreScreen } from "./screens/MoreScreen";
 import { OfflineAccessScreen } from "./screens/OfflineAccessScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import { AboutScreen } from "./screens/AboutScreen";
+import { SettingsPageScreen } from "./screens/SettingsPages";
 import { OnboardingScreen } from "./screens/OnboardingScreen";
 import { UnderstandScreen } from "./screens/UnderstandScreen";
 import { ProgressScreen } from "./screens/ProgressScreen";
@@ -309,6 +310,16 @@ function Navigator({
             onThemeChange={onThemeChange}
             prefs={prefs}
             onNavigate={handleNavigate}
+          />
+        )}
+        {route.screen === "settings-page" && (
+          <SettingsPageScreen
+            page={route.page}
+            onBack={goBack}
+            onNavigate={handleNavigate}
+            theme={theme}
+            onThemeChange={onThemeChange}
+            prefs={prefs}
           />
         )}
         {route.screen === "about" && <AboutScreen onBack={goBack} />}

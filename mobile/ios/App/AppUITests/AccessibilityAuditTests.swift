@@ -251,4 +251,59 @@ final class AccessibilityAuditTests: XCTestCase {
         shot("007a-about-bottom")
         XCTAssertTrue(app.buttons["Back"].exists, "About has no labelled Back control")
     }
+
+    /// QR-DESIGN-007B: the Settings category list, a sub-page, back navigation,
+    /// and the Tanzil link opening in Safari without disturbing the app.
+    func testSettingsPagesAndTanzilLink() {
+        // At large Dynamic Type sizes rows can sit below the fold: scroll until tappable.
+        func reveal(_ el: XCUIElement) { for _ in 0..<6 where !el.isHittable { app.swipeUp(); sleep(1) } }
+        func row(_ name: String) -> XCUIElement {
+            app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", name)).firstMatch
+        }
+        start()
+        tab("Settings").tap(); sleep(1)
+        for name in ["General", "Quran & Reading", "Language", "Appearance", "Offline access", "Privacy & Data", "About & Sources"] {
+            let row = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", name)).firstMatch
+            XCTAssertTrue(row.waitForExistence(timeout: 6), "Settings row '\(name)' missing")
+            if row.exists { XCTAssertGreaterThanOrEqual(row.frame.height, 44, "Settings row '\(name)' under 44pt") }
+        }
+        for forbidden in ["Notifications", "Family", "Audio"] {
+            XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", forbidden)).firstMatch.exists,
+                           "Settings must not show a '\(forbidden)' row")
+        }
+        shot("007b-settings-list")
+        // Sub-page and back.
+        reveal(row("Appearance")); row("Appearance").tap(); sleep(1)
+        XCTAssertTrue(app.switches.firstMatch.waitForExistence(timeout: 5), "Appearance page has no reduce-motion switch")
+        shot("007b-settings-appearance")
+        app.buttons["Back"].tap(); sleep(1)
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Privacy & Data")).firstMatch.waitForExistence(timeout: 5),
+                      "Back from Appearance did not return to the Settings list")
+        // About -> Tanzil link.
+        reveal(row("Language")); row("Language").tap(); sleep(1)
+        XCTAssertTrue(app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS[c] %@", "Français")).firstMatch.waitForExistence(timeout: 5),
+                      "Language page does not list the languages")
+        shot("007b-settings-language")
+        app.buttons["Back"].tap(); sleep(1)
+        reveal(row("About & Sources")); row("About & Sources").tap(); sleep(1)
+        let link = app.links.matching(NSPredicate(format: "label CONTAINS[c] %@", "Tanzil Project website")).firstMatch
+        XCTAssertTrue(link.waitForExistence(timeout: 5), "Tanzil link missing or not exposed as a link")
+        for _ in 0..<6 where !link.isHittable { app.swipeUp(); sleep(1) }
+        XCTAssertTrue(link.isHittable, "Tanzil link is not reachable by scrolling")
+        // Note: WebKit reports a link's accessibility frame from its text line, so
+        // the 44pt CSS box (asserted in the Playwright layout test) cannot be read
+        // from here; this checks reachability instead.
+        shot("007b-about-link")
+        link.tap()
+        let safari = XCUIApplication(bundleIdentifier: "com.apple.mobilesafari")
+        XCTAssertTrue(safari.wait(for: .runningForeground, timeout: 20), "Tanzil link did not open Safari")
+        sleep(2)
+        shot("007b-safari")
+        // Return: the app is where we left it.
+        app.activate()
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "Tanzil Project")).firstMatch.waitForExistence(timeout: 8),
+                      "About screen not preserved after returning from Safari")
+        XCTAssertTrue(tab("Settings").exists, "tab bar missing after returning")
+        safari.terminate()
+    }
 }
