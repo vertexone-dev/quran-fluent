@@ -98,3 +98,47 @@ One folder per source, committed as text only (hashes, reports, signed checklist
 2. Name the independent Arabic reviewer, the bilingual French reviewer and the legal reviewer (the process cannot start without people).
 3. Authorise the Arabic comparison against a non-Tanzil reference (KFGQPC) and the Kazimirski scan sampling.
 4. Decide whether to add new status values (separate schema decision) or keep the four existing ones.
+
+## 9. Revision 2 (QR-DESIGN-007D): evaluation against the ten review categories
+
+The ten gates (section 4) were evaluated against ten categories. Gate numbers are kept; two gates are added as "a" gates so nothing is renumbered.
+
+| Category                | Covered by            | Assessment              | Amendment                                                                                                                                                         |
+| ----------------------- | --------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Source identification   | G1, G2                | Adequate                | A web source must record a revision or permanent identifier (Wikisource revision id is missing today)                                                             |
+| Provenance              | G1                    | Gap found               | Every **stratum** with a different origin needs its own provenance line. The 58 bootstrap ayahs came from `api.alquran.cloud` yet are credited to Tanzil          |
+| Text integrity          | G3, G4, G5            | Adequate                | Hashes are recorded per stratum; the aggregate ordered hash of the stored text is pinned in the validator                                                         |
+| Translation attribution | G6                    | Partial                 | G6 must also check that translator, edition, publisher and year match the database fields and the About screen                                                    |
+| Licensing               | G6                    | Adequate, role unclear  | The legal reviewer signs G6 using the legal packet; a notice-in-derived-files check is added (the migration holding the full Tanzil text has no copyright notice) |
+| Transformation history  | prose in G1 and G6    | **Missing gate**        | **New G6a**                                                                                                                                                       |
+| Reproducibility         | G3 (hashes only)      | **Missing gate**        | **New G4a**                                                                                                                                                       |
+| Scholarly review        | G5, G7                | Adequate for Arabic     | G7 names a role per packet                                                                                                                                        |
+| Language review         | G5 (French, implicit) | Partial                 | G7 adds the French language reviewer (category L in the French packet)                                                                                            |
+| Release approval        | G8, G9, G10           | Adequate, scope unclear | Release approval is separate from source approval and checks the displayed statuses, the licence notices and the green release gate                               |
+
+**G4a Reproducibility.** The stored content can be regenerated from pinned, repository-committed inputs and its fingerprint equals the approved one. Evidence: `mobile/scripts/rebuild-content-core.mjs` (CI branch `ci/qr-design-007d-reproducible-content`, local until approved). It proves the approved content equals the committed content. It does not prove authenticity (no network, no re-fetch): that is G5.
+
+**G6a Transformation history.** Every transformation between the original artifact and the stored text is listed, reproducible by a committed script, and reviewed against the licence's modification terms by the legal reviewer. Known: the Bismillah split (Tanzil text), the four Pickthall verse-label corrections (wording unchanged), Kazimirski segmentation and the two Phase 4 corrections.
+
+### 9.1 Where each source stands
+
+"On record" means taken from the project's own records and **not** re-verified in this phase; only G4a was re-run here. Nothing below changes a status.
+
+| Gate                           | Tanzil Uthmani 1.1 (Candidate)                                                                     | Kazimirski (Candidate)                                                | Pickthall (Verified)                       |
+| ------------------------------ | -------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------ |
+| G1 Provenance                  | Partial: artifact hash on record in a migration header; the 58-ayah stratum has a different origin | Partial: Wikisource page and scans on record; **revision id missing** | On record                                  |
+| G2 Version                     | On record (1.1)                                                                                    | On record (1869 printing, manifest v2)                                | On record (eBook #16955)                   |
+| G3 Integrity                   | Partial: hashes not in the database notes; no aggregate pinned                                     | On record: artifact and aggregate hashes in the notes                 | On record: artifact hash                   |
+| G4 Structure                   | On record (strict validator 27/27 at last record)                                                  | On record                                                             | On record                                  |
+| **G4a Reproducibility**        | **Done (re-run in 007D)**: fingerprint and 5 counts equal, 0 row differences                       | **Done (re-run in 007D)**                                             | **Done (re-run in 007D)**                  |
+| G5 Independent comparison      | **Open**: no full non-Tanzil comparison                                                            | **Open**: no transcription sample or quality sign-off                 | On record: documented cross-comparison     |
+| G6 Licence and attribution     | **Open**: L3, L4, L5 questions                                                                     | **Open**: transcription licence                                       | Maintenance: worldwide public-domain scope |
+| **G6a Transformation history** | Partial: documented in the migration, not reviewed                                                 | Partial                                                               | On record (4 corrections)                  |
+| G7 Review sign-off             | Not started: no reviewer named                                                                     | Not started: no reviewers named                                       | Not required unless re-opened              |
+| G8 Owner approval              | Not started                                                                                        | Not started                                                           | n/a                                        |
+| G9 Controlled change           | Not started                                                                                        | Not started                                                           | Done historically (`20260820190000`)       |
+| G10 Monitoring                 | Partial                                                                                            | Partial                                                               | Partial                                    |
+
+### 9.2 What this phase does not do
+
+It does not name reviewers, record any review, change any status or edit any stored text. The review packets are in `review-packets/`; the reproducible sample for the French check is `mobile/scripts/draw-review-sample.mjs`.

@@ -129,13 +129,13 @@ Full process: `mobile/docs/SOURCE-VERIFICATION-WORKFLOW.md`. No status was chang
 ## 8. Remaining release blockers
 
 1. A CI database mechanism is still undecided (spike not approved), so the fail-closed gate stays red on `main`.
-2. `main` has no branch protection.
+2. **Correction (QR-DESIGN-007D):** this item was wrong. `main` is protected by an active repository ruleset (see `QR-DESIGN-007D-REPORT.md`). What remains an owner decision is whether the "mobile release gate" should be a required check, and whether admin bypass should stay.
 3. French and Arabic strings are drafts awaiting native-speaker review.
 4. Artwork rights are unresolved.
 5. Tanzil and Kazimirski remain Candidate; the verification process needs named reviewers.
 6. iOS bundle identifier and signing are undecided.
 7. No real-device, TalkBack or VoiceOver testing yet.
-8. The stacked PR chain (#76 to #88) is unmerged and untested by CI; merge order and branch protection are owner decisions.
+8. The stacked PR chain (#76 to #88) is unmerged and untested by CI; merge order is an owner decision.
 
 ## 9. Proposed next milestone: QR-DESIGN-007D
 
@@ -151,7 +151,7 @@ Full process: `mobile/docs/SOURCE-VERIFICATION-WORKFLOW.md`. No status was chang
 1. Push `feat/qr-design-007c-release-readiness` and open its draft PR (stacked on #88).
 2. Approve the isolated spike for CI-database option E, accept F as the interim, and decide whether D may be used if the spike fails.
 3. Approve, amend or reject the source-verification workflow, and name the three reviewers.
-4. Branch protection on `main` and the required "mobile release gate" check.
+4. Whether to add the "mobile release gate" as a required check on the existing `main` ruleset (it currently requires only `test`).
 5. Native-speaker review of French and Arabic.
 6. Artwork rights, and the iOS bundle identifier and signing decision.
 7. Merge order for the stacked PRs (decision only; nothing was merged).
