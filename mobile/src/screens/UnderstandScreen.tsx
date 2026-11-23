@@ -142,7 +142,7 @@ export function UnderstandScreen({
         role="tabpanel"
         id="understand-panel"
         aria-labelledby={`understand-tab-${tab}`}
-        className="card"
+        className="card parchment-panel"
         data-testid="understand-panel"
       >
         {tab === "meaning" && (

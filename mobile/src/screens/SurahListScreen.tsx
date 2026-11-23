@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { Bookmark, BookmarkCheck, ChevronRight, Search } from "lucide-react";
 import { useI18n } from "../i18n";
 import { useDb } from "../DbContext";
 import { listSurahs } from "../db";
@@ -85,14 +85,19 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
         <AyahBookmarksScreen embedded onNavigate={onNavigate} onBack={() => setView("surah")} />
       ) : (
         <>
-          <input
-            className="input"
-            aria-label={d.reader.search}
-            placeholder={d.reader.search}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            style={{ marginBottom: 12 }}
-          />
+          <div className="search-field" style={{ marginBottom: 12 }}>
+            <Search size={18} aria-hidden="true" />
+            <input
+              className="input"
+              type="text"
+              inputMode="search"
+              enterKeyHint="search"
+              aria-label={d.reader.search}
+              placeholder={d.reader.search}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
 
           <div style={{ marginBottom: 12, overflowX: "auto" }}>
             <Segmented
@@ -158,6 +163,9 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
                 <span className="arabic-text" style={{ fontSize: "1.1rem", flexShrink: 0 }}>
                   {s.name_ar}
                 </span>
+                {s.number === lastReadSurah && (
+                  <ChevronRight size={18} className="row-chevron dir-icon" aria-hidden="true" />
+                )}
                 <button
                   type="button"
                   className="hit-44"

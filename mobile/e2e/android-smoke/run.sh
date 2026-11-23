@@ -55,6 +55,7 @@ log "--- 1. App launch, onboarding and Home ---"
 adb shell am force-stop "$PKG"
 sleep 1
 adb shell am start -n "$ACTIVITY" >/dev/null
+wait_for_app_ui 30 || true
 first_dump=$(dump_ui "01_launch" "$OUT_DIR")
 if grep -q "Welcome to QuranRoots" "$first_dump"; then
   # Fresh install: the welcome screen is shown once. It must name only
@@ -197,6 +198,7 @@ log "--- 5. Restart and state persistence ---"
 adb shell am force-stop "$PKG"
 sleep 1
 adb shell am start -n "$ACTIVITY" >/dev/null
+wait_for_app_ui 30 || true
 restart_dump=$(dump_ui "11_after_restart" "$OUT_DIR")
 # Documented finding from the Android audit: the app always cold-boots to
 # Home after force-stop/relaunch -- it does not restore the screen the user

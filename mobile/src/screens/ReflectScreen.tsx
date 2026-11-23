@@ -69,7 +69,7 @@ export function ReflectScreen({
       <AppBar title={d.reflectUi.title} onBack={onBack} />
 
       {validTarget && target ? (
-        <section className="card" data-testid="reflect-composer">
+        <section className="card parchment-panel" data-testid="reflect-composer">
           <div className="setting-hint">{d.reflectUi.reflectingOn}</div>
           <div className="setting-title" data-testid="reflect-target">
             {nameOf(targetSurah, locale, target.surah)} {target.surah}:{target.ayah}
@@ -99,13 +99,14 @@ export function ReflectScreen({
           </div>
         </section>
       ) : (
-        <section className="card" data-testid="reflect-choose">
+        <section className="card parchment-panel" data-testid="reflect-choose">
           <p className="text-muted" style={{ marginTop: 0, lineHeight: 1.6 }}>
             {d.reflectUi.chooseAyah}
           </p>
           <button
             type="button"
             className="btn btn-primary"
+            style={{ marginTop: 16 }}
             onClick={() => onNavigate({ screen: "surah-list" })}
             data-testid="reflect-open-quran"
           >

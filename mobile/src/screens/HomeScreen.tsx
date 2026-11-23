@@ -13,11 +13,12 @@ import {
   Sparkles,
   Sun,
   UserRound,
+  type LucideIcon,
 } from "lucide-react";
 import { nextLocale, useI18n } from "../i18n";
 import { art } from "../artwork";
 import { useDb } from "../DbContext";
-import { listCourses, listLevels, listModules, listLessons, listSurahs } from "../db";
+import { listLevels, listModules, listLessons, listSurahs } from "../db";
 import {
   getLastReadSurah,
   getReadingPosition,
@@ -68,8 +69,6 @@ export function HomeScreen({
         ? d.settings.themeDark
         : d.settings.themeSystem;
 
-  const courses = listCourses(db, contentLocale);
-  const course = courses[0];
   const levels = listLevels(db, contentLocale);
   const firstLevel = levels[0];
   const firstModule = firstLevel ? listModules(db, firstLevel.id, contentLocale)[0] : undefined;
@@ -109,6 +108,42 @@ export function HomeScreen({
     },
     { key: "settings", icon: SettingsIcon, label: d.more.settings, route: { screen: "settings" } },
   ] as const;
+
+  const understandTarget = getReadingPosition();
+  const tiles: {
+    key: string;
+    icon: LucideIcon;
+    label: string;
+    route: Route;
+    badge?: string;
+  }[] = [
+    { key: "quran", icon: BookOpen, label: d.nav.quran, route: { screen: "surah-list" } },
+    {
+      key: "understand",
+      icon: Layers,
+      label: d.understand.title,
+      route: {
+        screen: "understand",
+        surahNumber: understandTarget?.surahNumber ?? 1,
+        ayahNumber: understandTarget?.ayahNumber ?? 1,
+      },
+    },
+    { key: "learn", icon: GraduationCap, label: d.nav.learn, route: { screen: "lessons" } },
+    { key: "reflect", icon: Sparkles, label: d.nav.reflect, route: { screen: "reflect" } },
+    {
+      key: "memorize",
+      icon: Brain,
+      label: d.nav.memorize,
+      route: { screen: "memorize" },
+      badge: d.memorizeUi.badge,
+    },
+    {
+      key: "bookmarks",
+      icon: Bookmark,
+      label: d.more.bookmarks,
+      route: { screen: "ayah-bookmarks" },
+    },
+  ];
 
   return (
     <div className="stagger" data-testid="home-screen">
@@ -154,6 +189,25 @@ export function HomeScreen({
         <p className="eyebrow">{d.home.greeting}</p>
         <p className="tagline">{d.brand.tagline}</p>
       </section>
+
+      {/* Design Lock six-tile grid (3 x 2). The reference's sixth tile is
+          Family Mode, which does not exist; Bookmarks is a real, working
+          destination and takes its place. No tile is a placeholder. */}
+      <nav className="tile-grid tile-grid-six" aria-label={d.home.explore} data-testid="home-tiles">
+        {tiles.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            className="tile tile-outline"
+            onClick={() => onNavigate(t.route)}
+            data-testid={`home-tile-${t.key}`}
+          >
+            <t.icon size={26} strokeWidth={1.6} aria-hidden="true" />
+            <span className="tile-title">{t.label}</span>
+            {t.badge && <span className="chip chip-planned">{t.badge}</span>}
+          </button>
+        ))}
+      </nav>
 
       {readingCardSurah && (
         <button
@@ -258,64 +312,6 @@ export function HomeScreen({
           {d.home.startLearning}
         </div>
       )}
-
-      <SectionTitle>{d.home.explore}</SectionTitle>
-      <div className="tile-grid">
-        <button
-          className="tile tile-support"
-          onClick={() => onNavigate({ screen: "surah-list" })}
-          type="button"
-          data-testid="home-tile-quran"
-        >
-          <BookOpen size={22} />
-          <span className="tile-title">{d.nav.quran}</span>
-          <span className="tile-subtitle">{d.reader.tileSubtitle}</span>
-        </button>
-        <button
-          className="tile tile-support"
-          onClick={() =>
-            onNavigate({
-              screen: "understand",
-              surahNumber: getReadingPosition()?.surahNumber ?? 1,
-              ayahNumber: getReadingPosition()?.ayahNumber ?? 1,
-            })
-          }
-          type="button"
-          data-testid="home-tile-understand"
-        >
-          <Layers size={22} />
-          <span className="tile-title">{d.understand.title}</span>
-        </button>
-        <button
-          className="tile tile-primary-tint"
-          onClick={() => onNavigate({ screen: "lessons" })}
-          type="button"
-          data-testid="home-tile-learn"
-        >
-          <GraduationCap size={22} />
-          <span className="tile-title">{d.nav.learn}</span>
-          <span className="tile-subtitle">{course?.title ?? d.nav.lessons}</span>
-        </button>
-        <button
-          className="tile tile-gold"
-          onClick={() => onNavigate({ screen: "reflect" })}
-          type="button"
-          data-testid="home-tile-reflect"
-        >
-          <Sparkles size={22} />
-          <span className="tile-title">{d.nav.reflect}</span>
-        </button>
-        <button
-          className="tile tile-accent"
-          onClick={() => onNavigate({ screen: "memorize" })}
-          type="button"
-          data-testid="home-tile-memorize"
-        >
-          <Brain size={22} />
-          <span className="tile-title">{d.nav.memorize}</span>
-          <span className="chip chip-planned">{d.memorizeUi.badge}</span>
-        </button>
-      </div>
     </div>
   );
 }

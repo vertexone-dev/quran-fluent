@@ -37,6 +37,7 @@ import { PracticeScreen } from "./screens/PracticeScreen";
 import { MoreScreen } from "./screens/MoreScreen";
 import { OfflineAccessScreen } from "./screens/OfflineAccessScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
+import { AboutScreen } from "./screens/AboutScreen";
 import { OnboardingScreen } from "./screens/OnboardingScreen";
 import { UnderstandScreen } from "./screens/UnderstandScreen";
 import { ProgressScreen } from "./screens/ProgressScreen";
@@ -307,8 +308,10 @@ function Navigator({
             theme={theme}
             onThemeChange={onThemeChange}
             prefs={prefs}
+            onNavigate={handleNavigate}
           />
         )}
+        {route.screen === "about" && <AboutScreen onBack={goBack} />}
         {route.screen === "progress" && <ProgressScreen onNavigate={handleNavigate} />}
         {route.screen === "understand" && (
           <UnderstandScreen

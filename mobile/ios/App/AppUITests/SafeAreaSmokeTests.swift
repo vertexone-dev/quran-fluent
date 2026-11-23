@@ -50,7 +50,14 @@ final class SafeAreaSmokeTests: XCTestCase {
     /// Tab-bar buttons have exactly the tab name as label. Exact matching matters:
     /// e.g. the Arabic "Reset preferences" row contains the word for "Settings".
     private func tab(_ label: String) -> XCUIElement {
-        app.buttons.matching(NSPredicate(format: "label == %@", label)).firstMatch
+        // Home tiles/shortcuts can carry the same label as a tab (e.g. "Learn",
+        // "Settings"). The tab bar is the lowest such button, so pick that one.
+        let q = app.buttons.matching(NSPredicate(format: "label == %@", label))
+        _ = q.firstMatch.waitForExistence(timeout: 8)
+        let all = q.allElementsBoundByIndex.filter { $0.exists }
+        // A tile scrolled under the tab bar is not hittable; the tab bar button is.
+        let hittable = all.filter { $0.isHittable }
+        return (hittable.isEmpty ? all : hittable).max(by: { $0.frame.minY < $1.frame.minY }) ?? q.firstMatch
     }
 
     /// Visible text/buttons must sit below the status bar and inside the screen.

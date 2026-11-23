@@ -1933,3 +1933,211 @@ h3,
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+/* ======================================================================
+ * QR-DESIGN-007A: exact-match alignment with Design Lock v1.0 where the
+ * existing components, verified data and tokens allow it. CSS and icons only:
+ * no artwork, no new content. Accessibility rules above (44pt targets,
+ * Dynamic Type, 1.3x chrome cap) are not overridden.
+ * ==================================================================== */
+
+/* Home: three-column outlined tiles (reference "Home (Dashboard)"). At large
+ * text sizes rem grows, so auto-fit drops to fewer columns instead of
+ * truncating the labels. */
+.tile-grid.tile-grid-six {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.tile.tile-outline {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 96px;
+  padding: 12px 6px;
+  gap: 6px;
+  background: color-mix(in oklab, var(--gold) 6%, var(--card));
+  color: var(--foreground);
+  border: 1px solid color-mix(in oklab, var(--gold) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--gold) 14%, transparent);
+}
+.tile.tile-outline svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.tile.tile-outline .tile-title {
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+html.dark .tile.tile-outline {
+  background: var(--card);
+  border-color: color-mix(in oklab, var(--gold) 55%, transparent);
+}
+
+/* Segmented controls: antique-gold selected state. */
+.seg.active {
+  background: var(--gold);
+  color: var(--gold-foreground);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Surah list: search field with a leading magnifier. */
+.search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-field > svg {
+  position: absolute;
+  inset-inline-start: 14px;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+.search-field {
+  min-width: 0;
+}
+.search-field .input {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: 999px;
+  padding-inline-start: 42px;
+  min-height: 44px;
+}
+/* Last-read row: chevron affordance next to the gold border. */
+.row-chevron {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+/* Centred header (Reader): back at the start, title centred, balanced end. */
+.appbar-centered {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 8px;
+}
+.appbar-centered .appbar-side {
+  display: flex;
+  align-items: center;
+}
+.appbar-centered .appbar-side-end {
+  justify-content: flex-end;
+}
+.appbar-centered .appbar-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  text-align: center;
+}
+.appbar-centered .appbar-title {
+  font-size: calc(1.25rem * var(--qr-chrome));
+  max-width: 100%;
+}
+.appbar-centered .reader-ar-title {
+  font-size: 1.3rem;
+  line-height: 1.3;
+}
+
+/* Onboarding CTA: label plus arrow. */
+.onboarding-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Parchment panels (Understand meaning, Reflect composer): the same ivory
+ * paper and double gold edge as the Reader verse card; ink contrast kept. */
+.card.parchment-panel {
+  background: linear-gradient(180deg, var(--qr-ivory) 0%, var(--qr-ivory-muted) 100%);
+  color: oklch(0.27 0.04 195.1);
+  border-color: color-mix(in oklab, var(--qr-gold) 75%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--qr-gold) 16%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--qr-gold) 35%, transparent),
+    var(--shadow-soft);
+}
+.card.parchment-panel .group-label,
+.card.parchment-panel .setting-hint,
+.card.parchment-panel .text-muted {
+  color: oklch(0.38 0.03 195.1);
+}
+.card.parchment-panel .translation-text {
+  color: oklch(0.27 0.04 195.1);
+}
+.card.parchment-panel .chip-planned {
+  color: oklch(0.3 0.04 195.1);
+}
+.card.parchment-panel .reflect-input {
+  background: color-mix(in oklab, white 55%, var(--qr-ivory));
+  color: oklch(0.2 0.04 195.1);
+  border-color: color-mix(in oklab, var(--qr-gold) 55%, transparent);
+}
+.card.parchment-panel .reflect-input::placeholder {
+  color: oklch(0.42 0.03 195.1);
+}
+
+/* Home header: the wordmark wraps (and its buttons drop to a second line)
+ * at the largest system text sizes instead of truncating. */
+.brand-hero .appbar {
+  flex-wrap: wrap;
+}
+.brand-hero .appbar-title {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Settings: group headings carry an icon. */
+.group-label.settings-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.group-label.settings-group svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+/* About & Sources. */
+.source-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.source-card {
+  padding: 14px;
+  margin: 0;
+}
+.source-type {
+  margin: 0 0 2px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+.source-name {
+  margin: 0 0 10px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.source-meta {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 0.85rem;
+}
+.source-meta dt {
+  color: var(--muted-foreground);
+}
+.source-meta dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}

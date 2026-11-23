@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { ChevronRight, Database, Info, Languages, Palette, SlidersHorizontal } from "lucide-react";
 import { LANGUAGE_NAMES, nextLocale, useI18n } from "../i18n";
 import { AppBar } from "../AppBar";
+import type { Route } from "../navigation";
 import {
   START_SCREENS,
   exportPreferences,
@@ -37,11 +39,13 @@ export function SettingsScreen({
   theme,
   onThemeChange,
   prefs,
+  onNavigate,
 }: {
   onBack: () => void;
   theme: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
   prefs: PrefsControls;
+  onNavigate: (route: Route) => void;
 }) {
   const { d, locale, setLocale } = useI18n();
   const [start, setStart] = useState<StartScreen>(() => getStartScreen());
@@ -91,7 +95,10 @@ export function SettingsScreen({
     <div data-testid="settings-screen">
       <AppBar title={d.settings.title} onBack={onBack} />
 
-      <h2 className="group-label">{d.prefs.general}</h2>
+      <h2 className="group-label settings-group">
+        <SlidersHorizontal size={16} aria-hidden="true" />
+        {d.prefs.general}
+      </h2>
       <div className="card" style={{ padding: 0, marginBottom: 20 }}>
         <label className="setting-row" htmlFor="setting-start">
           <span className="setting-text">
@@ -118,7 +125,10 @@ export function SettingsScreen({
         </label>
       </div>
 
-      <h2 className="group-label">{d.settings.language}</h2>
+      <h2 className="group-label settings-group">
+        <Languages size={16} aria-hidden="true" />
+        {d.settings.language}
+      </h2>
       <div className="card" style={{ padding: 0, marginBottom: 20 }}>
         <button
           type="button"
@@ -140,7 +150,10 @@ export function SettingsScreen({
         </div>
       </div>
 
-      <h2 className="group-label">{d.settings.appearance}</h2>
+      <h2 className="group-label settings-group">
+        <Palette size={16} aria-hidden="true" />
+        {d.settings.appearance}
+      </h2>
       <div className="card" style={{ padding: 0, marginBottom: 20 }}>
         <label className="setting-row" htmlFor="setting-theme">
           <span className="setting-text">
@@ -205,8 +218,11 @@ export function SettingsScreen({
         </div>
       </div>
 
-      <h2 className="group-label">{d.prefs.yourData}</h2>
-      <div className="card" style={{ padding: 0 }}>
+      <h2 className="group-label settings-group">
+        <Database size={16} aria-hidden="true" />
+        {d.prefs.yourData}
+      </h2>
+      <div className="card" style={{ padding: 0, marginBottom: 20 }}>
         <button
           type="button"
           className="setting-row setting-button"
@@ -228,6 +244,25 @@ export function SettingsScreen({
             <span className="setting-title">{d.prefs.resetPrefs}</span>
             <span className="setting-hint">{d.prefs.resetPrefsHint}</span>
           </span>
+        </button>
+      </div>
+
+      <h2 className="group-label settings-group">
+        <Info size={16} aria-hidden="true" />
+        {d.about.title}
+      </h2>
+      <div className="card" style={{ padding: 0 }}>
+        <button
+          type="button"
+          className="setting-row setting-button"
+          onClick={() => onNavigate({ screen: "about" })}
+          data-testid="setting-about"
+        >
+          <span className="setting-text">
+            <span className="setting-title">{d.about.title}</span>
+            <span className="setting-hint">{d.about.hint}</span>
+          </span>
+          <ChevronRight size={18} className="text-muted dir-icon" aria-hidden="true" />
         </button>
       </div>
 
