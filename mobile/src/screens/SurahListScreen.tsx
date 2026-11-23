@@ -118,7 +118,7 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
             {filtered.map((s) => (
               <div
                 key={s.number}
-                className={`list-row${s.number === lastReadSurah ? " row-last-read" : ""}`}
+                className={`list-row surah-row${s.number === lastReadSurah ? " row-last-read" : ""}`}
                 style={{ padding: "12px 12px" }}
                 data-last-read={s.number === lastReadSurah ? "true" : undefined}
               >
@@ -130,7 +130,7 @@ export function SurahListScreen({ onNavigate }: { onNavigate: (route: Route) => 
                     gap: 12,
                     minWidth: 0,
                     minHeight: 44,
-                    flex: 1,
+                    flex: "1 1 8rem",
                     background: "none",
                     border: "none",
                     color: "inherit",

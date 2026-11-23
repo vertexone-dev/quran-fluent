@@ -129,7 +129,7 @@ export function LessonsScreen({ onNavigate }: { onNavigate: (route: Route) => vo
           {d.lessons.contentLanguageNotice}
         </p>
       )}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
         <button
           type="button"
           className={tab === "levels" ? "chip" : "chip chip-muted"}

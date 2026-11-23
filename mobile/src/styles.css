@@ -1895,10 +1895,25 @@ button.chip {
  * above 1.3x; it is exactly 1 at or below 1.3x and on non-iOS. Grids reflow to
  * fewer columns instead of overflowing. */
 :root {
-  --qr-chrome: calc(min(var(--qr-system-text-scale, 1), 1.3) / var(--qr-system-text-scale, 1));
+  /* The text scale actually applied to the page: iOS Dynamic Type (multiplied into
+   * the root size above) or the Android WebView font scale (applied by the WebView
+   * itself; measured, never multiplied again). Only one is ever not 1. */
+  --qr-applied-scale: calc(var(--qr-system-text-scale, 1) * var(--qr-text-zoom, 1));
+  --qr-chrome: calc(min(var(--qr-applied-scale), 1.3) / var(--qr-applied-scale));
 }
 .tab-item {
   font-size: calc(0.72rem * var(--qr-chrome));
+  /* QR-DESIGN-007C: as the text scale rises from 1x to 2x the tab's horizontal
+   * padding shrinks from 2px to 0, and the bar's side padding from 4px to 0, so a
+   * long French label ("Apprendre") still fits when Android's WebView refuses to
+   * render it smaller than 8px (x2 zoom). Exactly the old values at 1x. */
+  --qr-tab-room: calc(2 - clamp(1, var(--qr-applied-scale), 2));
+  padding-inline: calc(2px * var(--qr-tab-room));
+}
+.tab-bar {
+  --qr-tab-room: calc(2 - clamp(1, var(--qr-applied-scale), 2));
+  padding-left: calc(4px * var(--qr-tab-room) + env(safe-area-inset-left, 0px));
+  padding-right: calc(4px * var(--qr-tab-room) + env(safe-area-inset-right, 0px));
 }
 .appbar-title {
   font-size: calc(1.5rem * var(--qr-chrome));
@@ -1906,11 +1921,19 @@ button.chip {
 .lang-btn {
   font-size: calc(0.72rem * var(--qr-chrome));
 }
+/* QR-DESIGN-007C: on Android the WebView zooms text but not rem, so column minimums
+ * also grow with the measured --qr-text-zoom (1 on iOS, where the root size already scales). */
 .tile-grid {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, calc(9rem * var(--qr-text-zoom, 1))), 1fr)
+  );
 }
 .shortcut-row {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 4.5rem), 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, calc(4.5rem * var(--qr-text-zoom, 1))), 1fr)
+  );
 }
 .tile,
 .shortcut {
@@ -1945,7 +1968,10 @@ h3,
  * text sizes rem grows, so auto-fit drops to fewer columns instead of
  * truncating the labels. */
 .tile-grid.tile-grid-six {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr));
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, calc(6.5rem * var(--qr-text-zoom, 1))), 1fr)
+  );
   gap: 10px;
   margin-bottom: 16px;
 }
@@ -2128,16 +2154,25 @@ html.dark .tile.tile-outline {
   overflow-wrap: anywhere;
 }
 .source-meta {
-  display: grid;
-  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
-  gap: 4px 12px;
   margin: 0;
   font-size: 0.85rem;
 }
+/* Each label/value pair is a wrapping row: side by side when there is room, stacked
+ * (label above value) at large text sizes. The old two-column grid squeezed the value
+ * to one character per line at AX5 on an iPhone SE (found by the 007C UI tests). */
+.source-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  padding: 2px 0;
+}
 .source-meta dt {
+  flex: 0 0 auto;
   color: var(--muted-foreground);
 }
 .source-meta dd {
+  flex: 1 1 10rem;
+  min-width: 0;
   margin: 0;
   overflow-wrap: anywhere;
 }
@@ -2208,4 +2243,37 @@ html.dark .tile.tile-outline {
 .external-link:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
+}
+
+/* QR-DESIGN-007C: at the largest text sizes on a narrow phone (iPhone SE at AX5) the
+ * Surah row's Arabic name and favourite button no longer fit beside the name, and
+ * the long greeting word overflowed by a few points. Both now wrap instead. The
+ * name button's 8rem basis keeps the default layout on one line (see the 007C
+ * Playwright test and the iPhone SE AX5 UI tests). */
+.list-row.surah-row {
+  flex-wrap: wrap;
+}
+.eyebrow,
+.tagline {
+  overflow-wrap: anywhere;
+}
+
+/* Home "start reading" card: the Arabic surah name wraps below the title instead of
+ * running off a narrow screen at the largest text sizes (found by the 007C sweep). */
+.hero-body {
+  flex-wrap: wrap;
+}
+.hero-ar {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* Memorize: three action tiles. Three columns at normal sizes (also on 360pt phones),
+ * fewer as the text scale grows, so "Memorize / Revise / Test" never stack letter by
+ * letter (found by the 007C sweep; this was a hard-coded inline 3-column grid). */
+.tile-grid.tile-grid-three {
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, calc(6rem * var(--qr-text-zoom, 1))), 1fr)
+  );
 }
