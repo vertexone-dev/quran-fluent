@@ -1,6 +1,7 @@
 import { AppBar } from "../AppBar";
 import { useDb } from "../DbContext";
 import { listDisplayedContentSources, type ContentSource } from "../db";
+import { ExternalLink } from "../components/ExternalLink";
 import { useI18n } from "../i18n";
 
 /** About & Sources (QR-DESIGN-007A). Credits the three text sources the app
@@ -92,6 +93,18 @@ export function AboutScreen({ onBack }: { onBack: () => void }) {
       >
         {d.about.tanzilNotice}
       </p>
+      <div style={{ margin: "4px 4px 16px" }}>
+        <ExternalLink
+          to="tanzil"
+          label={d.about.openTanzil}
+          accessibleLabel={d.about.openTanzilLabel}
+          failureMessage={d.about.linkNote}
+          testId="about-tanzil-link"
+        />
+        <p className="setting-hint" style={{ margin: "6px 0 0" }}>
+          {d.about.linkNote}
+        </p>
+      </div>
       <p className="setting-hint" style={{ margin: "12px 4px" }}>
         {d.about.scopeNote}
       </p>

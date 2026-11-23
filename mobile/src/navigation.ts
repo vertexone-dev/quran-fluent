@@ -4,6 +4,10 @@
  * Home, the reader and Profile & More, not from the tab bar. */
 export type Tab = "home" | "quran" | "learn" | "progress" | "settings";
 
+/** Settings sub-pages (Design Lock "Settings" reference). Only categories whose
+ * controls exist are listed: no account, audio, notification or family pages. */
+export type SettingsPage = "general" | "reading" | "language" | "appearance" | "privacy";
+
 export type Route =
   | { screen: "home" }
   | { screen: "surah-list" }
@@ -17,6 +21,7 @@ export type Route =
   | { screen: "more" }
   | { screen: "offline-access" }
   | { screen: "settings" }
+  | { screen: "settings-page"; page: SettingsPage }
   | { screen: "about" }
   | { screen: "progress" }
   | { screen: "understand"; surahNumber: number; ayahNumber: number }

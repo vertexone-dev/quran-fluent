@@ -23,16 +23,15 @@ test.describe("Keyboard accessibility: list rows are real buttons", () => {
     await page.locator(".list-row", { hasText: "Settings" }).click();
     await expect(page.locator(".appbar-title")).toHaveText("Settings");
 
+    // Settings rows are real buttons: keyboard-focusable and Enter-activatable.
     const languageRow = page.getByTestId("settings-language-row");
     await expect(languageRow).toBeVisible();
-    const before = await languageRow.locator(".text-muted").textContent();
+    expect(await languageRow.evaluate((e) => e.tagName)).toBe("BUTTON");
 
     await languageRow.focus();
     await expect(languageRow).toBeFocused();
     await page.keyboard.press("Enter");
-
-    const after = await languageRow.locator(".text-muted").textContent();
-    expect(after).not.toBe(before);
+    await expect(page.getByTestId("settings-page-language")).toBeVisible();
   });
 
   test("a Lessons level row and a Surah List row are both real buttons", async ({ page }) => {
@@ -159,6 +158,7 @@ test.describe("Theme default and persistence", () => {
 
   test("switching the theme in Settings persists across a reload", async ({ page }) => {
     await page.getByTestId("tab-settings").click();
+    await page.getByTestId("settings-nav-appearance").click();
     const select = page.getByTestId("setting-theme");
     await expect(select).toHaveValue("dark");
     await select.selectOption("light");
@@ -166,6 +166,7 @@ test.describe("Theme default and persistence", () => {
 
     await page.reload();
     await page.getByTestId("tab-settings").click();
+    await page.getByTestId("settings-nav-appearance").click();
     await expect(page.getByTestId("setting-theme")).toHaveValue("light");
     await expect(page.locator("html")).not.toHaveClass(/dark/);
   });

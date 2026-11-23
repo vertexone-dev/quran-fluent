@@ -18,6 +18,8 @@ final class SafeAreaSmokeTests: XCTestCase {
         var learn: String { ["en": "Learn", "fr": "Apprendre", "ar": "التعلّم"][rawValue]! }
         var progress: String { ["en": "Progress", "fr": "Progrès", "ar": "التقدّم"][rawValue]! }
         var settings: String { ["en": "Settings", "fr": "Réglages", "ar": "الإعدادات"][rawValue]! }
+        var optionName: String { ["en": "English", "fr": "Français", "ar": "العربية"][rawValue]! }
+        var appearanceRow: String { ["en": "Appearance", "fr": "Apparence", "ar": "المظهر"][rawValue]! }
         var languageRow: String { ["en": "Language", "fr": "Langue", "ar": "اللغة"][rawValue]! }
         var onboardingStart: String { ["en": "Get started", "fr": "Commencer", "ar": "ابدأ"][rawValue]! }
     }
@@ -100,7 +102,7 @@ final class SafeAreaSmokeTests: XCTestCase {
         }
     }
 
-    /// Cycle Settings -> Language (EN -> FR -> AR -> EN) until `target` is active.
+    /// Settings -> Language, then choose `target` on the Language page.
     private func setLanguage(_ target: Lang) {
         passOnboarding(shotPrefix: "pre")
         for _ in 0..<3 {
@@ -116,6 +118,11 @@ final class SafeAreaSmokeTests: XCTestCase {
                 let row = button(containing: l.languageRow)
                 if row.exists { row.tap(); break }
             }
+            sleep(1)
+            // Language page: pick the target language directly (QR-DESIGN-007B).
+            let option = app.descendants(matching: .any)
+                .matching(NSPredicate(format: "label CONTAINS[c] %@", target.optionName)).firstMatch
+            if option.waitForExistence(timeout: 5) { option.tap() }
             sleep(1)
         }
         XCTAssertTrue(tab(target.settings).waitForExistence(timeout: 5),
@@ -155,7 +162,7 @@ final class SafeAreaSmokeTests: XCTestCase {
         walk(.fr, prefix: "fr")
         // Settings in French must show French copy.
         openTab(.fr, \.settings)
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "Écran de démarrage")).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", Lang.fr.appearanceRow)).firstMatch.waitForExistence(timeout: 5))
     }
 
     func testArabicRTL() {
@@ -166,6 +173,6 @@ final class SafeAreaSmokeTests: XCTestCase {
         XCTAssertGreaterThan(home.frame.minX, settings.frame.minX, "Arabic tab bar is not mirrored (RTL)")
         walk(.ar, prefix: "ar")
         openTab(.ar, \.settings)
-        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label CONTAINS[c] %@", "شاشة البداية")).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", Lang.ar.appearanceRow)).firstMatch.waitForExistence(timeout: 5))
     }
 }
