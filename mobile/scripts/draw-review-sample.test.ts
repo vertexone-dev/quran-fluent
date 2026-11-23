@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, symlinkSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import path from "node:path";
 import { MANIFEST_SHA256, drawSample } from "./draw-review-sample.mjs";
@@ -41,5 +43,15 @@ describe("draw-review-sample", () => {
   it("rejects a missing seed and a size below the surah count", () => {
     expect(() => drawSample(segments, "", 200)).toThrow(/seed/);
     expect(() => drawSample(segments, "s", 50)).toThrow(/size/);
+  });
+
+  it("still runs when started through a symlink (a silent no-op there passed as success)", () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "drs-"));
+    const link = path.join(dir, "draw.mjs");
+    symlinkSync(path.resolve(__dirname, "draw-review-sample.mjs"), link);
+    const out = execFileSync("node", [link, "--seed", "x", "--size", "120"], {
+      encoding: "utf8",
+    });
+    expect(out.trim().length).toBeGreaterThan(0);
   });
 });
