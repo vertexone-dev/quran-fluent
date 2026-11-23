@@ -35,7 +35,7 @@ export function MemorizeScreen({ onNavigate }: { onNavigate: (route: Route) => v
       >
         {d.memorizeUi.body}
       </p>
-      <div className="tile-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+      <div className="tile-grid tile-grid-three">
         {tiles.map((t) => (
           <button
             key={t.key}

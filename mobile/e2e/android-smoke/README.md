@@ -120,6 +120,21 @@ guess at it.
   (e.g. a GitHub Actions Android emulator runner). Treat it as a local,
   manually-run regression check until/unless that's set up deliberately.
 
+## Font-scale check (QR-DESIGN-007C)
+
+`font-scale.sh` checks the bottom tab bar at Android system font scales 1.0, 1.3,
+1.5 and 2.0 in whatever UI language is active (run it once per language). It reads
+the live layout from the app's WebView over Chrome DevTools (`cdp-eval.mjs`, Node 22,
+debug builds only) and fails on a missing or clipped tab, a tab under 44 CSS px, or a
+tab tap that does not navigate. Taps use coordinates taken from the page's own layout
+because UI Automator `bounds` inside this WebView are offset (by hundreds of px after
+scrolling), and `run.sh` activates the Tanzil link with keyboard focus for the same
+reason. The original font scale is restored on exit.
+
+```
+ANDROID_SERIAL=emulator-5560 ./font-scale.sh
+```
+
 ## Upgrade path
 
 If this grows past a handful of checks, free YAML-based

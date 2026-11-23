@@ -68,18 +68,24 @@ export function AboutScreen({ onBack }: { onBack: () => void }) {
               {s.dataset_name}
             </p>
             <dl className="source-meta">
-              <dt>{d.about.sourceLabel}</dt>
-              <dd dir="ltr">{s.provider_name}</dd>
+              <div className="source-row">
+                <dt>{d.about.sourceLabel}</dt>
+                <dd dir="ltr">{s.provider_name}</dd>
+              </div>
               {s.translator && (
-                <>
+                <div className="source-row">
                   <dt>{d.about.translator}</dt>
                   <dd dir="ltr">{s.translator}</dd>
-                </>
+                </div>
               )}
-              <dt>{d.about.licenseLabel}</dt>
-              <dd dir="ltr">{s.license_name}</dd>
-              <dt>{d.about.statusLabel}</dt>
-              <dd data-testid={`about-status-${s.edition_identifier}`}>{statusLabel(s)}</dd>
+              <div className="source-row">
+                <dt>{d.about.licenseLabel}</dt>
+                <dd dir="ltr">{s.license_name}</dd>
+              </div>
+              <div className="source-row">
+                <dt>{d.about.statusLabel}</dt>
+                <dd data-testid={`about-status-${s.edition_identifier}`}>{statusLabel(s)}</dd>
+              </div>
             </dl>
           </li>
         ))}

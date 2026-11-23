@@ -256,7 +256,17 @@ final class AccessibilityAuditTests: XCTestCase {
     /// and the Tanzil link opening in Safari without disturbing the app.
     func testSettingsPagesAndTanzilLink() {
         // At large Dynamic Type sizes rows can sit below the fold: scroll until tappable.
-        func reveal(_ el: XCUIElement) { for _ in 0..<6 where !el.isHittable { app.swipeUp(); sleep(1) } }
+        // Small drags, checked after every step: a full swipe can jump over a short link on
+        // a very long page (AX5), and a missed element then looks "unreachable".
+        func nudge(up: Bool) {
+            let from = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.70 : 0.40))
+            let to = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: up ? 0.42 : 0.68))
+            from.press(forDuration: 0.05, thenDragTo: to)
+        }
+        func reveal(_ el: XCUIElement) {
+            for _ in 0..<40 where !el.isHittable { nudge(up: true); usleep(400_000) }
+            if !el.isHittable { for _ in 0..<60 where !el.isHittable { nudge(up: false); usleep(400_000) } }
+        }
         func row(_ name: String) -> XCUIElement {
             app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", name)).firstMatch
         }
@@ -288,7 +298,7 @@ final class AccessibilityAuditTests: XCTestCase {
         reveal(row("About & Sources")); row("About & Sources").tap(); sleep(1)
         let link = app.links.matching(NSPredicate(format: "label CONTAINS[c] %@", "Tanzil Project website")).firstMatch
         XCTAssertTrue(link.waitForExistence(timeout: 5), "Tanzil link missing or not exposed as a link")
-        for _ in 0..<6 where !link.isHittable { app.swipeUp(); sleep(1) }
+        reveal(link)
         XCTAssertTrue(link.isHittable, "Tanzil link is not reachable by scrolling")
         // Note: WebKit reports a link's accessibility frame from its text line, so
         // the 44pt CSS box (asserted in the Playwright layout test) cannot be read
