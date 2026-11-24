@@ -45,3 +45,4 @@ export function art(key: ArtKey): string | null {
 
 /** Design Lock v1.0 emblem (arch, mosque, open book and sprout), transparent. */
 export const EMBLEM_LARGE_SRC = "/brand/quranroots-emblem.png";
+export const gateProbe: number = 'not a number';
