@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } fro
 import {
   BookmarkCheck,
   BookmarkPlus,
+  Layers,
   Minus,
   Plus,
   Play,
@@ -378,16 +379,16 @@ export function ReadingScreen({
     <div ref={rootRef}>
       <div className="reader-sticky">
         <AppBar
+          centered
           title={surah?.name_en ?? ""}
           onBack={onBack}
-          right={surah && <span className="arabic-text reader-ar-title">{surah.name_ar}</span>}
+          subtitle={surah && <span className="arabic-text reader-ar-title">{surah.name_ar}</span>}
         />
         {surah && (
           <div className="row-between small text-muted" style={{ marginBottom: 6 }}>
             <span>{d.reader.progress}</span>
-            <span>
-              {d.reader.ayah} {currentAyah} {d.reader.of} {surah.ayah_count}
-            </span>
+            {/* One string = one text node, so VoiceOver reads it in a single swipe. */}
+            <span>{`${d.reader.ayah} ${currentAyah} ${d.reader.of} ${surah.ayah_count}`}</span>
           </div>
         )}
         <ProgressBar value={progress} label={d.reader.progress} />
@@ -440,35 +441,60 @@ export function ReadingScreen({
         const fr = kazimirskiRender.get(ayah.ayah_number);
         const bookmarked = isAyahBookmarked(surahNumber, ayah.ayah_number);
         return (
-          <div key={ayah.ayah_number} className="card verse-card" data-ayah={ayah.ayah_number}>
+          <div
+            key={ayah.ayah_number}
+            className="card verse-card parchment"
+            data-ayah={ayah.ayah_number}
+          >
             <div className="row-between" style={{ marginBottom: 10 }}>
               <span className="ayah-marker" aria-label={`${d.reader.ayah} ${ayah.ayah_number}`}>
                 {ayah.ayah_number}
               </span>
-              <button
-                type="button"
-                className="icon-btn"
-                aria-label={bookmarked ? d.bookmarks.remove : d.bookmarks.add}
-                onClick={() => {
-                  toggleAyahBookmark(surahNumber, ayah.ayah_number);
-                  forceRender((n) => n + 1);
-                }}
-              >
-                {bookmarked ? (
-                  <BookmarkCheck size={18} className="text-gold" />
-                ) : (
-                  <BookmarkPlus size={18} />
-                )}
-              </button>
+              <div style={{ display: "flex", gap: 4 }}>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label={d.understand.understandAction}
+                  onClick={() =>
+                    onNavigate({
+                      screen: "understand",
+                      surahNumber,
+                      ayahNumber: ayah.ayah_number,
+                    })
+                  }
+                  data-testid={`ayah-understand-${ayah.ayah_number}`}
+                >
+                  <Layers size={18} />
+                </button>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  aria-label={bookmarked ? d.bookmarks.remove : d.bookmarks.add}
+                  onClick={() => {
+                    toggleAyahBookmark(surahNumber, ayah.ayah_number);
+                    forceRender((n) => n + 1);
+                  }}
+                >
+                  {bookmarked ? (
+                    <BookmarkCheck size={18} className="text-gold" />
+                  ) : (
+                    <BookmarkPlus size={18} />
+                  )}
+                </button>
+              </div>
             </div>
             <div className="ayah-arabic">
               <p className="quran-text" style={{ fontSize: FONT_SIZES[sizeIdx], margin: 0 }}>
                 {ayah.arabic_text}
               </p>
             </div>
-            {translation === "en" && <p style={{ margin: 0 }}>{ayah.english ?? "—"}</p>}
+            {translation === "en" && (
+              <p className="translation-text" dir="ltr" lang="en">
+                {ayah.english ?? "—"}
+              </p>
+            )}
             {translation === "fr" && (
-              <p style={{ margin: 0 }}>
+              <p className="translation-text" dir="ltr" lang="fr">
                 {fr?.text ??
                   (fr?.continuesFromAyah ? `(suite du verset ${fr.continuesFromAyah})` : "—")}
               </p>

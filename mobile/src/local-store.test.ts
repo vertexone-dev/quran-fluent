@@ -1,6 +1,19 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import {
+  addReflection,
+  deleteReflection,
+  getReflections,
+  exportPreferences,
   getAyahBookmarks,
+  getOnboardingDone,
+  getReduceMotion,
+  getStartScreen,
+  getStoredTextSize,
+  resetPreferences,
+  setOnboardingDone,
+  setReduceMotion,
+  setStartScreen,
+  setStoredTextSize,
   getLastReadSurah,
   getReaderFontSizeIndex,
   getReaderTranslation,
@@ -161,18 +174,18 @@ describe("exact reading position", () => {
 });
 
 describe("theme preference", () => {
-  it("defaults to light for a brand-new install with nothing saved yet (Sprint 4 decision)", () => {
-    expect(getStoredTheme()).toBe("light");
+  it("defaults to dark (Midnight) for a brand-new install with nothing saved yet (QR-DESIGN-002)", () => {
+    expect(getStoredTheme()).toBe("dark");
   });
 
-  it("defaults to light, not system, when the stored value is corrupted JSON", () => {
+  it("defaults to dark, not system, when the stored value is corrupted JSON", () => {
     localStorage.setItem("qr.settings.theme", "{not valid json");
-    expect(getStoredTheme()).toBe("light");
+    expect(getStoredTheme()).toBe("dark");
   });
 
-  it("defaults to light, not system, when the stored value isn't a recognized theme", () => {
+  it("defaults to dark, not system, when the stored value isn't a recognized theme", () => {
     localStorage.setItem("qr.settings.theme", JSON.stringify("blue"));
-    expect(getStoredTheme()).toBe("light");
+    expect(getStoredTheme()).toBe("dark");
   });
 
   it("preserves an existing saved 'dark' preference across reads, simulating an app restart", () => {
@@ -226,5 +239,119 @@ describe("reader preferences", () => {
   it("falls back to the given default when the stored index is out of range", () => {
     localStorage.setItem("qr.reader.fontSizeIndex", JSON.stringify(99));
     expect(getReaderFontSizeIndex(4, 1)).toBe(1);
+  });
+});
+
+describe("QR-DESIGN-002 preferences", () => {
+  it("has safe defaults on a fresh install", () => {
+    expect(getReduceMotion()).toBe(false);
+    expect(getStartScreen()).toBe("home");
+    expect(getStoredTextSize()).toBe("medium");
+    expect(getOnboardingDone()).toBe(false);
+  });
+
+  it("round-trips reduce motion, start screen, text size and onboarding", () => {
+    setReduceMotion(true);
+    setStartScreen("continue");
+    setStoredTextSize("large");
+    setOnboardingDone();
+    expect(getReduceMotion()).toBe(true);
+    expect(getStartScreen()).toBe("continue");
+    expect(getStoredTextSize()).toBe("large");
+    expect(getOnboardingDone()).toBe(true);
+  });
+
+  it("falls back to defaults for hand-edited or corrupted values", () => {
+    localStorage.setItem("qr.settings.startScreen", JSON.stringify("memorize"));
+    localStorage.setItem("qr.settings.textSize", JSON.stringify("huge"));
+    localStorage.setItem("qr.settings.reduceMotion", JSON.stringify("yes"));
+    expect(getStartScreen()).toBe("home");
+    expect(getStoredTextSize()).toBe("medium");
+    expect(getReduceMotion()).toBe(false);
+  });
+
+  it("exports preferences only, never bookmarks or reading position", () => {
+    setStoredTheme("light");
+    toggleAyahBookmark(2, 255);
+    setReadingPosition(2, 255);
+    const out = exportPreferences();
+    expect(out).toMatchObject({ app: "QuranRoots", kind: "preferences", version: 1 });
+    expect(out.preferences.theme).toBe("light");
+    expect(JSON.stringify(out)).not.toContain("255");
+  });
+
+  it("reset restores defaults but keeps bookmarks, reading position and onboarding", () => {
+    setStoredTheme("light");
+    setReduceMotion(true);
+    setStartScreen("quran");
+    setStoredTextSize("small");
+    setOnboardingDone();
+    toggleAyahBookmark(1, 3);
+    setReadingPosition(2, 10);
+    resetPreferences();
+    expect(getStoredTheme()).toBe("dark");
+    expect(getReduceMotion()).toBe(false);
+    expect(getStartScreen()).toBe("home");
+    expect(getStoredTextSize()).toBe("medium");
+    expect(isAyahBookmarked(1, 3)).toBe(true);
+    expect(getReadingPosition()).toMatchObject({ surahNumber: 2, ayahNumber: 10 });
+    expect(getOnboardingDone()).toBe(true);
+  });
+});
+
+describe("reflections (private, local-only)", () => {
+  it("starts empty and never invents entries", () => {
+    expect(getReflections()).toEqual([]);
+  });
+
+  it("saves trimmed text, newest first, with the ayah reference", () => {
+    const first = addReflection(1, 1, "  one  ", () => new Date("2026-01-01T00:00:00Z"));
+    const second = addReflection(2, 255, "two", () => new Date("2026-01-02T00:00:00Z"));
+    expect(first?.text).toBe("one");
+    expect(getReflections().map((r) => [r.surahNumber, r.ayahNumber, r.text])).toEqual([
+      [2, 255, "two"],
+      [1, 1, "one"],
+    ]);
+    expect(second?.createdAt).toBe("2026-01-02T00:00:00.000Z");
+  });
+
+  it("rejects empty or whitespace-only text", () => {
+    expect(addReflection(1, 1, "   ")).toBeNull();
+    expect(getReflections()).toEqual([]);
+  });
+
+  it("caps very long text", () => {
+    const saved = addReflection(1, 1, "x".repeat(5000));
+    expect(saved?.text.length).toBe(2000);
+  });
+
+  it("deletes one entry by id and leaves the others", () => {
+    const a = addReflection(1, 1, "a", () => new Date("2026-01-01T00:00:00Z"))!;
+    addReflection(1, 2, "b", () => new Date("2026-01-02T00:00:00Z"));
+    deleteReflection(a.id);
+    expect(getReflections().map((r) => r.text)).toEqual(["b"]);
+  });
+
+  it("ignores malformed stored entries instead of throwing", () => {
+    localStorage.setItem(
+      "qr.reflections",
+      JSON.stringify([
+        { id: 1 },
+        null,
+        "x",
+        { id: "k", surahNumber: 1, ayahNumber: 1, text: "ok", createdAt: "2026-01-01" },
+      ]),
+    );
+    expect(() => getReflections()).not.toThrow();
+    expect(getReflections().map((r) => r.text)).toEqual(["ok"]);
+    localStorage.setItem("qr.reflections", "{not json");
+    expect(getReflections()).toEqual([]);
+  });
+
+  it("is not part of the preferences export and is untouched by reset", () => {
+    addReflection(1, 1, "private words");
+    expect(JSON.stringify(exportPreferences())).not.toContain("private words");
+    resetPreferences();
+    expect(getReflections()).toHaveLength(1);
   });
 });

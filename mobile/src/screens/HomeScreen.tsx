@@ -1,18 +1,27 @@
 import {
+  Bookmark,
   BookOpen,
   Brain,
   ChevronRight,
+  CloudOff,
   GraduationCap,
   Languages,
+  Layers,
   Moon,
   PenLine,
+  Settings as SettingsIcon,
+  Sparkles,
   Sun,
+  UserRound,
+  type LucideIcon,
 } from "lucide-react";
-import { useI18n } from "../i18n";
+import { nextLocale, useI18n } from "../i18n";
+import { art } from "../artwork";
 import { useDb } from "../DbContext";
-import { listCourses, listLevels, listModules, listLessons, listSurahs } from "../db";
+import { listLevels, listModules, listLessons, listSurahs } from "../db";
 import {
   getLastReadSurah,
+  getReadingPosition,
   nextThemePreference,
   resolveIsDark,
   setStoredTheme,
@@ -20,7 +29,7 @@ import {
 } from "../local-store";
 import { pickReadingCardSurah } from "../home-dashboard";
 import { Logo } from "../Logo";
-import { SectionTitle } from "../components/ui";
+import { ProgressBar, SectionTitle } from "../components/ui";
 import type { Route } from "../navigation";
 
 /** Home Dashboard, Phase 1 of the Emergent UI integration. Reuses the real
@@ -43,7 +52,7 @@ export function HomeScreen({
   onThemeChange: (theme: ThemePreference) => void;
   prefersDark: boolean;
 }) {
-  const { d, locale, setLocale } = useI18n();
+  const { d, locale, contentLocale, setLocale } = useI18n();
   const { db } = useDb();
 
   function cycleTheme() {
@@ -60,16 +69,14 @@ export function HomeScreen({
         ? d.settings.themeDark
         : d.settings.themeSystem;
 
-  const courses = listCourses(db, locale);
-  const course = courses[0];
-  const levels = listLevels(db, locale);
+  const levels = listLevels(db, contentLocale);
   const firstLevel = levels[0];
-  const firstModule = firstLevel ? listModules(db, firstLevel.id, locale)[0] : undefined;
-  const firstLessons = firstModule ? listLessons(db, firstModule.id, locale) : [];
+  const firstModule = firstLevel ? listModules(db, firstLevel.id, contentLocale)[0] : undefined;
+  const firstLessons = firstModule ? listLessons(db, firstModule.id, contentLocale) : [];
   const firstLesson = firstLessons[0];
   const totalLessonsInLevel = firstLevel
-    ? listModules(db, firstLevel.id, locale).reduce(
-        (sum, m) => sum + listLessons(db, m.id, locale).length,
+    ? listModules(db, firstLevel.id, contentLocale).reduce(
+        (sum, m) => sum + listLessons(db, m.id, contentLocale).length,
         0,
       )
     : 0;
@@ -79,61 +86,200 @@ export function HomeScreen({
     getLastReadSurah(),
   );
 
-  return (
-    <div className="stagger">
-      <div className="appbar">
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Logo showWordmark={false} size={28} />
-          <h1 className="appbar-title">{d.brand.name}</h1>
-        </div>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button
-            type="button"
-            className="icon-btn icon-btn-bordered lang-btn"
-            onClick={() => setLocale(locale === "en" ? "fr" : "en")}
-            aria-label={d.settings.language}
-          >
-            <Languages size={16} />
-            <span>{locale.toUpperCase()}</span>
-          </button>
-          <button
-            type="button"
-            className="icon-btn icon-btn-bordered"
-            onClick={cycleTheme}
-            aria-label={`${d.settings.theme}: ${nextThemeLabel}`}
-          >
-            {isDark ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-        </div>
-      </div>
+  const position = getReadingPosition();
+  const allSurahs = listSurahs(db);
+  const positionSurah = position
+    ? allSurahs.find((x) => x.number === position.surahNumber)
+    : undefined;
+  const heroArt = art("hero");
+  const shortcuts = [
+    {
+      key: "bookmarks",
+      icon: Bookmark,
+      label: d.more.bookmarks,
+      route: { screen: "ayah-bookmarks" },
+    },
+    { key: "practice", icon: PenLine, label: d.more.practice, route: { screen: "practice" } },
+    {
+      key: "offline",
+      icon: CloudOff,
+      label: d.more.offlineAccess,
+      route: { screen: "offline-access" },
+    },
+    { key: "settings", icon: SettingsIcon, label: d.more.settings, route: { screen: "settings" } },
+  ] as const;
 
-      <p className="eyebrow">{d.home.greeting}</p>
-      <p className="tagline">{d.brand.tagline}</p>
+  const understandTarget = getReadingPosition();
+  const tiles: {
+    key: string;
+    icon: LucideIcon;
+    label: string;
+    route: Route;
+    badge?: string;
+  }[] = [
+    { key: "quran", icon: BookOpen, label: d.nav.quran, route: { screen: "surah-list" } },
+    {
+      key: "understand",
+      icon: Layers,
+      label: d.understand.title,
+      route: {
+        screen: "understand",
+        surahNumber: understandTarget?.surahNumber ?? 1,
+        ayahNumber: understandTarget?.ayahNumber ?? 1,
+      },
+    },
+    { key: "learn", icon: GraduationCap, label: d.nav.learn, route: { screen: "lessons" } },
+    { key: "reflect", icon: Sparkles, label: d.nav.reflect, route: { screen: "reflect" } },
+    {
+      key: "memorize",
+      icon: Brain,
+      label: d.nav.memorize,
+      route: { screen: "memorize" },
+      badge: d.memorizeUi.badge,
+    },
+    {
+      key: "bookmarks",
+      icon: Bookmark,
+      label: d.more.bookmarks,
+      route: { screen: "ayah-bookmarks" },
+    },
+  ];
+
+  return (
+    <div className="stagger" data-testid="home-screen">
+      <section className="brand-hero" data-testid="home-brand-hero">
+        {heroArt && <img className="brand-hero-art" src={heroArt} alt="" aria-hidden="true" />}
+        <div className="appbar" style={{ marginBottom: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
+            <Logo showWordmark={false} size={34} />
+            <h1 className="appbar-title">{d.brand.name}</h1>
+          </div>
+          <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+            <button
+              type="button"
+              className="icon-btn icon-btn-bordered icon-btn-glass lang-btn"
+              onClick={() => setLocale(nextLocale(locale))}
+              aria-label={d.settings.language}
+              data-testid="home-language-toggle"
+            >
+              <Languages size={16} />
+              <span>{locale.toUpperCase()}</span>
+            </button>
+            <button
+              type="button"
+              className="icon-btn icon-btn-bordered icon-btn-glass"
+              onClick={cycleTheme}
+              aria-label={`${d.settings.theme}: ${nextThemeLabel}`}
+              data-testid="home-theme-toggle"
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
+            <button
+              type="button"
+              className="profile-btn"
+              onClick={() => onNavigate({ screen: "more" })}
+              aria-label={d.more.open}
+              data-testid="profile-button"
+            >
+              <UserRound size={18} />
+            </button>
+          </div>
+        </div>
+
+        <p className="eyebrow">{d.home.greeting}</p>
+        <p className="tagline">{d.brand.tagline}</p>
+      </section>
+
+      {/* Design Lock six-tile grid (3 x 2). The reference's sixth tile is
+          Family Mode, which does not exist; Bookmarks is a real, working
+          destination and takes its place. No tile is a placeholder. */}
+      <nav className="tile-grid tile-grid-six" aria-label={d.home.explore} data-testid="home-tiles">
+        {tiles.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            className="tile tile-outline"
+            onClick={() => onNavigate(t.route)}
+            data-testid={`home-tile-${t.key}`}
+          >
+            <t.icon size={26} strokeWidth={1.6} aria-hidden="true" />
+            <span className="tile-title">{t.label}</span>
+            {t.badge && <span className="chip chip-planned">{t.badge}</span>}
+          </button>
+        ))}
+      </nav>
 
       {readingCardSurah && (
         <button
           type="button"
           className="hero-card"
           onClick={() => onNavigate({ screen: "reading", surahNumber: readingCardSurah.number })}
+          data-testid="home-reading-card"
         >
           <div className="hero-pattern" aria-hidden="true" />
           <div className="hero-top">
             <span className="hero-label">
               {isContinuing ? d.home.continueReading : d.home.startReading}
             </span>
-            <ChevronRight size={20} />
+            <ChevronRight size={20} className="dir-icon" />
           </div>
           <div className="hero-body">
             <div>
               <div className="hero-title">{readingCardSurah.name_en}</div>
               <div className="hero-sub">
-                {readingCardSurah.ayah_count} {locale === "fr" ? "versets" : "ayahs"}
+                {readingCardSurah.ayah_count} {d.offline.unitAyahs}
               </div>
             </div>
             <div className="quran-text hero-ar">{readingCardSurah.name_ar}</div>
           </div>
         </button>
       )}
+
+      {position && positionSurah && (
+        <button
+          type="button"
+          className="journey-card"
+          onClick={() => onNavigate({ screen: "progress" })}
+          data-testid="home-journey-card"
+        >
+          <div className="journey-card-head">
+            <span className="setting-title">{d.homeJourney.title}</span>
+            <span className="setting-hint">{d.homeJourney.viewJourney}</span>
+          </div>
+          <div className="setting-hint">
+            {d.homeJourney.continueLabel}:{" "}
+            {locale === "ar"
+              ? positionSurah.name_ar
+              : locale === "fr"
+                ? (positionSurah.name_fr ?? positionSurah.name_en)
+                : positionSurah.name_en}{" "}
+            {position.surahNumber}:{position.ayahNumber}
+          </div>
+          <ProgressBar
+            value={Math.min(1, position.ayahNumber / positionSurah.ayah_count)}
+            label={d.homeJourney.ayahOf
+              .replace("{n}", String(position.ayahNumber))
+              .replace("{total}", String(positionSurah.ayah_count))}
+            testId="home-journey-progress"
+          />
+        </button>
+      )}
+
+      <SectionTitle>{d.home.shortcuts}</SectionTitle>
+      <div className="shortcut-row" data-testid="home-shortcuts">
+        {shortcuts.map((s) => (
+          <button
+            key={s.key}
+            type="button"
+            className="shortcut"
+            onClick={() => onNavigate(s.route)}
+            data-testid={`home-shortcut-${s.key}`}
+          >
+            <s.icon size={20} />
+            <span>{s.label}</span>
+          </button>
+        ))}
+      </div>
 
       {/* Always "Start Learning", never "Continue Learning": lesson-player
           position is in-memory only (see LessonPlayerScreen.tsx), so there
@@ -145,6 +291,7 @@ export function HomeScreen({
           type="button"
           className="card card-button"
           onClick={() => onNavigate({ screen: "lesson-player", lessonId: firstLesson.id })}
+          data-testid="home-learning-card"
         >
           <div className="row-between">
             <div className="row" style={{ gap: 12 }}>
@@ -157,48 +304,14 @@ export function HomeScreen({
                 </div>
               </div>
             </div>
-            <ChevronRight size={20} className="text-muted" />
+            <ChevronRight size={20} className="text-muted dir-icon" />
           </div>
         </button>
       ) : (
-        <div className="card text-muted">{d.home.startLearning}</div>
+        <div className="card text-muted" data-testid="home-learning-empty">
+          {d.home.startLearning}
+        </div>
       )}
-
-      <SectionTitle>{d.home.explore}</SectionTitle>
-      <div className="tile-grid">
-        <button
-          className="tile tile-support"
-          onClick={() => onNavigate({ screen: "surah-list" })}
-          type="button"
-        >
-          <BookOpen size={22} />
-          <span className="tile-title">{d.nav.quran}</span>
-          <span className="tile-subtitle">{d.reader.tileSubtitle}</span>
-        </button>
-        <button
-          className="tile tile-primary-tint"
-          onClick={() => onNavigate({ screen: "lessons" })}
-          type="button"
-        >
-          <GraduationCap size={22} />
-          <span className="tile-title">{d.nav.lessons}</span>
-          <span className="tile-subtitle">{course?.title ?? ""}</span>
-        </button>
-        <button
-          className="tile tile-gold"
-          onClick={() => onNavigate({ screen: "practice" })}
-          type="button"
-        >
-          <PenLine size={22} />
-          <span className="tile-title">{d.nav.practice}</span>
-          <span className="tile-subtitle">{d.practice.subtitle}</span>
-        </button>
-        <button className="tile tile-rose" disabled type="button">
-          <Brain size={22} />
-          <span className="tile-title">{d.more.memorization}</span>
-          <span className="tile-subtitle">{d.more.comingSoon}</span>
-        </button>
-      </div>
     </div>
   );
 }

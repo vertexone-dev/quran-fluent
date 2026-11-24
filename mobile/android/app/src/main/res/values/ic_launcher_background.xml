@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Warm ivory, the approved brand's real "background" design token (Sprint 4). -->
-    <color name="ic_launcher_background">#FAF6EC</color>
+    <!-- Midnight Teal, Design Lock v1.0 (Milestone D-1). -->
+    <color name="ic_launcher_background">#0B2828</color>
 </resources>

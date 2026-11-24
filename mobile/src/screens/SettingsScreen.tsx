@@ -1,104 +1,138 @@
+import {
+  ChevronRight,
+  Download,
+  Info,
+  Languages,
+  Moon,
+  Settings as SettingsIcon,
+  ShieldCheck,
+  BookOpen,
+  type LucideIcon,
+} from "lucide-react";
 import { useI18n } from "../i18n";
 import { AppBar } from "../AppBar";
-import {
-  getStoredTheme,
-  setStoredTheme,
-  getStoredTextSize,
-  setStoredTextSize,
-  nextThemePreference,
-  type ThemePreference,
-  type TextSize,
-} from "../local-store";
+import type { Route } from "../navigation";
+import type { TextSize, ThemePreference } from "../local-store";
 
-/** Mockup panel 12: Settings. The "Audio" section (Reciter / Download
- * Audio) is omitted entirely -- Phase 1 excludes downloadable audio per
- * the approved decisions, and there is no reciter data bundled offline to
- * show truthfully. Translations is a read-only row (Pickthall/Kazimirski
- * are the only certified sources bundled; there is nothing to switch
- * between yet). */
+/** Controls the App owns (it applies them to <html>), handed to Settings. */
+export type PrefsControls = {
+  textSize: TextSize;
+  onTextSizeChange: (size: TextSize) => void;
+  reduceMotion: boolean;
+  onReduceMotionChange: (value: boolean) => void;
+  onPreferencesReset: () => void;
+};
+
+type NavRow = {
+  key: string;
+  testId: string;
+  icon: LucideIcon;
+  title: string;
+  hint: string;
+  route: Route;
+};
+
+/** Settings (Design Lock v1.0 "Mobile App - Settings"): one card of category
+ * rows, each with a gold outline icon, a title, a one-line hint and a chevron.
+ * Only categories with working controls are listed, in the reference's order:
+ * General, Quran & Reading, Language, Appearance, Offline, Privacy & Data,
+ * About. The reference's profile card, Audio & Recitation, Notifications and
+ * Family & Children rows are intentionally absent: this offline app has no
+ * accounts, audio, notifications or family features, and a row that does
+ * nothing would misrepresent that. Translations stay read-only (Pickthall and
+ * Kazimirski are the only bundled sources). */
 export function SettingsScreen({
   onBack,
-  theme,
-  onThemeChange,
+  onNavigate,
 }: {
   onBack: () => void;
-  theme: ThemePreference;
-  onThemeChange: (theme: ThemePreference) => void;
+  onNavigate: (route: Route) => void;
+  theme?: ThemePreference;
+  onThemeChange?: (theme: ThemePreference) => void;
+  prefs?: PrefsControls;
 }) {
-  const { d, locale, setLocale } = useI18n();
-  const textSize = getStoredTextSize();
-
-  function cycleTheme() {
-    const next = nextThemePreference(theme);
-    setStoredTheme(next);
-    onThemeChange(next);
-  }
-
-  function cycleTextSize() {
-    const order: TextSize[] = ["small", "medium", "large"];
-    const next = order[(order.indexOf(textSize) + 1) % order.length]!;
-    setStoredTextSize(next);
-  }
-
-  const themeLabel =
-    theme === "light"
-      ? d.settings.themeLight
-      : theme === "dark"
-        ? d.settings.themeDark
-        : d.settings.themeSystem;
-  const textSizeLabel =
-    textSize === "small"
-      ? d.settings.textSizeSmall
-      : textSize === "large"
-        ? d.settings.textSizeLarge
-        : d.settings.textSizeMedium;
+  const { d } = useI18n();
+  const n = d.settingsNav;
+  const rows: NavRow[] = [
+    {
+      key: "general",
+      testId: "settings-nav-general",
+      icon: SettingsIcon,
+      title: n.general,
+      hint: n.generalHint,
+      route: { screen: "settings-page", page: "general" },
+    },
+    {
+      key: "reading",
+      testId: "settings-nav-reading",
+      icon: BookOpen,
+      title: n.reading,
+      hint: n.readingHint,
+      route: { screen: "settings-page", page: "reading" },
+    },
+    {
+      key: "language",
+      testId: "settings-language-row",
+      icon: Languages,
+      title: n.language,
+      hint: n.languageHint,
+      route: { screen: "settings-page", page: "language" },
+    },
+    {
+      key: "appearance",
+      testId: "settings-nav-appearance",
+      icon: Moon,
+      title: n.appearance,
+      hint: n.appearanceHint,
+      route: { screen: "settings-page", page: "appearance" },
+    },
+    {
+      key: "offline",
+      testId: "settings-nav-offline",
+      icon: Download,
+      title: n.offline,
+      hint: n.offlineHint,
+      route: { screen: "offline-access" },
+    },
+    {
+      key: "privacy",
+      testId: "settings-nav-privacy",
+      icon: ShieldCheck,
+      title: n.privacy,
+      hint: n.privacyHint,
+      route: { screen: "settings-page", page: "privacy" },
+    },
+    {
+      key: "about",
+      testId: "setting-about",
+      icon: Info,
+      title: d.about.title,
+      hint: d.about.hint,
+      route: { screen: "about" },
+    },
+  ];
 
   return (
-    <div>
-      <AppBar title={d.settings.title} onBack={onBack} />
-
-      <h2
-        className="text-muted"
-        style={{ fontSize: "0.78rem", textTransform: "uppercase", marginBottom: 8 }}
-      >
-        {d.settings.language}
-      </h2>
-      <div className="card" style={{ padding: 0, marginBottom: 20 }}>
-        <button
-          type="button"
-          className="list-row"
-          style={{ padding: 14 }}
-          onClick={() => setLocale(locale === "en" ? "fr" : "en")}
-        >
-          <span style={{ fontWeight: 600 }}>{d.settings.language}</span>
-          <span className="text-muted">{locale === "en" ? "English" : "Français"}</span>
-        </button>
-        <div className="list-row" style={{ padding: 14, cursor: "default" }}>
-          <span style={{ fontWeight: 600 }}>{d.settings.translations}</span>
-          <span className="text-muted" style={{ fontSize: "0.8rem", textAlign: "right" }}>
-            English (Pickthall)
-            <br />
-            French (Kazimirski)
-          </span>
-        </div>
-      </div>
-
-      <h2
-        className="text-muted"
-        style={{ fontSize: "0.78rem", textTransform: "uppercase", marginBottom: 8 }}
-      >
-        {d.settings.appearance}
-      </h2>
-      <div className="card" style={{ padding: 0 }}>
-        <button type="button" className="list-row" style={{ padding: 14 }} onClick={cycleTextSize}>
-          <span style={{ fontWeight: 600 }}>{d.settings.textSize}</span>
-          <span className="text-muted">{textSizeLabel}</span>
-        </button>
-        <button type="button" className="list-row" style={{ padding: 14 }} onClick={cycleTheme}>
-          <span style={{ fontWeight: 600 }}>{d.settings.theme}</span>
-          <span className="text-muted">{themeLabel}</span>
-        </button>
-      </div>
+    <div data-testid="settings-screen">
+      <AppBar centered title={d.settings.title} onBack={onBack} />
+      <nav className="card settings-nav" aria-label={d.settings.title}>
+        {rows.map((r) => (
+          <button
+            key={r.key}
+            type="button"
+            className="settings-nav-row"
+            onClick={() => onNavigate(r.route)}
+            data-testid={r.testId}
+          >
+            <r.icon size={24} strokeWidth={1.6} className="settings-nav-icon" aria-hidden="true" />
+            <span className="settings-nav-text">
+              <span className="setting-title">{r.title}</span>
+              <span className="setting-hint">{r.hint}</span>
+            </span>
+            <ChevronRight size={18} className="text-muted dir-icon" aria-hidden="true" />
+          </button>
+        ))}
+      </nav>
     </div>
   );
 }

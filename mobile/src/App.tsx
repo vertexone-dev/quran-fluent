@@ -1,17 +1,26 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Database } from "sql.js";
 import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 
 import { loadContentDb, getContentVersion, type ContentVersion } from "./db";
 import { DbContext } from "./DbContext";
 import { HistoryProvider, useHistoryStack } from "./HistoryContext";
-import { I18nContext, getDictionary, type Locale } from "./i18n";
+import { I18nContext, getDictionary, isRtl, toContentLocale, type Locale } from "./i18n";
 import {
   getStoredLocale,
   setStoredLocale,
   getStoredTheme,
   setStoredTheme as persistTheme,
+  getStoredTextSize,
+  setStoredTextSize as persistTextSize,
+  getReduceMotion,
+  setReduceMotion as persistReduceMotion,
+  getStartScreen,
+  getOnboardingDone,
+  setOnboardingDone,
+  getReadingPosition,
   resolveIsDark,
+  type TextSize,
   type ThemePreference,
 } from "./local-store";
 import { TabBar } from "./TabBar";
@@ -28,6 +37,14 @@ import { PracticeScreen } from "./screens/PracticeScreen";
 import { MoreScreen } from "./screens/MoreScreen";
 import { OfflineAccessScreen } from "./screens/OfflineAccessScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
+import { AboutScreen } from "./screens/AboutScreen";
+import { SettingsPageScreen } from "./screens/SettingsPages";
+import { OnboardingScreen } from "./screens/OnboardingScreen";
+import { UnderstandScreen } from "./screens/UnderstandScreen";
+import { ProgressScreen } from "./screens/ProgressScreen";
+import { ReflectScreen } from "./screens/ReflectScreen";
+import { MemorizeScreen } from "./screens/MemorizeScreen";
+import type { PrefsControls } from "./screens/SettingsScreen";
 import { TAB_HOME_ROUTE, type Route, type Tab } from "./navigation";
 
 function useSystemPrefersDark(): boolean {
@@ -51,6 +68,9 @@ export function App() {
 
   const [locale, setLocaleState] = useState<Locale>(() => getStoredLocale() ?? "en");
   const [theme, setTheme] = useState<ThemePreference>(() => getStoredTheme());
+  const [textSize, setTextSizeState] = useState<TextSize>(() => getStoredTextSize());
+  const [reduceMotion, setReduceMotionState] = useState<boolean>(() => getReduceMotion());
+  const [onboarded, setOnboarded] = useState<boolean>(() => getOnboardingDone());
   const prefersDark = useSystemPrefersDark();
 
   useEffect(() => {
@@ -82,10 +102,18 @@ export function App() {
     }
   }, [theme, prefersDark]);
 
+  // Interface text size scales every rem-based size; reduced motion is an
+  // explicit in-app choice on top of the OS-level prefers-reduced-motion.
+  useEffect(() => {
+    document.documentElement.dataset.textSize = textSize;
+    document.documentElement.classList.toggle("reduce-motion", reduceMotion);
+  }, [textSize, reduceMotion]);
+
   // Screen readers use <html lang> to pick pronunciation rules; without
   // this, French UI text was always announced as if it were English.
   useEffect(() => {
     document.documentElement.lang = locale;
+    document.documentElement.dir = isRtl(locale) ? "rtl" : "ltr";
   }, [locale]);
 
   function setLocale(next: Locale) {
@@ -98,7 +126,31 @@ export function App() {
     persistTheme(next);
   }
 
-  const i18nValue = useMemo(() => ({ locale, setLocale, d: getDictionary(locale) }), [locale]);
+  const prefs: PrefsControls = {
+    textSize,
+    onTextSizeChange: (next) => {
+      setTextSizeState(next);
+      persistTextSize(next);
+    },
+    reduceMotion,
+    onReduceMotionChange: (next) => {
+      setReduceMotionState(next);
+      persistReduceMotion(next);
+    },
+    // After "Reset preferences" the stored values are gone: re-read them so
+    // the screen reflects the real defaults without a reload.
+    onPreferencesReset: () => {
+      setTheme(getStoredTheme());
+      setTextSizeState(getStoredTextSize());
+      setReduceMotionState(getReduceMotion());
+      setLocaleState(getStoredLocale() ?? "en");
+    },
+  };
+
+  const i18nValue = useMemo(
+    () => ({ locale, contentLocale: toContentLocale(locale), setLocale, d: getDictionary(locale) }),
+    [locale],
+  );
 
   if (error) {
     const d = getDictionary(locale);
@@ -117,7 +169,21 @@ export function App() {
           <SplashScreen />
         ) : (
           <DbContext.Provider value={{ db, version }}>
-            <Navigator theme={theme} onThemeChange={handleThemeChange} prefersDark={prefersDark} />
+            {!onboarded ? (
+              <OnboardingScreen
+                onDone={() => {
+                  setOnboardingDone();
+                  setOnboarded(true);
+                }}
+              />
+            ) : (
+              <Navigator
+                theme={theme}
+                onThemeChange={handleThemeChange}
+                prefersDark={prefersDark}
+                prefs={prefs}
+              />
+            )}
           </DbContext.Provider>
         )}
       </HistoryProvider>
@@ -143,13 +209,34 @@ function Navigator({
   theme,
   onThemeChange,
   prefersDark,
+  prefs,
 }: {
   theme: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
   prefersDark: boolean;
+  prefs: PrefsControls;
 }) {
   const { pushFrame, goBack } = useHistoryStack();
-  const [state, setState] = useState<AppState>(INITIAL_STATE);
+  const [state, setState] = useState<AppState>(() =>
+    getStartScreen() === "quran" ? { tab: "quran", stack: [TAB_HOME_ROUTE.quran] } : INITIAL_STATE,
+  );
+
+  // "Continue reading" starts on Home and pushes the reader, so back returns
+  // Home. With no saved reading position it simply stays on Home.
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (startedRef.current) return;
+    startedRef.current = true;
+    if (getStartScreen() !== "continue") return;
+    const position = getReadingPosition();
+    if (position) {
+      handleNavigate({
+        screen: "reading",
+        surahNumber: position.surahNumber,
+        targetAyahNumber: position.ayahNumber,
+      });
+    }
+  }, []);
 
   function transition(next: AppState) {
     const previous = state;
@@ -211,12 +298,50 @@ function Navigator({
             onBack={goBack}
           />
         )}
-        {route.screen === "practice" && <PracticeScreen onNavigate={handleNavigate} />}
-        {route.screen === "more" && <MoreScreen onNavigate={handleNavigate} />}
+        {route.screen === "practice" && (
+          <PracticeScreen onNavigate={handleNavigate} onBack={goBack} />
+        )}
+        {route.screen === "more" && <MoreScreen onNavigate={handleNavigate} onBack={goBack} />}
         {route.screen === "offline-access" && <OfflineAccessScreen onBack={goBack} />}
         {route.screen === "settings" && (
-          <SettingsScreen onBack={goBack} theme={theme} onThemeChange={onThemeChange} />
+          <SettingsScreen
+            onBack={goBack}
+            theme={theme}
+            onThemeChange={onThemeChange}
+            prefs={prefs}
+            onNavigate={handleNavigate}
+          />
         )}
+        {route.screen === "settings-page" && (
+          <SettingsPageScreen
+            page={route.page}
+            onBack={goBack}
+            onNavigate={handleNavigate}
+            theme={theme}
+            onThemeChange={onThemeChange}
+            prefs={prefs}
+          />
+        )}
+        {route.screen === "about" && <AboutScreen onBack={goBack} />}
+        {route.screen === "progress" && <ProgressScreen onNavigate={handleNavigate} />}
+        {route.screen === "understand" && (
+          <UnderstandScreen
+            surahNumber={route.surahNumber}
+            ayahNumber={route.ayahNumber}
+            onNavigate={handleNavigate}
+            onBack={goBack}
+          />
+        )}
+        {route.screen === "reflect" && (
+          <ReflectScreen
+            key={`${route.surahNumber ?? ""}:${route.ayahNumber ?? ""}`}
+            surahNumber={route.surahNumber}
+            ayahNumber={route.ayahNumber}
+            onNavigate={handleNavigate}
+            onBack={goBack}
+          />
+        )}
+        {route.screen === "memorize" && <MemorizeScreen onNavigate={handleNavigate} />}
       </div>
       <TabBar active={state.tab} onSelect={handleSelectTab} />
     </div>

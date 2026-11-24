@@ -34,7 +34,7 @@ test("back unwinds a tab switch back to the previously active tab", async ({ pag
 });
 
 test("back steps through a multi-level drill-down one screen at a time", async ({ page }) => {
-  await page.locator(".tab-item", { hasText: "Lessons" }).click();
+  await page.locator(".tab-item", { hasText: "Learn" }).click();
   await page.locator(".list-row").first().click(); // level
   const levelTitle = await page.locator("h1").first().textContent();
   await page.locator(".list-row").first().click(); // module

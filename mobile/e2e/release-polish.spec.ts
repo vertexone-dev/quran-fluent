@@ -19,24 +19,23 @@ test.describe("Keyboard accessibility: list rows are real buttons", () => {
   test("a Settings row is a focusable, Enter-activatable <button>, not an inert div", async ({
     page,
   }) => {
-    await page.locator(".tab-item", { hasText: "More" }).click();
+    await page.getByTestId("profile-button").click(); // D-1: Profile & More
     await page.locator(".list-row", { hasText: "Settings" }).click();
     await expect(page.locator(".appbar-title")).toHaveText("Settings");
 
-    const themeRow = page.locator("button.list-row", { hasText: "Theme" });
-    await expect(themeRow).toBeVisible();
-    const before = await themeRow.locator(".text-muted").textContent();
+    // Settings rows are real buttons: keyboard-focusable and Enter-activatable.
+    const languageRow = page.getByTestId("settings-language-row");
+    await expect(languageRow).toBeVisible();
+    expect(await languageRow.evaluate((e) => e.tagName)).toBe("BUTTON");
 
-    await themeRow.focus();
-    await expect(themeRow).toBeFocused();
+    await languageRow.focus();
+    await expect(languageRow).toBeFocused();
     await page.keyboard.press("Enter");
-
-    const after = await themeRow.locator(".text-muted").textContent();
-    expect(after).not.toBe(before);
+    await expect(page.getByTestId("settings-page-language")).toBeVisible();
   });
 
   test("a Lessons level row and a Surah List row are both real buttons", async ({ page }) => {
-    await page.locator(".tab-item", { hasText: "Lessons" }).click();
+    await page.locator(".tab-item", { hasText: "Learn" }).click();
     await expect(page.locator("button.list-row").first()).toBeVisible();
 
     await page.locator(".tab-item", { hasText: "Qur'an" }).click();
@@ -52,7 +51,7 @@ test.describe("French translations: no hardcoded English left", () => {
   }) => {
     await page.getByRole("button", { name: "Language" }).click();
 
-    await page.locator(".tab-item", { hasText: "Plus" }).click();
+    await page.getByTestId("profile-button").click(); // D-1: Profil et plus
     await page.locator(".list-row", { hasText: "Accès hors ligne" }).click();
     await expect(page.locator(".appbar-title")).toHaveText("Accès hors ligne");
 
@@ -111,17 +110,16 @@ test.describe("Theme default and persistence", () => {
   // depend on whatever color scheme the test runner's OS happens to be in.
   test.use({ colorScheme: "light" });
 
-  test("a brand-new install defaults to Light mode, not System (Sprint 4 decision)", async ({
+  test("a brand-new install defaults to Midnight (dark), not System (QR-DESIGN-002)", async ({
     page,
   }) => {
-    await expect(page.locator("html")).not.toHaveClass(/dark/);
+    await expect(page.locator("html")).toHaveClass(/dark/);
     // The toggle's accessible name previews the *next* theme it will
-    // switch to; "Dark" next confirms the current, resolved state is
-    // Light without depending on reading icon SVGs.
-    await expect(page.getByRole("button", { name: "Theme: Dark" })).toBeVisible();
+    // switch to; "System" next confirms the current state is Midnight.
+    await expect(page.getByRole("button", { name: "Theme: System" })).toBeVisible();
   });
 
-  test("an existing saved Dark preference is preserved, not reset to Light", async ({ page }) => {
+  test("an existing saved Dark preference is preserved", async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem("qr.settings.theme", JSON.stringify("dark"));
     });
@@ -132,36 +130,44 @@ test.describe("Theme default and persistence", () => {
     await expect(page.getByRole("button", { name: "Theme: System" })).toBeVisible();
   });
 
-  test("an existing saved System preference is preserved, not forced to Light", async ({
+  test("an existing saved Light (Ivory) preference is preserved, not reset to Midnight", async ({
     page,
   }) => {
+    await page.addInitScript(() => {
+      localStorage.setItem("qr.settings.theme", JSON.stringify("light"));
+    });
+    await page.goto("/");
+    await expect(page.locator(".appbar-title")).toHaveText("QuranRoots", { timeout: 15_000 });
+
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
+    await expect(page.getByRole("button", { name: "Theme: Dark" })).toBeVisible();
+  });
+
+  test("an existing saved System preference is preserved", async ({ page }) => {
     await page.addInitScript(() => {
       localStorage.setItem("qr.settings.theme", JSON.stringify("system"));
     });
     await page.goto("/");
     await expect(page.locator(".appbar-title")).toHaveText("QuranRoots", { timeout: 15_000 });
 
-    // Resolves to Light here only because the OS preference is pinned
-    // light above -- proving System is still a live, working choice, not
-    // that it was silently rewritten to a fixed Light preference.
+    // Resolves to Light here only because the OS preference is pinned light
+    // above -- proving Match device is still a live, working choice.
     await expect(page.locator("html")).not.toHaveClass(/dark/);
     await expect(page.getByRole("button", { name: "Theme: Light" })).toBeVisible();
   });
 
   test("switching the theme in Settings persists across a reload", async ({ page }) => {
-    await page.locator(".tab-item", { hasText: "More" }).click();
-    await page.locator(".list-row", { hasText: "Settings" }).click();
-
-    const themeRow = page.locator("button.list-row", { hasText: "Theme" });
-    await expect(themeRow.locator(".text-muted")).toHaveText("Light");
-    await themeRow.click();
-    await expect(themeRow.locator(".text-muted")).toHaveText("Dark");
+    await page.getByTestId("tab-settings").click();
+    await page.getByTestId("settings-nav-appearance").click();
+    const select = page.getByTestId("setting-theme");
+    await expect(select).toHaveValue("dark");
+    await select.selectOption("light");
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
 
     await page.reload();
-    await page.locator(".tab-item", { hasText: "More" }).click();
-    await page.locator(".list-row", { hasText: "Settings" }).click();
-    await expect(
-      page.locator("button.list-row", { hasText: "Theme" }).locator(".text-muted"),
-    ).toHaveText("Dark");
+    await page.getByTestId("tab-settings").click();
+    await page.getByTestId("settings-nav-appearance").click();
+    await expect(page.getByTestId("setting-theme")).toHaveValue("light");
+    await expect(page.locator("html")).not.toHaveClass(/dark/);
   });
 });
