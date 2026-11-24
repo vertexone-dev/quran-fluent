@@ -83,3 +83,5 @@ Then, in one reviewed PR:
 4. Run `npm run build`, `npm run release:check`, lint, unit tests and the full e2e suite.
 
 Until all of that exists, a release build ships CSS-only.
+
+<!-- QR-SECURITY-003 gate test ref: docs-only change. Delete this branch. -->
