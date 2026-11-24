@@ -53,9 +53,19 @@ separate project from the web app in the repository root.
   `com.quranroots.app`; the iOS project uses
   `com.quranroots.mobilefeasibility`. Unresolved; do not "fix" it inside
   unrelated work.
-- **No mobile CI found (OBSERVED, initial inspection):** no GitHub workflow
-  under `.github/workflows/` references `mobile`. This is not an exhaustive
-  audit; other CI coverage is not ruled out.
+- **Mobile CI (QR-DESIGN-005):** `.github/workflows/mobile-ci.yml` ("QuranRoots
+  Mobile CI", separate from "QuranRoots CI", so it cannot trigger a production
+  deploy). The `static` job (tsc, database-independent unit tests, build,
+  artwork release guard) always runs. The `content` job (all unit tests,
+  Playwright, build, release guard, Quran integrity) runs only when the repo
+  **variable** `MOBILE_CONTENT_DB_URL` points to the approved database artifact
+  (optional secret `MOBILE_CONTENT_DB_TOKEN` for a private location). The file
+  must match the hashes pinned in `content-db.expected.json`
+  (`node scripts/verify-content-db.mjs <file> --file-hash`); the verifier also
+  recomputes the content fingerprint, so a re-export of identical content can be
+  checked without byte equality. The database is **not** committed. Until the
+  variable is set the workflow prints a warning that the database-backed checks
+  did not run.
 - **Not production-wired (OBSERVED):** `package.json` states the app is not
   part of any production build or deploy pipeline.
 - **Evidence hygiene:** Playwright (desktop browser) results are not evidence

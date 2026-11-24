@@ -1,0 +1,12 @@
+{
+  "description": "Pinned identity of the approved bundled Quran content DB (QR-DESIGN-005). Hashes only; no content. Changing this file needs owner approval.",
+  "file_sha256": "43441fa8b2c3f22571814a8d6b12538334913cd3b7b64424faad35d47fbd1518",
+  "overall_sha256": "b586ba395b9508f1918175bc1c37e0c113ed5c6505a0aa6fec4286469d1225b1",
+  "counts": {
+    "surahs": 114,
+    "ayahs": 6236,
+    "pickthall_translations": 6236,
+    "kazimirski_segments": 6239,
+    "kazimirski_mappings": 6396
+  }
+}

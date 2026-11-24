@@ -33,10 +33,17 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { resolveDisposableTarget } from "./disposable-target.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../..");
-const OUT_DIR = path.resolve(__dirname, "../content-db");
+// Target selection (QR-DESIGN-007E). "production" (the default) is exactly the previous
+// behaviour. "disposable" exports from a throwaway local Postgres+PostgREST pair so the
+// full database can be rebuilt from the repository's migrations; see disposable-target.mjs
+// for the guards that keep it away from production and from the approved database.
+const argv = process.argv.slice(2);
+const argValue = (flag) => (argv.includes(flag) ? argv[argv.indexOf(flag) + 1] : undefined);
+const TARGET = argValue("--target") ?? "production";
 
 function loadDotEnvProduction() {
   const envPath = path.join(REPO_ROOT, ".env");
@@ -57,29 +64,56 @@ function loadDotEnvProduction() {
   return vars;
 }
 
-const env = loadDotEnvProduction();
-const SUPABASE_URL = env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = env.VITE_SUPABASE_PUBLISHABLE_KEY;
+let OUT_DIR;
+let SUPABASE_URL;
+let SUPABASE_KEY;
+let COPY_TO_PUBLIC = true;
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
-  console.error(
-    "Missing VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY in .env -- refusing to run.",
-  );
+if (TARGET === "disposable") {
+  try {
+    const t = resolveDisposableTarget({
+      url: process.env.QR_DISPOSABLE_SUPABASE_URL,
+      key: process.env.QR_DISPOSABLE_ANON_KEY,
+      out: argValue("--out"),
+      repoRoot: REPO_ROOT,
+    });
+    SUPABASE_URL = t.url;
+    SUPABASE_KEY = t.key;
+    OUT_DIR = t.outDir;
+    COPY_TO_PUBLIC = false;
+  } catch (e) {
+    console.error(String(e.message));
+    process.exit(1);
+  }
+} else if (TARGET !== "production") {
+  console.error(`unknown --target "${TARGET}" (expected production or disposable)`);
   process.exit(1);
+} else {
+  OUT_DIR = path.resolve(__dirname, "../content-db");
+  const env = loadDotEnvProduction();
+  const SUPABASE_URL = env.VITE_SUPABASE_URL;
+  const SUPABASE_KEY = env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    console.error(
+      "Missing VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY in .env -- refusing to run.",
+    );
+    process.exit(1);
+  }
+  if (SUPABASE_URL.includes("127.0.0.1") || SUPABASE_URL.includes("localhost")) {
+    console.error(
+      "VITE_SUPABASE_URL resolves to a local stack -- this export is meant to run " +
+        "against production's real, certified content. Point .env's VITE_SUPABASE_URL " +
+        "at the production project before running this script.",
+    );
+    process.exit(1);
+  }
+  // Never log the key itself, only that it is present and its public-safe
+  // prefix shape (sb_publishable_... keys are explicitly designed to be
+  // exposed -- this app already ships this exact value in its client
+  // bundle -- but the value is still never echoed here, as a matter of
+  // discipline, not necessity).
 }
-if (SUPABASE_URL.includes("127.0.0.1") || SUPABASE_URL.includes("localhost")) {
-  console.error(
-    "VITE_SUPABASE_URL resolves to a local stack -- this export is meant to run " +
-      "against production's real, certified content. Point .env's VITE_SUPABASE_URL " +
-      "at the production project before running this script.",
-  );
-  process.exit(1);
-}
-// Never log the key itself, only that it is present and its public-safe
-// prefix shape (sb_publishable_... keys are explicitly designed to be
-// exposed -- this app already ships this exact value in its client
-// bundle -- but the value is still never echoed here, as a matter of
-// discipline, not necessity).
 console.log(`Exporting from ${SUPABASE_URL} (publishable key present: ${Boolean(SUPABASE_KEY)})`);
 
 async function fetchAll(table, { select = "*", filter = "", orderBy = "" } = {}) {
@@ -809,13 +843,15 @@ async function main() {
   // this copy was a manual, undocumented step and public/'s copy could
   // silently go stale after a re-export.
   const PUBLIC_DIR = path.resolve(__dirname, "../public");
-  mkdirSync(PUBLIC_DIR, { recursive: true });
-  writeFileSync(path.join(PUBLIC_DIR, "quran-content.sqlite"), readFileSync(dbPath));
+  if (COPY_TO_PUBLIC) {
+    mkdirSync(PUBLIC_DIR, { recursive: true });
+    writeFileSync(path.join(PUBLIC_DIR, "quran-content.sqlite"), readFileSync(dbPath));
+  }
 
   console.log("\nDone.");
   console.log(`SQLite file: ${dbPath}`);
   console.log(`Manifest:    ${path.join(OUT_DIR, "manifest.json")}`);
-  console.log(`Copied to:   ${path.join(PUBLIC_DIR, "quran-content.sqlite")}`);
+  if (COPY_TO_PUBLIC) console.log(`Copied to:   ${path.join(PUBLIC_DIR, "quran-content.sqlite")}`);
   console.log(`Overall content hash: ${overallHash}`);
 
   const countsMatch = ayahCount === 6236 && segmentCount === 6239 && mappingCount === 6396;
