@@ -13,6 +13,7 @@ import { Compass } from "lucide-react";
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
+import { PreferencesProvider } from "@/lib/preferences-context";
 import { I18nProvider, useI18n } from "@/lib/i18n";
 import { useDocumentTitle } from "@/lib/use-document-title";
 import { Toaster } from "@/components/ui/sonner";
@@ -161,13 +162,15 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <I18nProvider>
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
-            <Toaster position="top-center" />
-          </I18nProvider>
-        </AuthProvider>
+        <PreferencesProvider>
+          <AuthProvider>
+            <I18nProvider>
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+              <Toaster position="top-center" />
+            </I18nProvider>
+          </AuthProvider>
+        </PreferencesProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
