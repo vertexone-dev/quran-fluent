@@ -1,0 +1,89 @@
+{
+  "description": "Pinned FULL content identity of the approved bundled Quran database (QR-DESIGN-007E): a hash over every content table with database-generated ids replaced by parent natural keys (full-rebuild/full-content-fingerprint.mjs). Hashes only; no content. Complements content-db.expected.json (which covers the Quran text, Pickthall and Kazimirski only). Changing this file needs owner approval and a source-verification review.",
+  "computed_from": "temporary copy of the approved database (file SHA-256 43441fa8b2c3f22571814a8d6b12538334913cd3b7b64424faad35d47fbd1518)",
+  "full_content_sha256": "b04a3c5a4ca652388b662188ec7ae0603f02492da9816a9f99d35468228ab780",
+  "tables": 20,
+  "rows": 27247,
+  "per_table": {
+    "ayahs": {
+      "rows": 6236,
+      "sha256": "cd937731cc1c2c29d2355b81b9d00d8eda89e329f2e08d504497f41052e60757"
+    },
+    "content_sources": {
+      "rows": 5,
+      "sha256": "10c40fae86a895ec5822b8925eca47161bec5c2faa58fd43fb6ef915040b20c2"
+    },
+    "courses": {
+      "rows": 1,
+      "sha256": "3f63de82307e1f88d85aae8b62f6032f1f20bab141cee338543f5f50a681e309"
+    },
+    "lesson_exercise_translations": {
+      "rows": 488,
+      "sha256": "4da430a36e5e2032aa0e81db3162326f4af01b145a4d01129ede4abc670083c6"
+    },
+    "lesson_exercises": {
+      "rows": 244,
+      "sha256": "a6c9c25a71a87f170db086a466ebea21e192bf9765b0ee3aa954b4220e881776"
+    },
+    "lesson_section_translations": {
+      "rows": 624,
+      "sha256": "d1c205d270ae6be0168be62df6dcd5fdc7e8c3d7d04947700161b8cc2696af27"
+    },
+    "lesson_sections": {
+      "rows": 312,
+      "sha256": "22dce5ac215a80015de403ed2d92b8ab62cdf7ad9456d4e317b1f3b5fb02bf01"
+    },
+    "lesson_translations": {
+      "rows": 122,
+      "sha256": "08d83ce67f132f03490c2fe3ad43fa5cd7e342db008a1ddd28a5ef88db9f7a3d"
+    },
+    "lesson_vocabulary_words": {
+      "rows": 20,
+      "sha256": "93b44dbbe62bfa1b6b13ffa579afa94f33ca07faf88d10b063f9f6becd430c3a"
+    },
+    "lessons": {
+      "rows": 60,
+      "sha256": "14fc685abf3695292ebd0808e4512b942fe57d16561feba73d40356ebd5a32c0"
+    },
+    "level_translations": {
+      "rows": 12,
+      "sha256": "8902e214a2042a7e9df12e0767d4f715189628534808583962d8b7b05f64ac4d"
+    },
+    "levels": {
+      "rows": 6,
+      "sha256": "d23f187f1a8c0ca5317ce518a36db343d57a73b3142e5a9b091cfc4925c4e2ed"
+    },
+    "module_translations": {
+      "rows": 48,
+      "sha256": "84531d5336c5d037382a5d87378bdb95e5430e26317053473a01e1015fb168ea"
+    },
+    "modules": {
+      "rows": 24,
+      "sha256": "7e259e0c589437ac8c65d22144231fd965467569e994b0b2ed16c243c1976cf5"
+    },
+    "surahs": {
+      "rows": 114,
+      "sha256": "abc3e67e3d02f7e2ba06f0ed40363a9f857756c4a0b351dd3ef5aa18ec60718a"
+    },
+    "translation_segment_ayahs": {
+      "rows": 6396,
+      "sha256": "54bc2d9608ef1ebf6adb42222896e26e27348f276c6ac2c15b1d9e82578951dd"
+    },
+    "translation_segments": {
+      "rows": 6239,
+      "sha256": "60876c4b60a48fb737ff92ddb67f05f5c826b3200d47837a8fc0ba1d20d80bbf"
+    },
+    "translations": {
+      "rows": 6236,
+      "sha256": "bcceddd8c109d87f372fea8650ce56e98547b9142f48f1e075e206a5930cbeb1"
+    },
+    "word_frequency": {
+      "rows": 20,
+      "sha256": "f7bc9d1891c7615989c520092df5c560c68c7aa4dace32b9dacbe0ce1b7cb619"
+    },
+    "word_frequency_translations": {
+      "rows": 40,
+      "sha256": "961325ef3257deee06fc4f78a46e95c5d605eb46f964b6e25e7502ec8231c4c2"
+    }
+  }
+}

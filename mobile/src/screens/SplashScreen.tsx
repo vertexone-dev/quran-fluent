@@ -1,22 +1,23 @@
 import { useI18n } from "../i18n";
+import { EMBLEM_LARGE_SRC } from "../artwork";
 
-/** Mockup panel 1: dark forest-green hero screen with the tree-and-book
- * logo, wordmark, and taglines. Shown briefly while the bundled content
- * database loads from local assets (no network). */
+/** Shown briefly while the bundled content database loads from local
+ * assets (no network). Design Lock v1.0: emblem on Midnight Teal. The bar
+ * is a decorative loading indicator, not a progress measurement. */
 export function SplashScreen() {
   const { d } = useI18n();
   return (
-    <div className="splash-screen">
+    <div className="splash-screen" data-testid="splash-screen">
       <img
-        src="/quranroots-logo.png"
+        src={EMBLEM_LARGE_SRC}
         alt={d.brand.logoAlt}
-        style={{ height: 140, width: "auto" }}
+        style={{ width: "min(62vw, 280px)", height: "auto" }}
       />
       <div className="brand-name">{d.brand.name}</div>
       <div className="brand-tagline">{d.brand.tagline}</div>
-      <div style={{ width: "60%", marginTop: 24 }}>
-        <div className="progress-track" style={{ background: "rgba(255,255,255,0.18)" }}>
-          <div className="progress-fill" style={{ width: "70%", background: "var(--gold)" }} />
+      <div style={{ width: "50%", marginTop: 24 }} role="status" aria-label={d.common.loading}>
+        <div className="progress-track" style={{ background: "oklch(0.974 0.01 87.5 / 14%)" }}>
+          <div className="progress-fill" style={{ width: "70%", background: "var(--qr-gold)" }} />
         </div>
       </div>
     </div>

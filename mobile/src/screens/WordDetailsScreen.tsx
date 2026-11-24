@@ -19,7 +19,7 @@ export function WordDetailsScreen({
   onNavigate: (route: Route) => void;
   onBack: () => void;
 }) {
-  const { d, locale } = useI18n();
+  const { d, contentLocale: locale } = useI18n();
   const { db } = useDb();
 
   const word = useMemo(() => getWordById(db, wordId, locale), [db, wordId, locale]);

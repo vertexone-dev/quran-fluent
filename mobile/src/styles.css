@@ -1,13 +1,13 @@
 /*
- * Ported verbatim from ../../src/styles.css's :root/.dark oklch token
- * values (per the approved Phase 1 plan: "preserve the original
- * forest-green and ivory palette, typography hierarchy"). Hand-written
- * CSS classes instead of Tailwind utilities -- mobile/ has no Tailwind
- * build step (deliberately minimal Phase 0 dependency set) -- but every
- * color/radius/font value below is copied from the real design system,
- * never re-derived from the mockup's pixels. Dark mode is toggled by a
- * `.dark` class (on <html>), matching the web app's own convention
- * (a manual Settings choice, not prefers-color-scheme).
+ * QuranRoots Design Lock v1.0 (Milestone D-1). Token values are copied
+ * from the web app's ../../src/styles.css: :root is the ivory light theme,
+ * html.dark is the Midnight Teal / Antique Gold theme, and the --qr-*
+ * tokens are the fixed cinematic palette (header, tab bar, hero and splash
+ * stay dark in both themes, exactly like the website's glass nav and hero).
+ * Hand-written CSS classes instead of Tailwind utilities -- mobile/ has no
+ * Tailwind build step. Dark mode is toggled by a `.dark` class on <html>.
+ * Directional rules use logical properties so html[dir="rtl"] (Arabic UI)
+ * mirrors the layout without a second stylesheet.
  */
 
 /* Self-hosted (public/fonts/), not loaded from fonts.googleapis.com --
@@ -18,39 +18,76 @@
  * symbol subsets the web app's own broader CDN request pulls in are
  * dropped as genuine dead weight here, not an oversight). */
 @font-face {
-  font-family: "Open Sans";
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  src: url("/fonts/cormorant-garamond-latin-ext.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Cormorant Garamond";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url("/fonts/cormorant-garamond-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range:
+    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+1E00-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+  src: url("/fonts/nunito-sans-latin-ext.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC,
+    U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  src: url("/fonts/nunito-sans-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Tajawal";
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url("/fonts/open-sans-400.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFC;
+  src: url("/fonts/tajawal-400-arabic.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Open Sans";
+  font-family: "Tajawal";
   font-style: normal;
-  font-weight: 600;
+  font-weight: 400;
   font-display: swap;
-  src: url("/fonts/open-sans-600.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F;
+  src: url("/fonts/tajawal-400-latin.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Open Sans";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("/fonts/open-sans-700.woff2") format("woff2");
-}
-@font-face {
-  font-family: "Playfair Display";
+  font-family: "Tajawal";
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url("/fonts/playfair-display-700.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFC;
+  src: url("/fonts/tajawal-700-arabic.woff2") format("woff2");
 }
 @font-face {
-  font-family: "Playfair Display";
+  font-family: "Tajawal";
   font-style: normal;
-  font-weight: 800;
+  font-weight: 700;
   font-display: swap;
-  src: url("/fonts/playfair-display-800.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F;
+  src: url("/fonts/tajawal-700-latin.woff2") format("woff2");
 }
 @font-face {
   font-family: "Amiri";
@@ -123,10 +160,21 @@
   --border: oklch(0.886 0.026 87.8);
   --ring: oklch(0.42 0.09 155);
 
-  --font-sans: "Open Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Playfair Display", "Cairo", "Open Sans", ui-serif, serif;
+  --font-sans: "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Cormorant Garamond", "Nunito Sans", ui-serif, serif;
+  --font-arabic-ui: "Tajawal", "Nunito Sans", sans-serif;
   --font-quran: "Amiri Quran", "Scheherazade New", serif;
   --font-arabic: "Amiri", "Scheherazade New", serif;
+
+  /* Fixed cinematic palette (Design Lock v1.0): identical in both themes. */
+  --qr-midnight: oklch(0.2 0.035 195.1);
+  --qr-midnight-2: oklch(0.28 0.04 195.1);
+  --qr-midnight-3: oklch(0.324 0.046 195.1);
+  --qr-gold: oklch(0.767 0.139 91.1);
+  --qr-gold-soft: oklch(0.767 0.139 91.1 / 18%);
+  --qr-ivory: oklch(0.97 0.012 85);
+  --qr-ivory-muted: oklch(0.891 0.031 77);
+  --qr-line: oklch(0.974 0.01 87.5 / 14%);
 
   --shadow-soft:
     0 1px 2px color-mix(in oklab, var(--foreground) 6%, transparent),
@@ -134,27 +182,47 @@
 }
 
 html.dark {
-  --background: oklch(0.239 0.018 155);
-  --foreground: oklch(0.949 0.02 88);
-  --card: oklch(0.283 0.024 155);
-  --card-foreground: oklch(0.949 0.02 88);
+  --background: oklch(0.28 0.04 195.1);
+  --foreground: oklch(0.974 0.01 87.5);
+  --card: oklch(0.324 0.046 195.1);
+  --card-foreground: oklch(0.974 0.01 87.5);
 
-  --primary: oklch(0.719 0.09 155);
-  --primary-foreground: oklch(0.213 0.02 155);
-  --secondary: oklch(0.325 0.026 155);
-  --secondary-foreground: oklch(0.949 0.02 88);
-  --muted: oklch(0.325 0.026 155);
-  --muted-foreground: oklch(0.76 0.024 100);
-  --accent: oklch(0.355 0.03 155);
-  --accent-foreground: oklch(0.949 0.02 88);
-  --gold: oklch(0.75 0.095 82);
-  --gold-foreground: oklch(0.213 0.02 155);
+  --primary: oklch(0.511 0.086 186.4);
+  --primary-foreground: oklch(0.974 0.01 87.5);
+  --secondary: oklch(0.366 0.048 195.1);
+  --secondary-foreground: oklch(0.974 0.01 87.5);
+  --muted: oklch(0.366 0.048 195.1);
+  --muted-foreground: oklch(0.891 0.031 77);
+  --accent: oklch(0.396 0.052 195.1);
+  --accent-foreground: oklch(0.974 0.01 87.5);
+  --gold: oklch(0.767 0.139 91.1);
+  --gold-foreground: oklch(0.28 0.04 195.1);
   --support: oklch(0.73 0.06 222);
   --support-foreground: oklch(0.213 0.02 155);
   --destructive: oklch(0.65 0.19 25);
   --destructive-foreground: oklch(0.98 0.01 88);
-  --border: oklch(0.949 0.02 88 / 14%);
-  --ring: oklch(0.719 0.09 155);
+  --border: oklch(0.974 0.01 87.5 / 14%);
+  --ring: oklch(0.511 0.086 186.4);
+}
+
+/* Arabic interface: Tajawal for UI text; Qur'an and Arabic names keep
+ * their own fonts (.quran-text / .arabic-text). */
+html[dir="rtl"] {
+  --font-sans: "Tajawal", "Nunito Sans", sans-serif;
+  --font-display: "Tajawal", "Cormorant Garamond", serif;
+}
+
+/* Directional icons (chevrons, back arrows) flip under RTL. */
+html[dir="rtl"] .dir-icon {
+  transform: scaleX(-1);
+}
+
+/* Translations keep their own direction inside the Arabic interface. */
+.translation-text {
+  margin: 0;
+  unicode-bidi: isolate;
+  text-align: start;
+  line-height: 1.6;
 }
 
 * {
@@ -234,8 +302,9 @@ button {
 }
 
 .appbar-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
+  line-height: 1.15;
   color: var(--foreground);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -258,35 +327,70 @@ button {
 
 /* --- Tab bar ------------------------------------------------------------ */
 
+/* Glass bar on the fixed midnight palette -- the mobile twin of the
+ * website's nav-glass bottom tab bar (dark in both themes). */
 .tab-bar {
   display: flex;
-  border-top: 1px solid var(--border);
-  background: var(--card);
+  border-top: 1px solid var(--qr-line);
+  background: color-mix(in oklab, var(--qr-midnight) 88%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
   padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
   position: fixed;
-  left: 0;
-  right: 0;
+  inset-inline: 0;
   bottom: 0;
   z-index: 10;
 }
 
 .tab-item {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   background: none;
   border: none;
-  color: var(--muted-foreground);
-  font-size: 0.68rem;
+  color: var(--qr-ivory-muted);
+  font-size: 0.72rem;
   font-weight: 600;
   padding: 6px 2px;
+  min-height: 48px;
   cursor: pointer;
+  position: relative;
+  transition: color 0.2s ease;
 }
 
 .tab-item.active {
-  color: var(--primary);
+  color: var(--qr-gold);
+}
+
+.tab-item.active::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--qr-gold);
+}
+
+.tab-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tab-planned-dot {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: calc(50% - 18px);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--qr-gold);
+  opacity: 0.7;
 }
 
 .tab-icon {
@@ -330,7 +434,7 @@ button {
   background: none;
   color: inherit;
   font: inherit;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
@@ -449,7 +553,7 @@ button {
   gap: 4px;
   cursor: pointer;
   border: none;
-  text-align: left;
+  text-align: start;
   font-family: inherit;
 }
 
@@ -527,7 +631,7 @@ button {
   background: var(--card);
   color: inherit;
   font: inherit;
-  text-align: left;
+  text-align: start;
 }
 
 .choice-row:disabled {
@@ -583,23 +687,26 @@ button {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  background: color-mix(in oklab, var(--primary) 70%, black);
-  color: var(--primary-foreground);
+  background:
+    radial-gradient(ellipse at 50% 30%, oklch(0.767 0.139 91.1 / 16%), transparent 60%),
+    var(--qr-midnight);
+  color: var(--qr-ivory);
   text-align: center;
   padding: 24px;
 }
 
 .splash-screen .brand-name {
   font-family: var(--font-display);
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--primary-foreground);
+  font-size: 2.4rem;
+  font-weight: 700;
+  color: var(--qr-gold);
+  letter-spacing: 0.01em;
 }
 
 .splash-screen .brand-tagline {
-  color: var(--gold);
+  color: var(--qr-ivory-muted);
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   letter-spacing: 0.02em;
 }
 
@@ -620,7 +727,7 @@ button {
 }
 
 .section-title h2 {
-  font-size: 1.05rem;
+  font-size: 1.3rem;
   font-weight: 700;
 }
 
@@ -702,9 +809,9 @@ button {
 
 .tagline {
   font-family: var(--font-display);
-  font-size: 1.55rem;
+  font-size: 1.75rem;
   font-weight: 700;
-  line-height: 1.25;
+  line-height: 1.2;
   margin-bottom: 20px;
 }
 
@@ -731,7 +838,7 @@ button {
 
 .card-button {
   width: 100%;
-  text-align: left;
+  text-align: start;
   cursor: pointer;
   font: inherit;
   display: block;
@@ -751,21 +858,17 @@ button {
   border: none;
   border-radius: calc(var(--radius) + 6px);
   padding: 20px;
-  text-align: left;
+  text-align: start;
   font: inherit;
-  background: color-mix(in oklab, var(--primary) 82%, black);
-  color: var(--primary-foreground);
-  box-shadow: var(--shadow-soft);
+  background: var(--qr-midnight-2);
+  color: var(--qr-ivory);
+  border: 1px solid var(--qr-gold-soft);
+  box-shadow: 0 24px 60px -30px oklch(0.2 0.035 195.1 / 80%);
   cursor: pointer;
   transition: transform 0.15s ease;
 }
 .hero-card:active {
   transform: scale(0.985);
-}
-html.dark .hero-card {
-  background: var(--card);
-  color: var(--foreground);
-  border: 1px solid var(--border);
 }
 .hero-pattern {
   position: absolute;
@@ -773,8 +876,8 @@ html.dark .hero-card {
   pointer-events: none;
   opacity: 0.16;
   background-image:
-    radial-gradient(circle at 100% 0%, var(--gold) 0 2px, transparent 3px),
-    repeating-conic-gradient(from 45deg at 90% 10%, var(--gold) 0 8deg, transparent 8deg 30deg);
+    radial-gradient(circle at 100% 0%, var(--qr-gold) 0 2px, transparent 3px),
+    repeating-conic-gradient(from 45deg at 90% 10%, var(--qr-gold) 0 8deg, transparent 8deg 30deg);
   mask-image: radial-gradient(circle at 92% 8%, black 0, transparent 70%);
   -webkit-mask-image: radial-gradient(circle at 92% 8%, black 0, transparent 70%);
 }
@@ -795,15 +898,12 @@ html.dark .hero-card {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--gold);
-}
-html:not(.dark) .hero-label {
-  color: oklch(0.82 0.09 82);
+  color: var(--qr-gold);
 }
 .hero-title {
   font-family: var(--font-display);
-  font-size: 1.6rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 700;
 }
 .hero-sub {
   font-size: 0.82rem;
@@ -813,10 +913,7 @@ html:not(.dark) .hero-label {
 .hero-ar {
   font-size: 2rem;
   line-height: 1.2;
-  color: oklch(0.82 0.09 82);
-}
-html.dark .hero-ar {
-  color: var(--gold);
+  color: var(--qr-gold);
 }
 
 /* Continue Learning card */
@@ -985,14 +1082,266 @@ html.dark .hero-ar {
 .ayah-arabic {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 6px;
   padding: 10px 0 14px;
   transition: font-size 0.2s ease;
 }
 .ayah-arabic .quran-text {
-  color: var(--primary);
-  line-height: 1.6;
+  color: var(--foreground);
+  line-height: 1.9;
+  text-align: start;
+}
+
+/* --- Design Lock v1.0 mobile components (Milestone D-1) -------------- */
+
+/* Home brand hero: approved artwork behind a midnight scrim. The text is
+ * readable with or without the image (the scrim alone carries contrast). */
+.brand-hero {
+  position: relative;
+  overflow: hidden;
+  margin: calc(-16px - env(safe-area-inset-top, 0px)) -16px 18px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 22px;
+  background: var(--qr-midnight);
+  color: var(--qr-ivory);
+  border-bottom: 1px solid var(--qr-gold-soft);
+}
+.brand-hero-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  opacity: 0.9;
+}
+.brand-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    oklch(0.2 0.035 195.1 / 45%) 0%,
+    oklch(0.2 0.035 195.1 / 30%) 35%,
+    oklch(0.2 0.035 195.1 / 80%) 75%,
+    var(--qr-midnight) 100%
+  );
+}
+.brand-hero > :not(.brand-hero-art) {
+  position: relative;
+  z-index: 1;
+}
+.brand-hero .appbar-title {
+  color: var(--qr-gold);
+}
+.brand-hero .eyebrow {
+  color: var(--qr-gold);
+  margin-top: 96px;
+}
+.brand-hero .tagline {
+  color: var(--qr-ivory);
+  margin-bottom: 0;
+}
+
+/* Header controls on the midnight surfaces. */
+.icon-btn-glass {
+  border-color: var(--qr-line);
+  background: oklch(0.974 0.01 87.5 / 8%);
+  color: var(--qr-ivory);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.icon-btn-glass:hover:not(:disabled) {
+  background: oklch(0.974 0.01 87.5 / 16%);
+}
+
+/* Profile circle: opens Profile & More. */
+.profile-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid var(--qr-gold);
+  background: var(--qr-midnight-3);
+  color: var(--qr-gold);
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    background-color 0.2s ease;
+}
+.profile-btn:active {
+  transform: scale(0.94);
+}
+
+/* Home quick shortcuts (Bookmarks, Practice, Offline Access, Settings). */
+.shortcut-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.shortcut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 4px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  min-height: 72px;
+  transition:
+    transform 0.15s ease,
+    border-color 0.2s ease;
+}
+.shortcut svg {
+  color: var(--gold);
+}
+.shortcut:active {
+  transform: scale(0.96);
+}
+
+/* Gold-edged verse container: mobile twin of the website's VerseFrame. */
+.verse-card {
+  position: relative;
+  border-color: color-mix(in oklab, var(--gold) 28%, var(--border));
+}
+.verse-card::before,
+.verse-card::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--gold);
+  border-style: solid;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.verse-card::before {
+  top: 6px;
+  inset-inline-start: 6px;
+  border-width: 1.5px 0 0 1.5px;
+  border-start-start-radius: 4px;
+}
+.verse-card::after {
+  bottom: 6px;
+  inset-inline-end: 6px;
+  border-width: 0 1.5px 1.5px 0;
+  border-end-end-radius: 4px;
+}
+html[dir="rtl"] .verse-card::before {
+  border-width: 1.5px 1.5px 0 0;
+}
+html[dir="rtl"] .verse-card::after {
+  border-width: 0 0 1.5px 1.5px;
+}
+
+/* Planned (D-2) destinations: honest placeholder, no sample content. */
+.planned-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--radius) + 6px);
+  min-height: 200px;
+  background: var(--qr-midnight);
+  color: var(--qr-ivory);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+  border: 1px solid var(--qr-gold-soft);
+}
+.planned-hero img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.5;
+}
+.planned-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 10%, var(--qr-midnight) 95%);
+}
+.planned-hero > :not(img) {
+  position: relative;
+  z-index: 1;
+}
+.planned-hero h2 {
+  font-size: 1.9rem;
+  color: var(--qr-ivory);
+}
+.chip-planned {
+  background: var(--qr-gold-soft);
+  color: var(--qr-gold);
+  border: 1px solid oklch(0.767 0.139 91.1 / 45%);
+  align-self: flex-start;
+}
+html:not(.dark) .chip-planned {
+  color: oklch(0.45 0.1 80);
+  background: oklch(0.767 0.139 91.1 / 22%);
+}
+html .planned-hero .chip-planned {
+  color: var(--qr-gold);
+  background: oklch(0.2 0.035 195.1 / 70%);
+}
+.planned-list {
+  margin: 0;
+  padding-inline-start: 20px;
+  display: grid;
+  gap: 8px;
+}
+
+/* Dark theme: Explore tiles sit on the midnight card surface with gold
+ * icons (the light-theme tints have too little contrast on teal). */
+html.dark .tile {
+  background: var(--card);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+html.dark .tile svg {
+  color: var(--gold);
+}
+
+/* Learn banner: the website's Guided Learning Journeys artwork. */
+.learn-banner {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 7;
+  object-fit: cover;
+  border-radius: calc(var(--radius) + 6px);
+  border: 1px solid var(--qr-gold-soft);
+  margin-bottom: 16px;
+}
+
+/* Section label used by Settings and Profile & More. */
+.group-label {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted-foreground);
+  margin: 0 0 8px;
+}
+
+.row-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+.row-icon svg:first-child {
+  color: var(--gold);
+  flex-shrink: 0;
 }
 
 /* Respect the OS-level "reduce motion" accessibility setting: disable the
@@ -1001,12 +1350,930 @@ html.dark .hero-ar {
  * functionality -- everything still renders, just without movement. */
 @media (prefers-reduced-motion: reduce) {
   .stagger > * {
-    animation: none;
+    /* Instantaneous, not removed (QR-DESIGN-004A: `animation: none` coincided
+     * with garbled Home rendering on a software-GPU Android emulator). */
+    animation-duration: 0.01ms;
+    animation-delay: 0s;
   }
   .card-button:active,
   .hero-card:active,
   .tile:active:not(:disabled),
-  .icon-btn:active:not(:disabled) {
+  .icon-btn:active:not(:disabled),
+  .shortcut:active,
+  .profile-btn:active {
     transform: none;
   }
+}
+
+/* ---- QR-DESIGN-002: Settings rows, switch, dialog, text size, reduce motion ---- */
+
+/* Interface text size: every rem-based size scales with the root.
+ * The in-app choice and the iOS system text size (Dynamic Type, published by
+ * src/dynamic-type.ts as --qr-system-text-scale; 1 elsewhere) are multiplied
+ * here and ONLY here, so they combine exactly once. */
+html {
+  font-size: calc(100% * var(--qr-system-text-scale, 1));
+}
+html[data-text-size="small"] {
+  font-size: calc(93.75% * var(--qr-system-text-scale, 1));
+}
+html[data-text-size="large"] {
+  font-size: calc(112.5% * var(--qr-system-text-scale, 1));
+}
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border-width: 0 0 1px;
+  border-style: solid;
+  border-color: var(--border);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  box-sizing: border-box;
+}
+.setting-row:last-child {
+  border-bottom-width: 0;
+}
+.setting-button {
+  cursor: pointer;
+  min-height: 44px;
+}
+.setting-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.setting-title {
+  font-weight: 600;
+}
+.setting-hint {
+  font-size: 0.8rem;
+  color: var(--muted-foreground);
+}
+.setting-select {
+  flex-shrink: 0;
+  min-height: 44px;
+  max-width: 48%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--foreground);
+  font: inherit;
+}
+.setting-select:focus-visible,
+.switch:focus-visible,
+.setting-button:focus-visible {
+  outline: 2px solid var(--qr-gold);
+  outline-offset: 2px;
+}
+
+.switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 52px;
+  height: 30px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--muted, var(--border));
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.switch.on {
+  background: var(--qr-gold);
+}
+.switch-knob {
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: inset-inline-start 0.2s ease;
+}
+.switch.on .switch-knob {
+  inset-inline-start: 25px;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: oklch(0.15 0.03 195 / 70%);
+}
+.dialog {
+  width: 100%;
+  max-width: 360px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: var(--shadow-soft);
+}
+.dialog h3 {
+  margin: 0 0 8px;
+  font-family: var(--font-display, inherit);
+}
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+.dialog-actions button {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* In-app "Reduce motion". Deliberately narrow and mirroring the OS-level
+ * prefers-reduced-motion block above: it names the elements that actually
+ * animate. A blanket `* { animation: none !important; transition: none
+ * !important }` rule corrupted the Home screen's rendering in the Android
+ * WebView on a software-GPU emulator (QR-DESIGN-004A; cause not proven, may
+ * be emulator-only), so keep the rules scoped. */
+html.reduce-motion .stagger > * {
+  /* Keep the animation (so the element keeps its compositing layer and
+   * end-state) but make it instantaneous, rather than removing it. */
+  animation-duration: 0.01ms;
+  animation-delay: 0s;
+}
+html.reduce-motion .tab-item,
+html.reduce-motion .progress-fill,
+html.reduce-motion .seg,
+html.reduce-motion .card-button,
+html.reduce-motion .hero-card,
+html.reduce-motion .tile,
+html.reduce-motion .icon-btn,
+html.reduce-motion .ayah-arabic,
+html.reduce-motion .profile-btn,
+html.reduce-motion .shortcut,
+html.reduce-motion .switch,
+html.reduce-motion .switch-knob {
+  transition: none;
+}
+html.reduce-motion .card-button:active,
+html.reduce-motion .hero-card:active,
+html.reduce-motion .tile:active:not(:disabled),
+html.reduce-motion .icon-btn:active:not(:disabled),
+html.reduce-motion .shortcut:active,
+html.reduce-motion .profile-btn:active {
+  transform: none;
+}
+
+/* ---- QR-DESIGN-002 Stage 3: onboarding, progress ring, reflect ---- */
+.onboarding {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: calc(20px + env(safe-area-inset-top, 0px)) 24px
+    calc(24px + env(safe-area-inset-bottom, 0px));
+  background: var(--qr-midnight, oklch(0.28 0.04 195.1));
+  color: oklch(0.974 0.01 87.5);
+  box-sizing: border-box;
+  text-align: center;
+}
+.onboarding-top {
+  align-self: stretch;
+  display: flex;
+  justify-content: flex-end;
+}
+.onboarding-emblem {
+  width: min(46vw, 180px);
+  height: auto;
+  margin-top: 8px;
+}
+.onboarding-title {
+  margin: 14px 0 6px;
+  font-family: var(--font-display, inherit);
+  font-size: 1.9rem;
+  color: var(--qr-gold);
+}
+.onboarding-subtitle {
+  margin: 0 0 20px;
+  opacity: 0.85;
+  line-height: 1.5;
+}
+.onboarding-list {
+  align-self: stretch;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.onboarding-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid oklch(0.974 0.01 87.5 / 16%);
+  border-radius: var(--radius);
+  background: oklch(0.974 0.01 87.5 / 6%);
+  text-align: start;
+}
+.onboarding-note {
+  margin: 4px 0 18px;
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+.onboarding-cta {
+  align-self: stretch;
+  min-height: 52px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--qr-gold);
+  color: oklch(0.25 0.04 195);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.onboarding-skip {
+  margin-top: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+/* Short phones (iPhone SE class, ~667pt): keep the CTA and Skip on screen
+ * without scrolling by tightening the emblem and vertical rhythm. */
+@media (max-height: 700px) {
+  .onboarding {
+    padding-top: calc(8px + env(safe-area-inset-top, 0px));
+  }
+  .onboarding-emblem {
+    width: min(30vw, 104px);
+    margin-top: 0;
+  }
+  .onboarding-title {
+    font-size: 1.6rem;
+    margin: 8px 0 4px;
+  }
+  .onboarding-subtitle {
+    margin-bottom: 12px;
+  }
+  .onboarding-list {
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .onboarding-row {
+    padding: 8px 12px;
+  }
+  .onboarding-note {
+    margin: 0 0 10px;
+  }
+}
+.onboarding .setting-title,
+.onboarding .setting-hint {
+  color: inherit;
+}
+
+.journey-ring-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.ring-track {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 10;
+}
+.ring-fill {
+  fill: none;
+  stroke: var(--qr-gold);
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+.ring-text {
+  fill: var(--foreground);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.reflect-input {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--background);
+  color: var(--foreground);
+  font: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.reflect-input:focus-visible {
+  outline: 2px solid var(--qr-gold);
+  outline-offset: 2px;
+}
+.reflect-entry {
+  align-items: flex-start;
+}
+
+.translation-text + .group-label {
+  margin-top: 18px;
+}
+
+/* ======================================================================
+ * QR-DESIGN-004A: parchment Reader card, Home journey card, Surah list
+ * (hexagon badges, last-read highlight), Learn level cards.
+ * Tokens only (--qr-ivory, --qr-ivory-muted, --qr-gold, --qr-midnight);
+ * no new artwork. The parchment stays parchment in both themes, like the
+ * Design Lock reference's verse card.
+ * ==================================================================== */
+
+/* Parchment verse card: ivory ink-on-paper with a double gold edge. */
+.verse-card.parchment {
+  background: linear-gradient(180deg, var(--qr-ivory) 0%, var(--qr-ivory-muted) 100%);
+  color: oklch(0.27 0.04 195.1);
+  border-color: color-mix(in oklab, var(--qr-gold) 75%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--qr-gold) 16%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--qr-gold) 35%, transparent),
+    var(--shadow-soft);
+}
+.verse-card.parchment .quran-text {
+  color: oklch(0.2 0.04 195.1);
+}
+.verse-card.parchment .translation-text {
+  color: oklch(0.3 0.03 195.1);
+}
+.verse-card.parchment .ayah-marker {
+  color: oklch(0.45 0.1 85);
+  border-color: oklch(0.6 0.12 85 / 70%);
+  box-shadow:
+    inset 0 0 0 3px var(--qr-ivory),
+    inset 0 0 0 4px oklch(0.6 0.12 85 / 35%);
+}
+.verse-card.parchment .icon-btn {
+  color: oklch(0.32 0.05 195.1);
+}
+.verse-card.parchment .text-gold {
+  color: oklch(0.5 0.12 85);
+}
+
+/* Home: compact hero when there is no artwork (production builds). */
+.brand-hero:not(:has(.brand-hero-art)) .eyebrow {
+  margin-top: 36px;
+}
+
+/* Home: Your Journey card (real reading position only). */
+.journey-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin: 12px 0 18px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+}
+.journey-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Surah list: hexagon number badge + last-read highlight. */
+.surah-hex {
+  position: relative;
+  width: 34px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+.surah-hex::before,
+.surah-hex::after {
+  content: "";
+  position: absolute;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+}
+.surah-hex::before {
+  inset: 0;
+  background: var(--qr-gold);
+  opacity: 0.85;
+}
+.surah-hex::after {
+  inset: 1.5px;
+  background: var(--card);
+}
+.surah-hex > span {
+  position: relative;
+  z-index: 1;
+}
+.list-row.row-last-read {
+  background: color-mix(in oklab, var(--qr-gold) 14%, var(--card));
+  box-shadow: inset 0 0 0 1.5px color-mix(in oklab, var(--qr-gold) 80%, transparent);
+  border-radius: 12px;
+}
+.chip-gold {
+  background: var(--qr-gold-soft);
+  color: var(--qr-gold);
+  border: 1px solid oklch(0.767 0.139 91.1 / 45%);
+  font-size: 0.65rem;
+}
+html:not(.dark) .chip-gold {
+  color: oklch(0.45 0.1 85);
+}
+
+/* Learn: levels as individual cards (existing curriculum, unchanged). */
+.level-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.level-card {
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--card-foreground);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  box-shadow: var(--shadow-soft);
+  box-sizing: border-box;
+}
+.level-badge {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in oklab, var(--qr-gold) 70%, transparent);
+  background: color-mix(in oklab, var(--qr-gold) 12%, var(--card));
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* --- QR-DESIGN-005: touch targets and landscape safe areas ----------------
+ * Interactive controls are at least 44x44 CSS px (Apple HIG; WCAG 2.5.8 asks
+ * for 24). Small, background-less controls grow their box with padding and an
+ * equal negative margin, so nothing around them moves. Pills and bordered
+ * buttons simply get the larger size. */
+.icon-btn {
+  min-width: 44px;
+  height: 44px;
+}
+.back-button {
+  min-width: 44px;
+  min-height: 44px;
+}
+button.chip {
+  min-height: 44px;
+  justify-content: center;
+}
+.profile-btn,
+.audio-play {
+  width: 44px;
+  height: 44px;
+}
+.hit-44 {
+  padding: 13px;
+  margin: -13px;
+}
+
+/* Landscape on notched iPhones: keep content out of the Dynamic Island / curved
+ * corners. Insets are physical (left/right), also in RTL. They are 0 elsewhere. */
+.app-shell {
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.tab-bar {
+  padding-left: calc(4px + env(safe-area-inset-left, 0px));
+  padding-right: calc(4px + env(safe-area-inset-right, 0px));
+}
+.onboarding {
+  padding-left: calc(24px + env(safe-area-inset-left, 0px));
+  padding-right: calc(24px + env(safe-area-inset-right, 0px));
+}
+
+/* --- QR-DESIGN-006: large text (iOS Dynamic Type) ---------------------------
+ * Content text scales fully with the system text size (see dynamic-type.ts).
+ * Chrome (tab bar labels, app bar titles, header buttons) is capped at 1.3x,
+ * the way UITabBar / navigation bars cap theirs, so five tab labels and the
+ * header still fit. --qr-chrome is the factor that undoes the root scaling
+ * above 1.3x; it is exactly 1 at or below 1.3x and on non-iOS. Grids reflow to
+ * fewer columns instead of overflowing. */
+:root {
+  /* The text scale actually applied to the page: iOS Dynamic Type (multiplied into
+   * the root size above) or the Android WebView font scale (applied by the WebView
+   * itself; measured, never multiplied again). Only one is ever not 1. */
+  --qr-applied-scale: calc(var(--qr-system-text-scale, 1) * var(--qr-text-zoom, 1));
+  --qr-chrome: calc(min(var(--qr-applied-scale), 1.3) / var(--qr-applied-scale));
+}
+.tab-item {
+  font-size: calc(0.72rem * var(--qr-chrome));
+  /* QR-DESIGN-007C: as the text scale rises from 1x to 2x the tab's horizontal
+   * padding shrinks from 2px to 0, and the bar's side padding from 4px to 0, so a
+   * long French label ("Apprendre") still fits when Android's WebView refuses to
+   * render it smaller than 8px (x2 zoom). Exactly the old values at 1x. */
+  --qr-tab-room: calc(2 - clamp(1, var(--qr-applied-scale), 2));
+  padding-inline: calc(2px * var(--qr-tab-room));
+}
+.tab-bar {
+  --qr-tab-room: calc(2 - clamp(1, var(--qr-applied-scale), 2));
+  padding-left: calc(4px * var(--qr-tab-room) + env(safe-area-inset-left, 0px));
+  padding-right: calc(4px * var(--qr-tab-room) + env(safe-area-inset-right, 0px));
+}
+.appbar-title {
+  font-size: calc(1.5rem * var(--qr-chrome));
+}
+.lang-btn {
+  font-size: calc(0.72rem * var(--qr-chrome));
+}
+/* QR-DESIGN-007C: on Android the WebView zooms text but not rem, so column minimums
+ * also grow with the measured --qr-text-zoom (1 on iOS, where the root size already scales). */
+.tile-grid {
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, calc(9rem * var(--qr-text-zoom, 1))), 1fr)
+  );
+}
+.shortcut-row {
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, calc(4.5rem * var(--qr-text-zoom, 1))), 1fr)
+  );
+}
+.tile,
+.shortcut {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.list-row > * {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+/* A single long word (the brand name) must wrap rather than leave the screen
+ * at the largest system text sizes. */
+h1,
+h2,
+h3,
+.onboarding-title {
+  overflow-wrap: anywhere;
+}
+.setting-row > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ======================================================================
+ * QR-DESIGN-007A: exact-match alignment with Design Lock v1.0 where the
+ * existing components, verified data and tokens allow it. CSS and icons only:
+ * no artwork, no new content. Accessibility rules above (44pt targets,
+ * Dynamic Type, 1.3x chrome cap) are not overridden.
+ * ==================================================================== */
+
+/* Home: three-column outlined tiles (reference "Home (Dashboard)"). At large
+ * text sizes rem grows, so auto-fit drops to fewer columns instead of
+ * truncating the labels. */
+.tile-grid.tile-grid-six {
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, calc(6.5rem * var(--qr-text-zoom, 1))), 1fr)
+  );
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.tile.tile-outline {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 96px;
+  padding: 12px 6px;
+  gap: 6px;
+  background: color-mix(in oklab, var(--gold) 6%, var(--card));
+  color: var(--foreground);
+  border: 1px solid color-mix(in oklab, var(--gold) 55%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--gold) 14%, transparent);
+}
+.tile.tile-outline svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.tile.tile-outline .tile-title {
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+html.dark .tile.tile-outline {
+  background: var(--card);
+  border-color: color-mix(in oklab, var(--gold) 55%, transparent);
+}
+
+/* Segmented controls: antique-gold selected state. */
+.seg.active {
+  background: var(--gold);
+  color: var(--gold-foreground);
+  box-shadow: var(--shadow-soft);
+}
+
+/* Surah list: search field with a leading magnifier. */
+.search-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.search-field > svg {
+  position: absolute;
+  inset-inline-start: 14px;
+  color: var(--muted-foreground);
+  pointer-events: none;
+}
+.search-field {
+  min-width: 0;
+}
+.search-field .input {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  border-radius: 999px;
+  padding-inline-start: 42px;
+  min-height: 44px;
+}
+/* Last-read row: chevron affordance next to the gold border. */
+.row-chevron {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+/* Centred header (Reader): back at the start, title centred, balanced end. */
+.appbar-centered {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 8px;
+}
+.appbar-centered .appbar-side {
+  display: flex;
+  align-items: center;
+}
+.appbar-centered .appbar-side-end {
+  justify-content: flex-end;
+}
+.appbar-centered .appbar-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 0;
+  text-align: center;
+}
+.appbar-centered .appbar-title {
+  font-size: calc(1.25rem * var(--qr-chrome));
+  max-width: 100%;
+}
+.appbar-centered .reader-ar-title {
+  font-size: 1.3rem;
+  line-height: 1.3;
+}
+
+/* Onboarding CTA: label plus arrow. */
+.onboarding-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Parchment panels (Understand meaning, Reflect composer): the same ivory
+ * paper and double gold edge as the Reader verse card; ink contrast kept. */
+.card.parchment-panel {
+  background: linear-gradient(180deg, var(--qr-ivory) 0%, var(--qr-ivory-muted) 100%);
+  color: oklch(0.27 0.04 195.1);
+  border-color: color-mix(in oklab, var(--qr-gold) 75%, transparent);
+  box-shadow:
+    0 0 0 3px color-mix(in oklab, var(--qr-gold) 16%, transparent),
+    inset 0 0 0 1px color-mix(in oklab, var(--qr-gold) 35%, transparent),
+    var(--shadow-soft);
+}
+.card.parchment-panel .group-label,
+.card.parchment-panel .setting-hint,
+.card.parchment-panel .text-muted {
+  color: oklch(0.38 0.03 195.1);
+}
+.card.parchment-panel .translation-text {
+  color: oklch(0.27 0.04 195.1);
+}
+.card.parchment-panel .chip-planned {
+  color: oklch(0.3 0.04 195.1);
+}
+.card.parchment-panel .reflect-input {
+  background: color-mix(in oklab, white 55%, var(--qr-ivory));
+  color: oklch(0.2 0.04 195.1);
+  border-color: color-mix(in oklab, var(--qr-gold) 55%, transparent);
+}
+.card.parchment-panel .reflect-input::placeholder {
+  color: oklch(0.42 0.03 195.1);
+}
+
+/* Home header: the wordmark wraps (and its buttons drop to a second line)
+ * at the largest system text sizes instead of truncating. */
+.brand-hero .appbar {
+  flex-wrap: wrap;
+}
+.brand-hero .appbar-title {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+/* Settings: group headings carry an icon. */
+.group-label.settings-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.group-label.settings-group svg {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+/* About & Sources. */
+.source-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.source-card {
+  padding: 14px;
+  margin: 0;
+}
+.source-type {
+  margin: 0 0 2px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+.source-name {
+  margin: 0 0 10px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.source-meta {
+  margin: 0;
+  font-size: 0.85rem;
+}
+/* Each label/value pair is a wrapping row: side by side when there is room, stacked
+ * (label above value) at large text sizes. The old two-column grid squeezed the value
+ * to one character per line at AX5 on an iPhone SE (found by the 007C UI tests). */
+.source-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 12px;
+  padding: 2px 0;
+}
+.source-meta dt {
+  flex: 0 0 auto;
+  color: var(--muted-foreground);
+}
+.source-meta dd {
+  flex: 1 1 10rem;
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+/* ======================================================================
+ * QR-DESIGN-007B: Settings category list and sub-pages (Design Lock
+ * "Mobile App - Settings"): gold outline icon, title, hint, chevron.
+ * ==================================================================== */
+.settings-nav {
+  padding: 0;
+  overflow: hidden;
+}
+.settings-nav-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 60px;
+  padding: 10px 14px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+.settings-nav-row:last-child {
+  border-bottom: 0;
+}
+.settings-nav-row:active {
+  background: color-mix(in oklab, var(--gold) 8%, transparent);
+}
+.settings-nav-row:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+.settings-nav-icon {
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.settings-nav-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Safe external link (About & Sources): a gold pill with an icon, 44pt tall. */
+.external-link {
+  /* Block-level so the accessibility frame is the whole padded 44pt box, not
+   * just the text line (WebKit reports inline links by their text rects). */
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid color-mix(in oklab, var(--gold) 60%, transparent);
+  border-radius: 999px;
+  color: var(--gold);
+  font-weight: 700;
+  text-decoration: none;
+}
+.external-link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* QR-DESIGN-007C: at the largest text sizes on a narrow phone (iPhone SE at AX5) the
+ * Surah row's Arabic name and favourite button no longer fit beside the name, and
+ * the long greeting word overflowed by a few points. Both now wrap instead. The
+ * name button's 8rem basis keeps the default layout on one line (see the 007C
+ * Playwright test and the iPhone SE AX5 UI tests). */
+.list-row.surah-row {
+  flex-wrap: wrap;
+}
+.eyebrow,
+.tagline {
+  overflow-wrap: anywhere;
+}
+
+/* Home "start reading" card: the Arabic surah name wraps below the title instead of
+ * running off a narrow screen at the largest text sizes (found by the 007C sweep). */
+.hero-body {
+  flex-wrap: wrap;
+}
+.hero-ar {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* Memorize: three action tiles. Three columns at normal sizes (also on 360pt phones),
+ * fewer as the text scale grows, so "Memorize / Revise / Test" never stack letter by
+ * letter (found by the 007C sweep; this was a hard-coded inline 3-column grid). */
+.tile-grid.tile-grid-three {
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, calc(6rem * var(--qr-text-zoom, 1))), 1fr)
+  );
 }

@@ -104,6 +104,41 @@ export function getContentVersion(db: Database): ContentVersion {
   return row;
 }
 
+export type ContentSource = {
+  edition_identifier: string;
+  content_type: string;
+  provider_name: string;
+  dataset_name: string;
+  translator: string | null;
+  version: string | null;
+  license_name: string;
+  license_url: string | null;
+  attribution_required: number;
+  verification_status: string;
+  source_url: string | null;
+};
+
+/** The three sources the app actually displays (Arabic text, English and
+ * French translations). Other `content_sources` rows (for example a disputed
+ * French edition that is not bundled) are deliberately never listed. */
+export const DISPLAYED_SOURCE_EDITIONS = [
+  "uthmani",
+  "pickthall-gutenberg-16955",
+  "kazimirski-1869-segments-v1",
+] as const;
+
+export function listDisplayedContentSources(db: Database): ContentSource[] {
+  const rows = queryBound<ContentSource>(
+    db,
+    `SELECT edition_identifier, content_type, provider_name, dataset_name, translator, version,
+            license_name, license_url, attribution_required, verification_status, source_url
+       FROM content_sources
+      WHERE edition_identifier IN (${DISPLAYED_SOURCE_EDITIONS.map(() => "?").join(",")})`,
+    [...DISPLAYED_SOURCE_EDITIONS],
+  );
+  return DISPLAYED_SOURCE_EDITIONS.flatMap((e) => rows.filter((r) => r.edition_identifier === e));
+}
+
 export function listSurahs(db: Database): Surah[] {
   const result = db.exec(
     "SELECT number, name_en, name_ar, name_fr, ayah_count, revelation_type FROM surahs ORDER BY number",

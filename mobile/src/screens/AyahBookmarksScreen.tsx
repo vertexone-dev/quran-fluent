@@ -17,9 +17,12 @@ import type { Route } from "../navigation";
 export function AyahBookmarksScreen({
   onNavigate,
   onBack,
+  embedded = false,
 }: {
   onNavigate: (route: Route) => void;
   onBack: () => void;
+  /** Inside the Surah list's Bookmarks view: no app bar of its own. */
+  embedded?: boolean;
 }) {
   const { d } = useI18n();
   const { db } = useDb();
@@ -30,7 +33,7 @@ export function AyahBookmarksScreen({
 
   return (
     <div>
-      <AppBar title={d.bookmarks.title} onBack={onBack} />
+      {!embedded && <AppBar title={d.bookmarks.title} onBack={onBack} />}
       <div className="card" style={{ padding: 0 }}>
         {bookmarks.map((b) => {
           const surah = surahs.find((s) => s.number === b.surahNumber);
@@ -52,7 +55,7 @@ export function AyahBookmarksScreen({
                   border: "none",
                   color: "inherit",
                   font: "inherit",
-                  textAlign: "left",
+                  textAlign: "start",
                 }}
                 onClick={() =>
                   onNavigate({

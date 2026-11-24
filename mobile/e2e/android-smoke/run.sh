@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Android on-device smoke suite for the QuranRoots mobile feasibility app.
+# Android on-device smoke suite for the QuranRoots mobile app.
 #
 # Drives the already-installed app on a running emulator/device using only
 # adb + uiautomator (no paid tools, no instrumentation APK). Every assertion
@@ -7,7 +7,8 @@
 # a sleep alone, never a screenshot. See README.md in this directory for
 # prerequisites, what each check actually proves, and known limitations.
 #
-# Usage: ./run.sh [output_dir]
+# Usage: ANDROID_SERIAL=<serial> ./run.sh [output_dir]
+#   ANDROID_SERIAL is REQUIRED when more than one device/emulator is attached.
 # Exit code: 0 if every check passed, 1 otherwise.
 
 set -uo pipefail
@@ -48,42 +49,120 @@ restore_airplane_mode() {
 trap restore_airplane_mode EXIT
 
 # ---------------------------------------------------------------------------
-# 1. Launch and home screen
+# 1. Launch, first-launch onboarding, and Home
 # ---------------------------------------------------------------------------
-log "--- 1. App launch and home screen ---"
+log "--- 1. App launch, onboarding and Home ---"
 adb shell am force-stop "$PKG"
 sleep 1
 adb shell am start -n "$ACTIVITY" >/dev/null
+wait_for_app_ui 30 || true
+first_dump=$(dump_ui "01_launch" "$OUT_DIR")
+if grep -q "Welcome to QuranRoots" "$first_dump"; then
+  # Fresh install: the welcome screen is shown once. It must name only
+  # features that exist and state that essential learning is free.
+  assert_text_present "$first_dump" "Essential Qur'an learning is free" "onboarding: free-access statement shown"
+  assert_text_present "$first_dump" "Get started" "onboarding: Get started button present"
+  tap_on_text "$first_dump" "Get started"
+  sleep 1
+else
+  log "returning user: onboarding already completed on this install (skipping onboarding checks)"
+fi
 home_dump=$(dump_ui "01_home" "$OUT_DIR")
 assert_text_present "$home_dump" "QuranRoots" "launch: app bar title"
-assert_text_present "$home_dump" "Home" "launch: home tab"
-assert_text_present "$home_dump" "Qur'an" "launch: quran tab"
+for tab in "Home" "Qur'an" "Learn" "Progress" "Settings"; do
+  assert_text_present "$home_dump" "$tab" "launch: '$tab' tab present"
+done
 
 # ---------------------------------------------------------------------------
-# 2. Bottom navigation (Lessons, Practice, More, back to Home)
+# 2. Five-tab navigation + hardware back (Home, Qur'an, Learn, Progress, Settings)
 # ---------------------------------------------------------------------------
-log "--- 2. Bottom navigation ---"
-tap_on_text "$home_dump" "Lessons"
-lessons_dump=$(dump_ui "02_lessons" "$OUT_DIR")
-assert_text_present "$lessons_dump" "Levels" "nav: Lessons shows Levels"
-assert_changed "$home_dump" "$lessons_dump" "nav: Home -> Lessons changed screen"
+log "--- 2. Bottom navigation and hardware back ---"
+press_back() { adb shell input keyevent KEYCODE_BACK; sleep 1; }
 
-tap_on_text "$lessons_dump" "Practice"
-practice_dump=$(dump_ui "03_practice" "$OUT_DIR")
-assert_text_present "$practice_dump" "Practice" "nav: Practice tab loaded"
-assert_changed "$lessons_dump" "$practice_dump" "nav: Lessons -> Practice changed screen"
+tap_on_text "$home_dump" "Learn"
+lessons_dump=$(dump_ui "02_learn" "$OUT_DIR")
+assert_text_present "$lessons_dump" "Levels" "nav: Learn shows Levels"
+assert_changed "$home_dump" "$lessons_dump" "nav: Home -> Learn changed screen"
 
-tap_on_text "$practice_dump" "More"
-more_dump=$(dump_ui "04_more" "$OUT_DIR")
-assert_text_present "$more_dump" "Settings" "nav: More shows Settings row"
-# Memorization is a deliberately deferred feature (confirmed in
-# mobile/src/screens/MoreScreen.tsx), not a bug -- asserting its
-# "Coming Soon" label present is itself the correct expectation today.
-assert_text_present "$more_dump" "Coming Soon" "nav: Memorization marked Coming Soon (expected, not implemented yet)"
+tap_on_text "$lessons_dump" "Progress"
+progress_dump=$(dump_ui "03_progress" "$OUT_DIR")
+assert_text_present "$progress_dump" "Your Journey" "nav: Progress tab opens Your Journey"
+assert_text_present "$progress_dump" "Not tracked yet" "progress: untracked rows are labelled, not invented"
 
-tap_on_text "$more_dump" "Home"
+tap_on_text "$progress_dump" "Settings"
+settings_dump=$(dump_ui "04_settings" "$OUT_DIR")
+# QR-DESIGN-007B: Settings is a category list; each category opens a sub-page.
+# (UI Automator XML-escapes "&" as "&amp;", so the labels below use that form.)
+for row in "General" "Quran &amp; Reading" "Language" "Appearance" "Offline access" "Privacy &amp; Data" "About &amp; Sources"; do
+  assert_text_present "$settings_dump" "$row" "nav: Settings lists '$row'"
+done
+tap_on_text "$settings_dump" "Appearance"
+appearance_dump=$(dump_ui "04a_settings_appearance" "$OUT_DIR")
+assert_text_present "$appearance_dump" "Reduce motion" "settings: Appearance page shows Reduce motion"
+assert_text_present "$appearance_dump" "Text Size" "settings: Appearance page shows Text Size"
+press_back
+settings_dump=$(dump_ui "04b_settings_list_again" "$OUT_DIR")
+assert_text_present "$settings_dump" "Privacy &amp; Data" "hardware back: Appearance -> Settings list"
+tap_on_text "$settings_dump" "General"
+general_dump=$(dump_ui "04c_settings_general" "$OUT_DIR")
+assert_text_present "$general_dump" "Start screen" "settings: General page shows Start screen"
+press_back
+settings_dump=$(dump_ui "04d_settings_list_again" "$OUT_DIR")
+tap_on_text "$settings_dump" "Privacy &amp; Data"
+privacy_dump=$(dump_ui "04e_settings_privacy" "$OUT_DIR")
+assert_text_present "$privacy_dump" "Export preferences" "settings: Privacy page shows Export preferences"
+assert_text_present "$privacy_dump" "Reset preferences" "settings: Privacy page shows Reset preferences"
+press_back
+settings_dump=$(dump_ui "04f_settings_list_again" "$OUT_DIR")
+
+# About & Sources and the Tanzil link: opens in the system browser, leaves the app intact.
+tap_on_text "$settings_dump" "About &amp; Sources"
+about_dump=$(dump_ui "04g_about" "$OUT_DIR")
+assert_text_present "$about_dump" "Tanzil Project" "about: Tanzil source credited"
+assert_text_present "$about_dump" "Candidate" "about: Candidate status shown"
+# The link is below the fold and UI Automator bounds inside this WebView are offset
+# (by hundreds of px after scrolling), so tapping by bounds is unreliable. Keyboard
+# focus does not depend on geometry: DOM order is back button, then the Tanzil link.
+about_dump=$(dump_ui "04h_about" "$OUT_DIR")
+assert_text_present "$about_dump" "Open tanzil.net" "about: Tanzil link present"
+adb shell input keyevent KEYCODE_TAB
+adb shell input keyevent KEYCODE_TAB
+sleep 1
+adb shell input keyevent KEYCODE_ENTER
+sleep 5
+focus=$(adb shell dumpsys window | grep -m1 mCurrentFocus)
+if echo "$focus" | grep -q "$PKG"; then
+  log "FAIL [about: Tanzil link opens the system browser]: focus still in the app: $focus"
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+else
+  log "PASS [about: Tanzil link opens the system browser]: $focus"
+  PASS_COUNT=$((PASS_COUNT + 1))
+fi
+# Return to the app the way a user would (task switch); its state must be intact.
+adb shell am start -n "$ACTIVITY" >/dev/null
+sleep 2
+wait_for_app_ui 20 || true
+back_dump=$(dump_ui "04i_back_from_browser" "$OUT_DIR")
+assert_text_present "$back_dump" "Tanzil Project" "about: app state preserved after the browser (About screen still shown)"
+press_back
+
+press_back
+back1_dump=$(dump_ui "04b_back_to_progress" "$OUT_DIR")
+assert_text_present "$back1_dump" "Your Journey" "hardware back: Settings -> Progress"
+press_back
+back2_dump=$(dump_ui "04c_back_to_learn" "$OUT_DIR")
+assert_text_present "$back2_dump" "Levels" "hardware back: Progress -> Learn"
+press_back
+back3_dump=$(dump_ui "04d_back_to_home" "$OUT_DIR")
+assert_text_present "$back3_dump" "QuranRoots" "hardware back: Learn -> Home (app not exited)"
+
+# Secondary features stay one tap from Home (shortcut row).
+tap_on_text "$back3_dump" "Practice"
+practice_dump=$(dump_ui "04e_practice" "$OUT_DIR")
+assert_text_present "$practice_dump" "Review exercises" "nav: Practice opens from Home shortcut"
+press_back
 home_dump_2=$(dump_ui "05_home_again" "$OUT_DIR")
-assert_text_present "$home_dump_2" "Qur'an" "nav: back to Home"
+assert_text_present "$home_dump_2" "Qur'an" "hardware back: Practice -> Home"
 
 # ---------------------------------------------------------------------------
 # 3. Surah browsing and reading (Arabic / English / French)
@@ -139,12 +218,38 @@ assert_text_present "$offline_dump" "$expected_french" "offline: content still r
 set_airplane_mode "disable" "offline: airplane mode turns back off"
 
 # ---------------------------------------------------------------------------
+# 3b. Understand This Ayah, Reflect and Memorize (reached from the reader / Home)
+# ---------------------------------------------------------------------------
+log "--- 3b. Understand, Reflect, Memorize ---"
+tap_on_text "$reading_fr_dump" "Understand this ayah"
+understand_dump=$(dump_ui "09b_understand" "$OUT_DIR")
+assert_text_present "$understand_dump" "Understand This Ayah" "understand: screen opens from the reader"
+assert_text_present "$understand_dump" "$expected_english" "understand: English (Pickthall) matches content DB"
+tap_on_text "$understand_dump" "Tafsir"
+tafsir_dump=$(dump_ui "09c_understand_tafsir" "$OUT_DIR")
+assert_text_present "$tafsir_dump" "No tafsir source" "understand: Tafsir says no source is approved (nothing invented)"
+press_back
+reader_again=$(dump_ui "09d_back_in_reader" "$OUT_DIR")
+assert_text_present "$reader_again" "Al-Fatiha" "hardware back: Understand -> reader"
+tap_on_text "$reader_again" "Home"
+sleep 1
+home_dump_3=$(dump_ui "09e_home_for_tiles" "$OUT_DIR")
+assert_text_present "$home_dump_3" "QuranRoots" "nav: Home tab returns from the reader"
+swipe_up; swipe_up; swipe_up
+tiles_dump=$(dump_ui "09f_home_tiles" "$OUT_DIR")
+tap_on_text "$tiles_dump" "Memorize"
+memorize_dump=$(dump_ui "09g_memorize" "$OUT_DIR")
+assert_text_present "$memorize_dump" "Memorization tracking is not available" "memorize: states plainly that tracking is not available"
+press_back
+
+# ---------------------------------------------------------------------------
 # 5. Restart behavior (known characteristic, not a failure condition)
 # ---------------------------------------------------------------------------
 log "--- 5. Restart and state persistence ---"
 adb shell am force-stop "$PKG"
 sleep 1
 adb shell am start -n "$ACTIVITY" >/dev/null
+wait_for_app_ui 30 || true
 restart_dump=$(dump_ui "11_after_restart" "$OUT_DIR")
 # Documented finding from the Android audit: the app always cold-boots to
 # Home after force-stop/relaunch -- it does not restore the screen the user
@@ -152,6 +257,11 @@ restart_dump=$(dump_ui "11_after_restart" "$OUT_DIR")
 # real, verified behavior; it is not a bug fix target by itself and should
 # not be read as a failure of this suite.
 assert_text_present "$restart_dump" "Home" "restart: app cold-boots to Home (known behavior -- does not restore prior screen)"
+if grep -q "Welcome to QuranRoots" "$restart_dump"; then
+  log "FAIL [restart: onboarding must not reappear after completion]"; FAIL_COUNT=$((FAIL_COUNT + 1))
+else
+  log "PASS [restart: onboarding does not reappear]"; PASS_COUNT=$((PASS_COUNT + 1))
+fi
 
 # ---------------------------------------------------------------------------
 # Summary
