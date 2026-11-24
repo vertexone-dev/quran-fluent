@@ -1,18 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Governs Cloud Backup and Device-to-Device Transfer on Android 12 (API
-  31) and higher, since this app targets API 36. See backup_rules.xml's
-  own comment for the full rationale (same rules, same reasoning, just
-  the newer XML schema). Both files are required since this app's
-  minSdk (24) spans both eras.
+  Android 12+ (API 31+): Cloud Backup and Device-to-Device Transfer.
+  QR-RELEASE-002A backup policy (see mobile/docs/ANDROID-BACKUP-POLICY.md).
 
-  disableIfNoEncryptionCapabilities="true" on <cloud-backup> skips the
-  cloud upload entirely on a device that can't encrypt it (no screen
-  lock), rather than uploading bookmarks/preferences unencrypted.
+  The app's user data lives in WebView localStorage (one LevelDB directory): bookmarks,
+  reading position, preferences AND the user's private reflections (their own written
+  words, qr.reflections). LevelDB cannot be split by key, so the directory is all-or-nothing.
+
+  - cloud-backup: NOTHING is uploaded. Private reflections must never leave the device
+    for a cloud service. Every backup domain is excluded explicitly because an element
+    with no <include> would otherwise back up everything.
+  - device-transfer: the localStorage directory IS copied, so a user moving to a new
+    phone by cable or direct transfer keeps bookmarks, position, preferences and
+    reflections. Both devices are in the user's hands.
 -->
 <data-extraction-rules>
-    <cloud-backup disableIfNoEncryptionCapabilities="true">
-        <include domain="root" path="app_webview/Default/Local Storage/" />
+    <cloud-backup>
+        <exclude domain="root" path="." />
+        <exclude domain="file" path="." />
+        <exclude domain="database" path="." />
+        <exclude domain="sharedpref" path="." />
+        <exclude domain="external" path="." />
     </cloud-backup>
     <device-transfer>
         <include domain="root" path="app_webview/Default/Local Storage/" />

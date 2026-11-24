@@ -1748,6 +1748,12 @@ html.reduce-motion .profile-btn:active {
   flex-direction: column;
   gap: 8px;
   width: 100%;
+  /* A <button> shrink-wraps its content in WebKit: in French on a 375pt phone the card was
+     396pt wide (found by the iPhone SE smoke test in QR-RELEASE-002A). Cap it and let the
+     text wrap. */
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
   margin: 12px 0 18px;
   padding: 14px 16px;
   border: 1px solid var(--border);
@@ -1761,9 +1767,16 @@ html.reduce-motion .profile-btn:active {
 }
 .journey-card-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 4px 12px;
+  min-width: 0;
+}
+.journey-card-head > span,
+.journey-card > .setting-hint {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Surah list: hexagon number badge + last-read highlight. */
