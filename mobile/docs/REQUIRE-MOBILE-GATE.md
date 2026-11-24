@@ -6,12 +6,12 @@ Written for the project owner. **Nothing here has been applied.** The live rules
 
 All probes were draft PRs from disposable branches into `security/qr-release-002a-mobile-hardening`; they were closed and their branches deleted afterwards.
 
-| PR (closed) | Change | `mobile release gate` | Mobile jobs |
-| ----------- | ------ | --------------------- | ----------- |
-| #98 | documentation only (`docs/*.md`) | **pass**: "no mobile-affecting files changed" | skipped |
-| #99 | website only (`src/lib/utils.ts`) | **pass**: same message | skipped |
-| #100 | deliberate TypeScript error in `mobile/src/artwork.ts` | **fail**: "static did not succeed (failure)" | ran, `static` failed |
-| #97 (open) | the real mobile change set | **pass** | all ran |
+| PR (closed) | Change                                                 | `mobile release gate`                         | Mobile jobs          |
+| ----------- | ------------------------------------------------------ | --------------------------------------------- | -------------------- |
+| #98         | documentation only (`docs/*.md`)                       | **pass**: "no mobile-affecting files changed" | skipped              |
+| #99         | website only (`src/lib/utils.ts`)                      | **pass**: same message                        | skipped              |
+| #100        | deliberate TypeScript error in `mobile/src/artwork.ts` | **fail**: "static did not succeed (failure)"  | ran, `static` failed |
+| #97 (open)  | the real mobile change set                             | **pass**                                      | all ran              |
 
 On the unmodified mobile chain (#95, workflow from the existing branch) the old `mobile release gate` job reported **skipped** on a pull request. A skipped required check is accepted as passing, which is the hole the new gate closes.
 
