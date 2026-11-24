@@ -37,4 +37,5 @@ QR-DESIGN-007D. Three packets, one per independent role, for the source-verifica
 | Minor    | Formatting-only or documentation gap with no effect on meaning                | Recorded; may be accepted by the owner            |
 | Info     | Observation                                                                   | Recorded                                          |
 
+- [REVIEWER-PACKAGES.md](REVIEWER-PACKAGES.md): the three reviewer packages and their questions (QR-RELEASE-001).
 - [BOOTSTRAP-58-AYAH-PROVENANCE.md](BOOTSTRAP-58-AYAH-PROVENANCE.md): where the 58 early ayahs came from and what is unresolved (007E).
