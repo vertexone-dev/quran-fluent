@@ -44,9 +44,13 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npx vite --port ${PORT} --strictPort`,
+    // QR_E2E_BUILT=1 runs the whole suite against the BUILT app, which carries the
+    // Content-Security-Policy (the dev server cannot: hot reload needs inline scripts).
+    command: process.env.QR_E2E_BUILT
+      ? `npx vite build --outDir dist-e2e && npx vite preview --outDir dist-e2e --port ${PORT} --strictPort`
+      : `npx vite --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}`,
     reuseExistingServer: !process.env.CI,
-    timeout: 30_000,
+    timeout: process.env.QR_E2E_BUILT ? 120_000 : 30_000,
   },
 });

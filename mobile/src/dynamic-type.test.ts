@@ -46,3 +46,11 @@ describe("zoomFromProbePx (Android font scale as seen by the page)", () => {
     for (const bad of [0, -3, NaN, Infinity]) expect(zoomFromProbePx(bad)).toBe(1);
   });
 });
+
+describe("probe styling is CSP-safe (WebKit blocks style.cssText under a strict policy)", () => {
+  it("never assigns style.cssText", async () => {
+    const { readFileSync } = await import("node:fs");
+    const src = readFileSync(new URL("./dynamic-type.ts", import.meta.url), "utf8");
+    expect(src.replace(/\/\*[\s\S]*?\*\//g, "")).not.toMatch(/\.cssText\s*=/);
+  });
+});

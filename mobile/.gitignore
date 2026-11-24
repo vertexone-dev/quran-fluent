@@ -29,3 +29,5 @@ android/local.properties
 # Playwright E2E run artifacts (mobile/e2e/, mobile/playwright.config.ts).
 test-results/
 playwright-report/
+dist-csp/
+dist-e2e/

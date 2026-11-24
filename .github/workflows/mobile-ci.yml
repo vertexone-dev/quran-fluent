@@ -24,23 +24,22 @@ name: QuranRoots Mobile CI
 #              Runs only when the repo variable MOBILE_CONTENT_DB_URL is set;
 #              otherwise it is skipped and `content-status` prints a warning so
 #              the gap is visible instead of silently green. See mobile/README.md.
-#   release-gate - FAILS CLOSED on pushes to main, `mobile-v*` tags and manual
-#              runs: it succeeds only if static AND content both succeeded (a
-#              skipped content job is a failure there), so a release can never
-#              ship on skipped Quran-integrity tests. On pull requests it is
-#              not run: they only warn. Make "mobile release gate" a required
-#              check in branch protection to enforce it.
+#   changes  - QR-RELEASE-002A. Classifies a pull request's changed files
+#              (scripts/ci/classify-changes.mjs): documentation-only and website-only
+#              changes do not need the mobile checks.
+#   release-gate - "mobile release gate". FAILS CLOSED. Runs on every pull request, push
+#              and manual run. On a pull request it passes at once when nothing mobile
+#              changed, and otherwise needs static, content-integrity and content-full
+#              all to have SUCCEEDED (a skipped job is a failure). On pushes to main,
+#              `mobile-v*` tags and manual runs all three are always required. It is the
+#              single check to make required in branch protection.
 
 on:
+  # Every pull request, whatever its base (so stacked and consolidated PRs are covered) and
+  # whatever it touches: the gate job below must ALWAYS report, otherwise a required check
+  # would wait forever on a documentation-only PR. The `changes` job decides which heavy
+  # jobs are needed.
   pull_request:
-    branches: [main]
-    paths:
-      - "mobile/**"
-      - "supabase/migrations/**"
-      - "scripts/quran-import/kazimirski/**"
-      - ".github/workflows/mobile-ci.yml"
-      - "package.json"
-      - "package-lock.json"
   push:
     branches: [main]
     # Release tags always run, whatever they touched (see release-gate).
@@ -63,8 +62,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: classify changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      mobile: ${{ steps.classify.outputs.mobile }}
+    steps:
+      - name: Checkout repository (full history, to diff against the base)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Classify the changed files
+        id: classify
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "mobile=true" >> "$GITHUB_OUTPUT"   # pushes, tags and manual runs always run everything
+            exit 0
+          fi
+          git diff --name-only "$BASE_SHA...$HEAD_SHA" > changed-files.txt
+          wc -l < changed-files.txt
+          node mobile/scripts/ci/classify-changes.mjs < changed-files.txt >> "$GITHUB_OUTPUT"
+
   static:
     name: mobile static checks (no database)
+    needs: changes
+    if: ${{ needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -111,6 +139,8 @@ jobs:
 
   content-integrity:
     name: Quran content integrity (rebuilt from repository sources)
+    needs: changes
+    if: ${{ needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -143,6 +173,8 @@ jobs:
 
   content-full:
     name: Full Quran database rebuilt from repository sources
+    needs: changes
+    if: ${{ needs.changes.outputs.mobile == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -319,31 +351,28 @@ jobs:
 
   release-gate:
     name: mobile release gate
-    # Runs on release-relevant events only. `always()` so it still runs (and
-    # fails) when `content` was skipped; a skipped dependency is NOT success here.
-    if: ${{ always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch') }}
-    needs: [static, content-integrity, content-full]
+    # Always runs (`always()`), including when every heavy job was skipped, and it decides
+    # for itself: a skipped job counts as success ONLY when the classification said that no
+    # mobile file changed. See mobile/scripts/ci/mobile-gate.mjs (unit tested).
+    if: ${{ always() }}
+    needs: [changes, static, content-integrity, content-full]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Require static, content-integrity AND database-backed checks to have passed
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Decide
         env:
+          EVENT_NAME: ${{ github.event_name }}
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          MOBILE_CHANGED: ${{ needs.changes.outputs.mobile }}
           STATIC_RESULT: ${{ needs.static.result }}
           INTEGRITY_RESULT: ${{ needs.content-integrity.result }}
-          CONTENT_RESULT: ${{ needs.content-full.result }}
-        run: |
-          echo "static=$STATIC_RESULT content-integrity=$INTEGRITY_RESULT content-full=$CONTENT_RESULT"
-          if [ "$INTEGRITY_RESULT" != "success" ]; then
-            echo "::error title=Mobile release gate::Quran content integrity (rebuild from repository sources) did not succeed ($INTEGRITY_RESULT)."
-            exit 1
-          fi
-          if [ "$STATIC_RESULT" != "success" ]; then
-            echo "::error title=Mobile release gate::static checks did not succeed ($STATIC_RESULT)."
-            exit 1
-          fi
-          if [ "$CONTENT_RESULT" != "success" ]; then
-            echo "::error title=Mobile release gate::database-backed checks on the rebuilt full database did not succeed ($CONTENT_RESULT). A release is blocked until the full database rebuilt from repository sources matches both pinned fingerprints and every unit and Playwright test passes with none skipped."
-            exit 1
-          fi
-          echo "Release gate passed."
-
+          FULL_RESULT: ${{ needs.content-full.result }}
+        run: node mobile/scripts/ci/mobile-gate.mjs

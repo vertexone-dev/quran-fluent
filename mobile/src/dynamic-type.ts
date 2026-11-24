@@ -38,14 +38,31 @@ export function scaleFromBodyPx(px: number): number {
   return Math.round(Math.min(MAX_SCALE, Math.max(MIN_SCALE, raw)) * 100) / 100;
 }
 
+/**
+ * Styles a measuring probe one property at a time through the CSSOM.
+ *
+ * Do NOT assign `style.cssText` here: under the app's Content-Security-Policy (no
+ * 'unsafe-inline') WebKit blocks `cssText` like an inline style attribute, the probe then
+ * stays unstyled and the measured text scale is wrong, which broke the French Home layout
+ * on iOS (found in QR-RELEASE-002A by the iPhone SE smoke test; Chromium does not block
+ * it, so browser tests cannot see this). Single-property setters are allowed.
+ */
+function styleProbe(probe: HTMLElement, font: string): void {
+  const set = (k: string, v: string) => probe.style.setProperty(k, v);
+  set("position", "absolute");
+  set("visibility", "hidden");
+  set("pointer-events", "none");
+  set("white-space", "nowrap");
+  set("font", font);
+}
+
 /** Measures the current system text scale; 1 when Dynamic Type is not available. */
 export function measureSystemTextScale(doc: Document = document): number {
   const win = doc.defaultView;
   if (!win || !win.CSS || !win.CSS.supports("font", "-apple-system-body")) return 1;
   const probe = doc.createElement("span");
   probe.setAttribute("aria-hidden", "true");
-  probe.style.cssText =
-    "position:absolute;visibility:hidden;pointer-events:none;white-space:nowrap;font:-apple-system-body";
+  styleProbe(probe, "-apple-system-body");
   probe.textContent = "M";
   doc.body.appendChild(probe);
   const px = parseFloat(win.getComputedStyle(probe).fontSize);
@@ -65,8 +82,7 @@ export function measureTextZoom(doc: Document = document): number {
   if (!win) return 1;
   const probe = doc.createElement("span");
   probe.setAttribute("aria-hidden", "true");
-  probe.style.cssText =
-    "position:absolute;visibility:hidden;pointer-events:none;white-space:nowrap;font:16px sans-serif";
+  styleProbe(probe, "16px sans-serif");
   probe.textContent = "M";
   doc.body.appendChild(probe);
   const px = parseFloat(win.getComputedStyle(probe).fontSize);

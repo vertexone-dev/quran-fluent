@@ -37,7 +37,8 @@
         </provider>
     </application>
 
-    <!-- Permissions -->
-
-    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Permissions: none. The app is fully offline (bundled database, fonts and code; no
+         network request of its own, enforced by e2e/offline.spec.ts and the Content-Security-Policy).
+         The one external link opens in the system browser through an ACTION_VIEW intent,
+         which needs no permission. -->
 </manifest>
