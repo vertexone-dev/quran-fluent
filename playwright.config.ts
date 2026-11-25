@@ -108,6 +108,7 @@ export default defineConfig({
         "75-arabic-names-responsive-tabs.spec.ts",
         // QR-DESIGN-008A: the website CSP (header, nonces, no violations, blocks).
         "77-website-csp.spec.ts",
+        "80-button-interaction-states.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },
