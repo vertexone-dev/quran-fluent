@@ -7,6 +7,43 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ path: path.resolve(__dirname, ".env.test") });
 
+const PUBLIC_SPECS = [
+  "auth.spec.ts",
+  "security.spec.ts",
+  "16-curriculum-schema.spec.ts",
+  "53-auth-route-hydration.spec.ts",
+  "54-arabic-typography.spec.ts",
+  // Genuinely unauthenticated: src/routes/auth.tsx redirects a signed-
+  // in user away from /auth on mount, so checking that page's (and
+  // /reset-password's) title must run with no storageState -- the
+  // "authenticated" project's stored session raced that redirect
+  // against the title assertion (CI runs #114/#115). See this spec's
+  // own header comment for the full root-cause writeup.
+  "59-unauthenticated-page-titles.spec.ts",
+  // QR-INT-002: a signed-out visitor's language choice lives in
+  // localStorage, independent of auth -- same rationale as the spec
+  // just above.
+  "64-arabic-rtl.spec.ts",
+  // QR-INT-004: the public homepage's quick-links/theme/RTL/reduced-
+  // motion checks are all signed-out-only, same rationale again.
+  "66-homepage-nav.spec.ts",
+  // QR-INT-005: the /quran study tabs' ?tab= entry point is public too.
+  "69-quran-study-tab.spec.ts",
+  // QR-INT-005: the glass nav, language dropdown, search and bottom tab
+  // bar are all signed-out-visible, so this runs without a session.
+  "71-exact-navigation.spec.ts",
+  // QR-INT-007/008 (Milestone C): the Reader and the public
+  // /quran/understand page are exercised signed-out against route-
+  // intercepted, attributed test-only fixtures (tests/e2e/fixtures),
+  // so they need neither a session nor database content.
+  "72-milestone-c-reader.spec.ts",
+  "73-understand-page.spec.ts",
+  "75-arabic-names-responsive-tabs.spec.ts",
+  // QR-DESIGN-008A: the website CSP (header, nonces, no violations, blocks).
+  "77-website-csp.spec.ts",
+  "80-button-interaction-states.spec.ts",
+];
+
 const PORT = 4300;
 const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 const baseURL = externalBaseURL ?? `http://localhost:${PORT}`;
@@ -74,43 +111,16 @@ export default defineConfig({
     // spec's storageState depends on — is the last, uncontested sign-in.
     {
       name: "public",
-      testMatch: [
-        "auth.spec.ts",
-        "security.spec.ts",
-        "16-curriculum-schema.spec.ts",
-        "53-auth-route-hydration.spec.ts",
-        "54-arabic-typography.spec.ts",
-        // Genuinely unauthenticated: src/routes/auth.tsx redirects a signed-
-        // in user away from /auth on mount, so checking that page's (and
-        // /reset-password's) title must run with no storageState -- the
-        // "authenticated" project's stored session raced that redirect
-        // against the title assertion (CI runs #114/#115). See this spec's
-        // own header comment for the full root-cause writeup.
-        "59-unauthenticated-page-titles.spec.ts",
-        // QR-INT-002: a signed-out visitor's language choice lives in
-        // localStorage, independent of auth -- same rationale as the spec
-        // just above.
-        "64-arabic-rtl.spec.ts",
-        // QR-INT-004: the public homepage's quick-links/theme/RTL/reduced-
-        // motion checks are all signed-out-only, same rationale again.
-        "66-homepage-nav.spec.ts",
-        // QR-INT-005: the /quran study tabs' ?tab= entry point is public too.
-        "69-quran-study-tab.spec.ts",
-        // QR-INT-005: the glass nav, language dropdown, search and bottom tab
-        // bar are all signed-out-visible, so this runs without a session.
-        "71-exact-navigation.spec.ts",
-        // QR-INT-007/008 (Milestone C): the Reader and the public
-        // /quran/understand page are exercised signed-out against route-
-        // intercepted, attributed test-only fixtures (tests/e2e/fixtures),
-        // so they need neither a session nor database content.
-        "72-milestone-c-reader.spec.ts",
-        "73-understand-page.spec.ts",
-        "75-arabic-names-responsive-tabs.spec.ts",
-        // QR-DESIGN-008A: the website CSP (header, nonces, no violations, blocks).
-        "77-website-csp.spec.ts",
-        "80-button-interaction-states.spec.ts",
-      ],
+      testMatch: PUBLIC_SPECS,
       use: { ...devices["Desktop Chrome"] },
+    },
+    // QR-DESIGN-008B: the same signed-out specs on WebKit (Safari engine), which
+    // lays text and flex rows out differently from Chromium. Local run only: it
+    // does the same real logins as `public`, so "setup" waits for both.
+    {
+      name: "public-webkit",
+      testMatch: PUBLIC_SPECS,
+      use: { ...devices["Desktop Safari"] },
     },
     // QR-WEB-006: signed-out only, against the CSS-only-art dev server above.
     ...(externalBaseURL
@@ -122,7 +132,11 @@ export default defineConfig({
             use: { ...devices["Desktop Chrome"], baseURL: cssArtBaseURL },
           },
         ]),
-    { name: "setup", testMatch: /auth\.setup\.ts/, dependencies: ["public"] },
+    {
+      name: "setup",
+      testMatch: /auth\.setup\.ts/,
+      dependencies: ["public", "public-webkit"],
+    },
     // Only meaningful for a local run against the checkout-enabled server
     // above -- omitted entirely when targeting an external deployment (see
     // that server's own comment).
@@ -210,6 +224,19 @@ export default defineConfig({
       ],
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
+    },
+    // QR-DESIGN-008B: the signed-in screens this phase changed, on WebKit.
+    {
+      name: "authenticated-webkit",
+      testMatch: [
+        "57-settings.spec.ts",
+        "65-reflect.spec.ts",
+        "76-settings-display-preferences.spec.ts",
+        "78-settings-sidebar.spec.ts",
+        "79-memorize-ring.spec.ts",
+      ],
+      use: { ...devices["Desktop Safari"], storageState: "playwright/.auth/user.json" },
+      dependencies: ["authenticated"],
     },
     // See the checkoutEnabledBaseURL/CHECKOUT_ENABLED_PORT comment above --
     // the only project that runs against a server built with

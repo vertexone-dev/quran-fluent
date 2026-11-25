@@ -25,10 +25,13 @@ test.describe("button interaction states", () => {
   });
 
   test("keyboard focus shows a visible 2px ring", async ({ page }) => {
+    // A keypress first, so the browser treats the next focus as keyboard focus
+    // (:focus-visible). Focus is placed directly rather than by Tab, because Safari
+    // does not Tab to buttons by default and Tab order is not what is under test.
     await page.getByLabel("Email").focus();
-    await page.getByLabel("Password").focus();
-    await page.keyboard.press("Tab"); // moves to the Log in button
+    await page.keyboard.press("Shift");
     const button = login(page);
+    await button.focus();
     await expect(button).toBeFocused();
     const shadow = await button.evaluate((el) => getComputedStyle(el).boxShadow);
     expect(shadow).not.toBe("none");
