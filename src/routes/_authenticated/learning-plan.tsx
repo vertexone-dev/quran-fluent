@@ -92,7 +92,7 @@ function LearningPlan() {
 
   return (
     <main className="mx-auto w-full max-w-3xl px-4 py-10">
-      <h1 className="font-display text-3xl font-bold">{plan.title}</h1>
+      <h1 className="font-display text-3xl font-bold page-title">{plan.title}</h1>
       <p className="mt-2 text-muted-foreground">{plan.intro}</p>
 
       <Card className="mt-8 shadow-soft">

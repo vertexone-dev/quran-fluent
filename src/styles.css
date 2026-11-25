@@ -488,6 +488,41 @@
   border-width: 0 0 1.5px 1.5px;
 }
 
+/* QR-DESIGN-008A shared surfaces (Design Lock v1.0): the references' panels are
+   glass cards with a fine Antique Gold edge and a top-lit highlight. CSS only,
+   no artwork; colours stay on the theme tokens so contrast is unchanged
+   (the highlight is a 4% lift, the edge a 22% gold mix). */
+.card-surface {
+  border-color: color-mix(in oklab, var(--gold) 24%, var(--border));
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, white 5%, transparent),
+    transparent 42%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 7%, transparent),
+    0 12px 32px -18px oklch(0 0 0 / 0.55);
+}
+
+/* Page titles: the short Antique Gold rule the Understand page already carries
+   (SectionHeading), now shared by the signed-in pages. Mirrors under rtl. */
+.page-title::after {
+  content: "";
+  display: block;
+  margin-top: 0.75rem;
+  height: 1px;
+  width: 6rem;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+[dir="rtl"] .page-title::after {
+  background: linear-gradient(270deg, var(--gold), transparent);
+}
+.text-center .page-title::after,
+.page-title.text-center::after {
+  margin-inline: auto;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
 /* QR-INT-005 navigation: the Emergent floating glass bar. Theme-independent
    dark Midnight Teal glass (literal oklch, like the hero/dashboard banners)
    so the bar reads the same over the cinematic hero and over light-theme
