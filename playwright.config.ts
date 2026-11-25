@@ -238,6 +238,9 @@ export default defineConfig({
         {
           command: `npm run dev -- --port ${PORT} --strictPort`,
           url: baseURL,
+          // The website CSP defaults to report-only (fail-safe); the suite must
+          // test the policy that will be enforced. See docs/WEBSITE-CSP.md.
+          env: { CSP_MODE: "enforce" },
           reuseExistingServer: !process.env.CI,
           timeout: 60_000,
           stdout: "pipe",
@@ -245,7 +248,7 @@ export default defineConfig({
         {
           command: `npm run dev -- --port ${CSS_ART_PORT} --strictPort`,
           url: cssArtBaseURL,
-          env: { VITE_ART_MODE: "css" },
+          env: { VITE_ART_MODE: "css", CSP_MODE: "enforce" },
           reuseExistingServer: !process.env.CI,
           timeout: 60_000,
           stdout: "pipe",
@@ -256,7 +259,7 @@ export default defineConfig({
           // Additive on top of this process's own env -- everything else
           // (Supabase URL/keys, etc.) is identical to the main server
           // above; only the checkout flag differs.
-          env: { VITE_BILLING_CHECKOUT_ENABLED: "true" },
+          env: { VITE_BILLING_CHECKOUT_ENABLED: "true", CSP_MODE: "enforce" },
           reuseExistingServer: !process.env.CI,
           timeout: 60_000,
           stdout: "pipe",

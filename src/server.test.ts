@@ -78,20 +78,35 @@ describe("withSecurityHeaders", () => {
 });
 
 describe("withContentSecurityPolicy", () => {
-  test("sets the enforcing header and replaces any pre-existing CSP", () => {
+  test("enforce sets the enforcing header and replaces any pre-existing CSP", () => {
     const original = new Response("x", {
-      headers: { "content-security-policy": "default-src *", "content-type": "text/html" },
+      headers: {
+        "content-security-policy": "default-src *",
+        "content-security-policy-report-only": "default-src *",
+        "content-type": "text/html",
+      },
     });
-    const response = withContentSecurityPolicy(original, "default-src 'none'");
+    const response = withContentSecurityPolicy(original, "default-src 'none'", "enforce");
     expect(response.headers.get("content-security-policy")).toBe("default-src 'none'");
     expect(response.headers.get("content-security-policy-report-only")).toBeNull();
     expect(response.headers.get("content-type")).toBe("text/html");
   });
 
-  test("report-only mode sets only the report-only header", () => {
-    const response = withContentSecurityPolicy(new Response("x"), "default-src 'none'", true);
+  test("report-only sets only the report-only header", () => {
+    const response = withContentSecurityPolicy(
+      new Response("x"),
+      "default-src 'none'",
+      "report-only",
+    );
     expect(response.headers.get("content-security-policy")).toBeNull();
     expect(response.headers.get("content-security-policy-report-only")).toBe("default-src 'none'");
+  });
+
+  test("off sets neither header and removes any the response carried", () => {
+    const original = new Response("x", { headers: { "content-security-policy": "default-src *" } });
+    const response = withContentSecurityPolicy(original, "default-src 'none'", "off");
+    expect(response.headers.get("content-security-policy")).toBeNull();
+    expect(response.headers.get("content-security-policy-report-only")).toBeNull();
   });
 
   test("keeps status and does not consume the body", async () => {

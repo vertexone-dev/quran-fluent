@@ -8,6 +8,7 @@ import {
   SONNER_STYLE_HASH,
   buildCsp,
   generateNonce,
+  parseCspMode,
   supabaseOrigin,
 } from "./csp";
 
@@ -137,5 +138,19 @@ describe("Sonner stylesheet hash", () => {
       v.includes("sha256-"),
     );
     expect(hashes).toEqual([`'${SONNER_STYLE_HASH}'`, `'${EMPTY_STYLE_HASH}'`]);
+  });
+});
+
+describe("parseCspMode (fail-safe)", () => {
+  test("enforcement and off must be asked for explicitly", () => {
+    expect(parseCspMode("enforce")).toBe("enforce");
+    expect(parseCspMode(" ENFORCE ")).toBe("enforce");
+    expect(parseCspMode("off")).toBe("off");
+  });
+
+  test("missing, empty, mistyped or unknown values mean report-only, never enforce", () => {
+    for (const v of [undefined, "", " ", "report-only", "enforced", "true", "1", "on", "enable"]) {
+      expect(parseCspMode(v), String(v)).toBe("report-only");
+    }
   });
 });

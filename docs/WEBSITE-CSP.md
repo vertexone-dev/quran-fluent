@@ -1,7 +1,7 @@
 # Website Content-Security-Policy
 
-Status: implemented on local branch `feat/qr-web-csp`. **Not deployed, not pushed.** Deploying it is a
-production change that needs the owner's approval (see "Rollout").
+Status: implemented on branch `feat/qr-web-csp`. **Not deployed.** Deploying it is a production change that needs
+the owner's approval (see "Delivery mode, rollout and rollback"). The default mode is report-only.
 
 The policy is built per request in `src/lib/csp.ts` and applied in the Worker's single response funnel
 (`src/server.ts`), next to the four existing security headers. It is not in `public/_headers`: the policy
@@ -59,11 +59,41 @@ anything but images.
 - Stripe Checkout end to end (needs live keys and the checkout flag).
 - Browsers other than Chromium.
 
-## Rollout and rollback
+## Delivery mode, rollout and rollback
 
-1. Deploy with `CSP_REPORT_ONLY=true` (a Worker variable). The header becomes `Content-Security-Policy-Report-Only`: violations are logged in the browser console but nothing is blocked.
-2. Browse the real site (all three reciters, sign-in, billing page, Arabic), look for violations, fix, then remove the variable to enforce.
-3. Rollback: set `CSP_REPORT_ONLY=true` again (no redeploy of code), or revert the commit.
+The `CSP_MODE` Worker variable decides how the policy is delivered (`src/lib/csp.ts`, `parseCspMode`):
+
+| `CSP_MODE`                            | Header sent                           | Effect                                                             |
+| ------------------------------------- | ------------------------------------- | ------------------------------------------------------------------ |
+| unset, empty, mistyped, anything else | `Content-Security-Policy-Report-Only` | **Default and fail-safe.** Browsers log violations, block nothing. |
+| `enforce`                             | `Content-Security-Policy`             | Enforced. Must be chosen explicitly.                               |
+| `off`                                 | none                                  | Rollback switch: no CSP, other security headers unchanged.         |
+
+Because the default never blocks, merging or deploying this code cannot break the site by itself. Enforcement
+needs a deliberate variable change. Unit tests pin this (`parseCspMode`: "enforced", "true", "1", "on" and every
+other value are report-only).
+
+Suggested rollout (each step is a variable change, no code deploy, and needs the owner's approval):
+
+1. Deploy the code with `CSP_MODE` unset (report-only). Nothing is blocked.
+2. Browse the real site with the browser console open: all three reciters, sign-in and sign-out, the billing page,
+   Arabic and French, a toast, the 404 page. Any `Content-Security-Policy-Report-Only` violation message is a source
+   the policy is missing. Check the Cloudflare dashboard for injected features (Web Analytics beacon, Rocket Loader,
+   email obfuscation), which this policy would block.
+3. Fix and repeat until a full pass is silent. Set `CSP_MODE=enforce`.
+4. Re-run the same pass, then `npm run test:e2e -- --project=public` against the deployment
+   (`PLAYWRIGHT_BASE_URL`); `tests/e2e/77-website-csp.spec.ts` checks the policy shape in either mode and the blocking
+   behaviour when enforcing, and says so when it skips.
+
+Rollback, fastest first: set `CSP_MODE=off` (or back to unset for report-only), which takes effect on the next request;
+or revert the commit.
+
+Limit: report-only mode has **no collection endpoint**. Violations are visible only in a browser's console, so step 2 is
+manual. A `report-to` endpoint would let real visitors' violations be collected, but it needs a server endpoint and
+somewhere to store reports (a design and privacy decision), so it is not part of this change.
+
+The local Playwright servers are started with `CSP_MODE=enforce` (`playwright.config.ts`), so the suite tests the
+policy that will be enforced.
 
 ## Related items still open
 

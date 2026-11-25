@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
 
 // QR-DESIGN-008A: the website's Content-Security-Policy (src/lib/csp.ts,
 // applied per request in src/server.ts). Signed-out and network-independent:
@@ -22,14 +22,27 @@ async function trackViolations(page: Page) {
   });
 }
 
+// CSP_MODE defaults to report-only (fail-safe), so a deployed target may carry
+// the policy in either header. Policy-shape checks accept both; tests that need
+// the browser to actually BLOCK something are skipped (and say so) unless the
+// target enforces. Local runs start their servers with CSP_MODE=enforce.
+async function policyOf(request: APIRequestContext, route = "/") {
+  const response = await request.get(route);
+  const headers = response.headers();
+  const enforcing = headers["content-security-policy"];
+  const reportOnly = headers["content-security-policy-report-only"];
+  return { response, csp: enforcing ?? reportOnly, enforcing: enforcing !== undefined };
+}
+
 const violations = (page: Page) =>
   page.evaluate(() => (window as unknown as { __csp: string[] }).__csp);
 
 test.describe("website Content-Security-Policy", () => {
-  test("every document response carries an enforcing, nonce-based policy", async ({ request }) => {
+  test("every document response carries a nonce-based policy in exactly one CSP header", async ({
+    request,
+  }) => {
     for (const route of ROUTES) {
-      const response = await request.get(route);
-      const csp = response.headers()["content-security-policy"];
+      const { response, csp } = await policyOf(request, route);
       expect(csp, `${route} has no Content-Security-Policy`).toBeTruthy();
       expect(csp).toMatch(/script-src 'self' 'nonce-[A-Za-z0-9+/]{22}=='/);
       expect(csp).toContain("default-src 'none'");
@@ -40,8 +53,11 @@ test.describe("website Content-Security-Policy", () => {
       expect(csp).not.toMatch(/https?:\/\/\*|\s\*[\s;]|\s\*$/);
       const scriptSrc = csp.split("; ").find((d) => d.startsWith("script-src "))!;
       expect(scriptSrc).not.toContain("unsafe-inline");
-      // the report-only header must not be left in place of the enforcing one
-      expect(response.headers()["content-security-policy-report-only"]).toBeUndefined();
+      // never both headers at once
+      const h = response.headers();
+      expect(
+        Number("content-security-policy" in h) + Number("content-security-policy-report-only" in h),
+      ).toBe(1);
     }
   });
 
@@ -50,7 +66,9 @@ test.describe("website Content-Security-Policy", () => {
   }) => {
     const nonceOf = async (headers?: Record<string, string>) => {
       const r = await request.get("/", headers ? { headers } : {});
-      return /nonce-([^']+)'/.exec(r.headers()["content-security-policy"]!)![1]!;
+      const h = r.headers();
+      const csp = h["content-security-policy"] ?? h["content-security-policy-report-only"]!;
+      return /nonce-([^']+)'/.exec(csp)![1]!;
     };
     const a = await nonceOf();
     const b = await nonceOf();
@@ -60,8 +78,8 @@ test.describe("website Content-Security-Policy", () => {
   });
 
   test("every inline script in the HTML carries the request's nonce", async ({ request }) => {
-    const response = await request.get("/");
-    const nonce = /nonce-([^']+)'/.exec(response.headers()["content-security-policy"]!)![1]!;
+    const { response, csp } = await policyOf(request);
+    const nonce = /nonce-([^']+)'/.exec(csp!)![1]!;
     const html = await response.text();
     const scripts = [...html.matchAll(/<script\b([^>]*)>/g)].map((m) => m[1]!);
     expect(scripts.length).toBeGreaterThan(0);
@@ -91,7 +109,9 @@ test.describe("website Content-Security-Policy", () => {
 
   test("blocks an injected inline script, an inline handler and a foreign script", async ({
     page,
+    request,
   }) => {
+    test.skip(!(await policyOf(request)).enforcing, "target is not enforcing (CSP_MODE)");
     await trackViolations(page);
     await page.goto("/");
     await page.waitForLoadState("networkidle");
@@ -115,7 +135,9 @@ test.describe("website Content-Security-Policy", () => {
 
   test("blocks connections, images, frames and media to hosts that are not allowed", async ({
     page,
+    request,
   }) => {
+    test.skip(!(await policyOf(request)).enforcing, "target is not enforcing (CSP_MODE)");
     await trackViolations(page);
     await page.goto("/");
     await page.waitForLoadState("networkidle");
@@ -138,7 +160,7 @@ test.describe("website Content-Security-Policy", () => {
   test("allows the audio hosts and the Quran API the application uses (policy check)", async ({
     request,
   }) => {
-    const csp = (await request.get("/")).headers()["content-security-policy"]!;
+    const csp = (await policyOf(request)).csp!;
     const directive = (name: string) =>
       csp
         .split("; ")

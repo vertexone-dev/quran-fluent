@@ -3,7 +3,7 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { handleBillingApiRequest, isBillingApiRequest } from "./lib/billing/router";
-import { buildCsp, generateNonce } from "./lib/csp";
+import { buildCsp, generateNonce, parseCspMode, type CspMode } from "./lib/csp";
 import { runWithNonce } from "./lib/request-nonce.server";
 
 type ServerEntry = {
@@ -47,21 +47,20 @@ export function withSecurityHeaders(response: Response): Response {
   });
 }
 
-/** Adds the per-request CSP. `reportOnly` (CSP_REPORT_ONLY=true) is a staging aid:
- * the browser logs violations but blocks nothing. Overwrites any CSP the
- * wrapped response already carried. Never consumes `response.body`. */
+/** Applies the per-request CSP in the given mode (see parseCspMode): `enforce`
+ * sets Content-Security-Policy, `report-only` sets the report-only header (the
+ * browser logs violations, blocks nothing), `off` sets neither. Any CSP the
+ * wrapped response already carried is replaced. Never consumes `response.body`. */
 export function withContentSecurityPolicy(
   response: Response,
   policy: string,
-  reportOnly = false,
+  mode: CspMode = "enforce",
 ): Response {
   const headers = new Headers(response.headers);
   headers.delete("content-security-policy");
   headers.delete("content-security-policy-report-only");
-  headers.set(
-    reportOnly ? "Content-Security-Policy-Report-Only" : "Content-Security-Policy",
-    policy,
-  );
+  if (mode === "enforce") headers.set("Content-Security-Policy", policy);
+  else if (mode === "report-only") headers.set("Content-Security-Policy-Report-Only", policy);
   return new Response(response.body, {
     status: response.status,
     statusText: response.statusText,
@@ -161,6 +160,6 @@ async function handle(request: Request, env: unknown, ctx: unknown, nonce: strin
   return withContentSecurityPolicy(
     withSecurityHeaders(response),
     policy,
-    process.env["CSP_REPORT_ONLY"] === "true",
+    parseCspMode(process.env["CSP_MODE"]),
   );
 }

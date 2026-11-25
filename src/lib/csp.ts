@@ -118,3 +118,22 @@ export function generateNonce(): string {
 
 /** Request header the Worker uses to hand the nonce to the SSR pipeline. */
 export const NONCE_HEADER = "x-qr-csp-nonce";
+
+/**
+ * How the policy is delivered, from the `CSP_MODE` Worker variable.
+ *
+ * - `report-only` (the default, and what any missing or unrecognised value
+ *   means): the browser reports violations but blocks nothing. Fail-safe: a
+ *   deployment that forgets to set the variable, or mistypes it, can never
+ *   break the site.
+ * - `enforce`: the policy is enforced. Must be chosen explicitly.
+ * - `off`: no CSP header at all. The rollback switch (a variable change, no code
+ *   deploy).
+ */
+export type CspMode = "enforce" | "report-only" | "off";
+
+export function parseCspMode(value: string | undefined): CspMode {
+  const v = value?.trim().toLowerCase();
+  if (v === "enforce" || v === "off") return v;
+  return "report-only";
+}
