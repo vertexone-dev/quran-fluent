@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { type MouseEvent as ReactMouseEvent, type ReactNode, useRef, useState } from "react";
 import { motion, MotionConfig, useReducedMotion, useScroll, useTransform } from "framer-motion";
@@ -27,6 +27,7 @@ import { useAuth } from "@/lib/auth";
 import { fetchBookmarks } from "@/lib/bookmarks";
 import { fetchSurahs, surahName } from "@/lib/quran";
 import { isRtlLocale, useI18n } from "@/lib/i18n";
+import { usePreferences, useStartScreenRedirect } from "@/lib/preferences-context";
 import { useDocumentTitle } from "@/lib/use-document-title";
 import { heroArt } from "@/design/artwork";
 import { CssArtBackdrop } from "@/design/CssArtBackdrop";
@@ -538,9 +539,12 @@ function Home() {
   const reduce = useReducedMotion() ?? false;
   const { ripples: footerRipples, onClick: onFooterCtaClick } = useCtaRipple();
   useDocumentTitle(home.hero.documentTitle);
+  const navigate = useNavigate();
+  useStartScreenRedirect((to) => void navigate({ to }));
+  const { prefs } = usePreferences();
 
   return (
-    <MotionConfig reducedMotion="user">
+    <MotionConfig reducedMotion={prefs.reduceMotion ? "always" : "user"}>
       <div className="flex min-h-screen flex-col">
         <SiteHeader variant="overlay" />
 
