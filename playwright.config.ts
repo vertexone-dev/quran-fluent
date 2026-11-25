@@ -106,6 +106,8 @@ export default defineConfig({
         "72-milestone-c-reader.spec.ts",
         "73-understand-page.spec.ts",
         "75-arabic-names-responsive-tabs.spec.ts",
+        // QR-DESIGN-008A: the website CSP (header, nonces, no violations, blocks).
+        "77-website-csp.spec.ts",
       ],
       use: { ...devices["Desktop Chrome"] },
     },

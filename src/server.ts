@@ -3,6 +3,8 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 import { handleBillingApiRequest, isBillingApiRequest } from "./lib/billing/router";
+import { buildCsp, generateNonce } from "./lib/csp";
+import { runWithNonce } from "./lib/request-nonce.server";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -45,6 +47,35 @@ export function withSecurityHeaders(response: Response): Response {
   });
 }
 
+/** Adds the per-request CSP. `reportOnly` (CSP_REPORT_ONLY=true) is a staging aid:
+ * the browser logs violations but blocks nothing. Overwrites any CSP the
+ * wrapped response already carried. Never consumes `response.body`. */
+export function withContentSecurityPolicy(
+  response: Response,
+  policy: string,
+  reportOnly = false,
+): Response {
+  const headers = new Headers(response.headers);
+  headers.delete("content-security-policy");
+  headers.delete("content-security-policy-report-only");
+  headers.set(
+    reportOnly ? "Content-Security-Policy-Report-Only" : "Content-Security-Policy",
+    policy,
+  );
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
+/** Both the runtime and the build-time Supabase URL, so the policy matches
+ * whichever the client bundle was built against. */
+function supabaseUrls(): string[] {
+  const urls = [process.env["SUPABASE_URL"], import.meta.env["VITE_SUPABASE_URL"]];
+  return urls.filter((u): u is string => typeof u === "string" && u.length > 0);
+}
+
 let serverEntryPromise: Promise<ServerEntry> | undefined;
 
 async function getServerEntry(): Promise<ServerEntry> {
@@ -83,34 +114,53 @@ function isH3SwallowedErrorBody(body: string): boolean {
 }
 
 export default {
-  async fetch(request: Request, env: unknown, ctx: unknown) {
-    let response: Response;
-    try {
-      // Billing endpoints are plain HTTP handlers (see
-      // src/lib/billing/router.ts for why this exact TanStack Start
-      // version needs them handled here rather than as file-based routes),
-      // intercepted before the SSR pipeline ever sees them -- in
-      // particular, POST /api/billing/webhook needs its raw, unparsed
-      // request body for Stripe signature verification, which nothing
-      // downstream of this point would preserve.
-      const { pathname } = new URL(request.url);
-      if (isBillingApiRequest(pathname)) {
-        response = await handleBillingApiRequest(request);
-      } else {
-        const handler = await getServerEntry();
-        const raw = await handler.fetch(request, env, ctx);
-        response = await normalizeCatastrophicSsrResponse(raw);
-      }
-    } catch (error) {
-      console.error(error);
-      response = new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
-    }
-    // Single funnel: every response this handler can produce -- success,
-    // normalized-catastrophic, or hard-caught -- gets the security headers
-    // exactly once, right before it leaves the Worker.
-    return withSecurityHeaders(response);
+  async fetch(incoming: Request, env: unknown, ctx: unknown) {
+    // A fresh nonce per request, scoped to this request's async chain for the
+    // SSR pipeline (src/router.tsx reads it). A client can never choose it.
+    const nonce = generateNonce();
+    return runWithNonce(nonce, () => handle(incoming, env, ctx, nonce));
   },
 };
+
+async function handle(request: Request, env: unknown, ctx: unknown, nonce: string) {
+  let response: Response;
+  try {
+    // Billing endpoints are plain HTTP handlers (see
+    // src/lib/billing/router.ts for why this exact TanStack Start
+    // version needs them handled here rather than as file-based routes),
+    // intercepted before the SSR pipeline ever sees them -- in
+    // particular, POST /api/billing/webhook needs its raw, unparsed
+    // request body for Stripe signature verification, which nothing
+    // downstream of this point would preserve.
+    const { pathname } = new URL(request.url);
+    if (isBillingApiRequest(pathname)) {
+      response = await handleBillingApiRequest(request);
+    } else {
+      const handler = await getServerEntry();
+      const raw = await handler.fetch(request, env, ctx);
+      response = await normalizeCatastrophicSsrResponse(raw);
+    }
+  } catch (error) {
+    console.error(error);
+    response = new Response(renderErrorPage(), {
+      status: 500,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  }
+  // Single funnel: every response this handler can produce -- success,
+  // normalized-catastrophic, or hard-caught -- gets the security headers
+  // exactly once, right before it leaves the Worker.
+  const [primary, ...extra] = supabaseUrls();
+  const policy = buildCsp({
+    nonce,
+    supabaseUrl: primary,
+    extraSupabaseUrls: extra,
+    upgradeInsecure: new URL(request.url).protocol === "https:",
+    dev: import.meta.env.DEV,
+  });
+  return withContentSecurityPolicy(
+    withSecurityHeaders(response),
+    policy,
+    process.env["CSP_REPORT_ONLY"] === "true",
+  );
+}
