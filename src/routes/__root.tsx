@@ -144,10 +144,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem("quranroots-theme");var dark=s==="dark"||s===null||(s==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",dark);}catch(e){}})();`;
 
 function RootShell({ children }: { children: ReactNode }) {
+  // CSP nonce for this request (set by the Worker, see src/server.ts).
+  // TanStack's HeadContent emits <meta property="csp-nonce"> from it, which
+  // the client router reads back for scripts it adds later.
+  const nonce = useRouter().options.ssr?.nonce;
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
         <HeadContent />
       </head>
       <body>

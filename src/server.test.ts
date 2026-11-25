@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 
-import { withSecurityHeaders } from "./server";
+import { withContentSecurityPolicy, withSecurityHeaders } from "./server";
 
 // withSecurityHeaders is the single funnel every response the Worker's
 // fetch handler can produce (success, normalized-catastrophic-SSR-error,
@@ -71,8 +71,47 @@ describe("withSecurityHeaders", () => {
     expect(response.headers.get("x-frame-options")).toBe("DENY");
   });
 
-  test("does not add a Content-Security-Policy header", () => {
+  test("withSecurityHeaders alone does not add a CSP (that is withContentSecurityPolicy)", () => {
     const response = withSecurityHeaders(new Response("<html></html>"));
     expect(response.headers.get("content-security-policy")).toBeNull();
+  });
+});
+
+describe("withContentSecurityPolicy", () => {
+  test("enforce sets the enforcing header and replaces any pre-existing CSP", () => {
+    const original = new Response("x", {
+      headers: {
+        "content-security-policy": "default-src *",
+        "content-security-policy-report-only": "default-src *",
+        "content-type": "text/html",
+      },
+    });
+    const response = withContentSecurityPolicy(original, "default-src 'none'", "enforce");
+    expect(response.headers.get("content-security-policy")).toBe("default-src 'none'");
+    expect(response.headers.get("content-security-policy-report-only")).toBeNull();
+    expect(response.headers.get("content-type")).toBe("text/html");
+  });
+
+  test("report-only sets only the report-only header", () => {
+    const response = withContentSecurityPolicy(
+      new Response("x"),
+      "default-src 'none'",
+      "report-only",
+    );
+    expect(response.headers.get("content-security-policy")).toBeNull();
+    expect(response.headers.get("content-security-policy-report-only")).toBe("default-src 'none'");
+  });
+
+  test("off sets neither header and removes any the response carried", () => {
+    const original = new Response("x", { headers: { "content-security-policy": "default-src *" } });
+    const response = withContentSecurityPolicy(original, "default-src 'none'", "off");
+    expect(response.headers.get("content-security-policy")).toBeNull();
+    expect(response.headers.get("content-security-policy-report-only")).toBeNull();
+  });
+
+  test("keeps status and does not consume the body", async () => {
+    const response = withContentSecurityPolicy(new Response("body", { status: 404 }), "x");
+    expect(response.status).toBe(404);
+    expect(await response.text()).toBe("body");
   });
 });
