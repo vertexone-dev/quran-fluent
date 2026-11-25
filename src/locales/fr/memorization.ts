@@ -23,6 +23,21 @@ export const memorization: typeof EnMemorization = {
     ayahCount: "{memorized} / {total} mémorisés",
     startSurah: "Commencer cette sourate",
   },
+  ring: {
+    title: "Progression de la mémorisation",
+    surahLine: "{surah}",
+    memorizedSummary: "{memorized} versets mémorisés sur {total}",
+    legendMemorized: "Mémorisés",
+    legendLearning: "En cours",
+    legendRevision: "À réviser",
+    legendRemaining: "Non commencés",
+    aria: "{surah} : {memorized} versets mémorisés sur {total}, {learning} en cours, {due} à réviser.",
+    empty:
+      "Votre progression apparaîtra ici dès que vous commencerez une sourate. Rien n’est estimé ni prérempli.",
+    emptyAria: "Aucune progression de mémorisation pour l’instant.",
+    howTitle: "Comment c’est calculé",
+    how: "« Mémorisés » et « En cours » comptent les versets que vous marquez dans une sourate. Le pourcentage est le nombre de versets mémorisés divisé par le nombre de versets de la sourate. « À réviser » compte vos révisions programmées pour cette sourate, dues aujourd’hui ou plus tôt ; ce nombre recoupe les autres états, il n’est donc pas dessiné sur l’anneau.",
+  },
   selector: {
     label: "Choisir une sourate",
     ayahRange: "Versets {from}–{to}",

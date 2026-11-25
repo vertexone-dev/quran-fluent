@@ -5,6 +5,14 @@ export const reflect = {
   defaultQuestion: "How does this verse speak to my life today?",
   prompts: [
     {
+      label: "What I learned",
+      question: "What did you learn or notice in this ayah today?",
+    },
+    {
+      label: "How I may apply it",
+      question: "How might you apply what you learned in your own life?",
+    },
+    {
       label: "Gratitude",
       question: "What blessing does this ayah remind you to be grateful for?",
     },
@@ -22,6 +30,11 @@ export const reflect = {
     },
   ],
   promptsLabel: "Reflection prompts",
+  ayahSectionLabel: "From the Qur'an",
+  promptEyebrow: "Reflection prompt · not part of the Qur'an",
+  promptsNote: "Prompts are questions to start from. They are not interpretations or rulings.",
+  yourReflectionLabel: "Your reflection",
+  privacyNote: "Private to your account. Your reflections are not shared or shown to other users.",
   placeholder: "Write your reflection…",
   save: "Save reflection",
   saved: "Reflection saved",

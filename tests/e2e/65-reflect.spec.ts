@@ -52,12 +52,56 @@ test.describe("reflect", () => {
     await expect(question).toHaveText("How does this verse speak to my life today?");
 
     await page.getByTestId("reflection-prompt-0").click();
+    await expect(question).toHaveText("What did you learn or notice in this ayah today?");
+
+    await page.getByTestId("reflection-prompt-1").click();
+    await expect(question).toHaveText("How might you apply what you learned in your own life?");
+
+    // A topical prompt that predates the learn/apply pair still works.
+    await page.getByTestId("reflection-prompt-2").click();
     await expect(question).toHaveText(
       "What blessing does this ayah remind you to be grateful for?",
     );
 
-    await page.getByTestId("reflection-prompt-0").click();
+    await page.getByTestId("reflection-prompt-2").click();
     await expect(question).toHaveText("How does this verse speak to my life today?");
+  });
+
+  test("the Qur'an, the prompt and the reader's own words are separate, labelled regions", async ({
+    page,
+  }) => {
+    await page.goto(`/reflect?surah=${TEST_SURAH}&ayah=${TEST_AYAH}`);
+    const ayah = page.getByTestId("reflection-ayah-section");
+    const prompt = page.getByTestId("reflection-prompt-section");
+    await expect(ayah).toBeVisible();
+    await expect(ayah).toContainText("From the Qur'an");
+    await expect(ayah.locator('[lang="ar"]')).toHaveCount(1);
+    // The prompt block is labelled as not part of the Qur'an and holds no Arabic text.
+    await expect(prompt).toContainText("not part of the Qur'an");
+    await expect(prompt.locator('[lang="ar"]')).toHaveCount(0);
+    // The question and the textarea are outside the Qur'an region.
+    await expect(ayah.getByTestId("reflection-question")).toHaveCount(0);
+    await expect(ayah.getByTestId("reflection-textarea")).toHaveCount(0);
+    await expect(page.getByTestId("reflection-prompts-note")).toContainText("not interpretations");
+    await expect(page.getByTestId("reflection-privacy")).toContainText("Private to your account");
+    // The privacy note is tied to the textarea for screen readers.
+    await expect(page.getByTestId("reflection-textarea")).toHaveAttribute(
+      "aria-describedby",
+      "reflection-privacy",
+    );
+  });
+
+  test("the reflection structure renders in French and Arabic", async ({ page }) => {
+    for (const [lang, quranLabel, notQuran] of [
+      ["fr", "Du Coran", "ne fait pas partie du Coran"],
+      ["ar", "من القرآن", "ليس من القرآن"],
+    ] as const) {
+      await page.addInitScript((l) => localStorage.setItem("quranroots-lang", l), lang);
+      await page.goto(`/reflect?surah=${TEST_SURAH}&ayah=${TEST_AYAH}`);
+      await expect(page.getByTestId("reflection-ayah-section")).toContainText(quranLabel);
+      await expect(page.getByTestId("reflection-prompt-section")).toContainText(notQuran);
+      await expect(page.getByTestId("reflection-privacy")).not.toBeEmpty();
+    }
   });
 
   test("saving a reflection persists it via the real notes service, and it shows up on /notes too", async ({

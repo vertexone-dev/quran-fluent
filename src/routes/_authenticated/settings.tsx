@@ -1,5 +1,7 @@
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 
+import { SettingsNav } from "@/components/settings/SettingsNav";
+
 /**
  * Layout route for /settings and its children (currently /settings/billing).
  *
@@ -28,6 +30,15 @@ export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsLayout,
 });
 
+/** QR-DESIGN-008B: section sidebar beside the page (above it on phones). The
+ * child pages keep their own <main>; this only supplies the container. */
 function SettingsLayout() {
-  return <Outlet />;
+  return (
+    <div className="mx-auto w-full max-w-5xl px-4 py-10 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-8">
+      <SettingsNav />
+      <div className="min-w-0">
+        <Outlet />
+      </div>
+    </div>
+  );
 }

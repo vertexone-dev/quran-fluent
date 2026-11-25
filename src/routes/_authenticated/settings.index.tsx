@@ -190,7 +190,7 @@ function Settings() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-4 py-10">
+      <main className="w-full max-w-3xl">
         <Skeleton className="h-96 w-full" />
       </main>
     );
@@ -202,7 +202,7 @@ function Settings() {
   // saved preferences, one Save click away from overwriting them.
   if (isError) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-4 py-10">
+      <main className="w-full max-w-3xl">
         <Card className="shadow-soft">
           <CardContent className="space-y-3 py-10 text-center">
             <p className="text-muted-foreground">{t("learning.settings.error.title")}</p>
@@ -216,11 +216,16 @@ function Settings() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10">
+    <main className="w-full max-w-3xl">
       <h1 className="font-display text-3xl font-bold page-title">{t("learning.settings.title")}</h1>
 
       <div className="mt-8 space-y-6">
-        <Card id="profile" className="shadow-soft scroll-mt-28" data-testid="settings-profile-card">
+        <Card
+          id="profile"
+          tabIndex={-1}
+          className="shadow-soft scroll-mt-28 outline-none"
+          data-testid="settings-profile-card"
+        >
           <CardHeader>
             <CardTitle className="text-base">{t("learning.settings.profile")}</CardTitle>
             <CardDescription>{user?.email}</CardDescription>
@@ -253,7 +258,7 @@ function Settings() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft">
+        <Card id="learning-display" tabIndex={-1} className="shadow-soft scroll-mt-28 outline-none">
           <CardHeader>
             <CardTitle className="text-base">{t("learning.settings.quranDisplay")}</CardTitle>
           </CardHeader>
@@ -326,7 +331,12 @@ function Settings() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft" data-testid="settings-appearance-card">
+        <Card
+          id="appearance"
+          tabIndex={-1}
+          className="shadow-soft scroll-mt-28 outline-none"
+          data-testid="settings-appearance-card"
+        >
           <CardHeader>
             <CardTitle className="text-base">{t("learning.settings.appearance")}</CardTitle>
             <CardDescription>{t("learning.settings.deviceOnly")}</CardDescription>
@@ -415,7 +425,12 @@ function Settings() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft" data-testid="settings-preferences-card">
+        <Card
+          id="display-preferences"
+          tabIndex={-1}
+          className="shadow-soft scroll-mt-28 outline-none"
+          data-testid="settings-preferences-card"
+        >
           <CardHeader>
             <CardTitle className="text-base">{t("learning.settings.preferencesTitle")}</CardTitle>
             <CardDescription>{t("learning.settings.preferencesDesc")}</CardDescription>
@@ -473,7 +488,7 @@ function Settings() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-soft">
+        <Card id="account" tabIndex={-1} className="shadow-soft scroll-mt-28 outline-none">
           <CardHeader>
             <CardTitle className="text-base">{t("learning.settings.security")}</CardTitle>
             <CardDescription>{t("learning.settings.securityDesc")}</CardDescription>

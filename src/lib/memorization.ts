@@ -210,6 +210,24 @@ export async function fetchDueMemorizationReviews(
   });
 }
 
+/** Review items for one Surah's ayahs that are due today or earlier (the "revision due" count). */
+export async function countDueReviewsForSurah(
+  userId: string,
+  surahNumber: number,
+): Promise<number> {
+  const today = localDate();
+  const { count, error } = await supabase
+    .from("review_items")
+    .select("*", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("item_type", "ayah")
+    .like("item_key", `ayah:${surahNumber}:%`)
+    .lte("due_date", today)
+    .neq("status", "suspended");
+  if (error) throw error;
+  return count ?? 0;
+}
+
 export async function countDueMemorizationReviews(userId: string): Promise<number> {
   const today = localDate();
   const { count, error } = await supabase

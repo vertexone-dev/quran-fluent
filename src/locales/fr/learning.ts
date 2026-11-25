@@ -136,6 +136,7 @@ export const learning: typeof EnLearning = {
   settings: {
     title: "Paramètres",
     profile: "Profil",
+    navLabel: "Sections des paramètres",
     firstName: "Prénom",
     interfaceLanguage: "Langue de l'interface",
     languageHint:

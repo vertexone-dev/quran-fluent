@@ -114,6 +114,7 @@ export const learning = {
   settings: {
     title: "الإعدادات",
     profile: "الملف الشخصي",
+    navLabel: "أقسام الإعدادات",
     firstName: "الاسم الأول",
     interfaceLanguage: "لغة الواجهة",
     languageHint: "تُحفظ لغة واجهتك في حسابك وتتبعك على كل جهاز.",

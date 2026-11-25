@@ -131,6 +131,7 @@ export const learning = {
   settings: {
     title: "Settings",
     profile: "Profile",
+    navLabel: "Settings sections",
     firstName: "First name",
     interfaceLanguage: "Interface language",
     languageHint:

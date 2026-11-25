@@ -5,6 +5,14 @@ export const reflect = {
   defaultQuestion: "كيف تخاطب هذه الآية حياتي اليوم؟",
   prompts: [
     {
+      label: "ما تعلّمته",
+      question: "ماذا تعلّمتَ أو لاحظتَ في هذه الآية اليوم؟",
+    },
+    {
+      label: "كيف أطبّقه",
+      question: "كيف يمكنك أن تطبّق ما تعلّمته في حياتك؟",
+    },
+    {
       label: "الشكر",
       question: "ما النعمة التي تذكّرك هذه الآية بشكرها؟",
     },
@@ -22,6 +30,11 @@ export const reflect = {
     },
   ],
   promptsLabel: "محفّزات التدبّر",
+  ayahSectionLabel: "من القرآن",
+  promptEyebrow: "محفّز للتدبّر · ليس من القرآن",
+  promptsNote: "المحفّزات أسئلة للانطلاق، وليست تفسيرًا ولا أحكامًا.",
+  yourReflectionLabel: "تأمّلك",
+  privacyNote: "خاصة بحسابك. لا تُشارَك تأمّلاتك ولا تظهر لمستخدمين آخرين.",
   placeholder: "اكتب تأمّلك…",
   save: "احفظ التأمّل",
   saved: "حُفظ التأمّل",
