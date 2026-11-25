@@ -44,6 +44,12 @@ const PUBLIC_SPECS = [
   "80-button-interaction-states.spec.ts",
 ];
 
+// QR-DESIGN-008B: WebKit (Safari engine) projects are opt-in (QR_WEBKIT=1) and meant
+// to run against a built Worker (PLAYWRIGHT_BASE_URL), not the Vite dev server: on
+// the dev server WebKit hits "Frame load interrupted" and module-load errors from
+// dev-time reloads that say nothing about the app. See docs/WEBSITE-CSP.md.
+const WEBKIT = process.env.QR_WEBKIT === "1";
+
 const PORT = 4300;
 const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 const baseURL = externalBaseURL ?? `http://localhost:${PORT}`;
@@ -117,11 +123,15 @@ export default defineConfig({
     // QR-DESIGN-008B: the same signed-out specs on WebKit (Safari engine), which
     // lays text and flex rows out differently from Chromium. Local run only: it
     // does the same real logins as `public`, so "setup" waits for both.
-    {
-      name: "public-webkit",
-      testMatch: PUBLIC_SPECS,
-      use: { ...devices["Desktop Safari"] },
-    },
+    ...(WEBKIT
+      ? [
+          {
+            name: "public-webkit",
+            testMatch: PUBLIC_SPECS,
+            use: { ...devices["Desktop Safari"] },
+          },
+        ]
+      : []),
     // QR-WEB-006: signed-out only, against the CSS-only-art dev server above.
     ...(externalBaseURL
       ? []
@@ -129,13 +139,16 @@ export default defineConfig({
           {
             name: "css-art",
             testMatch: ["74-css-art-fallback.spec.ts"],
-            use: { ...devices["Desktop Chrome"], baseURL: cssArtBaseURL },
+            // bypassCSP: these tests measure contrast by injecting a <style> tag
+            // (page.addStyleTag), which the enforced website CSP rightly blocks.
+            // They test artwork, not the CSP, which has its own spec (77).
+            use: { ...devices["Desktop Chrome"], baseURL: cssArtBaseURL, bypassCSP: true },
           },
         ]),
     {
       name: "setup",
       testMatch: /auth\.setup\.ts/,
-      dependencies: ["public", "public-webkit"],
+      dependencies: WEBKIT ? ["public", "public-webkit"] : ["public"],
     },
     // Only meaningful for a local run against the checkout-enabled server
     // above -- omitted entirely when targeting an external deployment (see
@@ -225,19 +238,23 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
     },
-    // QR-DESIGN-008B: the signed-in screens this phase changed, on WebKit.
-    {
-      name: "authenticated-webkit",
-      testMatch: [
-        "57-settings.spec.ts",
-        "65-reflect.spec.ts",
-        "76-settings-display-preferences.spec.ts",
-        "78-settings-sidebar.spec.ts",
-        "79-memorize-ring.spec.ts",
-      ],
-      use: { ...devices["Desktop Safari"], storageState: "playwright/.auth/user.json" },
-      dependencies: ["authenticated"],
-    },
+    // QR-DESIGN-008B: the signed-in screens this phase changed, on WebKit (opt-in).
+    ...(WEBKIT
+      ? [
+          {
+            name: "authenticated-webkit",
+            testMatch: [
+              "57-settings.spec.ts",
+              "65-reflect.spec.ts",
+              "76-settings-display-preferences.spec.ts",
+              "78-settings-sidebar.spec.ts",
+              "79-memorize-ring.spec.ts",
+            ],
+            use: { ...devices["Desktop Safari"], storageState: "playwright/.auth/user.json" },
+            dependencies: ["setup"],
+          },
+        ]
+      : []),
     // See the checkoutEnabledBaseURL/CHECKOUT_ENABLED_PORT comment above --
     // the only project that runs against a server built with
     // VITE_BILLING_CHECKOUT_ENABLED=true, so it needs its own storageState
