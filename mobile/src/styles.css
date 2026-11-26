@@ -1572,7 +1572,10 @@ html.reduce-motion .profile-btn:active {
 .onboarding-title {
   margin: 14px 0 6px;
   font-family: var(--font-display, inherit);
+  /* QR-FIX-009: same cap as .tagline: at the largest text size "QuranRoots" was wider than
+   * the screen and was split mid-word. 11vw keeps the whole word on one line. */
   font-size: 1.9rem;
+  font-size: min(1.9rem, 11vw);
   color: var(--qr-gold);
 }
 .onboarding-subtitle {
@@ -1639,6 +1642,7 @@ html.reduce-motion .profile-btn:active {
   }
   .onboarding-title {
     font-size: 1.6rem;
+    font-size: min(1.6rem, 11vw);
     margin: 8px 0 4px;
   }
   .onboarding-subtitle {
