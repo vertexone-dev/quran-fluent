@@ -125,3 +125,28 @@ Failures and caveats, stated plainly:
    Memorize progress ring (new functionality) are wanted.
 3. Rights for the artwork (see the inventory); the emblem's rights note.
 4. Keep zod 3 for now, or schedule the zod 4 migration.
+
+## 11. Addendum (QR-DESIGN-008B): scholarly integrity verification
+
+Added because the 008A directive was truncated before its Part 9 ("Preserve ..."). The 008B directive supplied the missing
+requirements; this section records the results. It was verified again on the final 008B candidate (see
+`QR-DESIGN-008B-REPORT.md`). No Quran text, translation, source status or source document was changed by either phase.
+
+| Check                                                                | Result                                                                                                                                                                                                                                                              |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Approved database file hash                                          | `43441fa8b2c3f225…` before and after every use; the file was only copied (never opened in place); no `-shm`/`-wal` next to it                                                                                                                                       |
+| Content fingerprint                                                  | `b586ba395b9508f1918175bc1c37e0c113ed5c6505a0aa6fec4286469d1225b1`: `rebuild-content-core.mjs` reports no failures; `verify-content-db`: OK (114 surahs, 6,236 ayahs)                                                                                               |
+| Full-content fingerprint                                             | OK: 20 tables, 27,247 rows match the pinned values (disposable Postgres rebuild)                                                                                                                                                                                    |
+| Pinned inputs                                                        | every input in `mobile/content-sources.lock.json` matches its SHA-256; no migration, importer, ledger or lock file was modified by my branches relative to `origin/main` (the lock file itself is an addition from the earlier verification chain, unchanged by me) |
+| Tanzil Uthmani (`uthmani`)                                           | `candidate` (unchanged)                                                                                                                                                                                                                                             |
+| Kazimirski (`kazimirski-1869-segments-v1`, the active French source) | `candidate` (unchanged); 6,239 segments. The legacy row `kazimirski-1869` reads `deprecated` in the export                                                                                                                                                          |
+| Pickthall (`pickthall-gutenberg-16955`)                              | `verified` as recorded; 6,236 rows. Its documented limitation stands: recorded as public domain in the United States only, worldwide scope unconfirmed (QR-DESIGN-007D)                                                                                             |
+| Hamidullah (`fr.hamidullah-crf`)                                     | `disputed`; **0** rows in the exported translations, so it stays excluded; I did not resolve the dispute                                                                                                                                                            |
+
+These are the results of reading the repository's records and an export rebuilt from them. They are not an independent
+scholarly, linguistic or legal approval, and none is claimed.
+
+## 12. Corrections to this report
+
+- Section 5 said Reflect had no "Reflection Prompts" chips. That was wrong: the website's Reflect page already had four
+  topical prompts on the ayah view; I judged from the empty state only. (QR-DESIGN-008B documents the prompt content.)
