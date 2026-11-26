@@ -157,10 +157,39 @@ back3_dump=$(dump_ui "04d_back_to_home" "$OUT_DIR")
 assert_text_present "$back3_dump" "QuranRoots" "hardware back: Learn -> Home (app not exited)"
 
 # Secondary features stay one tap from Home (shortcut row).
-tap_on_text "$back3_dump" "Practice"
+# QR-FIX-009, verified cause: this step used to fail because the script, not the app. The
+# row sits behind the floating tab bar until Home is scrolled, and UI Automator reports
+# node bounds inside this WebView shifted by the scroll amount (here about 590 px, the
+# tab bar's own position included), so tapping the "reported" centre of Practice hit the
+# Home reading card instead. Like font-scale.sh, take the tap position from the page's own
+# layout over DevTools: scroll the button to the middle of the viewport, read its rect,
+# add the WebView's top edge, and tap there. The app is addressed by its own process id
+# (another process, e.g. the Google app, can also expose a WebView socket).
+app_pid=$(adb shell pidof "$PKG" | tr -d '\r' | awk '{print $1}')
+adb forward tcp:9333 "localabstract:webview_devtools_remote_${app_pid}" >/dev/null
+practice_xy=$(node "$SCRIPT_DIR/cdp-eval.mjs" '(()=>{const b=[...document.querySelectorAll("button")].find(x=>x.textContent.trim()==="Practice");if(!b)return null;b.scrollIntoView({block:"center"});const r=b.getBoundingClientRect(),d=devicePixelRatio;return Math.round((r.left+r.width/2)*d)+" "+Math.round((r.top+r.height/2)*d)})()' | tr -d '"')
+webview_top=$(adb shell uiautomator dump /sdcard/wv_top.xml >/dev/null 2>&1; adb shell cat /sdcard/wv_top.xml | python3 -I -c '
+import re, sys
+m = re.search(r"class=\"android.webkit.WebView\"[^>]*bounds=\"\[(\d+),(\d+)\]", sys.stdin.read())
+print(m.group(2) if m else 0)')
+if [ -z "$practice_xy" ] || [ "$practice_xy" = "null" ]; then
+  log "FAIL [nav: Practice opens from Home shortcut]: no Practice button in the page"
+  FAIL_COUNT=$((FAIL_COUNT + 1))
+else
+  sleep 1
+  tap_x=${practice_xy% *}; tap_y=$(( ${practice_xy#* } + webview_top ))
+  log "tap Practice at ($tap_x, $tap_y) from the page layout (WebView top $webview_top)"
+  adb shell input tap "$tap_x" "$tap_y"
+  sleep 2
+fi
 practice_dump=$(dump_ui "04e_practice" "$OUT_DIR")
 assert_text_present "$practice_dump" "Review exercises" "nav: Practice opens from Home shortcut"
 press_back
+# Put Home back at the top: while it stays scrolled, UI Automator bounds are shifted and the
+# bounds-based taps in the rest of this suite would land in the wrong place.
+sleep 1
+node "$SCRIPT_DIR/cdp-eval.mjs" '(()=>{document.scrollingElement.scrollTop=0;document.querySelectorAll("*").forEach(e=>{if(e.scrollTop)e.scrollTop=0});return "top"})()' >/dev/null
+sleep 1
 home_dump_2=$(dump_ui "05_home_again" "$OUT_DIR")
 assert_text_present "$home_dump_2" "Qur'an" "hardware back: Practice -> Home"
 

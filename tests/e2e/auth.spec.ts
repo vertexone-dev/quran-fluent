@@ -88,6 +88,13 @@ test.describe("auth", () => {
       }),
     );
 
+    // Let the post-login route finish loading before navigating away. WebKit reports a lazy
+    // route chunk cancelled by a navigation as "Importing a module script failed", and
+    // TanStack Router's lazyRouteComponent answers that by reloading the page once
+    // (meant for stale deployments). That reload then clobbered the next page.goto
+    // (QR-FIX-009). Chromium does not report a cancelled import that way.
+    await page.waitForLoadState("networkidle");
+
     // Move to a normal authenticated page that contains the desktop header.
     await page.goto("/quran");
 
@@ -147,8 +154,16 @@ test.describe("auth", () => {
       expect(page).toHaveURL(/\/(dashboard|onboarding)/, { timeout: 10_000 }),
     );
 
+    // Let the post-login route finish loading before navigating away. WebKit reports a lazy
+    // route chunk cancelled by a navigation as "Importing a module script failed", and
+    // TanStack Router's lazyRouteComponent answers that by reloading the page once
+    // (meant for stale deployments). That reload then clobbered the next page.goto
+    // (QR-FIX-009). Chromium does not report a cancelled import that way.
+    await page.waitForLoadState("networkidle");
+
     await page.goto("/quran");
     await expect(page).toHaveURL(/\/quran/, { timeout: 10_000 });
+    await page.waitForLoadState("networkidle");
 
     const accountMenu = page.getByTestId("account-menu-trigger");
     await expect(accountMenu).toBeVisible({ timeout: 10_000 });

@@ -809,7 +809,14 @@ button {
 
 .tagline {
   font-family: var(--font-display);
+  /* QR-FIX-009: the headline grows with the system text size (it is in rem), and at the
+   * largest sizes on a narrow phone its longest word ("Découvrez", "Remontez") became
+   * wider than the screen, so `overflow-wrap: anywhere` split it mid-word. Capping the
+   * size at 18% of the viewport width keeps every word whole, still several times the
+   * body size, and does nothing at normal sizes (1.75rem is smaller). `vw`, not a
+   * container query: the iOS target is 14, which has no container query units. */
   font-size: 1.75rem;
+  font-size: min(1.75rem, 18vw);
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: 20px;
@@ -1565,7 +1572,10 @@ html.reduce-motion .profile-btn:active {
 .onboarding-title {
   margin: 14px 0 6px;
   font-family: var(--font-display, inherit);
+  /* QR-FIX-009: same cap as .tagline: at the largest text size "QuranRoots" was wider than
+   * the screen and was split mid-word. 16vw keeps the whole word on one line. */
   font-size: 1.9rem;
+  font-size: min(1.9rem, 16vw);
   color: var(--qr-gold);
 }
 .onboarding-subtitle {
@@ -1632,6 +1642,7 @@ html.reduce-motion .profile-btn:active {
   }
   .onboarding-title {
     font-size: 1.6rem;
+    font-size: min(1.6rem, 16vw);
     margin: 8px 0 4px;
   }
   .onboarding-subtitle {

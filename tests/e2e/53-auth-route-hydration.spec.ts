@@ -51,11 +51,16 @@ for (const locale of ["English", "French"] as const) {
     test(`an unauthenticated visitor redirected from a protected route lands on /auth?mode=login with no hydration errors`, async ({
       page,
     }) => {
+      test.setTimeout(60_000); // cold dev-server compile, see below
       if (locale === "French") await useFrenchLocale(page);
       const hydrationErrors = watchForHydrationErrors(page);
 
       await page.goto("/dashboard");
-      await expect(page).toHaveURL(/\/auth\?mode=login/);
+      // This is the first visit to /dashboard on a freshly started dev server, which has to
+      // compile the route (and, on a new checkout, re-optimise dependencies and reload)
+      // before the signed-out redirect can run: about 10 s measured on a cold server, so the
+      // default 5 s failed deterministically there (QR-FIX-009). The assertion is unchanged.
+      await expect(page).toHaveURL(/\/auth\?mode=login/, { timeout: 30_000 });
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
 
       expect(hydrationErrors).toEqual([]);
