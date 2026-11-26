@@ -111,7 +111,21 @@ test.describe("Memorize progress ring", () => {
   test("tracks the most recently started Surah, and updates after memorizing", async ({ page }) => {
     await page.goto("/memorize?surah=1&ayah=1");
     await page.getByRole("button", { name: "Mark as memorized" }).click();
-    await expect(page.getByRole("button", { name: /memorized/i }).first()).toBeVisible();
+    // Wait for the write itself (the button's own label also contains "memorized",
+    // so it is not a signal), then leave the page.
+    const { client, userId } = await createTestUserClient();
+    await expect
+      .poll(async () => {
+        const { data } = await client
+          .from("memorization_progress")
+          .select("status")
+          .eq("user_id", userId)
+          .eq("surah_number", 1)
+          .eq("ayah_number", 1)
+          .maybeSingle();
+        return data?.status;
+      })
+      .toBe("memorized");
     await page.goto("/memorize");
     const ring = page.getByTestId("memorize-ring");
     await expect(ring).toHaveAttribute("data-memorized", "1");

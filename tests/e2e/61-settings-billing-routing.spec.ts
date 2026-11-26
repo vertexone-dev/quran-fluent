@@ -36,7 +36,8 @@ test.describe("Settings / Billing routing", () => {
   }) => {
     await page.goto("/settings");
     await expect(page.getByRole("heading", { name: "Settings", level: 1 })).toBeVisible();
-    await expect(page.getByText("Profile", { exact: true })).toBeVisible();
+    // The Profile section (its card, not the sidebar entry that now also reads "Profile").
+    await expect(page.getByTestId("settings-profile-card")).toBeVisible();
     await expect(page.getByLabel("First name")).toBeVisible();
   });
 
@@ -48,7 +49,9 @@ test.describe("Settings / Billing routing", () => {
 
     // The specific regression: the general Settings page's own "Profile"
     // section/first-name field must NOT be present here.
-    await expect(page.getByText("Profile", { exact: true })).not.toBeVisible();
+    // (Since QR-DESIGN-008B the section sidebar is also shown here and has a "Profile"
+    // entry, so this checks the Profile card itself, which must not be rendered.)
+    await expect(page.getByTestId("settings-profile-card")).toHaveCount(0);
     await expect(page.getByLabel("First name")).not.toBeVisible();
 
     // Billing-specific content actually rendered -- proves the billing
@@ -116,6 +119,8 @@ test.describe("Settings / Billing routing", () => {
 
     // Same regression guard as the English test, in French: the general
     // Settings page's own content must not leak through here either.
-    await expect(page.getByText("Profile", { exact: true })).not.toBeVisible();
+    // (Since QR-DESIGN-008B the section sidebar is also shown here and has a "Profile"
+    // entry, so this checks the Profile card itself, which must not be rendered.)
+    await expect(page.getByTestId("settings-profile-card")).toHaveCount(0);
   });
 });

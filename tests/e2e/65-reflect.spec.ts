@@ -92,16 +92,21 @@ test.describe("reflect", () => {
   });
 
   test("the reflection structure renders in French and Arabic", async ({ page }) => {
+    test.info().annotations.push({ type: "note", description: "restores profile language to en" });
     for (const [lang, quranLabel, notQuran] of [
       ["fr", "Du Coran", "ne fait pas partie du Coran"],
       ["ar", "من القرآن", "ليس من القرآن"],
     ] as const) {
-      await page.addInitScript((l) => localStorage.setItem("quranroots-lang", l), lang);
+      // A signed-in user's language comes from their profile (as in 09-localization).
+      const { client, userId } = await createTestUserClient();
+      await client.from("profiles").update({ interface_language: lang }).eq("id", userId);
       await page.goto(`/reflect?surah=${TEST_SURAH}&ayah=${TEST_AYAH}`);
       await expect(page.getByTestId("reflection-ayah-section")).toContainText(quranLabel);
       await expect(page.getByTestId("reflection-prompt-section")).toContainText(notQuran);
       await expect(page.getByTestId("reflection-privacy")).not.toBeEmpty();
     }
+    const { client, userId } = await createTestUserClient();
+    await client.from("profiles").update({ interface_language: "en" }).eq("id", userId);
   });
 
   test("saving a reflection persists it via the real notes service, and it shows up on /notes too", async ({
