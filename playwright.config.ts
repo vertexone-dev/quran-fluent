@@ -50,6 +50,15 @@ const PUBLIC_SPECS = [
 // dev-time reloads that say nothing about the app. See docs/WEBSITE-CSP.md.
 const WEBKIT = process.env.QR_WEBKIT === "1";
 
+// QR-FIX-009: Chromium gets a null audio sink. The audio specs (45, 47) check player
+// state against a mocked 0.3 s clip; with a real sink they depend on the host's audio
+// device answering, and on a Mac whose output device had stalled the clip never reached
+// "ended" (the clock froze at 0.06 s, with or without the app). Sound is not under test.
+const CHROMIUM = {
+  ...devices["Desktop Chrome"],
+  launchOptions: { args: ["--disable-audio-output"] },
+};
+
 const PORT = 4300;
 const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 const baseURL = externalBaseURL ?? `http://localhost:${PORT}`;
@@ -118,7 +127,7 @@ export default defineConfig({
     {
       name: "public",
       testMatch: PUBLIC_SPECS,
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...CHROMIUM },
     },
     // QR-DESIGN-008B: the same signed-out specs on WebKit (Safari engine), which
     // lays text and flex rows out differently from Chromium. Local run only: it
@@ -142,12 +151,13 @@ export default defineConfig({
             // bypassCSP: these tests measure contrast by injecting a <style> tag
             // (page.addStyleTag), which the enforced website CSP rightly blocks.
             // They test artwork, not the CSP, which has its own spec (77).
-            use: { ...devices["Desktop Chrome"], baseURL: cssArtBaseURL, bypassCSP: true },
+            use: { ...CHROMIUM, baseURL: cssArtBaseURL, bypassCSP: true },
           },
         ]),
     {
       name: "setup",
       testMatch: /auth\.setup\.ts/,
+      use: { ...CHROMIUM },
       dependencies: WEBKIT ? ["public", "public-webkit"] : ["public"],
     },
     // Only meaningful for a local run against the checkout-enabled server
@@ -235,7 +245,7 @@ export default defineConfig({
         "67-dashboard-nav.spec.ts",
         "68-homepage-resume.spec.ts",
       ],
-      use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
+      use: { ...CHROMIUM, storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
     },
     // QR-DESIGN-008B: the signed-in screens this phase changed, on WebKit (opt-in).
@@ -267,7 +277,7 @@ export default defineConfig({
             name: "checkout-enabled",
             testMatch: ["63-checkout-enabled-flow.spec.ts"],
             use: {
-              ...devices["Desktop Chrome"],
+              ...CHROMIUM,
               baseURL: checkoutEnabledBaseURL,
               storageState: "playwright/.auth/user-checkout-enabled.json",
             },

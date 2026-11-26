@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { CreditCard, Palette, ShieldCheck, SlidersHorizontal, User, BookOpen } from "lucide-react";
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -36,13 +36,18 @@ const ITEM_ACTIVE =
  * none has). Computed from real positions on scroll/resize, so tall cards and
  * short ones behave the same.
  */
-function useActiveSection(enabled: boolean, initial: string) {
+function useActiveSection(enabled: boolean, initial: string, lockUntil: { current: number }) {
   const [active, setActive] = useState(initial);
   useEffect(() => {
     if (!enabled) return;
     let frame = 0;
     const update = () => {
       frame = 0;
+      // QR-FIX-009: right after a click the page is scrolling to the chosen section. The
+      // spy must not override that choice (near the bottom the page cannot scroll far
+      // enough to put the chosen card at the reading line, so the spy picked the last
+      // section and the entry the user had just chosen lost its highlight).
+      if (performance.now() < lockUntil.current) return;
       const line = window.innerHeight * 0.33;
       let current: string = SETTINGS_SECTIONS[0].id;
       for (const { id } of SETTINGS_SECTIONS) {
@@ -65,7 +70,7 @@ function useActiveSection(enabled: boolean, initial: string) {
       window.removeEventListener("resize", onScroll);
       if (frame) cancelAnimationFrame(frame);
     };
-  }, [enabled]);
+  }, [enabled, lockUntil]);
   return [active, setActive] as const;
 }
 
@@ -76,7 +81,8 @@ export function SettingsNav() {
   const onGeneral = pathname.replace(/\/+$/, "") === "/settings";
   const onBilling = pathname.startsWith("/settings/billing");
   const initial = SETTINGS_SECTIONS.some((s) => s.id === hash) ? hash : SETTINGS_SECTIONS[0].id;
-  const [active, setActive] = useActiveSection(onGeneral, initial);
+  const lockUntil = useRef(0);
+  const [active, setActive] = useActiveSection(onGeneral, initial, lockUntil);
 
   function go(event: MouseEvent<HTMLAnchorElement>, id: string) {
     event.preventDefault();
@@ -91,6 +97,7 @@ export function SettingsNav() {
     // Keyboard and screen-reader users land on the section, not just near it.
     el.focus({ preventScroll: true });
     window.history.replaceState(null, "", `#${id}`);
+    lockUntil.current = performance.now() + 1500;
     setActive(id);
   }
 
