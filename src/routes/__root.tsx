@@ -6,6 +6,7 @@ import {
   useRouter,
   HeadContent,
   Scripts,
+  type ErrorComponentProps,
 } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Compass } from "lucide-react";
@@ -13,6 +14,7 @@ import { Compass } from "lucide-react";
 import appCss from "../styles.css?url";
 import { AuthProvider } from "@/lib/auth";
 import { ThemeProvider } from "@/lib/theme";
+import { PreferencesProvider } from "@/lib/preferences-context";
 import { I18nProvider, useI18n } from "@/lib/i18n";
 import { useDocumentTitle } from "@/lib/use-document-title";
 import { Toaster } from "@/components/ui/sonner";
@@ -62,7 +64,8 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+// ErrorComponentProps.error is `unknown` from @tanstack/react-router 1.170.41 on.
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   const { t } = useI18n();
@@ -141,10 +144,18 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 const THEME_INIT_SCRIPT = `(function(){try{var s=localStorage.getItem("quranroots-theme");var dark=s==="dark"||s===null||(s==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",dark);}catch(e){}})();`;
 
 function RootShell({ children }: { children: ReactNode }) {
+  // CSP nonce for this request (set by the Worker, see src/server.ts).
+  // TanStack's HeadContent emits <meta property="csp-nonce"> from it, which
+  // the client router reads back for scripts it adds later.
+  const nonce = useRouter().options.ssr?.nonce;
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }}
+        />
         <HeadContent />
       </head>
       <body>
@@ -161,13 +172,15 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <AuthProvider>
-          <I18nProvider>
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
-            <Toaster position="top-center" />
-          </I18nProvider>
-        </AuthProvider>
+        <PreferencesProvider>
+          <AuthProvider>
+            <I18nProvider>
+              {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+              <Outlet />
+              <Toaster position="top-center" />
+            </I18nProvider>
+          </AuthProvider>
+        </PreferencesProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

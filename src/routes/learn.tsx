@@ -47,7 +47,7 @@ function Learn() {
     <div className="flex min-h-screen flex-col">
       <SiteHeader />
       <main className="section-py-normal mx-auto w-full max-w-6xl flex-1 px-4">
-        <h1 className="font-display text-3xl font-bold sm:text-4xl">{course.title}</h1>
+        <h1 className="font-display text-3xl font-bold sm:text-4xl page-title">{course.title}</h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">{course.intro}</p>
 
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">

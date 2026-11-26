@@ -103,7 +103,7 @@ function ProgressPage() {
 
   return (
     <main className="section-py-normal mx-auto w-full max-w-6xl px-4">
-      <h1 className="font-display text-3xl font-bold sm:text-4xl">{p.title}</h1>
+      <h1 className="font-display text-3xl font-bold sm:text-4xl page-title">{p.title}</h1>
       <p className="mt-2 max-w-2xl text-muted-foreground">{p.intro}</p>
 
       <section className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

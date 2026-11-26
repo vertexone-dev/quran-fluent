@@ -20,6 +20,21 @@ export const memorization = {
     ayahCount: "{memorized} / {total} memorized",
     startSurah: "Start this Surah",
   },
+  ring: {
+    title: "Memorization progress",
+    surahLine: "{surah}",
+    memorizedSummary: "{memorized} of {total} Ayat memorized",
+    legendMemorized: "Memorized",
+    legendLearning: "Learning",
+    legendRevision: "Due for revision",
+    legendRemaining: "Not started",
+    aria: "{surah}: {memorized} of {total} Ayat memorized, {learning} learning, {due} due for revision.",
+    empty:
+      "Your progress appears here once you start learning a Surah. Nothing is estimated or pre-filled.",
+    emptyAria: "No memorization progress yet.",
+    howTitle: "How this is calculated",
+    how: "Memorized and Learning count the Ayat you mark in a Surah. The percentage is memorized Ayat divided by the Surah's Ayat. Due for revision counts your scheduled reviews for this Surah that are due today or earlier; it overlaps the other states, so it is not drawn on the ring.",
+  },
   selector: {
     label: "Select a Surah",
     ayahRange: "Ayat {from}–{to}",

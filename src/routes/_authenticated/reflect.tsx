@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils";
 import { createNote, deleteNote, fetchNotesForAyah, NOTE_MAX_LENGTH, type Note } from "@/lib/notes";
 import { ayahTranslation, fetchAyah, fetchSurah, surahName } from "@/lib/quran";
 import { NoteDialog } from "@/components/quran/NoteDialog";
+import { VerseFrame } from "@/design/VerseFrame";
 
 const searchSchema = z.object({
   surah: z.number().int().positive().optional(),
@@ -67,7 +68,9 @@ function ReflectEmpty() {
 
   return (
     <main className="mx-auto w-full max-w-2xl px-4 py-10 text-center">
-      <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl">{r.title}</h1>
+      <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl page-title">
+        {r.title}
+      </h1>
       <p className="mt-3 text-muted-foreground">{r.subtitle}</p>
 
       <Card className="mt-8 shadow-soft">
@@ -166,52 +169,109 @@ function ReflectOnAyah({
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-10">
-      <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl">{r.title}</h1>
+      <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl page-title">
+        {r.title}
+      </h1>
       <p className="mt-3 text-muted-foreground">{r.subtitle}</p>
 
       <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] [&>*]:min-w-0">
-        <div>
-          <Card className="shadow-soft border-l-4 border-l-gold">
-            <CardContent className="space-y-4 pt-6">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <h2 className="font-display text-xl font-bold">{r.cardTitle}</h2>
+        <div className="space-y-6">
+          {/* 1. The Qur'an: its own frame and label, never mixed with prompts. */}
+          <section aria-label={r.ayahSectionLabel} data-testid="reflection-ayah-section">
+            <VerseFrame
+              label={
                 <Badge variant="outline" className="gap-1.5" data-testid="reflection-ayah-badge">
                   <Sparkles className="size-3.5 text-gold" aria-hidden />
                   <span dir="ltr">{surahLabel}</span>
                 </Badge>
-              </div>
-
+              }
+            >
+              <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[oklch(0.767_0.139_91.1)]">
+                {r.ayahSectionLabel}
+              </p>
               {ayahLoading && <Skeleton className="h-16 w-full" />}
               {!ayahLoading && ayah && (
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <p
-                    className="text-quran text-right text-2xl leading-loose text-foreground"
+                    className="text-quran text-right text-2xl leading-loose"
                     dir="rtl"
                     lang="ar"
+                    data-testid="reflection-ayah-arabic"
                   >
                     {ayah.arabic_text}
                   </p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-white/80" data-testid="reflection-ayah-translation">
                     {ayahTranslation(ayah, locale) ?? d.quran.reader.translationUnavailable}
                   </p>
                 </div>
               )}
               {!ayahLoading && !ayah && (
-                <p className="text-sm text-muted-foreground">{r.ayahUnavailable}</p>
+                <p className="text-sm text-white/80">{r.ayahUnavailable}</p>
               )}
+            </VerseFrame>
+          </section>
 
-              <p className="text-base text-foreground" data-testid="reflection-question">
-                {question}
-              </p>
+          {/* 2. The prompt: visibly not part of the Qur'an. */}
+          <section
+            aria-labelledby="reflection-prompt-heading"
+            className="rounded-2xl border border-dashed border-gold/50 bg-gold/5 p-4"
+            data-testid="reflection-prompt-section"
+          >
+            <p
+              id="reflection-prompt-heading"
+              className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+            >
+              {r.promptEyebrow}
+            </p>
+            <p className="mt-2 text-base text-foreground" data-testid="reflection-question">
+              {question}
+            </p>
+            <p className="mb-2 mt-4 text-sm font-semibold text-foreground">{r.promptsLabel}</p>
+            <div className="flex flex-wrap gap-2" data-testid="reflection-prompts">
+              {r.prompts.map((pr, i) => (
+                <button
+                  key={pr.label}
+                  type="button"
+                  onClick={() => setPromptIndex(i === promptIndex ? -1 : i)}
+                  aria-pressed={i === promptIndex}
+                  data-testid={`reflection-prompt-${i}`}
+                  className={cn(
+                    "min-h-11 rounded-full border px-4 py-2 text-sm font-semibold transition-colors",
+                    i === promptIndex
+                      ? "border-gold bg-gold/15 text-foreground"
+                      : "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  )}
+                >
+                  {pr.label}
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground" data-testid="reflection-prompts-note">
+              {r.promptsNote}
+            </p>
+          </section>
+
+          {/* 3. The user's own words. */}
+          <Card className="shadow-soft border-l-4 border-l-gold">
+            <CardContent className="space-y-4 pt-6">
+              <h2 className="font-display text-xl font-bold">{r.cardTitle}</h2>
               <Textarea
                 value={text}
                 onChange={(e) => setText(e.target.value.slice(0, NOTE_MAX_LENGTH))}
                 placeholder={r.placeholder}
                 rows={5}
                 maxLength={NOTE_MAX_LENGTH}
-                aria-label={r.cardTitle}
+                aria-label={r.yourReflectionLabel}
+                aria-describedby="reflection-privacy"
                 data-testid="reflection-textarea"
               />
+              <p
+                id="reflection-privacy"
+                className="text-xs text-muted-foreground"
+                data-testid="reflection-privacy"
+              >
+                {r.privacyNote}
+              </p>
               <div className="flex items-center justify-between">
                 <p className="text-xs text-muted-foreground">
                   {text.length} / {NOTE_MAX_LENGTH}
@@ -226,27 +286,6 @@ function ReflectOnAyah({
               </div>
             </CardContent>
           </Card>
-
-          <p className="mb-3 mt-6 text-sm font-semibold text-foreground">{r.promptsLabel}</p>
-          <div className="flex flex-wrap gap-2" data-testid="reflection-prompts">
-            {r.prompts.map((pr, i) => (
-              <button
-                key={pr.label}
-                type="button"
-                onClick={() => setPromptIndex(i === promptIndex ? -1 : i)}
-                aria-pressed={i === promptIndex}
-                data-testid={`reflection-prompt-${i}`}
-                className={cn(
-                  "rounded-full border px-4 py-2 text-sm font-semibold transition-colors",
-                  i === promptIndex
-                    ? "border-gold bg-gold/15 text-foreground"
-                    : "border-border text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                )}
-              >
-                {pr.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         <Card className="shadow-soft">

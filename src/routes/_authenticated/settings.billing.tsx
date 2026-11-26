@@ -67,7 +67,7 @@ function SettingsBilling() {
 
   if (isLoading) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-4 py-10">
+      <main className="w-full max-w-3xl">
         <Skeleton className="h-64 w-full" />
       </main>
     );
@@ -75,7 +75,7 @@ function SettingsBilling() {
 
   if (isError) {
     return (
-      <main className="mx-auto w-full max-w-3xl px-4 py-10">
+      <main className="w-full max-w-3xl">
         <Card className="shadow-soft">
           <CardContent className="space-y-3 py-10 text-center">
             <p className="text-muted-foreground">{s.error.title}</p>
@@ -96,7 +96,7 @@ function SettingsBilling() {
     });
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-10">
+    <main className="w-full max-w-3xl">
       <h1 className="font-display text-3xl font-bold">{s.title}</h1>
       <p className="mt-2 text-muted-foreground">{s.intro}</p>
 

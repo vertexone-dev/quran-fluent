@@ -39,9 +39,12 @@ import {
   type ResolvedAyah,
   type Surah,
 } from "@/lib/quran";
+import { ProgressRing } from "@/components/memorize/ProgressRing";
+import { computeRing } from "@/lib/memorization-progress";
 import {
   addToReview,
   countDueMemorizationReviews,
+  countDueReviewsForSurah,
   fetchMemorizationProgress,
   fetchSurahProgress,
   markMemorized,
@@ -123,6 +126,13 @@ function MemorizeOverview({ userId }: { userId: string }) {
     queryFn: () => countDueMemorizationReviews(userId),
   });
 
+  const ringSurah = progress ? mostRecentSurah(progress) : null;
+  const { data: ringDue } = useQuery({
+    queryKey: ["memorization-due-surah", userId, ringSurah],
+    queryFn: () => countDueReviewsForSurah(userId, ringSurah!),
+    enabled: ringSurah !== null,
+  });
+
   const memorizedTotal = surahProgress?.reduce((sum, s) => sum + s.memorizedCount, 0) ?? 0;
   const continueSurah = progress ? mostRecentSurah(progress) : null;
   const continueSurahRow = surahs?.find((s) => s.number === continueSurah);
@@ -130,7 +140,9 @@ function MemorizeOverview({ userId }: { userId: string }) {
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-10">
-      <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl">{m.title}</h1>
+      <h1 className="font-display text-3xl font-bold text-foreground sm:text-4xl page-title">
+        {m.title}
+      </h1>
       <p className="mt-3 max-w-2xl text-muted-foreground">{m.intro}</p>
 
       {loading ? (
@@ -140,7 +152,12 @@ function MemorizeOverview({ userId }: { userId: string }) {
         </div>
       ) : (
         <>
-          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          <RingCard
+            surahProgress={surahProgress?.find((p) => p.surah.number === ringSurah)}
+            due={ringDue ?? 0}
+            locale={locale}
+          />
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
             <Card className="shadow-soft">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base">{m.overview.continueTitle}</CardTitle>
@@ -219,6 +236,80 @@ function MemorizeOverview({ userId }: { userId: string }) {
         </>
       )}
     </main>
+  );
+}
+
+function RingCard({
+  surahProgress,
+  due,
+  locale,
+}: {
+  surahProgress: Awaited<ReturnType<typeof fetchSurahProgress>>[number] | undefined;
+  due: number;
+  locale: Parameters<typeof surahName>[1];
+}) {
+  const { d } = useI18n();
+  const g = d.memorization.ring;
+  const model = computeRing({
+    total: surahProgress?.surah.ayah_count ?? 0,
+    memorized: surahProgress?.memorizedCount ?? 0,
+    learning: surahProgress?.learningCount ?? 0,
+    due,
+  });
+  const name = surahProgress ? surahName(surahProgress.surah, locale) : "";
+  const fill = (tpl: string) =>
+    tpl
+      .replace("{surah}", name)
+      .replace("{memorized}", String(model.memorized))
+      .replace("{total}", String(model.total))
+      .replace("{learning}", String(model.learning))
+      .replace("{due}", String(model.due));
+  const empty = !surahProgress || model.empty;
+  const legend: [string, number, string][] = [
+    [g.legendMemorized, model.memorized, "bg-[var(--gold)]"],
+    [g.legendLearning, model.learning, "bg-primary"],
+    [g.legendRevision, model.due, "border border-foreground/60"],
+    [g.legendRemaining, model.remaining, "bg-border"],
+  ];
+
+  return (
+    <Card className="mt-8 shadow-soft" data-testid="memorize-ring-card">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-base">{g.title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-wrap items-center gap-6">
+          <ProgressRing model={model} label={empty ? g.emptyAria : fill(g.aria)} />
+          <div className="min-w-0 flex-1 basis-56">
+            {empty ? (
+              <p className="text-sm text-muted-foreground" data-testid="memorize-ring-empty">
+                {g.empty}
+              </p>
+            ) : (
+              <>
+                <p className="font-display text-lg font-semibold">{fill(g.surahLine)}</p>
+                <p className="text-sm text-muted-foreground" data-testid="memorize-ring-summary">
+                  {fill(g.memorizedSummary)}
+                </p>
+                <dl className="mt-3 grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1.5 text-sm">
+                  {legend.map(([label, count, swatch]) => (
+                    <div key={label} className="contents">
+                      <span aria-hidden className={`size-3 rounded-full ${swatch}`} />
+                      <dt>{label}</dt>
+                      <dd className="font-semibold tabular-nums">{count}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </>
+            )}
+          </div>
+        </div>
+        <details className="mt-4 text-sm text-muted-foreground">
+          <summary className="cursor-pointer font-medium text-foreground">{g.howTitle}</summary>
+          <p className="mt-2">{g.how}</p>
+        </details>
+      </CardContent>
+    </Card>
   );
 }
 

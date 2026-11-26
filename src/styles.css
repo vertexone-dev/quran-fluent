@@ -488,6 +488,61 @@
   border-width: 0 0 1.5px 1.5px;
 }
 
+/* QR-DESIGN-008A shared surfaces (Design Lock v1.0): the references' panels are
+   glass cards with a fine Antique Gold edge and a top-lit highlight. CSS only,
+   no artwork; colours stay on the theme tokens so contrast is unchanged
+   (the highlight is a 4% lift, the edge a 22% gold mix). */
+.card-surface {
+  border-color: color-mix(in oklab, var(--gold) 24%, var(--border));
+  background-image: linear-gradient(
+    180deg,
+    color-mix(in oklab, white 5%, transparent),
+    transparent 42%
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in oklab, white 7%, transparent),
+    0 12px 32px -18px oklch(0 0 0 / 0.55);
+}
+
+/* Button interaction states from the Design Lock reference ("Default -> Hover:
+   glowing light -> Click: subtle ripple"). A gold glow on hover, a soft halo and a
+   1.5% press on click. Box-shadow only on hover/active, so layout never moves;
+   the press scale is dropped under reduced motion. Focus keeps the 2px gold ring
+   set on the Button base. */
+.btn-states:hover:not(:disabled) {
+  box-shadow:
+    0 0 0 1px color-mix(in oklab, var(--gold) 55%, transparent),
+    0 0 20px -6px color-mix(in oklab, var(--gold) 60%, transparent);
+}
+.btn-states:active:not(:disabled) {
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--gold) 24%, transparent);
+  transform: scale(0.985);
+}
+@media (prefers-reduced-motion: reduce) {
+  .btn-states:active:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* Page titles: the short Antique Gold rule the Understand page already carries
+   (SectionHeading), now shared by the signed-in pages. Mirrors under rtl. */
+.page-title::after {
+  content: "";
+  display: block;
+  margin-top: 0.75rem;
+  height: 1px;
+  width: 6rem;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+[dir="rtl"] .page-title::after {
+  background: linear-gradient(270deg, var(--gold), transparent);
+}
+.text-center .page-title::after,
+.page-title.text-center::after {
+  margin-inline: auto;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
 /* QR-INT-005 navigation: the Emergent floating glass bar. Theme-independent
    dark Midnight Teal glass (literal oklch, like the hero/dashboard banners)
    so the bar reads the same over the cinematic hero and over light-theme
@@ -551,4 +606,16 @@
   body:has([data-testid="mobile-tab-bar"]) {
     padding-bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
   }
+}
+
+/* QR-DESIGN-002 Stage 4: in-app "Reduce motion" (Settings). The OS-level
+ * prefers-reduced-motion preference is honoured separately by framer-motion's
+ * MotionConfig and the media queries above. */
+html[data-qr-motion="reduce"] *,
+html[data-qr-motion="reduce"] *::before,
+html[data-qr-motion="reduce"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
 }

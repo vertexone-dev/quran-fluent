@@ -32,7 +32,9 @@ function readEnvTest() {
 
 function getLocalSupabaseStatus() {
   const raw = execFileSync("supabase", ["status", "-o", "json"], {
-    cwd: repoRoot,
+    // E2E_SUPABASE_WORKDIR lets a disposable stack with its own config.toml be
+    // targeted explicitly; the default is the repository's own stack.
+    cwd: process.env.E2E_SUPABASE_WORKDIR || repoRoot,
     encoding: "utf8",
   });
   return JSON.parse(raw);
@@ -87,6 +89,20 @@ async function main() {
   }
 
   const envTest = readEnvTest();
+
+  // QR-SECURITY-003 safeguard: `supabase status` resolves the stack from the
+  // current directory, which can be a different (for example the developer's
+  // own) local stack than the one .env.test and the specs point at. Only write
+  // to the stack that .env.test names, so a second local stack is never
+  // modified by accident.
+  const declared = (envTest.VITE_SUPABASE_URL || envTest.SUPABASE_URL || "").replace(/\/+$/, "");
+  if (!declared || declared !== apiUrl) {
+    throw new Error(
+      `Refusing to run: \`supabase status\` resolved "${apiUrl}" but .env.test points at ` +
+        `"${declared || "(nothing)"}". These must be the same local stack. For a disposable ` +
+        `stack, set E2E_SUPABASE_WORKDIR to its directory.`,
+    );
+  }
   const email = envTest.E2E_TEST_EMAIL;
   const password = envTest.E2E_TEST_PASSWORD;
   if (!email || !password) {

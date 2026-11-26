@@ -7,6 +7,49 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 dotenv.config({ path: path.resolve(__dirname, ".env.test") });
 
+const PUBLIC_SPECS = [
+  "auth.spec.ts",
+  "security.spec.ts",
+  "16-curriculum-schema.spec.ts",
+  "53-auth-route-hydration.spec.ts",
+  "54-arabic-typography.spec.ts",
+  // Genuinely unauthenticated: src/routes/auth.tsx redirects a signed-
+  // in user away from /auth on mount, so checking that page's (and
+  // /reset-password's) title must run with no storageState -- the
+  // "authenticated" project's stored session raced that redirect
+  // against the title assertion (CI runs #114/#115). See this spec's
+  // own header comment for the full root-cause writeup.
+  "59-unauthenticated-page-titles.spec.ts",
+  // QR-INT-002: a signed-out visitor's language choice lives in
+  // localStorage, independent of auth -- same rationale as the spec
+  // just above.
+  "64-arabic-rtl.spec.ts",
+  // QR-INT-004: the public homepage's quick-links/theme/RTL/reduced-
+  // motion checks are all signed-out-only, same rationale again.
+  "66-homepage-nav.spec.ts",
+  // QR-INT-005: the /quran study tabs' ?tab= entry point is public too.
+  "69-quran-study-tab.spec.ts",
+  // QR-INT-005: the glass nav, language dropdown, search and bottom tab
+  // bar are all signed-out-visible, so this runs without a session.
+  "71-exact-navigation.spec.ts",
+  // QR-INT-007/008 (Milestone C): the Reader and the public
+  // /quran/understand page are exercised signed-out against route-
+  // intercepted, attributed test-only fixtures (tests/e2e/fixtures),
+  // so they need neither a session nor database content.
+  "72-milestone-c-reader.spec.ts",
+  "73-understand-page.spec.ts",
+  "75-arabic-names-responsive-tabs.spec.ts",
+  // QR-DESIGN-008A: the website CSP (header, nonces, no violations, blocks).
+  "77-website-csp.spec.ts",
+  "80-button-interaction-states.spec.ts",
+];
+
+// QR-DESIGN-008B: WebKit (Safari engine) projects are opt-in (QR_WEBKIT=1) and meant
+// to run against a built Worker (PLAYWRIGHT_BASE_URL), not the Vite dev server: on
+// the dev server WebKit hits "Frame load interrupted" and module-load errors from
+// dev-time reloads that say nothing about the app. See docs/WEBSITE-CSP.md.
+const WEBKIT = process.env.QR_WEBKIT === "1";
+
 const PORT = 4300;
 const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
 const baseURL = externalBaseURL ?? `http://localhost:${PORT}`;
@@ -74,41 +117,21 @@ export default defineConfig({
     // spec's storageState depends on — is the last, uncontested sign-in.
     {
       name: "public",
-      testMatch: [
-        "auth.spec.ts",
-        "security.spec.ts",
-        "16-curriculum-schema.spec.ts",
-        "53-auth-route-hydration.spec.ts",
-        "54-arabic-typography.spec.ts",
-        // Genuinely unauthenticated: src/routes/auth.tsx redirects a signed-
-        // in user away from /auth on mount, so checking that page's (and
-        // /reset-password's) title must run with no storageState -- the
-        // "authenticated" project's stored session raced that redirect
-        // against the title assertion (CI runs #114/#115). See this spec's
-        // own header comment for the full root-cause writeup.
-        "59-unauthenticated-page-titles.spec.ts",
-        // QR-INT-002: a signed-out visitor's language choice lives in
-        // localStorage, independent of auth -- same rationale as the spec
-        // just above.
-        "64-arabic-rtl.spec.ts",
-        // QR-INT-004: the public homepage's quick-links/theme/RTL/reduced-
-        // motion checks are all signed-out-only, same rationale again.
-        "66-homepage-nav.spec.ts",
-        // QR-INT-005: the /quran study tabs' ?tab= entry point is public too.
-        "69-quran-study-tab.spec.ts",
-        // QR-INT-005: the glass nav, language dropdown, search and bottom tab
-        // bar are all signed-out-visible, so this runs without a session.
-        "71-exact-navigation.spec.ts",
-        // QR-INT-007/008 (Milestone C): the Reader and the public
-        // /quran/understand page are exercised signed-out against route-
-        // intercepted, attributed test-only fixtures (tests/e2e/fixtures),
-        // so they need neither a session nor database content.
-        "72-milestone-c-reader.spec.ts",
-        "73-understand-page.spec.ts",
-        "75-arabic-names-responsive-tabs.spec.ts",
-      ],
+      testMatch: PUBLIC_SPECS,
       use: { ...devices["Desktop Chrome"] },
     },
+    // QR-DESIGN-008B: the same signed-out specs on WebKit (Safari engine), which
+    // lays text and flex rows out differently from Chromium. Local run only: it
+    // does the same real logins as `public`, so "setup" waits for both.
+    ...(WEBKIT
+      ? [
+          {
+            name: "public-webkit",
+            testMatch: PUBLIC_SPECS,
+            use: { ...devices["Desktop Safari"] },
+          },
+        ]
+      : []),
     // QR-WEB-006: signed-out only, against the CSS-only-art dev server above.
     ...(externalBaseURL
       ? []
@@ -116,10 +139,17 @@ export default defineConfig({
           {
             name: "css-art",
             testMatch: ["74-css-art-fallback.spec.ts"],
-            use: { ...devices["Desktop Chrome"], baseURL: cssArtBaseURL },
+            // bypassCSP: these tests measure contrast by injecting a <style> tag
+            // (page.addStyleTag), which the enforced website CSP rightly blocks.
+            // They test artwork, not the CSP, which has its own spec (77).
+            use: { ...devices["Desktop Chrome"], baseURL: cssArtBaseURL, bypassCSP: true },
           },
         ]),
-    { name: "setup", testMatch: /auth\.setup\.ts/, dependencies: ["public"] },
+    {
+      name: "setup",
+      testMatch: /auth\.setup\.ts/,
+      dependencies: WEBKIT ? ["public", "public-webkit"] : ["public"],
+    },
     // Only meaningful for a local run against the checkout-enabled server
     // above -- omitted entirely when targeting an external deployment (see
     // that server's own comment).
@@ -194,6 +224,9 @@ export default defineConfig({
         "55-dashboard-mobile-greeting.spec.ts",
         "56-premium-motion-interactions.spec.ts",
         "57-settings.spec.ts",
+        "76-settings-display-preferences.spec.ts",
+        "78-settings-sidebar.spec.ts",
+        "79-memorize-ring.spec.ts",
         "58-level6-batch1-al-fatiha-surah-study.spec.ts",
         "60-level6-production-validation.spec.ts",
         "61-settings-billing-routing.spec.ts",
@@ -205,6 +238,23 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"], storageState: "playwright/.auth/user.json" },
       dependencies: ["setup"],
     },
+    // QR-DESIGN-008B: the signed-in screens this phase changed, on WebKit (opt-in).
+    ...(WEBKIT
+      ? [
+          {
+            name: "authenticated-webkit",
+            testMatch: [
+              "57-settings.spec.ts",
+              "65-reflect.spec.ts",
+              "76-settings-display-preferences.spec.ts",
+              "78-settings-sidebar.spec.ts",
+              "79-memorize-ring.spec.ts",
+            ],
+            use: { ...devices["Desktop Safari"], storageState: "playwright/.auth/user.json" },
+            dependencies: ["setup"],
+          },
+        ]
+      : []),
     // See the checkoutEnabledBaseURL/CHECKOUT_ENABLED_PORT comment above --
     // the only project that runs against a server built with
     // VITE_BILLING_CHECKOUT_ENABLED=true, so it needs its own storageState
@@ -235,6 +285,9 @@ export default defineConfig({
         {
           command: `npm run dev -- --port ${PORT} --strictPort`,
           url: baseURL,
+          // The website CSP defaults to report-only (fail-safe); the suite must
+          // test the policy that will be enforced. See docs/WEBSITE-CSP.md.
+          env: { CSP_MODE: "enforce" },
           reuseExistingServer: !process.env.CI,
           timeout: 60_000,
           stdout: "pipe",
@@ -242,7 +295,7 @@ export default defineConfig({
         {
           command: `npm run dev -- --port ${CSS_ART_PORT} --strictPort`,
           url: cssArtBaseURL,
-          env: { VITE_ART_MODE: "css" },
+          env: { VITE_ART_MODE: "css", CSP_MODE: "enforce" },
           reuseExistingServer: !process.env.CI,
           timeout: 60_000,
           stdout: "pipe",
@@ -253,7 +306,7 @@ export default defineConfig({
           // Additive on top of this process's own env -- everything else
           // (Supabase URL/keys, etc.) is identical to the main server
           // above; only the checkout flag differs.
-          env: { VITE_BILLING_CHECKOUT_ENABLED: "true" },
+          env: { VITE_BILLING_CHECKOUT_ENABLED: "true", CSP_MODE: "enforce" },
           reuseExistingServer: !process.env.CI,
           timeout: 60_000,
           stdout: "pipe",
